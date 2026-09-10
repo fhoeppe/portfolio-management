@@ -1,0 +1,503 @@
+/**
+ * --ink-brand/--ink-warn/--field-* viennent de la coque par héritage de variables CSS
+ * (voir tableau-de-bord.css) ; les teintes propres à cet écran (annexe, légendes) n'existent
+ * nulle part ailleurs et sont donc portées ici, comme le prescrit le README.
+ */
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--color-text);
+  container-type: inline-size;
+
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --field-ok: #0b5f57;
+  --band-ok: #f2faf9;
+  --band-warn: #fdf6ef;
+  --ink-magenta: #a21caf;
+  --ink-info: #075985;
+  --ink-code: #3730a3;
+  --ink-alt: #5b3ea8;
+  --ink-5c4700: #5c4700;
+  --ink-9d174d: #9d174d;
+  --ink-92400e: #92400e;
+  --ink-3f4a5c: #3f4a5c;
+  --ink-155e75: #155e75;
+  --ink-9f1239: #9f1239;
+  --ink-065f46: #065f46;
+  --ink-44403c: #44403c;
+  --ink-854d0e: #854d0e;
+  --ink-e6ebf5: #e6ebf5;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --field-ok: #0d443f;
+  --band-ok: #152a28;
+  --band-warn: #2c1f14;
+  --ink-magenta: #f0abfc;
+  --ink-info: #7dd3fc;
+  --ink-code: #a5b4fc;
+  --ink-alt: #c4b5fd;
+  --ink-5c4700: #ffff5a;
+  --ink-9d174d: #ff77bc;
+  --ink-92400e: #ffb36e;
+  --ink-3f4a5c: #e9ffff;
+  --ink-155e75: #80ffff;
+  --ink-9f1239: #ff71a1;
+  --ink-065f46: #68fffd;
+  --ink-44403c: #ffffff;
+  --ink-854d0e: #ffd270;
+  --ink-e6ebf5: #cbced3;
+}
+
+h1,
+h2 {
+  color: var(--ink-brand);
+}
+
+/* En-tête */
+
+.pm-page-header {
+  padding: 14px 20px 10px;
+}
+
+.pm-page-title h1 {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pm-page-title p {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+/* Onglets de page (Annexes / Jambes / Légendes) */
+
+.pm-page-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.pm-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--field-brand);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pm-page-tab:hover:not(.pm-page-tab-active) {
+  filter: brightness(0.97);
+}
+
+.pm-page-tab-active {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--field-brand);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pm-page-tab-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.16);
+  color: var(--ink-brand);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-page-tab-active .pm-page-tab-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+/* Barre de recherche / filtres */
+
+.pm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 20px 0;
+}
+
+.pm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 230px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-500);
+}
+
+.pm-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.pm-toggle-group {
+  --mat-button-toggle-height: 28px;
+}
+
+.pm-toolbar-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Onglet Annexes : accordéon */
+
+.pm-annexe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+.pm-accordion {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.pm-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+}
+
+.pm-accordion-header:hover {
+  filter: brightness(0.96);
+}
+
+.pm-accordion-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pm-accordion-chev {
+  display: inline-flex;
+  flex: none;
+  transition: transform 150ms ease;
+}
+
+.pm-accordion-chev.pm-rotated {
+  transform: rotate(-90deg);
+}
+
+.pm-accordion-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-accordion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 18px;
+}
+
+.pm-accordion-intro {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+.pm-entry {
+  border: 1px solid var(--color-neutral-300);
+  border-left: 3px solid;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.pm-entry-title {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-entry-code {
+  margin-left: auto;
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pm-entry-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 16px;
+}
+
+.pm-entry-desc {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pm-entry-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pm-entry-field-label {
+  flex: none;
+  width: 74px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pm-entry-field-text {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--color-neutral-800);
+}
+
+/* Cartes communes (Jambes, Légendes) */
+
+.pm-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+.pm-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.pm-card-header h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.pm-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* Onglet Jambes : tableaux */
+
+.pm-table-scroll {
+  overflow-x: auto;
+}
+
+.pm-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--surface);
+}
+
+.pm-table th {
+  height: 32px;
+  text-align: left;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-table th:first-child,
+.pm-table td:first-child {
+  padding-left: 16px;
+  width: 120px;
+}
+
+.pm-table th.pm-col-legs {
+  width: 150px;
+}
+
+.pm-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-neutral-800);
+}
+
+.pm-strong {
+  font-weight: 600;
+}
+
+.pm-code-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* Onglet Légendes */
+
+.pm-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+@container (max-width: 1000px) {
+  .pm-legend-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pm-legend-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-legend-marker {
+  flex: none;
+  width: 158px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pm-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.pm-swatch {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 4px;
+}
+
+.pm-swatch-label {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-text-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-brand);
+}
+
+.pm-legend-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pm-legend-meaning {
+  font-size: 12px;
+}
+
+.pm-legend-where {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pm-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 20px 4px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}

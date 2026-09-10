@@ -1,0 +1,33 @@
+<div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--color-neutral-200)">
+  <span class="pm-avatar">FH</span>
+  <span style="display:flex;flex-direction:column;line-height:1.35;flex:1;min-width:0">
+    <h2 style="font-size:14px;margin:0">Mon profil</h2>
+    <span style="font-size:11px;color:var(--color-neutral-700)">HOEPPE, Fabrice · Administrateur</span>
+  </span>
+  <button class="pm-close-btn" matIconButton matTooltip="Fermer" matTooltipShowDelay="0" aria-label="Fermer" (click)="close()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+  </button>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px">
+  <div class="pm-field"><span>Nom</span><span>HOEPPE</span></div>
+  <div class="pm-field"><span>Prénom</span><span>Fabrice</span></div>
+  <div class="pm-field"><span>Identifiant</span><span>fhoeppe</span></div>
+  <div class="pm-field"><span>Matricule</span><span>LU-4471</span></div>
+  <div class="pm-field" style="grid-column:1 / -1"><span>E-mail professionnel</span><span>fabrice.hoeppe&#64;atelier.lu</span></div>
+  <div class="pm-field"><span>Téléphone</span><span>+352 27 12 44 08</span></div>
+  <div class="pm-field"><span>Mobile</span><span>+352 621 44 08 12</span></div>
+  <div class="pm-field" style="grid-column:1 / -1"><span>Entité</span><span>Portfolio Management · Luxembourg-Gare</span></div>
+  <div class="pm-field"><span>Fonction</span><span>Administrateur</span></div>
+  <div class="pm-field"><span>Depuis le</span><span>3 mars 2021</span></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;grid-column:1 / -1;padding-top:4px;border-top:1px solid var(--color-neutral-200)">
+    <span style="font-size:12px;color:var(--color-neutral-800)">Dernière connexion</span>
+    <span style="font-size:12px;font-weight:600">26 août 2026, 08:12</span>
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+  <button mat-stroked-button (click)="close()">Fermer</button>
+  <button mat-flat-button color="primary" (click)="close()">Modifier</button>
+</div>

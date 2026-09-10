@@ -1,0 +1,49 @@
+<div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--color-neutral-200)">
+  <span class="pm-avatar">FH</span>
+  <span style="display:flex;flex-direction:column;line-height:1.35;flex:1;min-width:0">
+    <h2 style="font-size:14px;margin:0">Préférences de Fabrice Hoeppe</h2>
+    <span style="font-size:11px;color:var(--color-neutral-700)">Administrateur · Luxembourg-Gare</span>
+  </span>
+  <button class="pm-close-btn" matIconButton matTooltip="Fermer" matTooltipShowDelay="0" aria-label="Fermer" (click)="close()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+  </button>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px">
+  <div class="pm-field"><span>Nom affiché</span><span>HOEPPE, Fabrice</span></div>
+  <div class="pm-field"><span>Téléphone</span><span>+352 27 12 44 08</span></div>
+  <div class="pm-field" style="grid-column:1 / -1"><span>E-mail professionnel</span><span>fabrice.hoeppe&#64;atelier.lu</span></div>
+
+  <div class="pm-toggle-row">
+    <span>Résumé quotidien par e-mail</span>
+    <mat-slide-toggle [ngModel]="dailyDigest()" (ngModelChange)="dailyDigest.set($event)" hideIcon />
+  </div>
+  <div class="pm-toggle-row">
+    <span>Authentification à deux facteurs</span>
+    <mat-slide-toggle [ngModel]="twoFactor()" (ngModelChange)="twoFactor.set($event)" hideIcon />
+  </div>
+  <div class="pm-toggle-row">
+    <span>Ouvrir avec le menu replié</span>
+    <mat-slide-toggle [ngModel]="openCollapsed()" (ngModelChange)="openCollapsed.set($event)" hideIcon />
+  </div>
+  <div class="pm-toggle-row">
+    <span>Recherche dans le bandeau</span>
+    <mat-slide-toggle [ngModel]="bannerSearch()" (ngModelChange)="bannerSearch.set($event)" hideIcon />
+  </div>
+
+  <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+      <span style="font-size:12px;color:var(--color-neutral-800)">Largeur du menu déployé</span>
+      <span style="font-size:11px;font-weight:600">{{ expandedWidth() }} px</span>
+    </div>
+    <mat-slider min="220" max="340" step="4" style="width:100%">
+      <input matSliderThumb [ngModel]="expandedWidth()" (ngModelChange)="expandedWidth.set($event)">
+    </mat-slider>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-neutral-700)"><span>220</span><span>340</span></div>
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+  <button mat-stroked-button (click)="close()">Annuler</button>
+  <button mat-flat-button color="primary" (click)="save()">Enregistrer</button>
+</div>

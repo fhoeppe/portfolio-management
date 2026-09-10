@@ -1,0 +1,228 @@
+<div class="pm-page">
+  <div class="pm-page-header">
+    <div class="pm-page-title">
+      <h1>Tableau de bord</h1>
+      <p>{{ subtitle() }}</p>
+    </div>
+    <div class="pm-page-header-actions">
+      <button class="pm-mandate" mat-stroked-button [matMenuTriggerFor]="mandateMenu" #mandateTrigger="matMenuTrigger">
+        {{ mandateLabel() }}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [style.transform]="mandateTrigger.menuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <mat-menu #mandateMenu="matMenu">
+        @for (m of mandates; track m.value) {
+          <button mat-menu-item [class.pm-mandate-active]="m.value === mandate()" (click)="mandate.set(m.value)">{{ m.label }}</button>
+        }
+      </mat-menu>
+
+      <mat-button-toggle-group class="pm-toggle-group" aria-label="Période" hideSingleSelectionIndicator [value]="period()" (change)="setPeriod($event.value)">
+        @for (opt of periodOptions; track opt.value) {
+          <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </div>
+  </div>
+
+  <div class="pm-kpi-band">
+    @for (k of kpis(); track k.label) {
+      <div class="pm-kpi" [style.background]="k.bg">
+        <div class="pm-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+        <div class="pm-kpi-value" [style.color]="k.valueColor">{{ k.value }}</div>
+        <div class="pm-kpi-note" [style.color]="k.noteColor">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="pm-ano">
+    <div class="pm-ano-header" [class.pm-ano-header-open]="anoOpen()">
+      <button type="button" class="pm-ano-toggle" [attr.aria-label]="anoOpen() ? 'Replier' : 'Développer'" (click)="anoOpen.set(!anoOpen())">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.pm-ano-chev-closed]="!anoOpen()">
+          <path d="m6 9 6 6 6-6"></path>
+        </svg>
+      </button>
+      <span class="pm-ano-icon"><app-icon [shapes]="icons.anomaly" [size]="32" [strokeWidth]="1.6" /></span>
+      <h2 (click)="anoOpen.set(!anoOpen())">Anomalies détectées</h2>
+      <span class="pm-ano-count">{{ anomalies().length }}</span>
+      @if (!anoOpen()) {
+        <span class="pm-ano-summary">{{ anoSummary() }}</span>
+      }
+      <span class="pm-ano-tabs">
+        <mat-button-toggle-group class="pm-toggle-group pm-toggle-group-red" aria-label="Filtrer par gravité" hideSingleSelectionIndicator [value]="anoFilter()" (change)="setAnoFilter($event.value)">
+          @for (opt of anoFilterOptions; track opt.value) {
+            <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </span>
+    </div>
+
+    @if (anoOpen()) {
+      @if (anomalies().length > 0) {
+        <div class="pm-table-scroll">
+          <table class="pm-table pm-ano-table">
+            <thead>
+              <tr>
+                <th class="pm-col-anomaly">Anomalie</th>
+                <th>Origine</th>
+                <th>Détectée</th>
+                <th>Gravité</th>
+                <th class="pm-col-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of anomalies(); track a.label) {
+                <tr>
+                  <td>
+                    <span class="pm-stack">
+                      <span class="pm-strong">{{ a.label }}</span>
+                      <span class="pm-muted">{{ a.detail }}</span>
+                    </span>
+                  </td>
+                  <td class="pm-muted">{{ a.source }}</td>
+                  <td class="pm-muted pm-nowrap">{{ a.when }}</td>
+                  <td>
+                    <span class="pm-badge" [style.background]="a.tagBg" [style.color]="a.tagFg">
+                      <span class="pm-badge-dot" [style.background]="a.tagFg"></span>
+                      {{ a.severityLabel }}
+                    </span>
+                  </td>
+                  <td class="pm-col-right">{{ a.action }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="pm-ano-empty">Aucune anomalie pour ce niveau de gravité.</p>
+      }
+    }
+  </div>
+
+  <div class="pm-split">
+    <div class="pm-col">
+      <app-panel-card title="Performance cumulée" [icon]="icons.performance" note="Base 100 au début de la période, net de frais" [(open)]="perfOpen">
+        <div class="pm-chart-wrap">
+          <svg viewBox="0 0 320 110" preserveAspectRatio="none" class="pm-chart">
+            <line x1="0" y1="103" x2="320" y2="103" stroke="var(--color-neutral-300)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+            <line x1="0" y1="55" x2="320" y2="55" stroke="var(--color-neutral-200)" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"></line>
+            <path [attr.d]="benchPath()" fill="none" stroke="var(--color-neutral-500)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></path>
+            <path [attr.d]="perfPath()" fill="none" stroke="var(--ink-brand-2)" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+          </svg>
+          <div class="pm-chart-ticks">
+            @for (t of perfTicks(); track $index) {
+              <span>{{ t }}</span>
+            }
+          </div>
+        </div>
+        <div class="pm-chart-legend">
+          <span class="pm-legend-item"><span class="pm-legend-swatch" style="background:var(--field-brand)"></span>Portefeuille {{ perfValue() }}</span>
+          <span class="pm-legend-item"><span class="pm-legend-swatch" style="background:var(--color-neutral-500)"></span>Référence {{ benchValue() }}</span>
+          <span class="pm-legend-alpha" [style.color]="alphaColor()">Écart {{ alphaLabel() }}</span>
+        </div>
+      </app-panel-card>
+
+      <app-panel-card title="Allocation par classe d'actifs" [icon]="icons.allocation" [note]="allocNote()" [(open)]="allocOpen">
+        <div class="pm-alloc">
+          @for (a of allocationRows(); track a.label) {
+            <div class="pm-alloc-row">
+              <div class="pm-alloc-head">
+                <span class="pm-alloc-label">{{ a.label }}</span>
+                <span class="pm-alloc-actual">{{ a.actual }}</span>
+                <span class="pm-alloc-drift" [style.color]="a.driftColor">{{ a.drift }}</span>
+              </div>
+              <div class="pm-alloc-bar">
+                <div class="pm-alloc-fill" [style.width]="a.width" [style.background]="a.barColor"></div>
+                <div class="pm-alloc-target" [style.left]="a.target"></div>
+              </div>
+            </div>
+          }
+          <span class="pm-alloc-footnote">Le trait vertical marque la cible du compte ; la barre ambre signale une sortie de bande.</span>
+        </div>
+      </app-panel-card>
+
+      <app-panel-card title="Principales positions" [icon]="icons.positions" [(open)]="posOpen">
+        <span card-actions>
+          <mat-button-toggle-group class="pm-toggle-group" aria-label="Trier les positions" hideSingleSelectionIndicator [value]="sort()" (change)="setSort($event.value)">
+            @for (opt of sortOptions; track opt.value) {
+              <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </span>
+        <div class="pm-table-scroll">
+          <table class="pm-table">
+            <thead>
+              <tr>
+                <th>Ligne</th>
+                <th class="pm-col-right">Valorisation</th>
+                <th class="pm-col-right">Poids</th>
+                <th class="pm-col-right">Jour</th>
+                <th class="pm-col-right">Depuis janvier</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of positionsSorted(); track p.ticker) {
+                <tr>
+                  <td>
+                    <span class="pm-stack">
+                      <span class="pm-strong">{{ p.ticker }}</span>
+                      <span class="pm-muted">{{ p.name }}</span>
+                    </span>
+                  </td>
+                  <td class="pm-col-right pm-num">{{ p.value }}</td>
+                  <td class="pm-col-right pm-num pm-muted">{{ p.weight }}</td>
+                  <td class="pm-col-right pm-num" [style.color]="p.dayColor">{{ p.day }}</td>
+                  <td class="pm-col-right pm-num" [style.color]="p.ytdColor">{{ p.ytd }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </app-panel-card>
+    </div>
+
+    <div class="pm-col">
+      <app-panel-card title="Indicateurs de risque" [icon]="icons.risk" [(open)]="riskOpen">
+        @for (r of risk; track r.label) {
+          <div class="pm-risk-row">
+            <span class="pm-stack">
+              <span class="pm-risk-label">{{ r.label }}</span>
+              <span class="pm-muted">{{ r.detail }}</span>
+            </span>
+            <span class="pm-risk-value" [class.pm-tone-warn]="r.tone === 'warn'" [class.pm-tone-ok]="r.tone === 'ok'">{{ r.value }}</span>
+          </div>
+        }
+      </app-panel-card>
+
+      <app-panel-card title="Expositions" [icon]="icons.exposures" [(open)]="expoOpen">
+        <span card-actions>
+          <mat-button-toggle-group class="pm-toggle-group" aria-label="Répartir par" hideSingleSelectionIndicator [value]="expo()" (change)="setExpo($event.value)">
+            @for (opt of expoOptions; track opt.value) {
+              <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </span>
+        <div class="pm-expo">
+          @for (e of exposureRows(); track e.label) {
+            <div class="pm-expo-row">
+              <span class="pm-expo-label">{{ e.label }}</span>
+              <span class="pm-expo-bar"><span class="pm-expo-fill" [style.width]="e.width"></span></span>
+              <span class="pm-expo-value">{{ e.value }}</span>
+            </div>
+          }
+        </div>
+      </app-panel-card>
+
+      <app-panel-card title="Activité récente" [icon]="icons.activity" [(open)]="actOpen">
+        @for (a of activity; track a.label) {
+          <div class="pm-activity-row">
+            <span class="pm-activity-time">{{ a.time }}</span>
+            <span class="pm-stack">
+              <span class="pm-strong">{{ a.label }}</span>
+              <span class="pm-muted">{{ a.detail }}</span>
+            </span>
+            <span class="pm-activity-tag" [class.pm-tag-ok]="a.level === 'ok'" [class.pm-tag-warn]="a.level === 'warn'">{{ a.tag }}</span>
+          </div>
+        }
+      </app-panel-card>
+    </div>
+  </div>
+</div>

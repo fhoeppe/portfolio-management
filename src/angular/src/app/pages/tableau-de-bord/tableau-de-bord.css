@@ -1,0 +1,591 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--color-neutral-100);
+  color: var(--color-text);
+  container-type: inline-size;
+  /* --ink-brand/--ink-warn/--field-* viennent déjà de la coque (app-shell) par héritage de
+     variables CSS ; --ink-ok n'y est pas déclaré (aucun autre écran encore porté n'en a eu
+     besoin), donc ce composant le porte lui-même, comme le prescrit le README. */
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+}
+
+h1,
+h2 {
+  color: var(--ink-brand);
+}
+
+/* En-tête de page */
+
+.pm-page-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.pm-page-title h1 {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pm-page-title p {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+.pm-page-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pm-mandate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+.pm-mandate svg {
+  transition: transform 150ms ease;
+}
+
+.pm-mandate-active {
+  background: rgba(0, 61, 165, 0.12);
+  color: var(--ink-brand);
+  font-weight: 700;
+}
+
+/* Groupes d'onglets (période, tri, filtre de gravité) : mat-button-toggle-group resserré
+   à la taille des contrôles du prototype ; thème rouge pour le filtre des anomalies via les
+   jetons M3 du composant, qui traversent l'encapsulation de vue comme toute variable CSS. */
+.pm-toggle-group {
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-shape: 6px;
+  --mat-button-toggle-label-text-size: 11px;
+}
+
+.pm-toggle-group-red {
+  --mat-button-toggle-background-color: transparent;
+  --mat-button-toggle-text-color: #a4552c;
+  --mat-button-toggle-selected-state-background-color: var(--field-warn);
+  --mat-button-toggle-selected-state-text-color: #fff;
+  --mat-button-toggle-divider-color: rgba(180, 83, 9, 0.35);
+}
+
+/* Bandeau KPI */
+
+.pm-kpi-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+@container (max-width: 980px) {
+  .pm-kpi-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pm-split {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+.pm-kpi {
+  padding: 13px 18px 15px;
+}
+
+.pm-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pm-kpi-value {
+  margin-top: 5px;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+/* Anomalies */
+
+.pm-ano {
+  margin: 16px 20px 0;
+  background: var(--surface);
+  border: 1px solid var(--field-warn);
+  border-left: 4px solid var(--field-warn);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.pm-ano-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: rgba(180, 83, 9, 0.08);
+}
+
+.pm-ano-header-open {
+  border-bottom: 1px solid #e7cba6;
+}
+
+.pm-ano-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-warn-2);
+  cursor: pointer;
+}
+
+.pm-ano-toggle:hover {
+  background: rgba(180, 83, 9, 0.14);
+}
+
+.pm-ano-toggle svg {
+  transition: transform 150ms ease;
+}
+
+.pm-ano-toggle svg.pm-ano-chev-closed {
+  transform: rotate(-90deg);
+}
+
+.pm-ano-icon {
+  display: flex;
+  color: var(--ink-warn-2);
+}
+
+.pm-ano-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-warn-2);
+  cursor: pointer;
+}
+
+.pm-ano-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--field-warn);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-ano-summary {
+  font-size: 11px;
+  color: var(--ink-warn-2);
+  font-weight: 600;
+}
+
+.pm-ano-tabs {
+  margin-left: auto;
+}
+
+.pm-ano-empty {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* Tableaux */
+
+.pm-table-scroll {
+  overflow-x: auto;
+}
+
+.pm-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pm-ano-table {
+  min-width: 820px;
+  table-layout: fixed;
+}
+
+.pm-table thead tr {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.pm-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-table th:first-child,
+.pm-table td:first-child {
+  padding-left: 16px;
+}
+
+.pm-table th:last-child,
+.pm-table td:last-child {
+  padding-right: 16px;
+}
+
+.pm-ano-table .pm-col-anomaly {
+  width: 44%;
+}
+
+.pm-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-col-right {
+  text-align: right;
+}
+
+.pm-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pm-strong {
+  font-weight: 600;
+}
+
+.pm-muted {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pm-nowrap {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pm-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+/* Colonnes de contenu */
+
+.pm-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+.pm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Performance */
+
+.pm-chart-wrap {
+  padding: 16px 16px 8px;
+}
+
+.pm-chart {
+  width: 100%;
+  height: 170px;
+  display: block;
+}
+
+.pm-chart-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.pm-chart-ticks span {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+.pm-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.pm-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--color-neutral-800);
+}
+
+.pm-legend-swatch {
+  width: 14px;
+  height: 2px;
+}
+
+.pm-legend-alpha {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Allocation */
+
+.pm-alloc {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 18px;
+}
+
+.pm-alloc-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pm-alloc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.pm-alloc-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pm-alloc-actual {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-alloc-drift {
+  flex: none;
+  width: 150px;
+  text-align: right;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-alloc-bar {
+  position: relative;
+  height: 12px;
+  background: var(--color-neutral-200);
+  border-radius: 2px;
+}
+
+.pm-alloc-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+}
+
+.pm-alloc-target {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--color-text);
+}
+
+.pm-alloc-footnote {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+/* Risque */
+
+.pm-risk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-risk-row .pm-stack {
+  flex: 1;
+  min-width: 0;
+}
+
+.pm-risk-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pm-risk-value {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-tone-warn {
+  color: var(--ink-warn-2);
+}
+
+.pm-tone-ok {
+  color: var(--ink-ok-2);
+}
+
+/* Expositions */
+
+.pm-expo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 18px;
+}
+
+.pm-expo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pm-expo-label {
+  flex: none;
+  width: 96px;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-expo-bar {
+  flex: 1;
+  min-width: 0;
+  height: 10px;
+  background: var(--color-neutral-200);
+  border-radius: 2px;
+  display: block;
+}
+
+.pm-expo-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--field-brand);
+}
+
+.pm-expo-value {
+  flex: none;
+  width: 44px;
+  text-align: right;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+
+/* Activité */
+
+.pm-activity-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-activity-row .pm-stack {
+  flex: 1;
+  min-width: 0;
+}
+
+.pm-activity-time {
+  flex: none;
+  width: 44px;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-activity-tag {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.1);
+  color: var(--ink-brand-2);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  height: 16px;
+}
+
+.pm-tag-ok {
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--ink-ok-2);
+}
+
+.pm-tag-warn {
+  background: rgba(180, 83, 9, 0.12);
+  color: var(--ink-warn-2);
+}

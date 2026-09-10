@@ -1,0 +1,496 @@
+/**
+ * Jetons repris du README du dossier de conception (couleurs, typo, espacements).
+ * `--ink-*` s'éclaircit en mode sombre (c'est de l'encre) ; `--field-*` reste foncé
+ * (c'est un fond sous texte clair) — ne pas confondre les deux, ça rend le texte
+ * illisible en thème sombre.
+ */
+:host {
+  --ink-brand: #002a6e;
+  --ink-brand-2: #003da5;
+  --ink-warn: #8f3f06;
+  --ink-warn-2: #b45309;
+  --field-brand: #002a6e;
+  --field-warn: #8f3f06;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #35322f;
+  --color-neutral-900: #2d2b2b;
+  --nav-hover-bg: rgba(0, 61, 165, 0.18);
+  --nav-hover-ink: #002a6e;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 640px;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Sans ça, un élément avec padding et une largeur posée en px (ex. .pm-rail, calée sur
+   navWidth()) rend plus large que prévu — la marge tombait hors alignement avec le filet de
+   la coque juste en dessous, qui lui (mat-sidenav) est déjà en border-box par défaut. */
+:host,
+:host * {
+  box-sizing: border-box;
+}
+
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --ink-brand-2: #8fb4ee;
+  --ink-warn: #f0a868;
+  --ink-warn-2: #f3b782;
+  --field-brand: #12325e;
+  --field-warn: #5c2a06;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-400: #4a4643;
+  --color-neutral-500: #605d5d;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #a8a3a0;
+  --color-neutral-800: #d8d5d2;
+  --color-neutral-900: #f3f2f2;
+  --nav-hover-bg: rgba(120, 165, 235, 0.22);
+  --nav-hover-ink: #e8e6e4;
+}
+
+svg {
+  flex: none;
+}
+
+/* Bandeau */
+
+.pm-topbar {
+  flex: none;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  background: var(--field-brand);
+  color: #fff;
+}
+
+.pm-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding-right: 24px;
+}
+
+.pm-spacer {
+  flex: 1 1 auto;
+}
+
+.pm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(420px, 40vw);
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-neutral-700);
+}
+
+.pm-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.pm-vsep {
+  width: 1px;
+  height: 24px;
+  margin: 0 10px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* Séparateur de la barre de contexte, sur fond clair : ne peut pas reprendre .pm-vsep
+   (blanc translucide, invisible ici — ça ne se voyait pas en mode sombre où le fond de
+   .pm-context-actions est lui-même sombre, d'où le bug passé inaperçu). */
+.pm-ctx-vsep {
+  flex: none;
+  width: 1px;
+  height: 18px;
+  margin: 0 18px;
+  background: var(--color-neutral-300);
+}
+
+/* Sans ce jeton, Material force le contenu de matIconButton à 24px via son propre CSS,
+   quelle que soit la taille posée sur le <svg> lui-même (l'attribut HTML width/height perd
+   face à une règle de feuille de style) : seule la boîte du bouton suivait nos changements
+   jusqu'ici, l'icône restait bloquée à 24px en silence. */
+.pm-topbar-icon-btn {
+  --mat-icon-button-icon-size: 16px;
+  /* Même défaut que pour la taille : les jetons de couleur de Material (on-surface-variant)
+     sont calculés pour une surface claire — gris sombre illisible, et halo de survol gris
+     foncé sur gris foncé, sur le bandeau bleu. */
+  --mat-icon-button-icon-color: rgba(255, 255, 255, 0.85);
+  --mat-icon-button-state-layer-color: #ffffff;
+}
+
+.pm-topbar-icon-btn:hover {
+  --mat-icon-button-icon-color: #ffffff;
+}
+
+.pm-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pm-account:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.pm-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800);
+  font-size: 12px;
+  font-weight: 600;
+  flex: none;
+}
+
+.pm-account-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.pm-account-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pm-account-role {
+  font-size: 10px;
+}
+
+/* Barre de contexte */
+
+.pm-context-bar {
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  height: 58px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+/* Posé directement sur :host (racine du shell), pas sur .pm-context-bar ni .pm-sidenav :
+   MatSidenavContainer ne projette que mat-sidenav/mat-sidenav-content (son template n'a pas
+   de <ng-content> générique dès qu'un mat-sidenav-content explicite est fourni), donc tout
+   autre enfant placé entre les deux est silencieusement ignoré. Le bouton flotte au-dessus
+   de la case d'en-tête du panneau et de la barre de contexte du contenu, qui coïncident en
+   hauteur ; 85px = 56px de bandeau + moitié des 58px de la rangée d'en-tête. */
+.pm-collapse-toggle {
+  position: absolute;
+  top: 85px;
+  z-index: 5;
+  transform: translateY(-50%);
+  transition: left 180ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  border: 1px solid var(--field-brand) !important;
+  background: var(--surface) !important;
+  color: var(--ink-brand) !important;
+  /* Forcer width/height en !important sur le bouton laissait le pictogramme centré sur
+     l'ancien encombrement MDC (40px) : il débordait hors de la boîte réduite et se
+     retrouvait coupé. Les jetons M3 recalculent le centrage correctement. */
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-size: 16px;
+  --mat-icon-button-touch-target-size: 28px;
+}
+
+/* Ancrage réel du bouton sur le bord droit du panneau, via CSS Anchor Positioning (Chrome/
+   Edge 125+) : le navigateur suit lui-même le bord animé de .pm-sidenav, au lieu de recopier
+   à la main `navWidth() - 14` à chaque frame. Le binding Angular [style.left.px] reste actif
+   comme filet de sécurité — cette règle ne s'applique qu'aux navigateurs qui savent résoudre
+   `anchor-name`, et l'!important l'emporte sur le style inline uniquement dans ce cas. */
+@supports (anchor-name: --pm-sidenav-edge) {
+  .pm-collapse-toggle {
+    left: calc(anchor(--pm-sidenav-edge right) - 14px) !important;
+  }
+}
+
+.pm-breadcrumb {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 32px;
+  font-size: 11px;
+  color: var(--ink-brand);
+}
+
+.pm-breadcrumb a {
+  display: inline-flex;
+  color: var(--ink-brand);
+}
+
+.pm-breadcrumb-section {
+  color: color-mix(in srgb, var(--ink-brand) 55%, transparent);
+}
+
+.pm-breadcrumb-leaf {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-context-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.pm-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 25px;
+  padding: 0 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-800);
+  font: inherit;
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pm-action-btn {
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-touch-target-size: 28px;
+  /* Même piège que .pm-topbar-icon-btn : sans ce jeton l'icône restait figée à 24px alors
+     que seule la boîte du bouton rétrécissait au fil des ajustements précédents. */
+  --mat-icon-button-icon-size: 16px;
+}
+
+/* Corps : menu latéral + contenu */
+
+.pm-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.pm-sidenav {
+  anchor-name: --pm-sidenav-edge;
+  --mat-sidenav-container-shape: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--field-brand);
+  overflow: hidden;
+  /* MatSidenav pose sa propre règle `transition: transform 400ms …` (pour l'animation
+     d'ouverture/fermeture) qui écrase intégralement la mienne — `transition` ne se fusionne
+     pas entre deux règles, la dernière appliquée gagne en bloc. !important est nécessaire
+     pour que le changement de largeur reste animé. */
+  transition: width 180ms cubic-bezier(0.2, 0.6, 0.2, 1) !important;
+}
+
+/* MatSidenav projette pm-nav-list/pm-nav-footer dans son propre .mat-drawer-inner-container
+   (un bloc simple, pas un flex item de .pm-sidenav) : sans ça, le pied de menu suit la
+   dernière entrée au lieu de rester ancré en bas. Pas de jeton CSS Material pour ce cas de
+   mise en page (contrairement aux couleurs) — ::ng-deep reste le seul levier. */
+.pm-sidenav ::ng-deep .mat-drawer-inner-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pm-nav-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  padding: 8px 12px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pm-nav-section {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  height: 20px;
+  margin: 8px 4px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pm-nav-section-label {
+  flex: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.pm-nav-section-line {
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: rgba(0, 61, 165, 0.3);
+}
+
+.pm-nav-section-chev {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--ink-brand);
+  transition: transform 150ms ease;
+}
+
+.pm-nav-section-chev.pm-rotated {
+  transform: rotate(-90deg);
+}
+
+.pm-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 30px;
+  padding: 0 12px 0 9px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-brand);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+  text-decoration: none;
+  flex: none;
+}
+
+.pm-nav-item:hover:not(.pm-active) {
+  border-left-color: var(--ds-brand-200, #9db6d9);
+  background: var(--nav-hover-bg);
+  color: var(--nav-hover-ink);
+}
+
+.pm-nav-item.pm-active {
+  border-left-color: var(--field-warn);
+  background: var(--field-brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pm-nav-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-nav-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 17px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.12);
+  color: var(--ink-brand);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-nav-item.pm-active .pm-nav-badge {
+  background: #fff;
+  color: var(--ink-brand);
+}
+
+.pm-nav-badge-warn {
+  background: rgba(180, 83, 9, 0.16);
+  color: var(--ink-warn-2);
+}
+
+.pm-nav-item.pm-active .pm-nav-badge-warn {
+  background: #ffe4c9;
+  color: var(--ink-warn);
+}
+
+.pm-nav-footer {
+  flex: none;
+  border-top: 1px solid var(--color-neutral-200);
+  padding: 8px 12px 10px;
+}
+
+.pm-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* `autosize` sur mat-sidenav-container réévalue la marge (debounce 10ms) pendant toute la
+     transition de largeur du panneau ; une transition ici lisse ces petits pas au lieu de
+     les laisser sauter d'incrément en incrément. */
+  transition: margin-left 180ms cubic-bezier(0.2, 0.6, 0.2, 1) !important;
+}
+
+.pm-router-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-neutral-100);
+}

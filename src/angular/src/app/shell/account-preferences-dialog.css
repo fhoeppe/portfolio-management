@@ -1,0 +1,82 @@
+/**
+ * MatDialog monte ce composant dans le `cdk-overlay-container`, hors de l'arbre DOM
+ * d'`app-shell` : les jetons `--color-*` de la coque n'y parviennent pas par héritage CSS
+ * (voir le commentaire d'`AccountPreferencesDialog`). On les reporte donc ici, mêmes valeurs.
+ */
+:host {
+  display: block;
+  width: min(460px, 100%);
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #35322f;
+}
+
+:host([data-theme='dark']) {
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-700: #a8a3a0;
+  --color-neutral-800: #d8d5d2;
+}
+
+/* Sans ce jeton, Material force l'icône de matIconButton à 24px quelle que soit la taille
+   posée sur le <svg> lui-même. */
+.pm-close-btn {
+  --mat-icon-button-icon-size: 14px;
+}
+
+.pm-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800);
+  font-size: 12px;
+  font-weight: 600;
+  flex: none;
+}
+
+.pm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.pm-field > span:first-child {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pm-field > span:last-child {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  color: var(--color-text);
+}
+
+.pm-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--color-neutral-800);
+}

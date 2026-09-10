@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+}
+
+.pm-card-header.pm-card-header-open {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-brand-2);
+  cursor: pointer;
+}
+
+.pm-card-toggle:hover {
+  background: rgba(0, 61, 165, 0.1);
+}
+
+.pm-card-toggle svg {
+  transition: transform 150ms ease;
+}
+
+.pm-card-toggle svg.pm-card-chev-closed {
+  transform: rotate(-90deg);
+}
+
+.pm-card-icon {
+  display: flex;
+  color: var(--ink-brand-2);
+}
+
+.pm-card-title {
+  margin: 0;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.pm-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
