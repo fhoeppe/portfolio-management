@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="CashPage"] { --ink-ok-2: #0f766e; --ink-brand-2: #003da5; --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); container-type: inline-size; }
+    [data-component="CashPage"], [data-component="CashPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="CashPage"] input, [data-component="CashPage"] select { font-family: inherit; }
+    @container (max-width: 980px) {
+      [data-cash-split] { grid-template-columns: minmax(0, 1fr) !important; }
+      [data-cash-kpi] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    }
+    [data-component="CashPage"] h1, [data-component="CashPage"] h2, [data-component="CashPage"] h3 { color: #002a6e; }
+    [data-component="CashPage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="CashPage"] input:focus, [data-component="CashPage"] select:focus, [data-component="CashPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="CashPage"] input:focus-visible, [data-component="CashPage"] select:focus-visible, [data-component="CashPage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="CashPage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="CashPage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="CashPage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="CashPage"] button:active { filter: brightness(0.94); }
+    [data-component="CashPage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="CashPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="CashPage"] h1,
+    [data-theme="dark"] [data-component="CashPage"] h2,
+    [data-theme="dark"] [data-component="CashPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="CashPage"] input,
+    [data-theme="dark"] [data-component="CashPage"] select,
+    [data-theme="dark"] [data-component="CashPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="CashPage"] { --ink-warn-2: #b45309; }
+    [data-theme="dark"] [data-component="CashPage"] { --ink-ok-2: #4fd1c5; --ink-brand-2: #8fb4ee; --ink-brand: #9db6d9; --ink-warn-2: #f3b782; }
+    [data-component="CashPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="CashPage"] { --field-brand: #12325e; }
+    [data-component="CashPage"] { --ink-ok: #0b5f57; }
+    [data-theme="dark"] [data-component="CashPage"] { --ink-ok: #5fd6c4; }
+    [data-component="CashPage"] { --field-ok: #0b5f57; --field-warn: #8f3f06; }
+    [data-theme="dark"] [data-component="CashPage"] { --field-ok: #0d443f; --field-warn: #5c2a06; }
+    [data-component="CashPage"] { --band-ok: #f2faf9; --band-warn: #fdf6ef; }
+    [data-theme="dark"] [data-component="CashPage"] { --band-ok: #152a28; --band-warn: #2c1f14; }
+  </style>
+</helmet>
+
+<div data-component="CashPage" data-screen-label="Trésorerie" style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="min-width:0">
+      <h1 style="font-size:18px;margin:0;line-height:1.2">Trésorerie</h1>
+      <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">Soldes par devise, prévisionnel et instructions de mouvement</p>
+    </div>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <select value="{{ mandate }}" onChange="{{ setAccount }}" style="height:28px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:12px;outline:none">
+        <sc-for list="{{ mandateOptions }}" as="o" hint-placeholder-count="4">
+          <option value="{{ o.value }}">{{ o.label }}</option>
+        </sc-for>
+      </select>
+      <button onClick="{{ openInstruction }}" style="display:flex;align-items:center;gap:8px;height:28px;padding:0 12px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+        Nouvelle instruction
+      </button>
+    </span>
+  </div>
+
+    <div style="flex:none;display:flex;align-items:flex-end;gap:2px;padding:0 20px;border-bottom:1px solid var(--field-brand);background:var(--surface)">
+    <sc-for list="{{ pageTabs }}" as="t" hint-placeholder-count="2">
+      <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;height:{{ t.height }};padding:{{ t.padding }};border:1px solid var(--ds-brand-fill, var(--field-brand));border-bottom:0;border-radius:6px 6px 0 0;background:{{ t.bg }};color:{{ t.fg }};font-family:inherit;font-size:{{ t.size }};font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.97)">
+        {{ t.label }}
+      </button>
+    </sc-for>
+  </div>
+
+<sc-if value="{{ onOverview }}" hint-placeholder-val="{{ true }}">
+  <div data-cash-kpi="" style="flex:none;display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:1px;background:var(--field-brand);border-bottom:1px solid var(--field-brand)">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="padding:13px 18px 15px;background:{{ k.bg }}">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ k.labelColor }}">{{ k.label }}</div>
+        <div style="margin-top:5px;font-size:20px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums">{{ k.value }}</div>
+        <div style="margin-top:3px;font-size:11px;color:{{ k.noteColor }}">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div data-cash-split="" style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0, 1.5fr) minmax(300px, 1fr);gap:16px;padding:16px 20px 24px;align-items:start;overflow-y:auto">
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01"></path><path d="M18 12h.01"></path></svg>
+          <h2 style="margin:0;font-size:15px">Soldes par compte</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ accountsNote }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:620px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Compte</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Solde</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Bloqué</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Disponible</th>
+                <th style="text-align:right;padding:8px 16px 8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Contre-valeur €</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ accounts }}" as="a" hint-placeholder-count="5">
+                <tr>
+                  <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:1px">
+                      <span style="font-weight:600">{{ a.currency }} · {{ a.bank }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-700)">{{ a.iban }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ a.balColor }}">{{ a.balance }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ a.blocked }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600">{{ a.available }}</td>
+                  <td style="padding:9px 16px 9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ a.eur }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+          <h2 style="margin:0;font-size:15px">Prévisionnel de trésorerie</h2>
+          <span style="margin-left:auto;display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ horizonTabs }}" as="h" hint-placeholder-count="3">
+              <button onClick="{{ h.onClick }}" style="height:26px;padding:0 11px;border:0;border-left:{{ h.divider }};background:{{ h.bg }};color:{{ h.fg }};font-size:11px;font-weight:{{ h.weight }};white-space:nowrap;cursor:pointer">{{ h.label }}</button>
+            </sc-for>
+          </span>
+        </div>
+
+        <div style="padding:14px 16px 6px">
+          <div style="display:flex;align-items:flex-end;gap:6px;height:150px">
+            <sc-for list="{{ forecast }}" as="f" hint-placeholder-count="10">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;height:100%">
+                <span style="font-size:9px;text-align:center;color:{{ f.valueColor }};font-variant-numeric:tabular-nums">{{ f.value }}</span>
+                <span style="height:{{ f.height }};border-radius:2px 2px 0 0;background:{{ f.color }}"></span>
+                <span style="font-size:9px;text-align:center;color:var(--color-neutral-600);overflow:hidden;white-space:nowrap">{{ f.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+          <span style="font-size:11px;color:var(--color-neutral-700)">{{ forecastNote }}</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:14px">
+            <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--color-neutral-700)"><span style="width:9px;height:9px;border-radius:2px;background:var(--field-ok)"></span>Solde projeté positif</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--color-neutral-700)"><span style="width:9px;height:9px;border-radius:2px;background:var(--field-warn)"></span>Sous le seuil minimum</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <h2 style="margin:0;font-size:15px">Mouvements et instructions</h2>
+          <span style="margin-left:auto;display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ flowTabs }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onClick }}" style="height:26px;padding:0 11px;border:0;border-left:{{ t.divider }};background:{{ t.bg }};color:{{ t.fg }};font-size:11px;font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.96)">{{ t.label }}</button>
+            </sc-for>
+          </span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:660px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Date</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Libellé</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Nature</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Montant</th>
+                <th style="text-align:left;padding:8px 16px 8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">État</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ flows }}" as="f" hint-placeholder-count="8">
+                <tr>
+                  <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700);font-variant-numeric:tabular-nums;white-space:nowrap">{{ f.date }}</td>
+                  <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:1px">
+                      <span style="font-weight:600">{{ f.label }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-700)">{{ f.detail }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ f.kind }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600;color:{{ f.color }}">{{ f.amount }}</td>
+                  <td style="padding:9px 16px 9px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ f.stateBg }};color:{{ f.stateFg }};font-size:11px;font-weight:600;white-space:nowrap">
+                      <span style="width:6px;height:6px;border-radius:999px;background:{{ f.stateFg }}"></span>
+                      {{ f.state }}
+                    </span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-warn-2)"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+          <h2 style="margin:0;font-size:15px">Points de vigilance</h2>
+        </div>
+        <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="3">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:none;width:6px;height:6px;margin-top:6px;border-radius:999px;background:{{ a.color }}"></span>
+            <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:12px;font-weight:600">{{ a.title }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ a.detail }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <h2 style="margin:0;font-size:15px">Placement du disponible</h2>
+        </div>
+        <sc-for list="{{ placements }}" as="p" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:12px;font-weight:600">{{ p.label }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ p.detail }}</span>
+            </span>
+            <span style="flex:none;text-align:right">
+              <span style="display:block;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">{{ p.rate }}</span>
+              <span style="display:block;font-size:10px;color:var(--color-neutral-600)">{{ p.horizon }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+
+      
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onEntry }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 24px">
+    <sc-if value="{{ onEntry }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;background:var(--surface);border:1px solid var(--ds-brand-fill, var(--field-brand));border-radius:6px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <h2 style="margin:0;font-size:15px">Nouvelle instruction</h2>
+            <button onClick="{{ closeInstruction }}" matTooltip="Fermer" title="Fermer" aria-label="Fermer" style="margin-left:auto;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.10);color:var(--color-text)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding:14px 16px">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              Nature
+              <select value="{{ draft.kind }}" onChange="{{ setKind }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                <option value="virement">Virement sortant</option>
+                <option value="appel">Appel de fonds</option>
+                <option value="fx">Opération de change</option>
+                <option value="placement">Placement à terme</option>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              Montant
+              <span style="display:flex;gap:8px">
+                <input value="{{ draft.amount }}" onChange="{{ setAmount }}" placeholder="250 000" style="flex:1;min-width:0;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                <select value="{{ draft.currency }}" onChange="{{ setCurrency }}" style="width:88px;height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="CHF">CHF</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </span>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              Date de valeur
+              <input type="date" value="{{ draft.date }}" onChange="{{ setDate }}" style="width:170px;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              Libellé
+              <input value="{{ draft.label }}" onChange="{{ setLabel }}" placeholder="Virement client LU12 …4471" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+            </label>
+            <span style="font-size:11px;color:{{ impactColor }}">{{ impact }}</span>
+            <button onClick="{{ submitInstruction }}" style="height:30px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;cursor:pointer">Enregistrer l'instruction</button>
+          </div>
+        </div>
+      </sc-if>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const MANDATES = [
+  { value: 'bgm', label: 'Balanced Growth — BGM-004' },
+  { value: 'inp', label: 'Income & Preservation — INP-011' },
+  { value: 'glg', label: 'Global Growth — GLG-002' },
+  { value: 'all', label: 'Tous les comptes' }
+];
+
+const FX = { EUR: 1, USD: 0.92, CHF: 1.04, GBP: 1.17 };
+
+const ACCOUNTS = [
+  { currency: 'EUR', bank: 'Compte courant principal', iban: 'LU28 0019 4471 0028 0000', balance: 28640000, blocked: 1250000 },
+  { currency: 'USD', bank: 'Compte devises', iban: 'LU28 0019 4471 0028 0201', balance: 7420000, blocked: 0 },
+  { currency: 'CHF', bank: 'Compte devises', iban: 'LU28 0019 4471 0028 0305', balance: 1180000, blocked: 0 },
+  { currency: 'GBP', bank: 'Compte devises', iban: 'LU28 0019 4471 0028 0410', balance: 640000, blocked: 120000 },
+  { currency: 'EUR', bank: 'Compte de collatéral', iban: 'LU28 0019 4471 0028 0512', balance: -420000, blocked: 0 }
+];
+
+const FLOWS = [
+  { date: '01/09', label: 'Coupon IG Corporate Bond', detail: 'Deux souches — sleeve obligataire', kind: 'Encaissement', amount: 182400, state: 'Prévu' },
+  { date: '02/09', label: 'Frais de gestion T3', detail: 'Prélèvement automatique', kind: 'Décaissement', amount: -96200, state: 'Prévu' },
+  { date: '03/09', label: 'Règlement ORD-2026-0841', detail: 'Achat USLC — 10 500 parts', kind: 'Décaissement', amount: -437300, state: 'Instruit' },
+  { date: '08/09', label: 'Virement client LU12 …4471', detail: 'TRF-2026-0114', kind: 'Décaissement', amount: -750000, state: 'Instruit' },
+  { date: '12/09', label: 'Appel de fonds Private Equity', detail: 'Cranmore Co-invest III', kind: 'Décaissement', amount: -1250000, state: 'Prévu' },
+  { date: '15/09', label: 'Dividende GLBEQ', detail: 'DIV-2026-0207 — net de retenue', kind: 'Encaissement', amount: 168683, state: 'Prévu' },
+  { date: '30/08', label: 'Vente EMEQ — produit net', detail: 'ORD-2026-0839', kind: 'Encaissement', amount: 112504, state: 'Réglé' },
+  { date: '29/08', label: 'Achat IGCRD — règlement', detail: 'ORD-2026-0836', kind: 'Décaissement', amount: -247835, state: 'Réglé' }
+];
+
+const HORIZONS = {
+  '30j': { label: '30 jours', buckets: ['S36', 'S37', 'S38', 'S39', 'S40'] },
+  '90j': { label: '90 jours', buckets: ['Sep', 'Oct', 'Nov'] },
+  '12m': { label: '12 mois', buckets: ['T3', 'T4', 'T1', 'T2'] }
+};
+
+const FORECASTS = { '30j': [28.6, 27.9, 26.4, 25.1, 26.8], '90j': [26.8, 24.2, 22.6], '12m': [26.8, 22.6, 19.4, 21.2] };
+const MIN_CASH = 22;
+
+function num(v, d) {
+  return v.toLocaleString('fr-FR', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+}
+
+
+// Teinte des vignettes : vert marqué si la valeur est positive, rouge marqué sinon,
+// dérivée de la couleur de la valeur déjà définie par la vignette.
+const TONE_GREEN = 'var(--ink-ok)';
+const TONE_RED = 'var(--ink-warn-2)';
+function toneByColor(k) {
+  const c = String(k.color || k.valueColor || k.noteColor || '');
+  const green = c.indexOf('0f766e') >= 0 || c.indexOf('0b5f57') >= 0 || c.indexOf('15803d') >= 0;
+  const red = c.indexOf('b45309') >= 0 || c.indexOf('a4552c') >= 0 || c.indexOf('dc2626') >= 0;
+  if (!green && !red) return Object.assign({ bg: 'var(--surface)', labelColor: 'var(--color-neutral-700)' }, k);
+  const tint = green ? 'var(--band-ok)' : 'var(--band-warn)';
+  const ink = green ? 'var(--ink-ok)' : 'var(--ink-warn-2)';
+  return Object.assign({}, k, { bg: tint, labelColor: ink, color: ink, valueColor: ink });
+}
+
+class Component extends DCLogic {
+  state = {
+    tab: 'overview', mandate: 'bgm', horizon: '30j', flowFilter: 'all',
+    flows: FLOWS, formOpen: false,
+    draft: { kind: 'virement', amount: '', currency: 'EUR', date: '', label: '' }
+  };
+
+  tab(label, on, fn, first) {
+    return {
+      label, onClick: fn,
+      divider: first ? '0' : '1px solid rgba(0,61,165,0.30)',
+      bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+      hoverBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.16)',
+      fg: on ? '#ffffff' : 'var(--ink-brand)',
+      weight: on ? '600' : '400'
+    };
+  }
+
+  patch(p) { this.setState((s) => ({ draft: Object.assign({}, s.draft, p) })); }
+
+  submit() {
+    const d = this.state.draft;
+    const amt = parseFloat(String(d.amount).replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+    const sign = d.kind === 'fx' ? 1 : -1;
+    const date = d.date ? d.date.slice(8, 10) + '/' + d.date.slice(5, 7) : '—';
+    this.setState((s) => ({
+      flows: [{
+        date, label: d.label || 'Instruction de trésorerie',
+        detail: 'Saisie manuelle · ' + d.currency,
+        kind: sign < 0 ? 'Décaissement' : 'Encaissement',
+        amount: sign * Math.abs(amt) * (FX[d.currency] || 1),
+        state: 'À valider'
+      }].concat(s.flows),
+      formOpen: false,
+      draft: { kind: 'virement', amount: '', currency: 'EUR', date: '', label: '' }
+    }));
+  }
+
+  renderVals() {
+    const eurOf = (a) => a.balance * (FX[a.currency] || 1);
+    const totalEur = ACCOUNTS.reduce((n, a) => n + eurOf(a), 0);
+    const blockedEur = ACCOUNTS.reduce((n, a) => n + a.blocked * (FX[a.currency] || 1), 0);
+    const ff = this.state.flowFilter;
+    const flows = this.state.flows.filter((f) => ff === 'all' || (ff === 'in' && f.amount > 0) || (ff === 'out' && f.amount < 0));
+    const pending = this.state.flows.reduce((n, f) => n + (f.state === 'Réglé' ? 0 : f.amount), 0);
+    const h = this.state.horizon;
+    const series = FORECASTS[h];
+    const buckets = HORIZONS[h].buckets;
+    const maxV = Math.max.apply(null, series.concat([MIN_CASH + 4]));
+    const ST = {
+      'Réglé': { bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
+      'Instruit': { bg: 'rgba(0,61,165,0.10)', fg: 'var(--ink-brand-2)' },
+      'Prévu': { bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)' },
+      'À valider': { bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' }
+    };
+    const amt = parseFloat(String(this.state.draft.amount).replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+    const after = (totalEur - blockedEur) - amt * (FX[this.state.draft.currency] || 1);
+
+    return {
+      mandate: this.state.mandate,
+      mandateOptions: MANDATES,
+      setAccount: (e) => this.setState({ mandate: e.target.value }),
+
+      kpis: [
+        { label: 'Trésorerie totale', value: num(totalEur / 1000000, 1) + ' M€', note: '5 comptes · 4 devises', noteColor: 'var(--color-neutral-700)' },
+        { label: 'Disponible', value: num((totalEur - blockedEur) / 1000000, 1) + ' M€', note: num(blockedEur / 1000) + ' k€ bloqués en collatéral', noteColor: 'var(--color-neutral-700)' },
+        { label: 'Flux nets à venir', value: (pending > 0 ? '+' : '−') + num(Math.abs(pending) / 1000) + ' k€', note: 'Sur les 30 prochains jours', noteColor: pending < 0 ? 'var(--ink-warn-2)' : 'var(--ink-ok-2)' },
+        { label: 'Poids en portefeuille', value: '8,6 %', note: 'Cible 5 % — excédent de 3,6 pts', noteColor: 'var(--ink-warn-2)' }
+      ].map(toneByColor),
+
+      accountsNote: 'Contre-valeur totale ' + num(totalEur) + ' €',
+      accounts: ACCOUNTS.map((a) => ({
+        currency: a.currency, bank: a.bank, iban: a.iban,
+        balance: num(a.balance) + ' ' + a.currency,
+        balColor: a.balance < 0 ? 'var(--ink-warn-2)' : 'var(--color-text)',
+        blocked: a.blocked ? num(a.blocked) : '—',
+        available: num(a.balance - a.blocked) + ' ' + a.currency,
+        eur: num(eurOf(a))
+      })),
+
+      horizonTabs: Object.keys(HORIZONS).map((k, i) =>
+        this.tab(HORIZONS[k].label, h === k, () => this.setState({ horizon: k }), i === 0)),
+      forecast: series.map((v, i) => ({
+        label: buckets[i],
+        value: num(v, 1),
+        valueColor: v < MIN_CASH ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)',
+        height: Math.round((v / maxV) * 110) + 'px',
+        color: v < MIN_CASH ? 'var(--ink-warn-2)' : 'var(--ink-ok-2)'
+      })),
+      forecastNote: 'Solde projeté en M€ · seuil minimum de ' + MIN_CASH + ' M€ fixé par le compte',
+
+      flowTabs: [
+        this.tab('Tous', ff === 'all', () => this.setState({ flowFilter: 'all' }), true),
+        this.tab('Encaissements', ff === 'in', () => this.setState({ flowFilter: 'in' })),
+        this.tab('Décaissements', ff === 'out', () => this.setState({ flowFilter: 'out' }))
+      ],
+      flows: flows.map((f) => ({
+        date: f.date, label: f.label, detail: f.detail, kind: f.kind,
+        amount: (f.amount > 0 ? '+' : '−') + num(Math.abs(f.amount)) + ' €',
+        color: f.amount > 0 ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)',
+        state: f.state,
+        stateBg: (ST[f.state] || ST['Prévu']).bg,
+        stateFg: (ST[f.state] || ST['Prévu']).fg
+      })),
+
+      alerts: [
+        { title: 'Compte de collatéral débiteur', detail: '−420 000 € sur le compte 0512 ; appel de marge à couvrir avant le 02/09.', color: 'var(--ink-warn-2)' },
+        { title: 'Seuil minimum approché le 12/09', detail: "L'appel de fonds Private Equity ramène le solde projeté à 25,1 M€.", color: 'var(--ds-brand-fill, var(--ink-brand-2))' },
+        { title: 'Excédent de liquidité', detail: '3,6 points au-dessus de la cible du compte : placement ou réemploi à instruire.', color: 'var(--color-neutral-500)' }
+      ],
+      placements: [
+        { label: 'Dépôt à terme 1 mois', detail: 'Banque dépositaire · EUR', rate: '3,15 %', horizon: '30 jours' },
+        { label: 'Fonds monétaire court terme', detail: 'Liquidité quotidienne · EUR', rate: '3,02 %', horizon: 'J+1' },
+        { label: 'Bons du Trésor 3 mois', detail: 'Zone euro · EUR', rate: '2,88 %', horizon: '90 jours' }
+      ],
+
+      formOpen: this.state.formOpen,
+      onOverview: this.state.tab === 'overview',
+      onEntry: this.state.tab === 'entry',
+      pageTabs: [
+        { key: 'overview', label: 'Vue d\'ensemble' },
+        { key: 'entry', label: 'Nouvelle opération' }
+      ].map((t) => {
+        const on = this.state.tab === t.key;
+        return {
+          label: t.label,
+          height: on ? '40px' : '32px', padding: on ? '0 20px' : '0 14px', size: on ? '14px' : '12px',
+          bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)', weight: on ? '700' : '400',
+          onClick: () => this.setState({ tab: t.key })
+        };
+      }),
+      openInstruction: () => this.setState({ formOpen: true, tab: 'entry' }),
+      closeInstruction: () => this.setState({ formOpen: false, tab: 'overview' }),
+      draft: this.state.draft,
+      setKind: (e) => this.patch({ kind: e.target.value }),
+      setAmount: (e) => this.patch({ amount: e.target.value }),
+      setCurrency: (e) => this.patch({ currency: e.target.value }),
+      setDate: (e) => this.patch({ date: e.target.value }),
+      setLabel: (e) => this.patch({ label: e.target.value }),
+      impact: amt
+        ? 'Disponible après opération : ' + num(after) + ' €' + (after / 1000000 < MIN_CASH ? ' — sous le seuil minimum' : '')
+        : 'Renseignez un montant pour voir l\'impact sur le disponible.',
+      impactColor: amt && after / 1000000 < MIN_CASH ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)',
+      submitInstruction: () => this.submit()
+    };
+  }
+}
+</script>
+</body>
+</html>

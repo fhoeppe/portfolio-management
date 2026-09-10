@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <script src="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #ffffff; }
+    a { color: var(--color-accent-700); text-decoration: none; }
+    a:hover { color: var(--color-accent-800); text-decoration: underline; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+    svg { flex: none; }
+    [data-component="AppShell"] input:not([data-search]):focus,
+    [data-component="AppShell"] select:focus,
+    [data-component="AppShell"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="AppShell"], [data-component="AppShell"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; }
+    [data-theme="light"], [data-theme="dark"] { --ds-brand-500: #003da5; --ds-brand-200: #9db6d9; --ds-brand-fill: #003da5; }
+    [data-theme="light"] { --surface: #ffffff; --theme-surface: #ffffff; --ink-brand: #002a6e; --nav-hover-ink: #002a6e; --nav-hover-bg: rgba(0,61,165,0.18); }
+    [data-theme="dark"] {
+      --surface: #1d1b1a; --theme-surface: #1d1b1a; --color-text: #f3f2f2; --ink-brand: #9db6d9; --nav-hover-ink: #e8e6e4; --nav-hover-bg: rgba(120,165,235,0.22);
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4644; --color-neutral-500: #7d7875; --color-neutral-600: #928d8a;
+      --color-neutral-700: #a8a3a0; --color-neutral-800: #d8d5d2; --color-neutral-900: #f3f2f2;
+      --color-accent-700: var(--color-accent-400); --color-accent-800: var(--color-accent-300);
+      --ds-brand-500: #4c86d8; --ds-brand-200: #6f9ede; --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] input::placeholder { color: #7d7875; }
+    [data-amounts="hidden"] [data-amount="1"] { filter: blur(5px); user-select: none; }
+    [data-component="AppShell"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="AppShell"] { --field-brand: #12325e; }
+    [data-component="AppShell"] { --ink-warn: #8f3f06; --ink-warn-2: #b45309; }
+    [data-theme="dark"] [data-component="AppShell"] { --ink-warn: #f0a868; --ink-warn-2: #f3b782; }
+    [data-component="AppShell"] { --field-warn: #8f3f06; --ink-brand-2: #003da5; }
+    [data-theme="dark"] [data-component="AppShell"] { --field-warn: #5c2a06; --ink-brand-2: #8fb4ee; }
+  </style>
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="200" fill="#002a6e"/>
+      <g transform="translate(60,58)">
+        <rect x="0" y="46" width="16" height="38" rx="2" fill="#8fd4c4"/>
+        <rect x="24" y="26" width="16" height="58" rx="2" fill="#a8c5e8"/>
+        <rect x="48" y="8" width="16" height="76" rx="2" fill="#ffffff"/>
+        <path d="M0 40 L32 20 L56 26 L80 2" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="100" y="172" fill="#ffffff" font-family="system-ui, sans-serif" font-size="19" font-weight="700" text-anchor="middle">PORTFOLIO</text>
+    </svg>
+  </template>
+</helmet>
+<div ref="{{ rootRef }}" data-component="AppShell" data-theme="light" style="display:flex;flex-direction:column;height:100vh;min-height:640px;overflow:hidden;background:var(--surface);color:var(--color-text);font-family:var(--font-body)">
+
+  <header data-component="TopBar" style="flex:none;display:flex;align-items:center;gap:16px;height:56px;padding:0 16px;background:var(--field-brand);color:#ffffff;border-bottom:1px solid var(--field-brand);position:relative;z-index:20">
+    <div style="flex:none;align-self:stretch;display:flex;align-items:center;gap:10px">
+      <span style="display: flex; align-items: center; gap: 10px; padding-right: 77px">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:#ffffff"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+        <span style="font-weight:800;font-size:21px;letter-spacing:0.02em;text-transform:uppercase">Portfolio Management</span>
+      </span>
+    </div>
+
+
+    <div style="margin-left: auto; min-width: 0; display: flex; align-items: center; gap: 10px; width: 700px">
+    <div ref="{{ searchRef }}" data-component="GlobalSearch" style="flex:0 1 960px;min-width:150px;display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:1px solid rgba(255,255,255,0.28);border-radius:6px;background:#ffffff">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="flex:none;color:var(--color-neutral-500)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input data-search="" onFocus="{{ searchFocus }}" onBlur="{{ searchBlur }}" placeholder="Rechercher un dossier, un client, une facture" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--color-text);font-family:inherit;font-size:14px;outline:none">
+    </div>
+      <button matTooltip="Aide" title="Aide" aria-label="Aide" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:999px;background:transparent;color:rgba(255,255,255,0.85);cursor:pointer" style-hover="background:rgba(255,255,255,0.16);color:#ffffff">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+      </button>
+      <button onClick="{{ openGuide }}" matTooltip="Guide" title="Guide" aria-label="Guide" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:999px;background:transparent;color:rgba(255,255,255,0.85);cursor:pointer" style-hover="background:rgba(255,255,255,0.16);color:#ffffff">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex:none"><path fill-rule="evenodd" d="M1.25 2C.56 2 0 2.56 0 3.25v8.5C0 12.44.56 13 1.25 13H5c.896 0 1.475.205 1.809.448.317.23.441.51.441.802a.75.75 0 001.5 0c0-.292.124-.572.441-.802.334-.243.913-.448 1.809-.448h3.75c.69 0 1.25-.56 1.25-1.25v-8.5C16 2.56 15.44 2 14.75 2H11c-1.154 0-2.106.354-2.772 1-.081.08-.157.161-.228.246A3.131 3.131 0 007.772 3C7.106 2.354 6.154 2 5 2H1.25zm7.5 9.967c.61-.309 1.372-.467 2.25-.467h3.5v-8H11c-.846 0-1.394.253-1.728.577-.335.325-.522.787-.522 1.34v6.55zm-1.5 0v-6.55c0-.553-.187-1.015-.522-1.34C6.394 3.753 5.846 3.5 5 3.5H1.5v8H5c.878 0 1.64.158 2.25.467z" clip-rule="evenodd"></path></svg>
+      </button>
+      <button matTooltip="Notifications" title="Notifications" aria-label="Notifications" style="position:relative;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:999px;background:transparent;color:rgba(255,255,255,0.85);cursor:pointer" style-hover="background:rgba(255,255,255,0.16);color:#ffffff">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+        <span mat-badge="3" style="position:absolute;top:-2px;right:-2px;display:flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--color-accent);color:#ffffff;font-size:10px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">3</span>
+        <span class="cdk-visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap">Cloche de notifications avec un badge indiquant 3 notifications non lues</span>
+      </button>
+      <span style="width:1px;height:24px;background:rgba(255,255,255,0.28)"></span>
+      <div ref="{{ accountWrapRef }}" style="position:relative;display:flex">
+      
+      <div ref="{{ accountPanelRef }}" data-component="AccountMenu" role="menu" style="display:none;position:absolute;top:38px;right:0;width:264px;padding:8px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-md);z-index:40">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 10px">
+          <span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:var(--color-neutral-200);color:var(--color-neutral-800);font-size:12px;font-weight:600;flex:none">FH</span>
+          <span style="display:flex;flex-direction:column;min-width:0;line-height:1.35">
+            <span style="font-size:12px;font-weight:600;color:var(--color-text)">HOEPPE, Fabrice</span>
+            <span style="font-size:10px;color:var(--color-neutral-700);overflow:hidden;text-overflow:ellipsis">fabrice.hoeppe@atelier.lu</span>
+          </span>
+        </div>
+        <div style="height:1px;background:var(--color-neutral-200);margin:0 2px 6px"></div>
+          <button onClick="{{ openProfileDialog }}" style="display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:12px;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Mon profil
+          </button>
+          <button onClick="{{ openAccountDialog }}" style="display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:12px;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            Préférences
+          </button>
+          <button style="display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:12px;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+            Notifications
+          </button>
+          <button style="display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:12px;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+            Aide et support
+          </button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 6px">
+          <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700)">Langue</span>
+          <span style="display:inline-flex;border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+            <button ref="{{ langFrRef }}" onClick="{{ setFr }}" style="padding:3px 9px;border:0;background:var(--color-neutral-200);color:var(--color-text);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer">FR</button>
+            <button ref="{{ langEnRef }}" onClick="{{ setEn }}" style="padding:3px 9px;border:0;border-left:1px solid var(--color-neutral-300);background:transparent;color:var(--color-neutral-700);font-family:inherit;font-size:11px;font-weight:400;cursor:pointer">EN</button>
+          </span>
+        </div>
+        <div style="height:1px;background:var(--color-neutral-200);margin:6px 2px"></div>
+        <button style="display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:var(--color-accent-700);font-family:inherit;font-size:12px;font-weight:600;text-align:left;cursor:pointer" style-hover="background:var(--color-accent-100)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg>
+          Se déconnecter
+        </button>
+      </div>
+    <button onClick="{{ toggleAccount }}" data-component="AccountButton" aria-haspopup="menu" style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px 0 4px; border: 0; border-radius: 6px; background: transparent; color: inherit; font-family: inherit; cursor: pointer; width: 200px" style-hover="background:rgba(255,255,255,0.16)">
+        <span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:var(--color-neutral-200);color:var(--color-neutral-800);font-size:12px;font-weight:600;flex:none">FH</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0;line-height:1.25">
+          <span style="font-size:12px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">HOEPPE, Fabrice</span>
+          <span style="font-size:10px;color:#ffffff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Administrateur</span>
+        </span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="color:var(--color-neutral-500)"><path d="m6 9 6 6 6-6"></path></svg>
+      </button></div>
+    </div>
+  </header>
+
+  <div data-component="ContextBar" style="position:relative;flex:none;display:flex;align-items:stretch;height:58px;background:var(--surface)">
+    <button onClick="{{ toggle }}" matTooltip="Réduire ou déployer le menu" title="Réduire ou déployer le menu" aria-label="Réduire ou déployer le menu" ref="{{ toggleBtnRef }}" style="position:absolute;top:50%;left:250px;z-index:5;transform:translateY(-50%);transition:left 180ms cubic-bezier(0.2,0.6,0.2,1);display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:28px;height:28px;padding:0;line-height:0;border:1px solid var(--field-brand);border-radius:999px;background:var(--surface);color:var(--ink-brand);cursor:pointer" style-hover="background:#eaeff9;color:var(--ink-brand)">
+        <svg ref="{{ collapseIconRef }}" width="16" height="16" viewBox="0 0 24 24" style="display:block;flex:none" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M6 3v18"></path></svg>
+      </button>
+
+    <div ref="{{ headCellRef }}" data-component="ContextBarRail" onClick="{{ select }}" onMouseOver="{{ hoverIn }}" onMouseOut="{{ hoverOut }}" style="flex:none;width:269px;display:flex;align-items:center;padding:0 12px;border-right:1px solid var(--field-brand);overflow:hidden;transition:width 180ms cubic-bezier(0.2,0.6,0.2,1)">
+      <button data-component="SideNavItem" data-item="0" data-page="home" matTooltip="Accueil" title="Accueil" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:14px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:16px;height:16px;color:var(--ink-brand)"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px; font-weight: 700">ACCUEIL</span>
+      </button>
+    
+    </div>
+    <div style="flex:1;min-width:0;display:flex;align-items:center;gap:16px;padding:0 32px;border-bottom:1px solid var(--field-brand)">
+      <nav data-component="Breadcrumb" aria-label="Fil d'Ariane" style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-brand);min-width:0">
+        <a href="#" onClick="{{ goHome }}" matTooltip="Accueil" title="Accueil" aria-label="Accueil" style="display:inline-flex;align-items:center;flex:none;color:var(--ink-brand)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></a>
+        <span aria-hidden="true" style="flex:none;color:color-mix(in srgb, var(--ink-brand) 45%, transparent)">/</span>
+        <span ref="{{ crumbSectionRef }}" style="flex:none;font-size:11px;color:color-mix(in srgb, var(--ink-brand) 55%, transparent);cursor:default">Gestion</span>
+        <span ref="{{ crumbSepRef }}" aria-hidden="true" style="flex:none;color:color-mix(in srgb, var(--ink-brand) 45%, transparent)">/</span>
+        <a ref="{{ crumbMidRef }}" href="#" style="flex:none;font-size:11px;color:var(--ink-brand)">Comptes</a>
+        <span ref="{{ crumbMidSepRef }}" aria-hidden="true" style="flex:none;color:color-mix(in srgb, var(--ink-brand) 45%, transparent)">/</span>
+        <span ref="{{ crumbLeafRef }}" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:600;color:var(--ink-brand)">Tableau de bord</span>
+      </nav>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <button style="display:flex;align-items:center;gap:8px;height:25px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-family:inherit;font-size:10px;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+          <span ref="{{ todayRef }}">mardi 25 août 2026</span>
+        </button>
+        <span aria-hidden="true" style="flex:none;width:1px;height:18px;margin:0 18px;background:var(--color-neutral-300)"></span>
+        <button ref="{{ refreshRef }}" onClick="{{ refreshPage }}" matTooltip="Rafraîchir les données" title="Rafraîchir les données" style="display:flex;align-items:center;justify-content:center;width:25px;height:25px;padding:0;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--ink-brand);font-family:inherit;cursor:pointer" style-hover="background:rgba(0,42,110,0.14);border-color:transparent;color:var(--ink-brand)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path><path d="M3 21v-5h5"></path></svg>
+        </button>
+        <button matTooltip="Exporter" title="Exporter" style="display:flex;align-items:center;justify-content:center;width:25px;height:25px;padding:0;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--ink-brand);font-family:inherit;cursor:pointer" style-hover="background:rgba(0,42,110,0.14);border-color:transparent;color:var(--ink-brand)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
+        </button>
+        
+        <span aria-hidden="true" style="flex:none;width:1px;height:18px;margin:0 18px;background:var(--color-neutral-300)"></span>
+        <button ref="{{ maskRef }}" onClick="{{ toggleMask }}" matTooltip="Masquer les montants" title="Masquer les montants" style="display:flex;align-items:center;justify-content:center;width:25px;height:25px;padding:0;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--ink-brand);font-family:inherit;cursor:pointer" style-hover="background:rgba(0,42,110,0.14);border-color:transparent;color:var(--ink-brand)">
+          <span ref="{{ maskIconRef }}" style="display:flex">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </span>
+        </button>
+        <button matTooltip="Se déconnecter" title="Se déconnecter" style="display:flex;align-items:center;justify-content:center;width:25px;height:25px;padding:0;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--ink-brand);font-family:inherit;cursor:pointer" style-hover="background:rgba(0,42,110,0.14);border-color:transparent;color:var(--color-accent-700)">
+          <svg width="13" height="13" viewBox="0 0 200 200" fill="currentColor" style="flex:none"><path d="M156.31,43.63a9.9,9.9,0,0,0-14,14,60.1,60.1,0,1,1-85,0,9.9,9.9,0,0,0-14-14c-31,31-31,82,0,113s82,31,113,0A79.37,79.37,0,0,0,156.31,43.63Zm-56.5,66.5a10,10,0,0,0,10-10v-70a10,10,0,0,0-20,0v70A10,10,0,0,0,99.81,110.13Z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+
+    <aside ref="{{ navRef }}" data-component="SideNav" onClick="{{ select }}" onMouseOver="{{ hoverIn }}" onMouseOut="{{ hoverOut }}" style="flex:none;width:269px;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--field-brand);overflow:hidden;transition:width 180ms cubic-bezier(0.2,0.6,0.2,1)">
+
+      <nav data-component="SideNavList" style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 12px 6px;display:flex;flex-direction:column;gap:1px">
+
+        <div ref="{{ sec1Ref }}" data-component="SideNavSection" matTooltip="Gestion" title="Gestion" onClick="{{ toggleSection }}" style="flex:none;display:flex;align-items:center;gap:8px;cursor:pointer;height:20px;margin:4px 4px 0;overflow:hidden;white-space:nowrap">
+          <span data-full="" style="flex:none;display:flex;align-items:center;line-height:1;font-size:12px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-brand)">Gestion</span>
+          <span data-short="" style="display:none;flex:1;display:none;align-items:center;justify-content:center;line-height:1;text-align:center;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-brand)">Suivi</span>
+          <span data-line="" style="flex:1;min-width:12px;height:1px;background:rgba(0,61,165,0.30)"></span>
+          <span data-chev="" style="flex:none;display:flex;align-items:center;justify-content:center;width:14px;height:14px;color:var(--ink-brand);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+
+        <button data-component="SideNavItem" data-item="1" data-active="1" data-page="dash" matTooltip="Tableau de bord" title="Tableau de bord" style="margin-top:6px;display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid var(--field-warn);border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#ffffff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Tableau de bord</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="2" data-page="accounts" matTooltip="Comptes" title="Comptes" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Comptes</span>
+          <span data-badge="" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:17px;padding:0 6px;border-radius:999px;background:rgba(0,61,165,0.12);color:var(--ink-brand);font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">6</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="3" data-page="positions" matTooltip="Positions" title="Positions" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"></path><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Positions</span>
+          <span data-badge="" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:17px;padding:0 6px;border-radius:999px;background:rgba(0,61,165,0.12);color:var(--ink-brand);font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">6</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="4" data-page="universe" matTooltip="Titres" title="Titres" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M9 21V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v12"></path><path d="M3 21V13a2 2 0 0 1 2-2h4"></path><path d="M15 11h4a2 2 0 0 1 2 2v8"></path><path d="M2 21h20"></path><path d="M12 7V3"></path><path d="m10 5 2-2 2 2"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Titres</span>
+          <span data-badge="" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:17px;padding:0 6px;border-radius:999px;background:rgba(0,61,165,0.12);color:var(--ink-brand);font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">15</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="22" data-page="orders" matTooltip="Opérations" title="Opérations" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Opérations</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="11" data-page="cash" matTooltip="Trésorerie" title="Trésorerie" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01"></path><path d="M18 12h.01"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Trésorerie</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="18" data-page="recon" matTooltip="Réconciliation" title="Réconciliation" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path><circle cx="12" cy="12" r="0.5" fill="currentColor"></circle></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Réconciliation</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="12" data-page="transactions" matTooltip="Transactions" title="Transactions" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M15 12h-5"></path><path d="M15 8h-5"></path><path d="M19 17V5a2 2 0 0 0-2-2H4"></path><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Transactions</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="19" data-page="sim" matTooltip="Gestion du risque" title="Gestion du risque" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Gestion du risque</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="23" data-page="perf" matTooltip="Performance" title="Performance" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path><circle cx="11" cy="10" r="1.4"></circle><circle cx="19" cy="7" r="1.4"></circle></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Performance</span>
+        </button>
+        <button data-component="SideNavItem" data-item="15" data-page="accounting" matTooltip="Comptabilité" title="Comptabilité" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><rect width="16" height="20" x="4" y="2" rx="2"></rect><line x1="8" x2="16" y1="6" y2="6"></line><line x1="16" x2="16" y1="14" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Comptabilité</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="6" data-page="documents" matTooltip="Documents" title="Documents" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Documents</span>
+        </button>
+
+
+        <div ref="{{ sec2Ref }}" data-component="SideNavSection" matTooltip="Marché" title="Marché" onClick="{{ toggleSection }}" style="flex:none;display:flex;align-items:center;gap:8px;cursor:pointer;height:20px;margin:8px 4px 0;overflow:hidden;white-space:nowrap">
+          <span data-full="" style="flex:none;display:flex;align-items:center;line-height:1;font-size:12px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-brand)">Marché</span>
+          <span data-short="" style="display:none;flex:1;display:none;align-items:center;justify-content:center;line-height:1;text-align:center;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-brand)">Marché</span>
+          <span data-line="" style="flex:1;min-width:12px;height:1px;background:rgba(0,61,165,0.30)"></span>
+          <span data-chev="" style="flex:none;display:flex;align-items:center;justify-content:center;width:14px;height:14px;color:var(--ink-brand);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+
+        <button data-component="SideNavItem" data-item="14" matTooltip="Cours marché" title="Cours marché" style="margin-top:6px;display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Cours marché</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="8" data-page="due" matTooltip="Échéances" title="Échéances" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Échéances</span>
+          <span data-badge-warn="" matTooltip="Échéances en retard" title="Échéances en retard" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:17px;padding:0 6px;border-radius:999px;background:rgba(180,83,9,0.16);color:var(--ink-warn-2);font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">2</span>
+          <span data-badge="" matTooltip="Échéances à venir" title="Échéances à venir" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:17px;padding:0 6px;border-radius:999px;background:rgba(0,61,165,0.12);color:var(--ink-brand);font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">14</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="16" data-page="calendar" matTooltip="Calendrier" title="Calendrier" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Calendrier</span>
+        </button>
+
+        <div ref="{{ sec3Ref }}" data-component="SideNavSection" matTooltip="Administration" title="Administration" onClick="{{ toggleSection }}" style="flex:none;display:flex;align-items:center;gap:8px;cursor:pointer;height:20px;margin:8px 4px 0;overflow:hidden;white-space:nowrap">
+          <span data-full="" style="flex:none;display:flex;align-items:center;line-height:1;font-size:12px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-brand)">Administration</span>
+          <span data-short="" style="display:none;flex:1;display:none;align-items:center;justify-content:center;line-height:1;text-align:center;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-brand)">Admin</span>
+          <span data-line="" style="flex:1;min-width:12px;height:1px;background:rgba(0,61,165,0.30)"></span>
+          <span data-chev="" style="flex:none;display:flex;align-items:center;justify-content:center;width:14px;height:14px;color:var(--ink-brand);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+
+        <button data-component="SideNavItem" data-item="9" data-page="reports" matTooltip="Rapports" title="Rapports" style="margin-top:6px;display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Rapports</span>
+        </button>
+
+        <button data-component="SideNavItem" data-item="10" data-page="settings" matTooltip="Paramètres" title="Paramètres" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Paramètres</span>
+        </button>
+
+
+
+        <button data-component="SideNavItem" data-item="20" data-page="legend" matTooltip="Annexes et légendes" title="Annexes et légendes" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:21px;height:21px;color:var(--ink-brand)"><path d="M3 6h4"></path><path d="M3 12h4"></path><path d="M3 18h4"></path><path d="M11 6h10"></path><path d="M11 12h10"></path><path d="M11 18h10"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; line-height: 1; font-size: 12px">Annexes et légendes</span>
+        </button>
+      </nav>
+
+      <div style="flex:none;border-top:1px solid var(--color-neutral-200);padding:8px 12px 10px;display:flex;flex-direction:column;gap:1px">
+        <button data-component="SideNavItem" data-item="17" data-theme="light" matTooltip="Mode sombre" title="Mode sombre" style="display:flex;align-items:center;gap:12px;width:calc(100% - 10px);height:30px;padding:0 12px 0 9px;border:0;border-left:3px solid transparent;border-radius:6px;background:transparent;color:var(--ink-brand);font-family:inherit;font-size:12px;font-weight:400;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:14px;height:14px;color:var(--ink-brand)"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"></path></svg>
+          <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 12px">Mode sombre</span>
+        </button>
+      </div>
+    </aside>
+
+    <main data-component="ContentArea" style="flex:1;min-width:0;overflow-y:auto;background:var(--color-neutral-100)">
+      <div ref="{{ pageLegendRef }}" data-page-panel="legend" style="display:none;height:100%">
+        <dc-import name="Legendes" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pagePerfRef }}" data-page-panel="perf" style="display:none;height:100%">
+        <dc-import name="Performance" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageSimRef }}" data-page-panel="sim" style="display:none;height:100%">
+        <dc-import name="Simulation" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageOrdersRef }}" data-page-panel="orders" style="display:none;height:100%">
+        <dc-import name="Ordres" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageDueRef }}" data-page-panel="due" style="display:none;height:100%">
+        <dc-import name="Echeances" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pagePositionsRef }}" data-page-panel="positions" style="display:none;height:100%">
+        <dc-import name="Positions" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageUniverseRef }}" data-page-panel="universe" style="display:none;height:100%">
+        <dc-import name="Titres" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageReconRef }}" data-page-panel="recon" style="display:none;height:100%">
+        <dc-import name="Reconciliation" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageAccRef }}" data-page-panel="accounts" style="display:none;height:100%">
+        <dc-import name="Comptes" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageDashRef }}" data-page-panel="dash" style="height:100%">
+        <dc-import name="TableauDeBord" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageGuideRef }}" data-page-panel="guide" style="display:none;height:100%">
+        <dc-import name="Guide" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageCashRef }}" data-page-panel="cash" style="display:none;height:100%">
+        <dc-import name="Tresorerie" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageAcctRef }}" data-page-panel="accounting" style="display:none;height:100%">
+        <dc-import name="Comptabilite" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageTxRef }}" data-page-panel="transactions" style="display:none;height:100%">
+        <dc-import name="Transactions" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageHomeRef }}" data-page-panel="home" style="display:none;height:100%">
+        <dc-import name="Accueil" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageDocumentsRef }}" data-page-panel="documents" style="display:none;height:100%">
+        <dc-import name="Documents" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageReportsRef }}" data-page-panel="reports" style="display:none;height:100%">
+        <dc-import name="Rapports" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageCalendarRef }}" data-page-panel="calendar" style="display:none;height:100%">
+        <dc-import name="Calendrier" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageSettingsRef }}" data-page-panel="settings" style="display:none;height:100%">
+        <dc-import name="Parametres" hint-size="100%,100%" style="height:100%"></dc-import>
+      </div>
+      <div ref="{{ pageDashboardRef }}" data-page-panel="dashboard" style="display:none;max-width:760px;padding:36px 24px 28px">
+        <h1 ref="{{ blankTitleRef }}" style="font-size:22px;margin:0">Module</h1>
+        <p style="font-size:12px;margin:6px 0 0;color:var(--color-neutral-700)">Cette page n'est pas encore construite. Les écrans disponibles sont Accueil, Tableau de bord, Trésorerie, Transactions, Comptabilité, Documents, Calendrier, Rapports, Paramètres et Guide.</p>
+      </div>
+    </main>
+  </div>
+
+  <div ref="{{ profileDialogRef }}" data-component="ProfileDialog" role="dialog" aria-modal="true" aria-label="Mon profil" style="display:none;position:fixed;inset:0;z-index:62;align-items:center;justify-content:center;padding:24px;background:rgba(45,43,43,0.42)">
+    <div ref="{{ profileDialogSurfaceRef }}" style="width:min(460px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);overflow:hidden">
+      <div style="flex:none;display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--color-neutral-200)">
+        <span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:var(--color-neutral-200);color:var(--color-neutral-800);font-size:12px;font-weight:600;flex:none">FH</span>
+        <span style="display:flex;flex-direction:column;line-height:1.35;flex:1;min-width:0">
+          <h2 style="font-size:14px;margin:0">Mon profil</h2>
+          <span style="font-size:11px;color:var(--color-neutral-700)">HOEPPE, Fabrice · Administrateur</span>
+        </span>
+        <button onClick="{{ closeProfileDialog }}" aria-label="Fermer" matTooltip="Fermer" title="Fermer" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:999px;background:transparent;color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.10);color:var(--color-text)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      <div style="flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Nom</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">HOEPPE</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Prénom</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">Fabrice</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Identifiant</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">fhoeppe</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Matricule</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">LU-4471</span>
+        </div>
+
+        <div style="grid-column:1 / -1">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">E-mail professionnel</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">fabrice.hoeppe@atelier.lu</span>
+        </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Téléphone</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">+352 27 12 44 08</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Mobile</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">+352 621 44 08 12</span>
+        </div>
+
+        <div style="grid-column:1 / -1">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Entité</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">Portfolio Management · Luxembourg-Gare</span>
+        </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Fonction</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">Administrateur</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Depuis le</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">3 mars 2021</span>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;grid-column:1 / -1;padding-top:4px;border-top:1px solid var(--color-neutral-200)">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Dernière connexion</span>
+          <span style="font-size:12px;font-weight:600;color:var(--color-text)">26 août 2026, 08:12</span>
+        </div>
+      </div>
+      <div style="flex:none;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+        <button onClick="{{ closeProfileDialog }}" style="height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Fermer</button>
+        <button onClick="{{ closeProfileDialog }}" style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill);color:#fff;font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer">Modifier</button>
+      </div>
+    </div>
+  </div>
+
+  <div ref="{{ accountDialogRef }}" data-component="AccountPreferencesDialog" role="dialog" aria-modal="true" aria-label="Préférences de Fabrice Hoeppe" style="display:none;position:fixed;inset:0;z-index:61;align-items:center;justify-content:center;padding:24px;background:rgba(45,43,43,0.42)">
+    <div ref="{{ accountDialogSurfaceRef }}" style="width:min(460px,100%);background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--color-neutral-200)">
+        <span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:var(--color-neutral-200);color:var(--color-neutral-800);font-size:12px;font-weight:600;flex:none">FH</span>
+        <span style="display:flex;flex-direction:column;line-height:1.35;flex:1;min-width:0">
+          <h2 style="font-size:14px;margin:0">Préférences de Fabrice Hoeppe</h2>
+          <span style="font-size:11px;color:var(--color-neutral-700)">Administrateur · Luxembourg-Gare</span>
+        </span>
+        <button onClick="{{ closeAccountDialog }}" aria-label="Fermer" matTooltip="Fermer" title="Fermer" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:999px;background:transparent;color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.10);color:var(--color-text)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Nom affiché</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">HOEPPE, Fabrice</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <span style="font-size:11px;color:var(--color-neutral-700)">Téléphone</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">+352 27 12 44 08</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;grid-column:1 / -1">
+          <span style="font-size:11px;color:var(--color-neutral-700)">E-mail professionnel</span>
+          <span style="display:flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;font-size:12px;color:var(--color-text)">fabrice.hoeppe@atelier.lu</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;grid-column:1 / -1;padding-top:4px;border-top:1px solid var(--color-neutral-200)">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Résumé quotidien par e-mail</span>
+          <span style="display:inline-flex;align-items:center;width:34px;height:18px;padding:2px;border-radius:999px;background:var(--ds-brand-500);flex:none"><span style="width:14px;height:14px;border-radius:999px;background:#fff;margin-left:auto"></span></span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;grid-column:1 / -1">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Authentification à deux facteurs</span>
+          <span style="display:inline-flex;align-items:center;width:34px;height:18px;padding:2px;border-radius:999px;background:var(--color-neutral-300);flex:none"><span style="width:14px;height:14px;border-radius:999px;background:#fff"></span></span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;grid-column:1 / -1">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Ouvrir avec le menu replié</span>
+          <span style="display:inline-flex;align-items:center;width:34px;height:18px;padding:2px;border-radius:999px;background:var(--color-neutral-300);flex:none"><span style="width:14px;height:14px;border-radius:999px;background:#fff"></span></span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;grid-column:1 / -1">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Recherche dans le bandeau</span>
+          <span style="display:inline-flex;align-items:center;width:34px;height:18px;padding:2px;border-radius:999px;background:var(--ds-brand-500);flex:none"><span style="width:14px;height:14px;border-radius:999px;background:#fff;margin-left:auto"></span></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;grid-column:1 / -1">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <span style="font-size:12px;color:var(--color-neutral-800)">Largeur du menu déployé</span>
+            <span style="font-size:11px;font-weight:600;color:var(--color-text)">264 px</span>
+          </div>
+          <span style="position:relative;display:block;height:4px;border-radius:999px;background:var(--color-neutral-300)">
+            <span style="position:absolute;inset:0 63% 0 0;border-radius:999px;background:var(--ds-brand-500)"></span>
+            <span style="position:absolute;top:-5px;left:calc(37% - 7px);width:14px;height:14px;border-radius:999px;background:#fff;border:2px solid var(--ds-brand-500)"></span>
+          </span>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-neutral-700)"><span>220</span><span>340</span></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+        <button onClick="{{ closeAccountDialog }}" style="height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Annuler</button>
+        <button onClick="{{ closeAccountDialog }}" style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill);color:#fff;font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:#254c86">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <div ref="{{ dialogRef }}" data-component="SettingsDialogRetired" style="display:none"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startCollapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Menu latéral&quot;},&quot;expandedWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:272,&quot;min&quot;:220,&quot;max&quot;:340,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Menu latéral&quot;},&quot;showSearch&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Bandeau&quot;}}">
+class Component extends DCLogic {
+  markAmounts() {
+    const root = this.rootRef.current;
+    if (!root) return;
+    const money = /(?:€|\$|£|CHF)/;
+    const digits = /\d/;
+    const all = root.querySelectorAll('main [data-page-panel] *');
+    for (let i = 0; i < all.length; i++) {
+      const el = all[i];
+      if (el.querySelector('[data-amount="1"]')) continue;
+      const t = el.textContent || '';
+      if (t.length > 60 || !money.test(t) || !digits.test(t)) continue;
+      let deepest = true;
+      for (let j = 0; j < el.children.length; j++) {
+        const c = el.children[j].textContent || '';
+        if (money.test(c) && digits.test(c)) { deepest = false; break; }
+      }
+      if (deepest) el.setAttribute('data-amount', '1');
+    }
+  }
+
+  clearAmounts() {
+    const root = this.rootRef.current;
+    if (!root) return;
+    const marked = root.querySelectorAll('[data-amount="1"]');
+    for (let i = 0; i < marked.length; i++) marked[i].removeAttribute('data-amount');
+  }
+
+  watchAmounts() {
+    if (this.amountObs || !this.rootRef.current) return;
+    const main = this.rootRef.current.querySelector('main');
+    if (!main) return;
+    this.amountObs = new MutationObserver(() => {
+      if (this.amountTimer) clearTimeout(this.amountTimer);
+      this.amountTimer = setTimeout(() => { if (this.masked) this.markAmounts(); }, 120);
+    });
+    this.amountObs.observe(main, { childList: true, subtree: true, characterData: true });
+  }
+
+  unwatchAmounts() {
+    if (this.amountObs) { this.amountObs.disconnect(); this.amountObs = null; }
+    if (this.amountTimer) { clearTimeout(this.amountTimer); this.amountTimer = null; }
+  }
+
+  rootRef = React.createRef();
+  refreshRef = React.createRef();
+  maskRef = React.createRef();
+  maskIconRef = React.createRef();
+  maskLabelRef = React.createRef();
+  profileDialogRef = React.createRef();
+  profileDialogSurfaceRef = React.createRef();
+  navRef = React.createRef();
+  chevronRef = React.createRef();
+  collapseIconRef = React.createRef();
+  toggleBtnRef = React.createRef();
+  toggleLabelRef = React.createRef();
+  searchRef = React.createRef();
+  headCellRef = React.createRef();
+  accountWrapRef = React.createRef();
+  dialogRef = React.createRef();
+  dialogSurfaceRef = React.createRef();
+  accountDialogRef = React.createRef();
+  accountDialogSurfaceRef = React.createRef();
+  langFrRef = React.createRef();
+  langEnRef = React.createRef();
+  accountPanelRef = React.createRef();
+  sec1Ref = React.createRef();
+  sec2Ref = React.createRef();
+  sec3Ref = React.createRef();
+
+  pageDashboardRef = React.createRef();
+  blankTitleRef = React.createRef();
+  pageCalendarRef = React.createRef();
+  pageReportsRef = React.createRef();
+  crumbSectionRef = React.createRef();
+  crumbSepRef = React.createRef();
+  crumbMidRef = React.createRef();
+  crumbMidSepRef = React.createRef();
+  crumbLeafRef = React.createRef();
+  pageSettingsRef = React.createRef();
+  pageDocumentsRef = React.createRef();
+  pageHomeRef = React.createRef();
+  pageTxRef = React.createRef();
+  pageCashRef = React.createRef();
+  pageAcctRef = React.createRef();
+  pageGuideRef = React.createRef();
+  pageDashRef = React.createRef();
+  pageAccRef = React.createRef();
+  pageReconRef = React.createRef();
+  pageUniverseRef = React.createRef();
+  pagePositionsRef = React.createRef();
+  pageDueRef = React.createRef();
+  pageOrdersRef = React.createRef();
+  pageSimRef = React.createRef();
+  pagePerfRef = React.createRef();
+  pageLegendRef = React.createRef();
+
+  showPage(page) {
+    [['dashboard', this.pageDashboardRef], ['calendar', this.pageCalendarRef], ['reports', this.pageReportsRef],
+     ['settings', this.pageSettingsRef], ['documents', this.pageDocumentsRef], ['home', this.pageHomeRef],
+     ['transactions', this.pageTxRef], ['cash', this.pageCashRef], ['accounting', this.pageAcctRef],
+     ['guide', this.pageGuideRef], ['dash', this.pageDashRef], ['accounts', this.pageAccRef], ['recon', this.pageReconRef], ['universe', this.pageUniverseRef], ['positions', this.pagePositionsRef], ['due', this.pageDueRef], ['orders', this.pageOrdersRef], ['sim', this.pageSimRef], ['perf', this.pagePerfRef], ['legend', this.pageLegendRef]].forEach((p) => {      if (p[1].current) p[1].current.style.display = p[0] === page ? 'block' : 'none';
+    });
+  }
+
+  setCrumbTexts(section, leaf) {
+    const show = !!section && section !== leaf;
+    if (this.crumbSectionRef.current) this.crumbSectionRef.current.textContent = this.t(section || leaf);
+    if (this.crumbSepRef.current) this.crumbSepRef.current.style.display = show ? 'inline' : 'none';
+    if (this.crumbMidRef.current) this.crumbMidRef.current.style.display = 'none';
+    if (this.crumbMidSepRef.current) this.crumbMidSepRef.current.style.display = 'none';
+    if (this.crumbLeafRef.current) {
+      this.crumbLeafRef.current.style.display = show ? 'block' : 'none';
+      this.crumbLeafRef.current.textContent = this.t(leaf);
+    }
+  }
+
+  setCrumb(btn) {
+    const label = btn.dataset.frtitle || btn.getAttribute('title') || '';
+    let sec = btn.previousElementSibling;
+    while (sec && sec.dataset.component !== 'SideNavSection') sec = sec.previousElementSibling;
+    const secLabel = sec ? (sec.getAttribute('title') || '') : '';
+    const show = !!secLabel && secLabel !== label;
+    if (this.crumbSectionRef.current) this.crumbSectionRef.current.textContent = this.t(secLabel || label);
+    if (this.crumbSepRef.current) this.crumbSepRef.current.style.display = show ? 'inline' : 'none';
+    if (this.crumbMidRef.current) this.crumbMidRef.current.style.display = 'none';
+    if (this.crumbMidSepRef.current) this.crumbMidSepRef.current.style.display = 'none';
+    if (this.crumbLeafRef.current) {
+      this.crumbLeafRef.current.style.display = show ? 'block' : 'none';
+      this.crumbLeafRef.current.textContent = this.t(label);
+    }
+  }
+  todayRef = React.createRef();
+
+  todayLabel(lang) {
+    return new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  componentDidMount() {
+    this.collapsed = !!this.props.startCollapsed;
+    this.apply();
+    this.paintToday();
+    const active = this.navRef.current && this.navRef.current.querySelector('[data-active]');
+    if (active) {
+      const ic = active.querySelector('svg');
+      if (ic) ic.style.color = '#ffffff';
+      const bd = active.querySelector('[data-badge]');
+      if (bd) { bd.style.background = '#ffffff'; bd.style.color = 'var(--ink-brand)'; }
+      const bw2 = active.querySelector('[data-badge-warn]');
+      if (bw2) { bw2.style.background = '#ffe4c9'; bw2.style.color = 'var(--ink-warn)'; }
+    }
+    if (active) this.setCrumb(active); else this.setCrumbTexts('Gestion', 'Tableau de bord');
+    try {
+      const keep = window.sessionStorage.getItem('pm-active-item');
+      if (keep && this.navRef.current) {
+        const btn = this.rootRef.current && this.rootRef.current.querySelector('[data-item="' + keep + '"]');
+        if (btn && btn !== active) btn.click();
+      }
+    } catch (e) {}
+  }
+
+  componentDidUpdate() { this.apply(); this.paintToday(); }
+
+  paintToday() {
+    if (this.todayRef.current) this.todayRef.current.textContent = this.todayLabel(this.lang);
+  }
+
+  lang = 'fr';
+
+  static DICT = {
+    'Rechercher un dossier, un client, une facture': 'Search a case, a client, an invoice',
+    'Aide': 'Help',
+    'Administratrice': 'Administrator',
+    'Espace': 'Workspace',
+    'Espace Luxembourg-Gare': 'Luxembourg-Gare workspace',
+    'Tableau de bord': 'Dashboard',
+    'Exporter': 'Export',
+    'Rafraîchir les données': 'Refresh data',
+    'Masquer': 'Hide',
+    'Afficher': 'Show',
+    'Masquer les montants': 'Hide amounts',
+    'Afficher les montants': 'Show amounts',
+    'Déconnexion': 'Sign out',
+    'Se déconnecter': 'Sign out',
+    'Gestion': 'Management',
+    'Marché': 'Market',
+    'Administration': 'Administration',
+    'Fil d\'Ariane': 'Breadcrumb',
+    'Comptes': 'Accounts',
+    'Positions': 'Positions',
+    'Dossiers': 'Cases',
+    'Titres': 'Securities',
+    'Demandes': 'Requests',
+    'Opérations': 'Operations',
+    'Trésorerie': 'Cash',
+    'Transactions': 'Transactions',
+    'Opération sur titre': 'Corporate action',
+    'Devis': 'Quotes',
+    'Cours marché': 'Market prices',
+    'Comptabilité': 'Accounting',
+    'Accueil': 'Home',
+    'ACCUEIL': 'HOME',
+    'Calendrier': 'Calendar',
+    'Guide': 'Guide',
+    'Mon profil': 'My profile',
+    'HOEPPE, Fabrice · Administrateur': 'HOEPPE, Fabrice · Administrator',
+    'Nom': 'Last name',
+    'Prénom': 'First name',
+    'Identifiant': 'Username',
+    'Matricule': 'Staff ID',
+    'Mobile': 'Mobile',
+    'Entité': 'Business unit',
+    'Fonction': 'Role',
+    'Depuis le': 'Since',
+    'Dernière connexion': 'Last sign-in',
+    'Modifier': 'Edit',
+    'Taux change': 'Exchange rates',
+    'Facturation': 'Billing',
+    'Échéances': 'Due dates',
+    'Échéances en retard': 'Overdue',
+    'Échéances à venir': 'Upcoming',
+    'Rapports': 'Reports',
+    'Paramètres': 'Settings',
+    'Mode sombre': 'Dark mode',
+    'Mode clair': 'Light mode',
+    'Situation au mardi 25 août 2026, 08:40': 'As of Tuesday 25 August 2026, 08:40',
+    'Nouveau dossier': 'New case',
+    'Dossiers actifs': 'Active cases',
+    'Demandes ouvertes': 'Open requests',
+    '2 à relancer': '2 to follow up',
+    'Encaissé ce mois': 'Collected this month',
+    'Délai moyen': 'Average turnaround',
+    '184 620 €': '€184,620',
+    '4,2 j': '4.2 d',
+    'Échéances des 30 prochains jours': 'Due in the next 30 days',
+    'Tout afficher': 'View all',
+    'Dossier': 'Case',
+    'Montant': 'Amount',
+    'Échéance': 'Due date',
+    'Habitation · 8421-0093': 'Home · 8421-0093',
+    'Auto · 7710-4482': 'Motor · 7710-4482',
+    'Épargne · 3308-1176': 'Savings · 3308-1176',
+    '1 480,40 €': '€1,480.40',
+    '892,00 €': '€892.00',
+    '3 200,00 €': '€3,200.00',
+    '1 sept. 2026': '1 Sept 2026',
+    '9 sept. 2026': '9 Sept 2026',
+    '18 sept. 2026': '18 Sept 2026',
+    'Mon profil': 'My profile',
+    'Préférences': 'Preferences',
+    'Aide et support': 'Help and support',
+    'Langue': 'Language',
+    'Se déconnecter': 'Sign out',
+    'Changer d\'espace de travail': 'Switch workspace',
+    'Réduire ou déployer le menu': 'Collapse or expand the menu',
+    'Paramètres': 'Settings',
+    'Densité de l\'affichage': 'Display density',
+    'Compact': 'Compact',
+    'Standard': 'Standard',
+    'Langue de l\'interface': 'Interface language',
+    'Notifications par e-mail': 'Email notifications',
+    'Page d\'accueil': 'Landing page',
+    'Annuler': 'Cancel',
+    'Enregistrer': 'Save',
+    'Fermer': 'Close',
+    'Paramètres de l\'utilisateur': 'User settings',
+    'Préférences de Fabrice Hoeppe': 'Fabrice Hoeppe\'s preferences',
+    'Administrateur': 'Administrator',
+    'Administrateur · Luxembourg-Gare': 'Administrator · Luxembourg-Gare',
+    'Nom affiché': 'Display name',
+    'Téléphone': 'Phone',
+    'E-mail professionnel': 'Work e-mail',
+    'Résumé quotidien par e-mail': 'Daily e-mail digest',
+    'Authentification à deux facteurs': 'Two-factor authentication',
+    'Ouvrir avec le menu replié': 'Open with the menu collapsed',
+    'Recherche dans le bandeau': 'Search in the top bar',
+    'Largeur du menu déployé': 'Expanded menu width'
+  };
+
+  t(fr) {
+    return this.lang === 'en' ? (Component.DICT[fr] || fr) : fr;
+  }
+
+  setLang(lang) {
+    if (lang === this.lang) return;
+    this.lang = lang;
+    const root = document.getElementById('dc-root') || document.body;
+    if (root) {
+      if (!this.frText) this.frText = new Map();
+      root.querySelectorAll('*').forEach((el) => {
+        el.childNodes.forEach((node) => {
+          if (node.nodeType !== 3) return;
+          const raw = node.nodeValue;
+          if (!raw || !raw.trim()) return;
+          if (!this.frText.has(node)) this.frText.set(node, raw);
+          const fr = this.frText.get(node);
+          const key = fr.trim();
+          const en = Component.DICT[key];
+          node.nodeValue = lang === 'en' && en ? fr.replace(key, en) : fr;
+        });
+        ['placeholder', 'title', 'aria-label'].forEach((attr) => {
+          const v = el.getAttribute && el.getAttribute(attr);
+          if (v) {
+            const key = 'fr' + attr.replace(/[^a-z]/g, '');
+            if (el.dataset[key] === undefined) el.dataset[key] = v;
+            el.setAttribute(attr, lang === 'en' ? (Component.DICT[el.dataset[key]] || el.dataset[key]) : el.dataset[key]);
+          }
+        });
+      });
+    }
+    const on = { background: 'var(--color-neutral-200)', color: 'var(--color-text)', fontWeight: '600' };
+    const off = { background: 'transparent', color: 'var(--color-neutral-700)', fontWeight: '400' };
+    const paint = (ref, s) => { if (ref.current) Object.assign(ref.current.style, s); };
+    paint(this.langFrRef, lang === 'fr' ? on : off);
+    paint(this.langEnRef, lang === 'en' ? on : off);
+    this.apply();
+    this.paintToday();
+  }
+
+  setDialogOpen(open) {
+    const el = this.dialogRef.current;
+    if (!el) return;
+    el.style.display = open ? 'flex' : 'none';
+    this.dialogOpen = open;
+    if (open && !this.onDialogKey) {
+      this.onDialogKey = (e) => { if (e.key === 'Escape') this.setDialogOpen(false); };
+      document.addEventListener('keydown', this.onDialogKey);
+      el.addEventListener('mousedown', (e) => {
+        const surface = this.dialogSurfaceRef.current;
+        if (surface && !surface.contains(e.target)) this.setDialogOpen(false);
+      });
+    }
+  }
+
+  setProfileDialogOpen(open) {
+    const el = this.profileDialogRef.current;
+    if (!el) return;
+    el.style.display = open ? 'flex' : 'none';
+    if (open && !this.onProfileDialogKey) {
+      this.onProfileDialogKey = (e) => { if (e.key === 'Escape') this.setProfileDialogOpen(false); };
+      document.addEventListener('keydown', this.onProfileDialogKey);
+      el.addEventListener('mousedown', (e) => {
+        const surface = this.profileDialogSurfaceRef.current;
+        if (surface && !surface.contains(e.target)) this.setProfileDialogOpen(false);
+      });
+    }
+  }
+
+  setAccountDialogOpen(open) {
+    const el = this.accountDialogRef.current;
+    if (!el) return;
+    el.style.display = open ? 'flex' : 'none';
+    this.accountDialogOpen = open;
+    if (open && !this.onAccountDialogKey) {
+      this.onAccountDialogKey = (e) => { if (e.key === 'Escape') this.setAccountDialogOpen(false); };
+      document.addEventListener('keydown', this.onAccountDialogKey);
+      el.addEventListener('mousedown', (e) => {
+        const surface = this.accountDialogSurfaceRef.current;
+        if (surface && !surface.contains(e.target)) this.setAccountDialogOpen(false);
+      });
+    }
+  }
+
+  setAccountOpen(open) {
+    this.accountOpen = open;
+    const panel = this.accountPanelRef.current;
+    if (panel) panel.style.display = open ? 'block' : 'none';
+    if (!this.onDocClick) {
+      this.onDocClick = (e) => {
+        const wrap = this.accountWrapRef.current;
+        if (this.accountOpen && wrap && !wrap.contains(e.target)) this.setAccountOpen(false);
+      };
+      this.onKey = (e) => { if (e.key === 'Escape') this.setAccountOpen(false); };
+      document.addEventListener('mousedown', this.onDocClick);
+      document.addEventListener('keydown', this.onKey);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.onDocClick) document.removeEventListener('mousedown', this.onDocClick);
+    if (this.onKey) document.removeEventListener('keydown', this.onKey);
+  }
+
+  get expandedWidth() {
+    const w = Number(this.props.expandedWidth);
+    return Number.isFinite(w) && w > 0 ? w : 269;
+  }
+
+  apply() {
+    if (this.searchRef.current) {
+      this.searchRef.current.style.display = this.props.showSearch === false ? 'none' : 'flex';
+    }
+    const nav = this.navRef.current;
+    if (!nav) return;
+    const w = (this.collapsed ? 72 : this.expandedWidth) + 'px';
+    nav.style.width = w;
+    if (this.headCellRef.current) {
+      this.headCellRef.current.style.width = w;
+      const list = nav.querySelector('[data-component="SideNavList"]');
+      const sb = list ? Math.max(0, list.offsetWidth - list.clientWidth) : 0;
+      this.headCellRef.current.style.paddingRight = (12 + sb) + 'px';
+    }
+    if (this.toggleBtnRef.current) {
+      this.toggleBtnRef.current.style.left = ((this.collapsed ? 72 : this.expandedWidth) - 14) + 'px';
+    }
+    if (this.collapseIconRef.current) {
+      this.collapseIconRef.current.innerHTML = this.collapsed
+        ? '<rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="M5.5 8h1.5"></path><path d="M5.5 12h1.5"></path><path d="M5.5 16h1.5"></path>'
+        : '<rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M6 3v18"></path>';
+    }
+    if (this.chevronRef.current) {
+      this.chevronRef.current.style.transform = this.collapsed ? 'rotate(180deg)' : 'none';
+    }
+    if (this.toggleLabelRef.current) {
+      const fr = this.collapsed ? 'Déployer le menu' : 'Réduire le menu';
+      const el = this.toggleLabelRef.current;
+      el.dataset.fr = fr;
+      el.textContent = this.lang === 'en' ? (this.collapsed ? 'Expand menu' : 'Collapse menu') : fr;
+    }
+    [this.sec1Ref.current, this.sec2Ref.current, this.sec3Ref.current].forEach((sec) => {
+      if (!sec) return;
+      const set = (sel, disp) => { const el = sec.querySelector(sel); if (el) el.style.display = disp; };
+      set('[data-trait]', this.collapsed ? 'none' : 'block');
+      set('[data-full]', this.collapsed ? 'none' : 'block');
+      set('[data-line]', 'block');
+      set('[data-short]', 'none');
+    });
+  }
+
+  renderVals() {
+    return {
+      rootRef: this.rootRef,
+      refreshRef: this.refreshRef,
+      refreshPage: () => {
+        const btn = this.refreshRef.current;
+        const icon = btn && btn.querySelector('svg');
+        if (icon) { icon.style.transition = 'transform 620ms cubic-bezier(0.3,0.7,0.2,1)'; icon.style.transform = 'rotate(360deg)'; }
+        try {
+          const active = this.rootRef.current && this.rootRef.current.querySelector('[data-active]');
+          if (active && active.dataset && active.dataset.item) {
+            window.sessionStorage.setItem('pm-active-item', active.dataset.item);
+          }
+        } catch (e) {}
+        if (this.refreshTimer) clearTimeout(this.refreshTimer);
+        this.refreshTimer = setTimeout(() => { window.location.reload(); }, 420);
+      },
+      toggleSection: (e) => {
+        const head = e.target.closest && e.target.closest('[data-component="SideNavSection"]');
+        if (!head) return;
+        const closed = head.getAttribute('data-collapsed') === '1';
+        let el = head.nextElementSibling;
+        while (el && el.getAttribute('data-component') !== 'SideNavSection') {
+          el.style.display = closed ? 'flex' : 'none';
+          el = el.nextElementSibling;
+        }
+        if (closed) head.removeAttribute('data-collapsed'); else head.setAttribute('data-collapsed', '1');
+        const chev = head.querySelector('[data-chev]');
+        if (chev) chev.style.transform = closed ? 'rotate(0deg)' : 'rotate(-90deg)';
+      },
+      goHome: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const root = this.navRef.current;
+        const btn = root && root.querySelector('[data-item="0"]');
+        if (btn) btn.click();
+      },
+      maskRef: this.maskRef,
+      maskIconRef: this.maskIconRef,
+      maskLabelRef: this.maskLabelRef,
+      toggleMask: () => {
+        const root = this.rootRef.current;
+        if (!root) return;
+        this.masked = !this.masked;
+        if (this.masked) { root.setAttribute('data-amounts', 'hidden'); this.markAmounts(); this.watchAmounts(); }
+        else { root.removeAttribute('data-amounts'); this.unwatchAmounts(); this.clearAmounts(); }
+        if (this.maskIconRef.current) {
+          this.maskIconRef.current.innerHTML = this.masked
+            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.7 5.1A9.9 9.9 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.2 3.1"></path><path d="M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"></path><path d="m2 2 20 20"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>'
+            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        }
+        if (this.maskLabelRef.current) this.maskLabelRef.current.textContent = this.t(this.masked ? 'Afficher' : 'Masquer');
+        if (this.maskRef.current) this.maskRef.current.title = this.t(this.masked ? 'Afficher les montants' : 'Masquer les montants');      },
+      navRef: this.navRef,
+      chevronRef: this.chevronRef,
+      collapseIconRef: this.collapseIconRef,
+      toggleLabelRef: this.toggleLabelRef,
+      toggleBtnRef: this.toggleBtnRef,
+      searchRef: this.searchRef,
+      searchFocus: () => {
+        const el = this.searchRef.current;
+        if (el) { el.style.boxShadow = '0 0 0 3px rgba(157,192,240,0.75)'; el.style.borderColor = '#cfe1fa'; }
+      },
+      searchBlur: () => {
+        const el = this.searchRef.current;
+        if (el) { el.style.boxShadow = 'none'; el.style.borderColor = 'rgba(255,255,255,0.28)'; }
+      },
+      headCellRef: this.headCellRef,
+      pageDashboardRef: this.pageDashboardRef,
+      blankTitleRef: this.blankTitleRef,
+      pageCalendarRef: this.pageCalendarRef,
+      pageReportsRef: this.pageReportsRef,
+      crumbSectionRef: this.crumbSectionRef,
+      crumbSepRef: this.crumbSepRef,
+      crumbMidRef: this.crumbMidRef,
+      crumbMidSepRef: this.crumbMidSepRef,
+      crumbLeafRef: this.crumbLeafRef,
+      pageSettingsRef: this.pageSettingsRef,
+      pageDocumentsRef: this.pageDocumentsRef,
+      pageHomeRef: this.pageHomeRef,
+      pageTxRef: this.pageTxRef,
+      pageCashRef: this.pageCashRef,
+      pageAcctRef: this.pageAcctRef,
+      pageGuideRef: this.pageGuideRef,
+      pageDashRef: this.pageDashRef,
+      pageAccRef: this.pageAccRef,
+      pageReconRef: this.pageReconRef,
+      pageUniverseRef: this.pageUniverseRef,
+      pagePositionsRef: this.pagePositionsRef,
+      pageDueRef: this.pageDueRef,
+      pageOrdersRef: this.pageOrdersRef,
+      pageSimRef: this.pageSimRef,
+      pagePerfRef: this.pagePerfRef,
+      pageLegendRef: this.pageLegendRef,
+      openGuide: () => { this.showPage('guide'); this.setCrumbTexts('Aide', 'Guide'); },
+      todayRef: this.todayRef,
+      accountWrapRef: this.accountWrapRef,
+      langFrRef: this.langFrRef,
+      langEnRef: this.langEnRef,
+      dialogRef: this.dialogRef,
+      dialogSurfaceRef: this.dialogSurfaceRef,
+      profileDialogRef: this.profileDialogRef,
+      profileDialogSurfaceRef: this.profileDialogSurfaceRef,
+      openProfileDialog: (e) => { e.stopPropagation(); this.setAccountOpen(false); this.setProfileDialogOpen(true); },
+      closeProfileDialog: (e) => { if (e) e.stopPropagation(); this.setProfileDialogOpen(false); },
+      accountDialogRef: this.accountDialogRef,
+      accountDialogSurfaceRef: this.accountDialogSurfaceRef,
+      openAccountDialog: (e) => { e.stopPropagation(); this.setAccountOpen(false); this.setAccountDialogOpen(true); },
+      closeAccountDialog: (e) => { if (e) e.stopPropagation(); this.setAccountDialogOpen(false); },
+      hoverIn: (e) => {
+        const btn = e.target.closest && e.target.closest('[data-item]');
+        if (btn && !btn.hasAttribute('data-active')) {
+          btn.style.borderLeftColor = 'var(--ds-brand-200)';
+          btn.style.background = 'var(--nav-hover-bg)';
+          btn.style.color = 'var(--nav-hover-ink)';
+        }
+      },
+      hoverOut: (e) => {
+        const btn = e.target.closest && e.target.closest('[data-item]');
+        if (btn && !btn.hasAttribute('data-active')) {
+          btn.style.borderLeftColor = 'transparent';
+          btn.style.background = 'transparent';
+          btn.style.color = 'var(--color-neutral-800)';
+        }
+      },
+      setFr: () => this.setLang('fr'),
+      setEn: () => this.setLang('en'),
+      accountPanelRef: this.accountPanelRef,
+      toggleAccount: (e) => { e.stopPropagation(); this.setAccountOpen(!this.accountOpen); },
+      sec1Ref: this.sec1Ref,
+      sec2Ref: this.sec2Ref,
+      sec3Ref: this.sec3Ref,
+      toggle: () => { this.collapsed = !this.collapsed; this.apply(); },
+      select: (e) => {
+        const btn = e.target.closest('[data-item]');
+        const root = this.navRef.current;
+        if (!btn || !root) return;
+        if (btn.dataset.dialog === 'settings') { this.setDialogOpen(true); return; }
+        if (btn.dataset.theme) {
+          const dark = btn.dataset.theme === 'light';
+          btn.dataset.theme = dark ? 'dark' : 'light';
+          if (this.rootRef.current) this.rootRef.current.dataset.theme = dark ? 'dark' : 'light';
+          const svg = btn.querySelector('svg');
+          const label = btn.querySelector('span');
+          svg.innerHTML = dark
+            ? '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>'
+            : '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"></path>';
+          const fr = dark ? 'Mode clair' : 'Mode sombre';
+          btn.setAttribute('title', fr);
+          btn.dataset.frtitle = fr;
+          label.textContent = this.lang === 'en' ? (Component.DICT[fr] || fr) : fr;
+          if (this.frText) this.frText.set(label.firstChild, fr);
+          return;
+        }
+        const all = [];
+        [root, this.headCellRef.current].forEach((c) => {
+          if (c) c.querySelectorAll('[data-item]').forEach((el) => all.push(el));
+        });
+        all.forEach((el) => {
+          el.style.background = 'transparent';
+          el.style.color = 'var(--ink-brand)';
+          el.style.fontWeight = '400';
+          el.style.borderLeftColor = 'transparent';
+          el.removeAttribute('data-active');
+          const s = el.querySelector('svg');
+          if (s) s.style.color = 'var(--ink-brand)';
+          const bdg = el.querySelector('[data-badge]');
+          if (bdg) { bdg.style.background = 'rgba(0,61,165,0.12)'; bdg.style.color = 'var(--ink-brand)'; }
+          const bw = el.querySelector('[data-badge-warn]');
+          if (bw) { bw.style.background = 'rgba(180,83,9,0.16)'; bw.style.color = 'var(--ink-warn-2)'; }
+        });
+        btn.style.borderLeftColor = 'var(--ink-warn-2)';
+        btn.style.background = 'var(--ds-brand-fill, var(--field-brand))';
+        btn.style.color = '#ffffff';
+        btn.style.fontWeight = '600';
+        const activeIcon = btn.querySelector('svg');
+        if (activeIcon) activeIcon.style.color = '#ffffff';
+        const activeBadge = btn.querySelector('[data-badge]');
+        if (activeBadge) { activeBadge.style.background = '#ffffff'; activeBadge.style.color = 'var(--ink-brand)'; }
+        const activeWarn = btn.querySelector('[data-badge-warn]');
+        if (activeWarn) { activeWarn.style.background = '#ffe4c9'; activeWarn.style.color = 'var(--ink-warn)'; }
+        btn.setAttribute('data-active', '1');
+        const page = btn.dataset.page || 'dashboard';
+        if (!btn.dataset.page && this.blankTitleRef.current) this.blankTitleRef.current.textContent = this.t(btn.dataset.frtitle || btn.getAttribute('title') || 'Module');
+        this.showPage(page);
+        this.setCrumb(btn);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

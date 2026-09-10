@@ -1,0 +1,246 @@
+/* =========================================================================
+   Foyer Design System — Brand themes
+   ─────────────────────────────────────────────────────────────────────────
+   The system is multi-brand. Components consume SEMANTIC role tokens
+   (--ds-brand-*, --ds-text-*, --ds-surface-*) instead of the raw Foyer
+   palette, so swapping a [data-brand] attribute on <html> rebrands every
+   screen with no other code changes.
+
+       <html data-brand="foyer">          ← default, can be omitted
+       <html data-brand="globalhealth">   ← obsidian + sand, expat health
+       <html data-brand="wealins">        ← obsidian + gold, wealth mgmt
+
+   Add a brand:
+     1. Drop in the brand's logo SVG at assets/logo-<brand>.svg
+     2. Add a [data-brand="<name>"] block of role-token overrides below
+     3. (Optional) override --fds-* legacy aliases in the bridge block
+   ========================================================================= */
+
+
+/* =========================================================================
+   FOYER — signature blue on white  (default)
+   ========================================================================= */
+:root,
+[data-brand="foyer"] {
+  --ds-brand-name: "Foyer";
+  --ds-brand-logo: url('../assets/logo-foyer-horizontal.svg');
+  --ds-brand-logo-reversed: url('../assets/logo-foyer-horizontal-white.svg');
+
+  /* Brand ramp */
+  --ds-brand-050: var(--fds-primary-050);
+  --ds-brand-100: var(--fds-primary-100);
+  --ds-brand-200: var(--fds-primary-200);
+  --ds-brand-300: var(--fds-primary-300);
+  --ds-brand-400: var(--fds-primary-400);
+  --ds-brand-500: var(--fds-primary-500);
+  --ds-brand-600: var(--fds-primary-600);
+  --ds-brand-700: var(--fds-primary-700);
+  --ds-brand-800: var(--fds-primary-800);
+  --ds-brand-900: var(--fds-primary-900);
+  --ds-on-brand:  #ffffff;
+
+  /* Surfaces */
+  --ds-surface-page:    #ffffff;
+  --ds-surface-card:    #ffffff;
+  --ds-surface-sunken:  var(--fds-feather-grey-100);
+  --ds-surface-inverse: var(--fds-feather-grey-900);
+  --ds-on-inverse:      #ffffff;
+
+  /* Text */
+  --ds-text-strong:   var(--fds-feather-grey-900);
+  --ds-text-default:  var(--fds-feather-grey-800);
+  --ds-text-muted:    var(--fds-feather-grey-700);
+  --ds-text-subtle:   var(--fds-feather-grey-600);
+  --ds-text-on-tonal: var(--fds-primary-700);
+  --ds-link:          var(--fds-primary-500);
+
+  /* Borders */
+  --ds-border-subtle:   var(--fds-feather-grey-200);
+  --ds-border-default:  var(--fds-feather-grey-300);
+  --ds-border-strong:   var(--fds-feather-grey-400);
+
+  /* Utility (shared default) */
+  --ds-success: var(--fds-success-500);
+  --ds-warning: var(--fds-warning-500);
+  --ds-danger:  var(--fds-danger-500);
+  --ds-info:    var(--fds-primary-500);
+
+  --ds-focus-outline-color: var(--ds-brand-500);
+}
+
+
+/* =========================================================================
+   GLOBAL HEALTH — Obsidian text on Ivory/Sand
+   Foyer Global Health expat-health product. Obsidian (#232323) does the
+   heavy lifting for text and icons; Sand carries the brand identity through
+   page surfaces, active states, and the photographic register.
+   Source colors:
+     Obsidian   #232323     Ivory       #ECE3D6
+     Light Sand #DBD2C5     Sand        #BAB0A3
+   ========================================================================= */
+[data-brand="globalhealth"] {
+  --ds-brand-name: "Global Health";
+  --ds-brand-logo: url('../assets/logo-globalhealth-horizontal.svg');
+  --ds-brand-logo-reversed: url('../assets/logo-globalhealth-horizontal-white.svg');
+
+  /* Brand ramp — Obsidian is the primary expressive color. */
+  --ds-brand-050: #f6f1e8;   /* lightest tint */
+  --ds-brand-100: #ECE3D6;   /* Ivory */
+  --ds-brand-200: #DBD2C5;   /* Light Sand */
+  --ds-brand-300: #BAB0A3;   /* Sand */
+  --ds-brand-400: #6e6a63;
+  --ds-brand-500: #232323;   /* Obsidian — signature */
+  --ds-brand-600: #1c1c1c;
+  --ds-brand-700: #141414;
+  --ds-brand-800: #0d0d0d;
+  --ds-brand-900: #050505;
+  --ds-on-brand:  #ECE3D6;   /* ivory text on obsidian buttons */
+
+  /* Surfaces — page is ivory-tinted, cards lift to pure white. */
+  --ds-surface-page:    #ECE3D6;   /* Ivory page */
+  --ds-surface-card:    #ffffff;
+  --ds-surface-sunken:  #DBD2C5;   /* Light Sand sunken */
+  --ds-surface-inverse: #232323;   /* Obsidian inverse */
+  --ds-on-inverse:      #ECE3D6;
+
+  /* Text — obsidian dominates, sand neutrals fill the lower tiers. */
+  --ds-text-strong:   #232323;
+  --ds-text-default:  #2d2d2d;
+  --ds-text-muted:    #6b6862;
+  --ds-text-subtle:   #94908a;
+  --ds-text-on-tonal: #232323;   /* dark text on Ivory tonal plates */
+  --ds-link:          #232323;
+
+  /* Borders — desaturated sand. */
+  --ds-border-subtle:   #e2d8c8;
+  --ds-border-default:  #d0c5b3;
+  --ds-border-strong:   #BAB0A3;
+
+  /* Utility — keep system-wide defaults, but warm them up slightly. */
+  --ds-success: #2c7a4a;
+  --ds-warning: #b48028;
+  --ds-danger:  #b73a2f;
+  --ds-info:    #3e6b8e;
+
+  --ds-focus-outline-color: var(--ds-brand-500);
+}
+
+
+/* =========================================================================
+   WEALINS — Obsidian + Gold accents on white
+   Wealins wealth-management dashboard. White-dominant, with Obsidian as
+   the strong text/header color and Gold reserved for accents (badges,
+   chart fills, key-figure highlights, hero overlay surfaces).
+   Source colors:
+     Gold        #D5CAA1   Dark Gold     #C0B176
+     Obsidian    #262837   Info text     #5999D7
+     Info border #E6EFF6   Sunken bg     #F2F2F4
+   ========================================================================= */
+[data-brand="wealins"] {
+  --ds-brand-name: "Wealins";
+  --ds-brand-logo: url('../assets/logo-wealins-horizontal.svg');
+  --ds-brand-logo-reversed: url('../assets/logo-wealins-horizontal-white.svg');
+
+  /* Brand ramp — Gold is the signature accent, Obsidian carries text. */
+  --ds-brand-050: #faf6e9;
+  --ds-brand-100: #f1e9c9;
+  --ds-brand-200: #e3d7a8;
+  --ds-brand-300: #D5CAA1;   /* Gold */
+  --ds-brand-400: #C0B176;   /* Dark Gold */
+  --ds-brand-500: #C0B176;   /* signature accent */
+  --ds-brand-600: #a39563;
+  --ds-brand-700: #82784f;
+  --ds-brand-800: #5d553a;
+  --ds-brand-900: #383321;
+  --ds-on-brand:  #262837;   /* obsidian text on gold buttons */
+
+  /* Surfaces — white-dominant; obsidian carries inverse hero panels. */
+  --ds-surface-page:    #ffffff;
+  --ds-surface-card:    #ffffff;
+  --ds-surface-sunken:  #F2F2F4;   /* the spec'd grey background */
+  --ds-surface-inverse: #262837;   /* obsidian hero / dark cards */
+  --ds-on-inverse:      #ffffff;
+
+  /* Text — obsidian primary, cool greys descending. */
+  --ds-text-strong:   #262837;
+  --ds-text-default:  #2e3045;
+  --ds-text-muted:    #5a5d72;
+  --ds-text-subtle:   #8c8f9f;
+  --ds-text-on-tonal: #82784f;   /* dark gold on light gold plates */
+  --ds-link:          #5999D7;   /* spec'd info blue, used for links and "see more" */
+
+  /* Borders — keep cool to play with obsidian. */
+  --ds-border-subtle:   #eceef2;
+  --ds-border-default:  #dde0e7;
+  --ds-border-strong:   #c4c8d2;
+
+  /* Utility — info uses the spec'd blue duo. */
+  --ds-success: #2f8a52;
+  --ds-warning: #b48028;
+  --ds-danger:  #c0392b;
+  --ds-info:    #5999D7;
+  --ds-info-bg: #E6EFF6;        /* spec'd info background */
+
+  --ds-focus-outline-color: #262837;
+}
+
+
+/* =========================================================================
+   COMPONENT BRIDGE
+   Re-route the legacy Foyer-named tokens to the role tokens INSIDE each
+   non-default brand selector, so every .fds-* component auto-rebrands
+   when [data-brand] changes. New work should reference the role tokens
+   directly (--ds-brand-*, --ds-text-*, --ds-surface-*).
+   ========================================================================= */
+
+[data-brand="globalhealth"] {
+  --fds-primary-050: var(--ds-brand-050);
+  --fds-primary-100: var(--ds-brand-100);
+  --fds-primary-200: var(--ds-brand-200);
+  --fds-primary-300: var(--ds-brand-300);
+  --fds-primary-400: var(--ds-brand-400);
+  --fds-primary-500: var(--ds-brand-500);
+  --fds-primary-600: var(--ds-brand-600);
+  --fds-primary-700: var(--ds-brand-700);
+  --fds-primary-800: var(--ds-brand-800);
+  --fds-primary-900: var(--ds-brand-900);
+
+  /* Warm-tinted neutrals so .fds-* surfaces and borders carry the sand register. */
+  --fds-feather-grey-100: #f6f1e8;
+  --fds-feather-grey-200: #e8ddc9;
+  --fds-feather-grey-300: #d0c5b3;
+  --fds-feather-grey-400: #BAB0A3;
+  --fds-feather-grey-500: #94908a;
+  --fds-feather-grey-600: #6b6862;
+  --fds-feather-grey-700: #4a4742;
+  --fds-feather-grey-800: #2d2d2d;
+  --fds-feather-grey-900: #232323;
+
+  --fds-focus-outline-color: var(--ds-brand-500);
+}
+
+[data-brand="wealins"] {
+  --fds-primary-050: var(--ds-brand-050);
+  --fds-primary-100: var(--ds-brand-100);
+  --fds-primary-200: var(--ds-brand-200);
+  --fds-primary-300: var(--ds-brand-300);
+  --fds-primary-400: var(--ds-brand-400);
+  --fds-primary-500: var(--ds-brand-500);
+  --fds-primary-600: var(--ds-brand-600);
+  --fds-primary-700: var(--ds-brand-700);
+  --fds-primary-800: var(--ds-brand-800);
+  --fds-primary-900: var(--ds-brand-900);
+
+  /* Cool neutrals — obsidian-blue tinted to match #262837. */
+  --fds-feather-grey-100: #F2F2F4;
+  --fds-feather-grey-200: #eceef2;
+  --fds-feather-grey-300: #dde0e7;
+  --fds-feather-grey-400: #c4c8d2;
+  --fds-feather-grey-500: #8c8f9f;
+  --fds-feather-grey-600: #5a5d72;
+  --fds-feather-grey-700: #393b4f;
+  --fds-feather-grey-800: #2e3045;
+  --fds-feather-grey-900: #262837;
+
+  --fds-focus-outline-color: #262837;
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    html, body { margin: 0; height: 100%; }
+    [data-component="DocViewer"] { --surface: var(--theme-surface, #ffffff); }
+    [data-component="DocViewer"], [data-component="DocViewer"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="DocViewer"] h1, [data-component="DocViewer"] h2, [data-component="DocViewer"] h3 { color: #002a6e; }
+    [data-component="DocViewer"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="DocViewer"] input:focus, [data-component="DocViewer"] select:focus, [data-component="DocViewer"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="DocViewer"] input:focus-visible, [data-component="DocViewer"] select:focus-visible, [data-component="DocViewer"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="DocViewer"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="DocViewer"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="DocViewer"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="DocViewer"] button:active { filter: brightness(0.94); }
+    [data-component="DocViewer"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="DocViewer"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="DocViewer"] h1,
+    [data-theme="dark"] [data-component="DocViewer"] h2,
+    [data-theme="dark"] [data-component="DocViewer"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="DocViewer"] input,
+    [data-theme="dark"] [data-component="DocViewer"] select,
+    [data-theme="dark"] [data-component="DocViewer"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="DocViewer"] { --ink-brand: #002a6e; }
+    [data-theme="dark"] [data-component="DocViewer"] { --ink-brand: #9db6d9; }
+    [data-component="DocViewer"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="DocViewer"] { --field-brand: #12325e; }
+  </style>
+</helmet>
+
+<div data-component="DocViewer" data-screen-label="Visionneuse" style="display:flex;flex-direction:column;height:100vh;background:var(--color-neutral-200);color:var(--color-text)">
+
+  <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--color-neutral-600)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
+    <span style="flex:1;min-width:0;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ name }}</span>
+    <span style="font-size:11px;color:var(--color-neutral-700);white-space:nowrap">{{ meta }}</span>
+  </div>
+
+  <div onMouseDown="{{ dragStart }}" onMouseMove="{{ dragMove }}" onMouseUp="{{ dragEnd }}" onMouseLeave="{{ dragEnd }}" onWheel="{{ wheelZoom }}" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ cursor }}">
+    <div style="position:absolute;top:50%;left:50%;height:78vh;transform:translate(-50%, -50%) translate({{ tx }}, {{ ty }}) scale({{ scale }});transform-origin:center center">
+      <div style="display:flex;flex-direction:column;gap:14px;height:100%;aspect-ratio:1 / 1.414;padding:38px 34px;background:var(--surface);border:1px solid var(--color-neutral-300);box-shadow:var(--shadow-lg);user-select:none">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--color-neutral-600)">{{ kicker }}</span>
+        <span style="font-size:20px;font-weight:700;line-height:1.25">{{ title }}</span>
+        <span style="height:1px;background:var(--color-neutral-300)"></span>
+        <sc-for list="{{ lines }}" as="l" hint-placeholder-count="14">
+          <span style="height:9px;border-radius:2px;background:var(--color-neutral-200);width:{{ l.w }}"></span>
+        </sc-for>
+        <span style="margin-top:auto;font-size:11px;color:var(--color-neutral-600)">{{ footer }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-top:1px solid var(--color-neutral-300)">
+    <button onClick="{{ prevPage }}" matTooltip="Page précédente" title="Page précédente" aria-label="Page précédente" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+    </button>
+    <span style="min-width:58px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums">{{ pageLabel }}</span>
+    <button onClick="{{ nextPage }}" matTooltip="Page suivante" title="Page suivante" aria-label="Page suivante" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+    </button>
+
+    <span style="width:1px;height:20px;background:var(--color-neutral-300);margin:0 4px"></span>
+
+    <button onClick="{{ zoomOut }}" matTooltip="Réduire" title="Réduire" aria-label="Réduire" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+    </button>
+    <span style="width:52px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums">{{ zoomLabel }}</span>
+    <button onClick="{{ zoomIn }}" matTooltip="Agrandir" title="Agrandir" aria-label="Agrandir" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+    </button>
+    <button onClick="{{ resetView }}" style="height:28px;padding:0 12px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Ajuster</button>
+    <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">Molette pour zoomer · glisser pour déplacer</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { page: 1, pages: 9, zoom: 1, panX: 0, panY: 0, dragging: false, name: 'document.pdf', title: '', ref: '' };
+
+  componentDidMount() {
+    let p;
+    try { p = new URLSearchParams(window.location.search); } catch (e) { p = null; }
+    if (!p) return;
+    this.setState({
+      name: p.get('name') || 'document.pdf',
+      title: p.get('title') || '',
+      ref: p.get('ref') || '',
+      pages: Math.max(1, parseInt(p.get('pages'), 10) || 9)
+    });
+    document.title = (p.get('name') || 'Document') + ' — Visionneuse';
+  }
+
+  renderVals() {
+    const s = this.state;
+    return {
+      name: s.name,
+      meta: s.pages + ' pages' + (s.ref ? ' · ' + s.ref : ''),
+      kicker: 'Page ' + s.page,
+      title: s.title || s.name.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' '),
+      footer: s.ref ? 'Référence ' + s.ref : 'Aperçu du document',
+      lines: [96, 88, 92, 70, 84, 90, 62, 88, 46, 78, 84, 58, 74, 90].map((w) => ({ w: w + '%' })),
+      pageLabel: s.page + ' / ' + s.pages,
+      zoomLabel: Math.round(s.zoom * 100) + ' %',
+      scale: s.zoom.toFixed(2),
+      tx: Math.round(s.panX) + 'px',
+      ty: Math.round(s.panY) + 'px',
+      cursor: s.dragging ? 'grabbing' : 'grab',
+      prevPage: () => this.setState((st) => ({ page: Math.max(1, st.page - 1) })),
+      nextPage: () => this.setState((st) => ({ page: Math.min(st.pages, st.page + 1) })),
+      zoomIn: () => this.setState((st) => ({ zoom: Math.min(4, +(st.zoom + 0.2).toFixed(2)) })),
+      zoomOut: () => this.setState((st) => ({ zoom: Math.max(0.4, +(st.zoom - 0.2).toFixed(2)) })),
+      resetView: () => this.setState({ zoom: 1, panX: 0, panY: 0 }),
+      wheelZoom: (e) => {
+        e.preventDefault();
+        const d = e.deltaY > 0 ? -0.1 : 0.1;
+        this.setState((st) => ({ zoom: Math.max(0.4, Math.min(4, +(st.zoom + d).toFixed(2))) }));
+      },
+      dragStart: (e) => { e.preventDefault(); this.drag = { x: e.clientX, y: e.clientY, px: s.panX, py: s.panY }; this.setState({ dragging: true }); },
+      dragMove: (e) => {
+        if (!this.state.dragging || !this.drag) return;
+        this.setState({ panX: this.drag.px + (e.clientX - this.drag.x), panY: this.drag.py + (e.clientY - this.drag.y) });
+      },
+      dragEnd: () => { if (this.state.dragging) this.setState({ dragging: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

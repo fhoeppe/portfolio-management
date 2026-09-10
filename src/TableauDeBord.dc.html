@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="DashPage"] { --ink-warn: #8f3f06; --ink-ok-2: #0f766e; --ink-brand-2: #003da5; --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); container-type: inline-size; }
+    [data-component="DashPage"], [data-component="DashPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="DashPage"] select { font-family: inherit; }
+    @container (max-width: 980px) {
+      [data-dash-split] { grid-template-columns: minmax(0, 1fr) !important; }
+      [data-dash-kpi] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    }
+    [data-component="DashPage"] h1, [data-component="DashPage"] h2, [data-component="DashPage"] h3 { color: #002a6e; }
+    [data-component="DashPage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="DashPage"] input:focus, [data-component="DashPage"] select:focus, [data-component="DashPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="DashPage"] input:focus-visible, [data-component="DashPage"] select:focus-visible, [data-component="DashPage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="DashPage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="DashPage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="DashPage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="DashPage"] button:active { filter: brightness(0.94); }
+    [data-component="DashPage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="DashPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="DashPage"] h1,
+    [data-theme="dark"] [data-component="DashPage"] h2,
+    [data-theme="dark"] [data-component="DashPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="DashPage"] input,
+    [data-theme="dark"] [data-component="DashPage"] select,
+    [data-theme="dark"] [data-component="DashPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="DashPage"] { --ink-warn-2: #b45309; }
+    [data-theme="dark"] [data-component="DashPage"] { --ink-warn: #f0a868; --ink-ok-2: #4fd1c5; --ink-brand-2: #8fb4ee; --ink-brand: #9db6d9; --ink-warn-2: #f3b782; }
+    [data-component="DashPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="DashPage"] { --field-brand: #12325e; }
+    [data-component="DashPage"] { --ink-ok: #0b5f57; }
+    [data-theme="dark"] [data-component="DashPage"] { --ink-ok: #5fd6c4; }
+    [data-component="DashPage"] { --field-warn: #8f3f06; }
+    [data-theme="dark"] [data-component="DashPage"] { --field-warn: #5c2a06; }
+  </style>
+</helmet>
+
+<div data-component="DashPage" data-screen-label="Tableau de bord" style="display:flex;flex-direction:column;height:100%;min-height:0;overflow-y:auto;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="min-width:0">
+      <h1 style="font-size:18px;margin:0;line-height:1.2">Tableau de bord</h1>
+      <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+    </div>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+        <button onClick="{{ acctToggle }}" style="display:flex;align-items:center;gap:8px;height:28px;padding:0 8px 0 10px;border:1px solid {{ acctBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;white-space:nowrap;cursor:pointer;box-shadow:{{ acctRing }}" style-hover="background:rgba(0,61,165,0.07)">
+          {{ acctLabel }}
+          <span style="display:inline-flex;flex:none;transform:rotate({{ acctRotate }})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </button>
+        <sc-if value="{{ acctOpen }}" hint-placeholder-val="{{ false }}">
+          <span role="listbox" style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-md);z-index:40">
+            <sc-for list="{{ acctOptions }}" as="o" hint-placeholder-count="4">
+              <button role="option" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:0;border-radius:4px;background:{{ o.bg }};color:{{ o.fg }};font-family:inherit;font-size:12px;font-weight:{{ o.weight }};white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">{{ o.label }}</button>
+            </sc-for>
+          </span>
+        </sc-if>
+      </span>
+      <span style="display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+        <sc-for list="{{ periodTabs }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.onClick }}" style="height:28px;padding:0 12px;border:0;border-left:{{ p.divider }};background:{{ p.bg }};color:{{ p.fg }};font-size:12px;font-weight:{{ p.weight }};white-space:nowrap;cursor:pointer" style-hover="background:{{ p.hoverBg }}">{{ p.label }}</button>
+        </sc-for>
+      </span>
+    </span>
+  </div>
+
+  <div data-dash-kpi="" style="flex:none;display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:1px;background:var(--field-brand);border-bottom:1px solid var(--field-brand)">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="padding:13px 18px 15px;background:{{ k.bg }}">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ k.labelColor }}">{{ k.label }}</div>
+        <div style="margin-top:5px;font-size:21px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;color:{{ k.valueColor }}">{{ k.value }}</div>
+        <div style="margin-top:3px;font-size:11px;color:{{ k.noteColor }}">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex:none;padding:16px 20px 0">
+    <div style="background:var(--surface);border:1px solid var(--field-warn);border-left:4px solid var(--field-warn);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:{{ anoHeaderBorder }};background:rgba(180,83,9,0.08)">
+        <button onClick="{{ toggleAno }}" matTooltip="{{ anoToggleTitle }}" title="{{ anoToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ink-warn-2);cursor:pointer" style-hover="background:rgba(180,83,9,0.14)">
+          <span style="display:inline-flex;flex:none;transform:rotate({{ anoRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </button>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ink-warn-2)"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+        <h2 onClick="{{ toggleAno }}" style="margin:0;font-size:16px;font-weight:700;color:var(--ink-warn-2);cursor:pointer">Anomalies détectées</h2>
+        <span style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 7px;border-radius:999px;background:var(--field-warn);color:#fff;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums">{{ anoCount }}</span>
+        <sc-if value="{{ anoClosed }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:11px;color:var(--ink-warn-2);font-weight:600">{{ anoSummary }}</span>
+        </sc-if>
+        <span style="margin-left:auto;display:inline-flex;border:1px solid rgba(180,83,9,0.45);border-radius:6px;overflow:hidden">
+          <sc-for list="{{ anoTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.onClick }}" style="height:26px;padding:0 11px;border:0;border-left:{{ t.divider }};background:{{ t.bg }};color:{{ t.fg }};font-size:11px;font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.96)" style-hover="background:{{ t.hoverBg }}">{{ t.label }}</button>
+          </sc-for>
+        </span>
+      </div>
+      <sc-if value="{{ anoOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="overflow-x:auto">
+        <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:12px;table-layout:fixed">
+          <thead>
+            <tr style="background:rgba(0,61,165,0.14)">
+              <th style="width:44%;text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Anomalie</th>
+              <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Origine</th>
+              <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Détectée</th>
+              <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Gravité</th>
+              <th style="text-align:right;padding:8px 16px 8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ anomalies }}" as="a" hint-placeholder-count="5">
+              <tr>
+                <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:flex;flex-direction:column;gap:1px">
+                    <span style="font-weight:600">{{ a.label }}</span>
+                    <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ a.detail }}</span>
+                  </span>
+                </td>
+                <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ a.source }}</td>
+                <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700);font-variant-numeric:tabular-nums;white-space:nowrap">{{ a.when }}</td>
+                <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ a.tagBg }};color:{{ a.tagFg }};font-size:11px;font-weight:600;white-space:nowrap">
+                    <span style="width:6px;height:6px;border-radius:999px;background:{{ a.tagFg }}"></span>
+                    {{ a.severity }}
+                  </span>
+                </td>
+                <td style="padding:9px 16px 9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-800);text-wrap:pretty">{{ a.action }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <sc-if value="{{ noAnomalies }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;padding:20px 16px;font-size:12px;color:var(--color-neutral-700)">Aucune anomalie pour ce niveau de gravité.</p>
+      </sc-if>
+      </sc-if>
+    </div>
+  </div>
+
+  <div data-dash-split="" style="flex:none;display:grid;grid-template-columns:minmax(0, 1.55fr) minmax(300px, 1fr);gap:16px;padding:16px 20px 24px;align-items:start">
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:{{ perfHeaderBorder }}">
+          <button onClick="{{ togglePerf }}" matTooltip="{{ perfToggleTitle }}" title="{{ perfToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ds-brand-fill, var(--ink-brand-2));cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+            <span style="display:inline-flex;flex:none;transform:rotate({{ perfRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+          </button>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+          <h2 onClick="{{ togglePerf }}" style="margin:0;font-size:15px;cursor:pointer">Performance cumulée</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ perfNote }}</span>
+        </div>
+        <sc-if value="{{ perfOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:16px 16px 8px">
+          <svg viewBox="0 0 320 110" preserveAspectRatio="none" style="width:100%;height:170px;display:block">
+            <line x1="0" y1="103" x2="320" y2="103" stroke="var(--color-neutral-300)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+            <line x1="0" y1="55" x2="320" y2="55" stroke="var(--color-neutral-200)" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"></line>
+            <path d="{{ benchPath }}" fill="none" stroke="var(--color-neutral-500)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></path>
+            <path d="{{ perfPath }}" fill="none" stroke="var(--ds-brand-fill, var(--ink-brand-2))" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+          </svg>
+          <div style="display:flex;justify-content:space-between;margin-top:6px">
+            <sc-for list="{{ perfTicks }}" as="t" hint-placeholder-count="6">
+              <span style="font-size:10px;color:var(--color-neutral-600)">{{ t.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+          <span style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--color-neutral-800)"><span style="width:14px;height:2px;background:var(--ds-brand-fill, var(--field-brand))"></span>Portefeuille {{ perfValue }}</span>
+          <span style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--color-neutral-800)"><span style="width:14px;height:2px;background:var(--color-neutral-500)"></span>Référence {{ benchValue }}</span>
+          <span style="margin-left:auto;font-size:11px;font-weight:600;color:{{ alphaColor }}">Écart {{ alpha }}</span>
+        </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:{{ allocHeaderBorder }}">
+          <button onClick="{{ toggleAlloc }}" matTooltip="{{ allocToggleTitle }}" title="{{ allocToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ds-brand-fill, var(--ink-brand-2));cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+            <span style="display:inline-flex;flex:none;transform:rotate({{ allocRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+          </button>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M12 3v18"></path><path d="M5 7h14"></path><path d="M5 7 2 14h6z"></path><path d="M19 7l-3 7h6z"></path></svg>
+          <h2 onClick="{{ toggleAlloc }}" style="margin:0;font-size:15px;cursor:pointer">Allocation par classe d'actifs</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ allocNote }}</span>
+        </div>
+        <sc-if value="{{ allocOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:14px;padding:14px 16px 18px">
+          <sc-for list="{{ allocation }}" as="a" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:baseline;gap:12px">
+                <span style="flex:1;min-width:0;font-size:12px;font-weight:600">{{ a.label }}</span>
+                <span style="flex:none;font-size:12px;font-variant-numeric:tabular-nums">{{ a.actual }}</span>
+                <span style="flex:none;width:150px;text-align:right;font-size:11px;color:{{ a.driftColor }};font-variant-numeric:tabular-nums">{{ a.drift }}</span>
+              </div>
+              <div style="position:relative;height:12px;background:var(--color-neutral-200);border-radius:2px">
+                <div style="position:absolute;inset:0 auto 0 0;width:{{ a.width }};border-radius:2px;background:{{ a.barColor }}"></div>
+                <div style="position:absolute;top:-3px;bottom:-3px;width:2px;left:{{ a.target }};background:var(--color-text)"></div>
+              </div>
+            </div>
+          </sc-for>
+          <span style="font-size:10px;color:var(--color-neutral-600)">Le trait vertical marque la cible du compte ; la barre ambre signale une sortie de bande.</span>
+        </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:{{ posHeaderBorder }}">
+          <button onClick="{{ togglePos }}" matTooltip="{{ posToggleTitle }}" title="{{ posToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ds-brand-fill, var(--ink-brand-2));cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+            <span style="display:inline-flex;flex:none;transform:rotate({{ posRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+          </button>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ds-brand-fill, var(--ink-brand-2))"><circle cx="8" cy="8" r="6"></circle><path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path><path d="M7 6h1v4"></path><path d="m16.71 13.88.7.71-2.82 2.82"></path></svg>
+          <h2 onClick="{{ togglePos }}" style="margin:0;font-size:15px;cursor:pointer">Principales positions</h2>
+          <span style="margin-left:auto;display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ sortTabs }}" as="s" hint-placeholder-count="3">
+              <button onClick="{{ s.onClick }}" style="height:26px;padding:0 11px;border:0;border-left:{{ s.divider }};background:{{ s.bg }};color:{{ s.fg }};font-size:11px;font-weight:{{ s.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.96)" style-hover="background:{{ s.hoverBg }}">{{ s.label }}</button>
+            </sc-for>
+          </span>
+        </div>
+        <sc-if value="{{ posOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:600px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Ligne</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Valorisation</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Poids</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Jour</th>
+                <th style="text-align:right;padding:8px 16px 8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Depuis janvier</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ positions }}" as="p" hint-placeholder-count="7">
+                <tr>
+                  <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:1px">
+                      <span style="font-weight:600">{{ p.ticker }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-700)">{{ p.name }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums">{{ p.value }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ p.weight }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ p.dayColor }}">{{ p.day }}</td>
+                  <td style="padding:9px 16px 9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ p.ytdColor }}">{{ p.ytd }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:{{ riskHeaderBorder }}">
+          <button onClick="{{ toggleRisk }}" matTooltip="{{ riskToggleTitle }}" title="{{ riskToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ds-brand-fill, var(--ink-brand-2));cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+            <span style="display:inline-flex;flex:none;transform:rotate({{ riskRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+          </button>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+          <h2 onClick="{{ toggleRisk }}" style="margin:0;font-size:15px;cursor:pointer">Indicateurs de risque</h2>
+        </div>
+        <sc-if value="{{ riskOpen }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ risk }}" as="r" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:12px;font-weight:600">{{ r.label }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ r.detail }}</span>
+            </span>
+            <span style="flex:none;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ r.color }}">{{ r.value }}</span>
+          </div>
+        </sc-for>
+        </sc-if>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:{{ expoHeaderBorder }}">
+          <button onClick="{{ toggleExpo }}" matTooltip="{{ expoToggleTitle }}" title="{{ expoToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ds-brand-fill, var(--ink-brand-2));cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+            <span style="display:inline-flex;flex:none;transform:rotate({{ expoRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+          </button>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ds-brand-fill, var(--ink-brand-2))"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+          <h2 onClick="{{ toggleExpo }}" style="margin:0;font-size:15px;cursor:pointer">Expositions</h2>
+          <span style="margin-left:auto;display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ expoTabs }}" as="t" hint-placeholder-count="2">
+              <button onClick="{{ t.onClick }}" style="height:24px;padding:0 10px;border:0;border-left:{{ t.divider }};background:{{ t.bg }};color:{{ t.fg }};font-size:11px;font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.96)" style-hover="background:{{ t.hoverBg }}">{{ t.label }}</button>
+            </sc-for>
+          </span>
+        </div>
+        <sc-if value="{{ expoOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px 18px">
+          <sc-for list="{{ exposures }}" as="e" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="flex:none;width:96px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ e.label }}</span>
+              <span style="flex:1;min-width:0;height:10px;background:var(--color-neutral-200);border-radius:2px">
+                <span style="display:block;height:100%;width:{{ e.width }};border-radius:2px;background:var(--ds-brand-fill, var(--field-brand))"></span>
+              </span>
+              <span style="flex:none;width:44px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ e.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:{{ actHeaderBorder }}">
+          <button onClick="{{ toggleAct }}" matTooltip="{{ actToggleTitle }}" title="{{ actToggleTitle }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--ds-brand-fill, var(--ink-brand-2));cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+            <span style="display:inline-flex;flex:none;transform:rotate({{ actRotate }})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg></span>
+          </button>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:32px;height:32px;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <h2 onClick="{{ toggleAct }}" style="margin:0;font-size:15px;cursor:pointer">Activité récente</h2>
+        </div>
+        <sc-if value="{{ actOpen }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ activity }}" as="a" hint-placeholder-count="5">
+          <div style="display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:none;width:44px;font-size:11px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ a.time }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:12px;font-weight:600;text-wrap:pretty">{{ a.label }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ a.detail }}</span>
+            </span>
+            <span style="flex:none;padding:1px 7px;border-radius:999px;background:{{ a.tagBg }};color:{{ a.tagFg }};font-size:10px;font-weight:700;white-space:nowrap;height:16px">{{ a.tag }}</span>
+          </div>
+        </sc-for>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+const MANDATES = [
+  { value: 'bgm', label: 'Balanced Growth — BGM-004' },
+  { value: 'inp', label: 'Income & Preservation — INP-011' },
+  { value: 'glg', label: 'Global Growth — GLG-002' },
+  { value: 'all', label: 'Tous les comptes' }
+];
+
+const SERIES = {
+  'ytd': { ticks: ['Janv.', 'Mars', 'Mai', 'Juil.', 'Sept.'], perf: [0, 1.8, 3.1, 2.6, 4.9, 6.2, 5.7, 7.4, 8.94], bench: [0, 1.4, 2.4, 2.2, 3.8, 5.0, 4.9, 6.1, 7.20] },
+  '1m': { ticks: ['4 août', '11', '18', '25', '3 sept.'], perf: [0, 0.4, 0.9, 0.6, 1.2, 1.0, 1.62], bench: [0, 0.3, 0.6, 0.5, 0.8, 0.9, 1.10] },
+  '3m': { ticks: ['Juin', 'Juil.', 'Août', 'Sept.'], perf: [0, 0.9, 1.6, 1.2, 2.4, 3.1, 3.42], bench: [0, 0.7, 1.2, 1.0, 1.9, 2.4, 2.61] },
+  '6m': { ticks: ['Mars', 'Mai', 'Juil.', 'Sept.'], perf: [0, 1.2, 2.4, 2.0, 3.6, 4.8, 5.61], bench: [0, 1.0, 1.9, 1.7, 2.9, 3.9, 4.42] },
+  '1a': { ticks: ['Sept. 25', 'Déc.', 'Mars', 'Juin', 'Sept. 26'], perf: [0, 2.2, 4.1, 5.6, 7.2, 8.1, 9.8, 11.4, 12.6], bench: [0, 1.8, 3.2, 4.4, 5.9, 6.6, 8.0, 9.2, 10.4] },
+  '3a': { ticks: ['2023', '2024', '2025', '2026'], perf: [0, 5.2, 9.8, 14.6, 19.3, 24.1, 28.7, 31.4], bench: [0, 4.1, 7.6, 11.4, 15.2, 19.1, 23.0, 25.6] },
+  '5a': { ticks: ['2021', '2022', '2023', '2024', '2025', '2026'], perf: [0, 8.4, 4.2, 16.8, 27.4, 38.1, 46.2, 52.8], bench: [0, 7.1, 2.6, 13.9, 22.8, 31.4, 38.6, 44.1] },
+  'max': { ticks: ['2018', '2020', '2022', '2024', '2026'], perf: [0, 6.2, 11.4, 9.8, 22.6, 34.8, 48.2, 61.4, 74.6, 86.2], bench: [0, 5.1, 9.4, 7.8, 18.9, 29.2, 40.6, 51.8, 62.4, 71.8] }
+};
+
+const PERIOD_LABEL = { 'ytd': 'YTD', '1m': '1M', '3m': '3M', '6m': '6M', '1a': '1A', '3a': '3A', '5a': '5A', 'max': 'MAX' };
+const PERIOD_LONG = { 'ytd': 'depuis le 1er janvier', '1m': 'sur 1 mois', '3m': 'sur 3 mois', '6m': 'sur 6 mois', '1a': 'sur 1 an', '3a': 'sur 3 ans', '5a': 'sur 5 ans', 'max': 'depuis l\'origine' };
+
+const POSITIONS = [
+  { ticker: 'GLBEQ', name: 'Global Equity Index', value: 96.4, weight: 19.8, day: 0.61, ytd: 11.8 },
+  { ticker: 'USLC', name: 'US Large Cap Core', value: 78.9, weight: 16.2, day: 1.42, ytd: 14.3 },
+  { ticker: 'TSY10', name: 'Treasury 7–10 ans', value: 58.1, weight: 12.0, day: 0.11, ytd: 2.6 },
+  { ticker: 'IGCRD', name: 'IG Corporate Bond', value: 43.7, weight: 9.0, day: 0.18, ytd: 3.4 },
+  { ticker: 'EUEQ', name: 'Europe ex-UK Equity', value: 41.2, weight: 8.5, day: -0.18, ytd: 6.4 },
+  { ticker: 'PRVE', name: 'Private Equity Co-invest', value: 31.5, weight: 6.5, day: 0, ytd: 8.9 },
+  { ticker: 'EMEQ', name: 'EM Equity Sleeve', value: 27.6, weight: 5.7, day: -0.88, ytd: 3.1 },
+  { ticker: 'REIT', name: 'Listed Real Estate', value: 19.8, weight: 4.1, day: -0.52, ytd: -2.4 }
+];
+
+const ALLOCATION = [
+  { label: 'Actions', actual: 57.3, target: 55 },
+  { label: 'Obligations', actual: 25.4, target: 26 },
+  { label: 'Alternatifs', actual: 13.1, target: 14 },
+  { label: 'Trésorerie', actual: 8.6, target: 5 }
+];
+
+const EXPOSURES = {
+  currency: [
+    { label: 'EUR', value: 58.2 }, { label: 'USD', value: 27.4 },
+    { label: 'CHF', value: 6.1 }, { label: 'GBP', value: 4.8 }, { label: 'Autres', value: 3.5 }
+  ],
+  region: [
+    { label: 'Zone euro', value: 41.6 }, { label: 'Amérique du N.', value: 32.8 },
+    { label: 'Asie dév.', value: 12.4 }, { label: 'Émergents', value: 9.1 }, { label: 'Autres', value: 4.1 }
+  ]
+};
+
+const ACTIVITY = [
+  { time: '09:41', label: 'Exécution partielle ORD-2026-0841', detail: '3 100 parts USLC à 41,71 €', tag: 'Ordre', level: 'info' },
+  { time: '08:26', label: 'Ordre validé ORD-2026-0841', detail: 'Achat 12 000 parts, limite 41,80 €', tag: 'Ordre', level: 'info' },
+  { time: '07:45', label: 'Transfert de titres dénoué', detail: 'TRF-2026-0113 — 4 200 parts GLBEQ', tag: 'Transfert', level: 'ok' },
+  { time: '07:20', label: 'Confirmation dépositaire', detail: 'ORD-2026-0839 — référence CUST-77412', tag: 'Titres', level: 'ok' },
+  { time: 'Hier', label: 'Dividende annoncé GLBEQ', detail: '2,10 € par part, détachement le 08/09', tag: 'Dividende', level: 'info' },
+  { time: 'Hier', label: 'Dépassement de bande actions', detail: '57,3 % contre 55 % de cible', tag: 'Limite', level: 'warn' }
+];
+
+const ANOMALIES = [
+  { label: 'Écart de position EUEQ', detail: '61 000 parts en interne contre 183 000 chez le dépositaire — division du nominal non appliquée', source: 'Réconciliation', when: 'Aujourd\'hui 07:16', severity: 'high', action: 'Appliquer la division' },
+  { label: 'Bande d\'allocation actions dépassée', detail: '57,3 % contre une cible de 55 %, hors bande de 2 points', source: 'Contrôle des limites', when: 'Aujourd\'hui 07:05', severity: 'high', action: 'Instruire un rééquilibrage' },
+  { label: 'Compte de collatéral débiteur', detail: '−420 000 € ; appel de marge à couvrir avant le 02/09', source: 'Trésorerie', when: 'Hier 18:20', severity: 'high', action: 'Alimenter le compte' },
+  { label: 'Ordre partiellement exécuté non dénoué', detail: 'ORD-2026-0841 — 10 500 parts USLC en attente de confirmation', source: 'Transactions', when: 'Aujourd\'hui 09:41', severity: 'medium', action: 'Suivre le dénouement' },
+  { label: 'Écritures comptables en attente de validation', detail: '2 pièces : droits de garde août et commission T3', source: 'Comptabilité', when: 'Hier 07:40', severity: 'medium', action: 'Valider les écritures' },
+  { label: 'Écart espèces sur compte collatéral', detail: '420 € d\'intérêts débiteurs non comptabilisés', source: 'Réconciliation', when: 'Aujourd\'hui 07:16', severity: 'medium', action: 'Comptabiliser' },
+  { label: 'KYC trésorier à renouveler', detail: 'Fondation Ravel — pièce d\'identité expirée depuis le 12/08', source: 'Comptes', when: '12/08', severity: 'low', action: 'Relancer le client' },
+  { label: 'Prix de valorisation ancien', detail: 'Infrastructure Fund II — dernière valeur liquidative du 30/06', source: 'Positions', when: '30/06', severity: 'low', action: 'Demander la VL' }
+];
+
+const SEVERITY = {
+  high: { label: 'Bloquante', bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' },
+  medium: { label: 'À traiter', bg: 'rgba(0,61,165,0.10)', fg: 'var(--ink-brand-2)' },
+  low: { label: 'Surveillance', bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)' }
+};
+
+// Vignettes de performance : fond teinté et intensité de la couleur proportionnelles à l'ampleur
+// du pourcentage. Une vignette adopte ce comportement en portant la clé `perf` (valeur en %).
+function perfTone(v, cap) {
+  const mag = Math.min(Math.abs(v) / (cap || 10), 1);
+  const up = v >= 0;
+  const light = (up ? 0.58 : 0.60) - mag * 0.16;
+  const chroma = (up ? 0.07 : 0.08) + mag * 0.07;
+  const hue = up ? 168 : 32;
+  return {
+    bg: (function (a, h) { return 'linear-gradient(oklch(0.62 ' + a + ' ' + h + ' / ' + a + '), oklch(0.62 ' + a + ' ' + h + ' / ' + a + ')), var(--surface)'; })((0.10 + mag * 0.06).toFixed(3), hue),
+    fg: up ? 'var(--ink-ok)' : 'var(--ink-warn)'
+  };
+}
+
+// Deux couleurs seulement pour les vignettes chiffrées : vert marqué si positif,
+// rouge marqué si négatif ou en alerte — le rouge reprenant celui des anomalies.
+const TONE_GREEN = 'var(--ink-ok)';
+const TONE_RED = 'var(--ink-warn-2)';
+
+function tone(k) {
+  if (typeof k.alert === 'number') {
+    const mag = Math.min(k.alert / 8, 1);
+    return Object.assign({}, k, {
+      bg: (function (a) { return 'linear-gradient(oklch(0.62 ' + a + ' 32 / ' + a + '), oklch(0.62 ' + a + ' 32 / ' + a + ')), var(--surface)'; })((0.10 + mag * 0.06).toFixed(3)),
+      valueColor: 'var(--ink-warn)',
+      labelColor: TONE_RED,
+      noteColor: TONE_RED
+    });
+  }
+  if (typeof k.perf !== 'number') {
+    return Object.assign({ bg: 'var(--surface)', valueColor: 'var(--color-text)', labelColor: 'var(--color-neutral-700)' }, k);
+  }
+  const t = perfTone(k.perf, k.perfCap);
+  const marked = k.perf >= 0 ? TONE_GREEN : TONE_RED;
+  return Object.assign({}, k, { bg: t.bg, valueColor: t.fg, labelColor: marked, noteColor: marked });
+}
+
+function pct(v, d) {
+  return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d === undefined ? 2 : d).replace('.', ',') + ' %';
+}
+
+class Component extends DCLogic {
+  state = { mandate: 'bgm', period: 'ytd', sort: 'weight', expo: 'currency', anoFilter: 'all', panels: {} };
+
+  path(series, min, max) {
+    const w = 320, h = 110;
+    return series.map((v, i) => {
+      const x = (i / (series.length - 1)) * w;
+      const y = h - 7 - ((v - min) / (max - min || 1)) * (h - 20);
+      return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+    }).join(' ');
+  }
+
+  tab(label, on, fn, first) {
+    return {
+      label, onClick: fn,
+      divider: first ? '0' : '1px solid rgba(0,61,165,0.30)',
+      bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+      hoverBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.16)',
+      fg: on ? '#ffffff' : 'var(--ink-brand)',
+      weight: on ? '600' : '400'
+    };
+  }
+
+  componentDidMount() {
+    this.closeCombo = () => { if (this.state.combo) this.setState({ combo: null }); };
+    document.addEventListener('mousedown', this.closeCombo);
+  }
+
+  componentWillUnmount() {
+    if (this.closeCombo) document.removeEventListener('mousedown', this.closeCombo);
+  }
+
+  panel(key) {
+    const closed = (this.state.panels || {})[key] === true;
+    return {
+      open: !closed,
+      rotate: closed ? '-90deg' : '0deg',
+      border: closed ? '0' : '1px solid var(--color-neutral-200)',
+      title: closed ? 'Développer' : 'Replier'
+    };
+  }
+
+  flip(key) {
+    this.setState((s) => {
+      const p = Object.assign({}, s.panels);
+      p[key] = !p[key];
+      return { panels: p };
+    });
+  }
+
+  blueTab(label, on, fn, first) {
+    return {
+      label: label, onClick: fn,
+      divider: first ? '0' : '1px solid rgba(0,61,165,0.30)',
+      bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+      hoverBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.09)',
+      fg: on ? '#ffffff' : 'var(--ink-brand)',
+      weight: on ? '700' : '400'
+    };
+  }
+
+  redTab(label, on, fn, first) {
+    return {
+      label: label, onClick: fn,
+      divider: first ? '0' : '1px solid rgba(180,83,9,0.35)',
+      bg: on ? 'var(--field-warn)' : 'transparent',
+      hoverBg: on ? 'var(--field-warn)' : 'rgba(180,83,9,0.13)',
+      fg: on ? '#ffffff' : '#a4552c',
+      weight: on ? '700' : '400'
+    };
+  }
+
+  renderVals() {
+    const s = SERIES[this.state.period];
+    const all = s.perf.concat(s.bench);
+    const min = Math.min.apply(null, all), max = Math.max.apply(null, all);
+    const perf = s.perf[s.perf.length - 1], bench = s.bench[s.bench.length - 1];
+    const total = POSITIONS.reduce((n, p) => n + p.value, 0);
+    const sortKey = this.state.sort;
+    const positions = POSITIONS.slice().sort((a, b) =>
+      sortKey === 'weight' ? b.weight - a.weight : sortKey === 'day' ? b.day - a.day : b.ytd - a.ytd).slice(0, 7);
+    const expo = EXPOSURES[this.state.expo];
+    const maxExpo = Math.max.apply(null, expo.map((e) => e.value));
+    const drifts = ALLOCATION.filter((a) => Math.abs(a.actual - a.target) > 2).length;
+    const af = this.state.anoFilter;
+    const anomalies = ANOMALIES.filter((a) => af === 'all' || a.severity === af);
+    const blocking = ANOMALIES.filter((a) => a.severity === 'high').length;
+
+    const TAG = {
+      ok: { bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
+      info: { bg: 'rgba(0,61,165,0.10)', fg: 'var(--ink-brand-2)' },
+      warn: { bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' }
+    };
+
+    return {
+      subtitle: (MANDATES.find((m) => m.value === this.state.mandate) || MANDATES[0]).label
+        + ' · valorisation au 31 août 2026, 17:30',
+      comboGuard: (e) => { if (e) e.stopPropagation(); },
+      acctOpen: this.state.combo === 'acct',
+      acctRotate: this.state.combo === 'acct' ? '180deg' : '0deg',
+      acctBorder: this.state.combo === 'acct' ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      acctRing: this.state.combo === 'acct' ? '0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10)' : 'none',
+      acctLabel: (MANDATES.find((m) => m.value === this.state.mandate) || MANDATES[0]).label,
+      acctToggle: (e) => {
+        if (e) e.stopPropagation();
+        this.setState((s) => ({ combo: s.combo === 'acct' ? null : 'acct' }));
+      },
+      acctOptions: MANDATES.map((m) => {
+        const on = m.value === this.state.mandate;
+        return {
+          label: m.label,
+          bg: on ? 'rgba(0,61,165,0.12)' : 'transparent',
+          fg: on ? 'var(--ink-brand)' : 'var(--color-text)',
+          weight: on ? '700' : '400',
+          onSelect: () => this.setState({ mandate: m.value, combo: null })
+        };
+      }),
+      periodTabs: Object.keys(PERIOD_LABEL).map((k, i) =>
+        this.blueTab(PERIOD_LABEL[k], this.state.period === k, () => this.setState({ period: k }), i === 0)),
+
+      kpis: [
+        { label: 'Actifs sous gestion', value: '486,2 M€', note: '+8,4 M€ sur la période', noteColor: 'var(--ink-ok-2)', perf: (8.4 / 486.2) * 100, perfCap: 4 },
+        { label: 'Performance ' + PERIOD_LONG[this.state.period], value: pct(perf), note: 'Référence ' + pct(bench), noteColor: 'var(--color-neutral-700)', perf: perf },
+        { label: 'Écart à la référence', value: pct(perf - bench), note: 'Contribution actions +0,9 pt', noteColor: perf - bench >= 0 ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)', perf: perf - bench },
+        { label: 'Anomalies ouvertes', value: String(ANOMALIES.length), note: blocking + ' bloquante(s) · ' + drifts + ' bande(s) dépassée(s)', noteColor: blocking ? 'var(--ink-warn-2)' : 'var(--ink-ok-2)', alert: ANOMALIES.length }
+      ].map(tone),
+
+      perfNote: 'Base 100 au début de la période, net de frais',
+      perfPath: this.path(s.perf, min, max),
+      benchPath: this.path(s.bench, min, max),
+      perfTicks: s.ticks.map((label) => ({ label })),
+      perfValue: pct(perf),
+      benchValue: pct(bench),
+      alpha: pct(perf - bench),
+      alphaColor: perf - bench >= 0 ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)',
+
+      allocOpen: this.state.allocOpen !== false,
+      allocRotate: this.state.allocOpen === false ? '-90deg' : '0deg',
+      allocHeaderBorder: this.state.allocOpen === false ? '0' : '1px solid var(--color-neutral-200)',
+      allocToggleTitle: this.state.allocOpen === false ? 'Développer' : 'Replier',
+      toggleAlloc: () => this.setState((s) => ({ allocOpen: s.allocOpen === false })),
+
+      perfOpen: this.panel('perf').open, perfRotate: this.panel('perf').rotate,
+      perfHeaderBorder: this.panel('perf').border, perfToggleTitle: this.panel('perf').title,
+      togglePerf: () => this.flip('perf'),
+      posOpen: this.panel('pos').open, posRotate: this.panel('pos').rotate,
+      posHeaderBorder: this.panel('pos').border, posToggleTitle: this.panel('pos').title,
+      togglePos: () => this.flip('pos'),
+      riskOpen: this.panel('risk').open, riskRotate: this.panel('risk').rotate,
+      riskHeaderBorder: this.panel('risk').border, riskToggleTitle: this.panel('risk').title,
+      toggleRisk: () => this.flip('risk'),
+      expoOpen: this.panel('expo').open, expoRotate: this.panel('expo').rotate,
+      expoHeaderBorder: this.panel('expo').border, expoToggleTitle: this.panel('expo').title,
+      toggleExpo: () => this.flip('expo'),
+      actOpen: this.panel('act').open, actRotate: this.panel('act').rotate,
+      actHeaderBorder: this.panel('act').border, actToggleTitle: this.panel('act').title,
+      toggleAct: () => this.flip('act'),
+      allocNote: drifts ? drifts + ' classe(s) hors bande de 2 pts' : 'Toutes les classes dans la bande',
+      allocation: ALLOCATION.map((a) => {
+        const drift = a.actual - a.target;
+        const out = Math.abs(drift) > 2;
+        return {
+          label: a.label,
+          actual: a.actual.toFixed(1).replace('.', ',') + ' %',
+          drift: (Math.abs(drift) < 0.05 ? 'Sur la cible' : (drift > 0 ? 'Surpondéré ' : 'Sous-pondéré ') + Math.abs(drift).toFixed(1).replace('.', ',') + ' pt')
+            + ' · cible ' + a.target + ' %',
+          driftColor: out ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)',
+          width: Math.min(100, (a.actual / 70) * 100).toFixed(1) + '%',
+          target: ((a.target / 70) * 100).toFixed(1) + '%',
+          barColor: out ? 'var(--ink-warn-2)' : 'var(--ds-brand-fill, var(--ink-brand-2))'
+        };
+      }),
+
+      anoTabs: [
+        this.redTab('Toutes', this.state.anoFilter === 'all', () => this.setState({ anoFilter: 'all' }), true),
+        this.redTab('Bloquantes', this.state.anoFilter === 'high', () => this.setState({ anoFilter: 'high' })),
+        this.redTab('À traiter', this.state.anoFilter === 'medium', () => this.setState({ anoFilter: 'medium' }))
+      ],
+      anoOpen: this.state.anoOpen !== false,
+      anoClosed: this.state.anoOpen === false,
+      anoRotate: this.state.anoOpen === false ? '-90deg' : '0deg',
+      anoHeaderBorder: this.state.anoOpen === false ? '0' : '1px solid #e7cba6',
+      anoToggleTitle: this.state.anoOpen === false ? 'Développer' : 'Replier',
+      anoSummary: blocking + ' bloquante(s), ' + (ANOMALIES.length - blocking) + ' à suivre',
+      toggleAno: () => this.setState((s) => ({ anoOpen: s.anoOpen === false })),
+      anoCount: String(anomalies.length),
+      noAnomalies: anomalies.length === 0,
+      anomalies: anomalies.map((a) => ({
+        label: a.label, detail: a.detail, source: a.source, when: a.when, action: a.action,
+        severity: SEVERITY[a.severity].label,
+        tagBg: SEVERITY[a.severity].bg,
+        tagFg: SEVERITY[a.severity].fg
+      })),
+
+      sortTabs: [
+        this.blueTab('Poids', sortKey === 'weight', () => this.setState({ sort: 'weight' }), true),
+        this.blueTab('Jour', sortKey === 'day', () => this.setState({ sort: 'day' })),
+        this.blueTab('YTD', sortKey === 'ytd', () => this.setState({ sort: 'ytd' }))
+      ],
+      positions: positions.map((p) => ({
+        ticker: p.ticker, name: p.name,
+        value: p.value.toFixed(1).replace('.', ',') + ' M€',
+        weight: ((p.value / total) * 100).toFixed(1).replace('.', ',') + ' %',
+        day: pct(p.day), ytd: pct(p.ytd, 1),
+        dayColor: p.day > 0 ? 'var(--ink-ok-2)' : p.day < 0 ? 'var(--ink-warn-2)' : 'var(--color-neutral-600)',
+        ytdColor: p.ytd > 0 ? 'var(--ink-ok-2)' : p.ytd < 0 ? 'var(--ink-warn-2)' : 'var(--color-neutral-600)'
+      })),
+
+      risk: [
+        { label: 'VaR 1 mois, 99 %', detail: 'Historique, 3 ans de données', value: '−4,8 %', color: 'var(--ink-warn-2)' },
+        { label: 'Volatilité annualisée', detail: 'Réf. 9,4 %', value: '8,7 %', color: 'var(--color-text)' },
+        { label: 'Bêta actions', detail: 'Contre MSCI World', value: '1,02', color: 'var(--color-text)' },
+        { label: 'Duration obligataire', detail: 'Limite du compte 7 ans', value: '5,4 a.', color: 'var(--color-text)' },
+        { label: 'Ratio de Sharpe', detail: '12 mois glissants', value: '1,18', color: 'var(--ink-ok-2)' },
+        { label: 'Part illiquide', detail: 'Limite 20 %', value: '9,0 %', color: 'var(--color-text)' }
+      ],
+
+      expoTabs: [
+        this.blueTab('Devises', this.state.expo === 'currency', () => this.setState({ expo: 'currency' }), true),
+        this.blueTab('Zones', this.state.expo === 'region', () => this.setState({ expo: 'region' }))
+      ],
+      exposures: expo.map((e) => ({
+        label: e.label,
+        value: e.value.toFixed(1).replace('.', ',') + ' %',
+        width: ((e.value / maxExpo) * 100).toFixed(1) + '%'
+      })),
+
+      activity: ACTIVITY.map((a) => ({
+        time: a.time, label: a.label, detail: a.detail, tag: a.tag,
+        tagBg: TAG[a.level].bg, tagFg: TAG[a.level].fg
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

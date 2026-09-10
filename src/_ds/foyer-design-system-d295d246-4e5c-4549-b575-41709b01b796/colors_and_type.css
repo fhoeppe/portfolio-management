@@ -1,0 +1,330 @@
+/* =========================================================================
+   Foyer Design System — Core Tokens
+   Source of truth for colors, typography, spacing, radii, shadows, motion.
+   Derived from Foyer Design System (FDS) — packages/CORE/src/variables.scss.
+   ========================================================================= */
+
+/* ---- Fonts ---- */
+/* Inter — the one and only Foyer interface font. Variable, shipped locally. */
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-VariableFont_opsz_wght.ttf') format('truetype-variations'),
+       url('fonts/Inter-VariableFont_opsz_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ================== COLOR — BRAND ================== */
+  /* Foyer blue — the primary signature color. Used on the logo, CTAs, and key accents. */
+  /* ================== COLOR — BRAND ================== */
+  /* Foyer blue — the ONLY Foyer brand color. Used on the logo, CTAs, links, and key accents.
+     Primary-700 on white = 8.9:1 (AAA). Primary-500 on white = 8.6:1 (AAA).
+     Primary-100 on primary-700 text = 9.1:1 (AAA). */
+  --fds-primary-900: #002e58;
+  --fds-primary-800: #003a6e;
+  --fds-primary-700: #004279;   /* Darkest tone for text on light surfaces */
+  --fds-primary-600: #004686;
+  --fds-primary-500: #004c92;   /* Foyer blue — signature */
+  --fds-primary-400: #1e63a5;
+  --fds-primary-300: #3f7cb6;
+  --fds-primary-200: #9fbedb;
+  --fds-primary-100: #e5eef6;   /* Subtle background for blue surfaces */
+  --fds-primary-050: #f2f6fa;
+
+  /* ================== COLOR — UTILITY ================== */
+  /* These are NOT brand colors. They signal state only: success, warning, danger.
+     Every pairing below meets WCAG AA (≥ 4.5:1 for body text, ≥ 3:1 for large). */
+
+  /* Success — positive state (paid, confirmed, valid). Green-700 on green-100 = 7.1:1 ✓ */
+  --fds-success-900: #063d22;
+  --fds-success-800: #0a5330;
+  --fds-success-700: #0f6a3f;   /* AA text on success-100 */
+  --fds-success-600: #138049;
+  --fds-success-500: #1a9e5a;
+  --fds-success-300: #8bd4ab;
+  --fds-success-200: #c9ecd9;
+  --fds-success-100: #e9f7ef;
+
+  /* Warning — attention / caution (action recommended, expiring soon).
+     Orange is a utility color only. Warning-800 on warning-100 = 7.4:1 ✓ */
+  --fds-warning-900: #5a3a00;
+  --fds-warning-800: #7a4d00;   /* AA text on warning-100 */
+  --fds-warning-700: #8a5a00;
+  --fds-warning-600: #a67100;
+  --fds-warning-500: #c48a12;
+  --fds-warning-300: #f3c96a;
+  --fds-warning-200: #fbe7b4;
+  --fds-warning-100: #fff6df;
+
+  /* Danger — error / destructive (overdue, rejected, delete). Danger-700 on danger-100 = 6.8:1 ✓ */
+  --fds-danger-900: #6b1010;
+  --fds-danger-800: #801818;
+  --fds-danger-700: #9b1c1c;   /* AA text on danger-100 */
+  --fds-danger-600: #b42323;
+  --fds-danger-500: #d6322f;
+  --fds-danger-300: #eea5a3;
+  --fds-danger-200: #f7cfce;
+  --fds-danger-100: #fdecec;
+
+  /* --fds-secondary-* and --fds-info-* are DEPRECATED and removed. Do not reintroduce. */
+
+  /* ================== COLOR — NEUTRALS ================== */
+  /* Feather-grey neutrals. Use for text, borders, surfaces.
+     Grey-700 on white = 8.2:1 ✓ · Grey-600 on white = 5.6:1 ✓ · Grey-500 on white = 3.3:1 (large text only) */
+  --fds-white: #ffffff;
+  --fds-white-150: rgba(255, 255, 255, 0.15);
+  --fds-feather-grey-100: #f5f6f8;   /* Subtle background */
+  --fds-feather-grey-200: #eceef2;   /* Dividers, hover-fills */
+  --fds-feather-grey-300: #dde1e7;   /* Subtle borders */
+  --fds-feather-grey-400: #c4c9d2;   /* Disabled elements */
+  --fds-feather-grey-500: #9aa1ad;   /* Placeholder text · large-text only */
+  --fds-feather-grey-600: #6b7280;   /* Secondary text · AA ✓ */
+  --fds-feather-grey-700: #4b5361;   /* Body text · AA ✓ */
+  --fds-feather-grey-800: #2f3540;   /* Strong text · AAA ✓ */
+  --fds-feather-grey-900: #171a21;   /* Headlines · AAA ✓ */
+  --fds-feather-grey-light: #f5f6f8;
+
+  /* ================== TYPOGRAPHY ================== */
+  /* Inter only. One font, all weights — no other families allowed in Foyer UI. */
+  --fds-font-family-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --fds-font-family-serif: 'Inter', ui-sans-serif, system-ui, sans-serif; /* legacy alias — resolves to Inter */
+  --fds-font-family-mono: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* Type scale (desktop). Line-heights tuned for dense insurance UI. */
+  /* Inter has optical sizes (opsz 14-32) — the browser picks automatically on a variable install. */
+  --fds-fs-display-xl: 64px;  --fds-lh-display-xl: 1.04;
+  --fds-fs-display-lg: 48px;  --fds-lh-display-lg: 1.08;
+  --fds-fs-display-md: 36px;  --fds-lh-display-md: 1.12;
+  --fds-fs-h1:         28px;  --fds-lh-h1:         1.2;
+  --fds-fs-h2:         22px;  --fds-lh-h2:         1.25;
+  --fds-fs-h3:         18px;  --fds-lh-h3:         1.3;
+  --fds-fs-body-lg:    17px;  --fds-lh-body-lg:    1.55;
+  --fds-fs-body:       15px;  --fds-lh-body:       1.55;
+  --fds-fs-body-sm:    13px;  --fds-lh-body-sm:    1.5;
+  --fds-fs-caption:    12px;  --fds-lh-caption:    1.4;
+  --fds-fs-micro:      11px;  --fds-lh-micro:      1.4;
+
+  /* Weights (Inter is variable, so any value in 100–900 works) */
+  --fds-fw-regular: 400;
+  --fds-fw-medium:  500;
+  --fds-fw-semibold: 600;
+  --fds-fw-bold:    700;
+
+  --fds-letter-spacing-caps: 0.06em;  /* For ALL-CAPS labels and buttons */
+  --fds-letter-spacing-tight: -0.01em;
+
+  /* ================== SPACING ================== */
+  /* 4px grid. Never eyeball spacing — pick from this scale. */
+  --fds-space-0: 0;
+  --fds-space-1: 4px;
+  --fds-space-2: 8px;
+  --fds-space-3: 12px;
+  --fds-space-4: 16px;
+  --fds-space-5: 20px;
+  --fds-space-6: 24px;
+  --fds-space-8: 32px;
+  --fds-space-10: 40px;
+  --fds-space-12: 48px;
+  --fds-space-16: 64px;
+  --fds-space-20: 80px;
+  --fds-space-24: 96px;
+
+  /* ================== RADII ================== */
+  --fds-radius-xs: 4px;    /* Chips, tiny elements */
+  --fds-radius-sm: 6px;    /* Inputs, small buttons */
+  --fds-radius-md: 8px;    /* Buttons, cards */
+  --fds-radius-lg: 12px;   /* Panels, tiles */
+  --fds-radius-xl: 16px;   /* Feature panels */
+  --fds-radius-2xl: 24px;  /* Hero surfaces */
+  --fds-radius-full: 999px;
+
+  /* ================== ELEVATION ================== */
+  --fds-shadow-1: 0 1px 2px 0 rgba(15, 30, 56, 0.06);
+  --fds-shadow-2: 0 2px 6px -1px rgba(15, 30, 56, 0.08), 0 1px 2px rgba(15,30,56,0.04);
+  --fds-shadow-3: 0 8px 24px -6px rgba(15, 30, 56, 0.12), 0 2px 6px rgba(15,30,56,0.06);
+  --fds-shadow-4: 0 20px 40px -12px rgba(15, 30, 56, 0.18), 0 6px 12px rgba(15,30,56,0.06);
+  /* Focus ring — a 2px SOLID blue outline offset 2px OUTSIDE the element.
+     Applied via CSS `outline` + `outline-offset` so it sits cleanly around pills,
+     squares, and custom shapes alike. Never an inset shadow. */
+  --fds-focus-outline-width: 2px;
+  --fds-focus-outline-offset: 2px;
+  --fds-focus-outline-color: var(--fds-primary-500);
+
+  /* ================== MOTION ================== */
+  --fds-default-animation-duration: 180ms;
+  --fds-ease-standard: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --fds-ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ================== LAYOUT ================== */
+  --fds-container-max: 1280px;
+  --fds-content-max: 960px;
+  --fds-side-gutter: 24px;
+  --fds-border-width: 1px;
+  --fds-focus-ring-width: 3px;
+}
+
+/* ================== BASE TYPE SETTINGS ================== */
+html, body {
+  font-family: var(--fds-font-family-sans);
+  font-size: var(--fds-fs-body);
+  line-height: var(--fds-lh-body);
+  color: var(--fds-feather-grey-800);
+  background: var(--fds-white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.fds-display-xl { font-family: var(--fds-font-family-sans); font-size: var(--fds-fs-display-xl); line-height: var(--fds-lh-display-xl); font-weight: var(--fds-fw-bold); letter-spacing: var(--fds-letter-spacing-tight); color: var(--fds-feather-grey-900); }
+.fds-display-lg { font-family: var(--fds-font-family-sans); font-size: var(--fds-fs-display-lg); line-height: var(--fds-lh-display-lg); font-weight: var(--fds-fw-bold); letter-spacing: var(--fds-letter-spacing-tight); color: var(--fds-feather-grey-900); }
+.fds-display-md { font-family: var(--fds-font-family-sans); font-size: var(--fds-fs-display-md); line-height: var(--fds-lh-display-md); font-weight: var(--fds-fw-semibold); letter-spacing: var(--fds-letter-spacing-tight); color: var(--fds-feather-grey-900); }
+.fds-h1 { font-size: var(--fds-fs-h1); line-height: var(--fds-lh-h1); font-weight: var(--fds-fw-semibold); color: var(--fds-feather-grey-900); margin: 0; }
+.fds-h2 { font-size: var(--fds-fs-h2); line-height: var(--fds-lh-h2); font-weight: var(--fds-fw-semibold); color: var(--fds-feather-grey-900); margin: 0; }
+.fds-h3 { font-size: var(--fds-fs-h3); line-height: var(--fds-lh-h3); font-weight: var(--fds-fw-semibold); color: var(--fds-feather-grey-900); margin: 0; }
+.fds-body-lg { font-size: var(--fds-fs-body-lg); line-height: var(--fds-lh-body-lg); color: var(--fds-feather-grey-700); }
+.fds-body { font-size: var(--fds-fs-body); line-height: var(--fds-lh-body); color: var(--fds-feather-grey-700); }
+.fds-body-sm { font-size: var(--fds-fs-body-sm); line-height: var(--fds-lh-body-sm); color: var(--fds-feather-grey-700); }
+.fds-caption { font-size: var(--fds-fs-caption); line-height: var(--fds-lh-caption); color: var(--fds-feather-grey-600); }
+.fds-micro-caps { font-size: var(--fds-fs-micro); line-height: var(--fds-lh-micro); color: var(--fds-feather-grey-600); text-transform: uppercase; letter-spacing: var(--fds-letter-spacing-caps); font-weight: var(--fds-fw-semibold); }
+.fds-serif-feature { font-family: var(--fds-font-family-sans); font-weight: var(--fds-fw-bold); letter-spacing: -0.02em; }
+
+/* ================== UTILITY CLASSES ================== */
+.fds-surface { background: var(--fds-white); border: 1px solid var(--fds-feather-grey-300); border-radius: var(--fds-radius-lg); }
+.fds-surface-sunken { background: var(--fds-feather-grey-100); border-radius: var(--fds-radius-lg); }
+.fds-divider { height: 1px; background: var(--fds-feather-grey-200); border: 0; }
+
+/* Global focus ring — applied to every interactive element.
+   2px solid Foyer blue, offset 2px to the outside. Never inset, never removed. */
+.fds-focus-ring:focus-visible,
+.fds-btn:focus-visible,
+.fds-input:focus-visible,
+.fds-tab:focus-visible,
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--fds-focus-outline-width) solid var(--fds-focus-outline-color);
+  outline-offset: var(--fds-focus-outline-offset);
+  box-shadow: none;
+}
+
+/* ================== BUTTON PRIMITIVES ================== */
+/* Shared base for all buttons — match FDS spacing, radius, focus. */
+.fds-btn {
+  --_bg: transparent;
+  --_fg: var(--fds-primary-500);
+  --_border: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 20px;
+  font: inherit;
+  font-weight: var(--fds-fw-semibold);
+  font-size: var(--fds-fs-body-sm);
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: var(--fds-radius-full);
+  border: 1px solid var(--_border);
+  background: var(--_bg);
+  color: var(--_fg);
+  cursor: pointer;
+  transition: background var(--fds-default-animation-duration) var(--fds-ease-standard),
+              border-color var(--fds-default-animation-duration) var(--fds-ease-standard),
+              color var(--fds-default-animation-duration) var(--fds-ease-standard),
+              box-shadow var(--fds-default-animation-duration) var(--fds-ease-standard);
+  white-space: nowrap;
+}
+.fds-btn:focus-visible { outline: var(--fds-focus-outline-width) solid var(--fds-focus-outline-color); outline-offset: var(--fds-focus-outline-offset); box-shadow: none; }
+.fds-btn[disabled], .fds-btn.is-disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Contained — primary. Filled blue, white text. One per screen. */
+.fds-btn--contained { --_bg: var(--fds-primary-500); --_fg: #fff; --_border: var(--fds-primary-500); }
+.fds-btn--contained:hover { --_bg: var(--fds-primary-600); --_border: var(--fds-primary-600); }
+
+/* Outlined — secondary. Transparent with blue border + text. */
+.fds-btn--outlined { --_bg: transparent; --_fg: var(--fds-primary-500); --_border: var(--fds-primary-500); }
+.fds-btn--outlined:hover { --_bg: var(--fds-primary-100); }
+
+/* Light — tonal. Primary-100 background with primary-700 text for soft emphasis. */
+.fds-btn--light { --_bg: var(--fds-primary-100); --_fg: var(--fds-primary-700); --_border: var(--fds-primary-100); }
+.fds-btn--light:hover { --_bg: var(--fds-primary-200); --_border: var(--fds-primary-200); }
+
+/* Text — tertiary. No background at rest; primary-100 on hover/focus. Use in lists. */
+.fds-btn--text { --_bg: transparent; --_fg: var(--fds-primary-500); --_border: transparent; padding: 0 12px; }
+.fds-btn--text:hover { --_bg: var(--fds-primary-100); }
+.fds-btn--text:focus-visible { --_bg: var(--fds-primary-100); }
+
+/* Icon-only — square, no label. Requires aria-label. */
+.fds-btn--icon { width: 40px; padding: 0; border-radius: var(--fds-radius-full); --_bg: transparent; --_fg: var(--fds-primary-500); --_border: transparent; }
+.fds-btn--icon:hover { --_bg: var(--fds-primary-100); }
+.fds-btn--icon:focus-visible { --_bg: var(--fds-primary-100); }
+.fds-btn--icon.fds-btn--sm { width: 32px; }
+.fds-btn--icon.fds-btn--lg { width: 48px; }
+/* Icon-only on a tonal surface */
+.fds-btn--icon.fds-btn--light { --_bg: var(--fds-primary-100); --_border: var(--fds-primary-100); }
+.fds-btn--icon.fds-btn--light:hover { --_bg: var(--fds-primary-200); --_border: var(--fds-primary-200); }
+/* Icon-only on feather-grey (for neutral chrome like close / overflow) */
+.fds-btn--icon.fds-btn--ghost { --_fg: var(--fds-feather-grey-700); }
+.fds-btn--icon.fds-btn--ghost:hover { --_bg: var(--fds-feather-grey-100); --_border: var(--fds-feather-grey-100); --_fg: var(--fds-feather-grey-900); }
+
+.fds-btn--danger.fds-btn--contained { --_bg: var(--fds-danger-500); --_border: var(--fds-danger-500); }
+.fds-btn--danger.fds-btn--contained:hover { --_bg: var(--fds-danger-600); --_border: var(--fds-danger-600); }
+.fds-btn--danger.fds-btn--outlined { --_fg: var(--fds-danger-600); --_border: var(--fds-danger-600); }
+.fds-btn--danger.fds-btn--outlined:hover { --_bg: var(--fds-danger-100); }
+.fds-btn--danger.fds-btn--light { --_bg: var(--fds-danger-100); --_fg: var(--fds-danger-700); --_border: var(--fds-danger-100); }
+.fds-btn--danger.fds-btn--light:hover { --_bg: #fbd5d4; --_border: #fbd5d4; }
+.fds-btn--danger.fds-btn--text { --_fg: var(--fds-danger-600); }
+.fds-btn--danger.fds-btn--text:hover { --_bg: var(--fds-danger-100); }
+
+.fds-btn--sm { height: 32px; padding: 0 14px; font-size: 13px; }
+.fds-btn--lg { height: 48px; padding: 0 28px; font-size: 15px; }
+
+/* ================== INPUT ================== */
+.fds-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: var(--fds-fs-body);
+  color: var(--fds-feather-grey-900);
+  background: var(--fds-white);
+  border: 1px solid var(--fds-feather-grey-300);
+  border-radius: var(--fds-radius-sm);
+  transition: border-color var(--fds-default-animation-duration), box-shadow var(--fds-default-animation-duration);
+}
+.fds-input:hover { border-color: var(--fds-feather-grey-500); }
+.fds-input:focus { outline: var(--fds-focus-outline-width) solid var(--fds-focus-outline-color); outline-offset: var(--fds-focus-outline-offset); border-color: var(--fds-primary-500); box-shadow: none; }
+.fds-input::placeholder { color: var(--fds-feather-grey-500); }
+
+/* ================== CARD / PANEL ================== */
+.fds-panel {
+  background: var(--fds-white);
+  border: 1px solid var(--fds-feather-grey-300);
+  border-radius: var(--fds-radius-lg);
+  padding: var(--fds-space-6);
+}
+.fds-panel--feature {
+  border: none;
+  box-shadow: var(--fds-shadow-3);
+  border-radius: var(--fds-radius-xl);
+}
+
+/* ================== BADGE ================== */
+.fds-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px;
+  height: 22px;
+  border-radius: var(--fds-radius-full);
+  font-size: 11px;
+  font-weight: var(--fds-fw-semibold);
+  letter-spacing: 0.02em;
+  background: var(--fds-feather-grey-200);
+  color: var(--fds-feather-grey-800);
+  white-space: nowrap;
+}
+.fds-badge--success { background: var(--fds-success-100); color: var(--fds-success-700); }
+.fds-badge--warning { background: var(--fds-warning-100); color: var(--fds-warning-800); }
+.fds-badge--danger  { background: var(--fds-danger-100);  color: var(--fds-danger-700); }
+.fds-badge--primary { background: var(--fds-primary-100); color: var(--fds-primary-700); }
+.fds-badge--dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }

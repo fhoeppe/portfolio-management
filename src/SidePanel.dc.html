@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="SidePanel"], [data-component="SidePanel"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="SidePanel"] [data-sp-body] > * { flex-shrink: 0; min-height: auto; }
+    @keyframes sp-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes sp-fade { from { opacity: 0; } to { opacity: 1; } }
+    [data-theme="dark"] [data-component="SidePanel"] {
+      --theme-surface: #1d1b1a; --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-600: #8a8582; --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1;
+    }
+    [data-component="SidePanel"] { --ink-brand: #002a6e; }
+    [data-theme="dark"] [data-component="SidePanel"] { --ink-brand: #9db6d9; }
+    [data-component="SidePanel"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="SidePanel"] { --field-brand: #12325e; }
+    [data-component="SidePanel"] { --ink-ok: #0b5f57; --ink-info: #075985; --ink-warn: #8f3f06; --ink-ok-2: #0f766e; }
+    [data-theme="dark"] [data-component="SidePanel"] { --ink-ok: #5fd6c4; --ink-info: #7dd3fc; --ink-warn: #f0a868; --ink-ok-2: #4fd1c5; }
+  </style>
+</helmet>
+
+<div data-component="SidePanel">
+  <div onClick="{{ veilClick }}" style="position:fixed;inset:0;background:rgba(15,18,22,0.42);z-index:300;animation:sp-fade 200ms ease both"></div>
+
+  <aside role="dialog" aria-modal="true" style="position:fixed;top:0;right:0;bottom:0;width:{{ width }};display:flex;flex-direction:column;border-left:1px solid var(--field-brand);background:var(--surface, #ffffff);box-shadow:var(--shadow-lg);z-index:310;animation:sp-slide 240ms cubic-bezier(0.22,0.61,0.36,1)">
+
+    <div onMouseDown="{{ grab }}" matTooltip="Glisser pour redimensionner" title="Glisser pour redimensionner" style="position:absolute;top:0;left:0;bottom:0;width:10px;display:flex;align-items:center;justify-content:center;cursor:col-resize;z-index:5" style-hover="background:rgba(0,61,165,0.10)">
+      <svg width="8" height="26" viewBox="0 0 8 26" aria-hidden="true" style="flex:none;opacity:0.55">
+        <circle cx="2" cy="3" r="1" fill="var(--ink-brand)"></circle><circle cx="6" cy="3" r="1" fill="var(--ink-brand)"></circle>
+        <circle cx="2" cy="8" r="1" fill="var(--ink-brand)"></circle><circle cx="6" cy="8" r="1" fill="var(--ink-brand)"></circle>
+        <circle cx="2" cy="13" r="1" fill="var(--ink-brand)"></circle><circle cx="6" cy="13" r="1" fill="var(--ink-brand)"></circle>
+        <circle cx="2" cy="18" r="1" fill="var(--ink-brand)"></circle><circle cx="6" cy="18" r="1" fill="var(--ink-brand)"></circle>
+        <circle cx="2" cy="23" r="1" fill="var(--ink-brand)"></circle><circle cx="6" cy="23" r="1" fill="var(--ink-brand)"></circle>
+      </svg>
+    </div>
+
+    <div style="flex:none;display:flex;align-items:center;gap:14px;padding:14px 18px 14px 24px;background:{{ accent }};color:#ffffff">
+      <sc-if value="{{ hasIcon }}" hint-placeholder-val="{{ false }}">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none">
+          <sc-for list="{{ paths }}" as="p" hint-placeholder-count="2"><path d="{{ p }}"></path></sc-for>
+        </svg>
+      </sc-if>
+      <span style="min-width:0;display:flex;flex-direction:column;gap:1px">
+        <span style="font-size:19px;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;line-height:1.15">{{ title }}</span>
+        <span style="font-size:11px;opacity:0.85">{{ subtitle }}</span>
+      </span>
+      <button onClick="{{ togglePin }}" matTooltip="{{ pinTitle }}" title="{{ pinTitle }}" style="margin-left:auto;display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:0;border-radius:999px;background:{{ pinBg }};color:#ffffff;cursor:pointer" style-hover="background:rgba(255,255,255,0.28)">
+        <span style="display:inline-flex;flex:none;transform:rotate({{ pinRotate }})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1Z"></path></svg></span>
+      </button>
+      <button onClick="{{ close }}" matTooltip="Fermer" title="Fermer" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:0;border-radius:999px;background:rgba(255,255,255,0.16);color:#ffffff;cursor:pointer" style-hover="background:rgba(255,255,255,0.28)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      </button>
+    </div>
+
+    <sc-if value="{{ hasToolbar }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:none">{{ toolbar }}</div>
+    </sc-if>
+
+    <div data-sp-body="" style="flex:1;min-height:0;overflow-y:auto;padding:{{ bodyPad }};display:flex;flex-direction:column;gap:{{ bodyGap }}">{{ children }}</div>
+
+    <sc-if value="{{ hasFooter }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--color-neutral-200);background:{{ accent }}">
+        <sc-if value="{{ hasSubmit }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ submit }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 16px;border:0;border-radius:6px;background:rgba(255,255,255,0.18);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer" style-hover="background:rgba(255,255,255,0.30)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+            {{ submitLabel }}
+          </button>
+        </sc-if>
+        <button onClick="{{ close }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 16px;border:1px solid rgba(255,255,255,0.45);border-radius:6px;background:transparent;color:#fff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(255,255,255,0.16)">
+          <sc-if value="{{ cancelIsOk }}" hint-placeholder-val="{{ false }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12.5 2.5 2.5 4.5-5"></path></svg>
+          </sc-if>
+          <sc-if value="{{ cancelIsClose }}" hint-placeholder-val="{{ true }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+          </sc-if>
+          {{ cancelLabel }}
+        </button>
+        <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.85)">{{ note }}</span>
+      </div>
+    </sc-if>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:720,&quot;height&quot;:600},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Créer un ordre&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;subtitle&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ordre au marché ou à cours limité&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;var(--ink-ok)&quot;,&quot;options&quot;:[&quot;var(--ink-brand)&quot;,&quot;var(--ink-ok)&quot;,&quot;var(--ink-info)&quot;,&quot;var(--ink-warn)&quot;,&quot;var(--ink-ok-2)&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;M3 3v18h18::M7 14l4-4 3 3 5-6&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pictogramme&quot;},&quot;footer&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Pied de page&quot;},&quot;submitLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Enregistrer&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pied de page&quot;},&quot;cancelLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Annuler&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pied de page&quot;},&quot;cancelKind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;close&quot;,&quot;options&quot;:[&quot;close&quot;,&quot;ok&quot;],&quot;tsType&quot;:&quot;'close' | 'ok'&quot;,&quot;section&quot;:&quot;Pied de page&quot;},&quot;note&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pied de page&quot;},&quot;flush&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Dimensions&quot;},&quot;openPct&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:50,&quot;min&quot;:30,&quot;max&quot;:75,&quot;step&quot;:5,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Dimensions&quot;},&quot;maxPct&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:75,&quot;min&quot;:50,&quot;max&quot;:90,&quot;step&quot;:5,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Dimensions&quot;},&quot;onClose&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;onSubmit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;toolbar&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;React.ReactNode&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;React.ReactNode&quot;}}">
+// Panneau latéral partagé : chrome commun (en-tête, épingle, poignée, bandeau de pied)
+// aux panneaux Ordre, Transfert, Corporate Action, Cashflow, fiche titre et historique.
+class Component extends DCLogic {
+  state = { w: null, pinned: false };
+
+  componentDidMount() {
+    this.onEscape = (e) => {
+      if (e.key !== 'Escape' && e.key !== 'Esc') return;
+      if (this.state.pinned) return;
+      if (this.props.onClose) this.props.onClose();
+    };
+    document.addEventListener('keydown', this.onEscape);
+  }
+
+  componentWillUnmount() {
+    if (this.onEscape) document.removeEventListener('keydown', this.onEscape);
+  }
+
+  maxPx() {
+    return Math.round((window.innerWidth || 1400) * ((this.props.maxPct || 75) / 100));
+  }
+
+  renderVals() {
+    const p = this.props || {};
+    const openPct = p.openPct || 50;
+    const paths = typeof p.icon === 'string' ? p.icon.split('::').filter(Boolean) : [];
+    const close = () => { if (p.onClose) p.onClose(); };
+
+    return {
+      children: p.children,
+      toolbar: p.toolbar,
+      hasToolbar: !!p.toolbar,
+      bodyPad: p.flush ? '0' : '16px',
+      bodyGap: p.flush ? '0' : '14px',
+      title: p.title || '',
+      subtitle: p.subtitle || '',
+      accent: p.accent || 'var(--ink-brand)',
+      paths: paths,
+      hasIcon: paths.length > 0,
+      note: p.note || '',
+      submitLabel: p.submitLabel || 'Enregistrer',
+      cancelLabel: p.cancelLabel || 'Annuler',
+      cancelIsOk: p.cancelKind === 'ok',
+      cancelIsClose: p.cancelKind !== 'ok',
+      hasSubmit: p.onSubmit !== undefined && p.onSubmit !== null,
+      hasFooter: (p.onSubmit !== undefined && p.onSubmit !== null) || p.footer === true,
+      submit: () => { if (p.onSubmit) p.onSubmit(); },
+      close: close,
+      veilClick: () => { if (!this.state.pinned) close(); },
+
+      width: this.state.w
+        ? 'min(' + this.state.w + 'px, ' + (p.maxPct || 75) + 'vw)'
+        : openPct + 'vw',
+
+      pinTitle: this.state.pinned ? 'Détacher le panneau' : 'Épingler le panneau',
+      pinBg: this.state.pinned ? 'rgba(255,255,255,0.36)' : 'rgba(255,255,255,0.16)',
+      pinRotate: this.state.pinned ? '0deg' : '32deg',
+      togglePin: () => this.setState((st) => ({ pinned: !st.pinned })),
+
+      grab: (e) => {
+        if (!e) return;
+        e.preventDefault();
+        const startX = e.clientX;
+        const startW = this.state.w || Math.round((window.innerWidth || 1400) * (openPct / 100));
+        const max = this.maxPx();
+        const move = (ev) => this.setState({ w: Math.max(340, Math.min(max, startW + (startX - ev.clientX))) });
+        const up = () => {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', up);
+          document.body.style.cursor = '';
+        };
+        document.body.style.cursor = 'col-resize';
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

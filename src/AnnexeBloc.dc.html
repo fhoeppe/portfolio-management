@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    [data-annexe-bloc] { --ink-brand: #002a6e; --ink-ok: #0b5f57; --ink-ok-2: #0f766e; --ink-warn: #8f3f06; --ink-warn-2: #b45309; --ink-info: #075985; --ink-alt: #5b3ea8; --ink-code: #3730a3; --ink-magenta: #a21caf; }
+    [data-theme="dark"] [data-annexe-bloc] { --ink-brand: #9db6d9; --ink-ok: #5fd6c4; --ink-ok-2: #4fd1c5; --ink-warn: #f0a868; --ink-warn-2: #f3b782; --ink-info: #7dd3fc; --ink-alt: #c4b5fd; --ink-code: #a5b4fc; --ink-magenta: #f0abfc; }
+    [data-annexe-bloc] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-annexe-bloc] { --field-brand: #12325e; }
+    [data-annexe-bloc] { --ink-brand-2: #003da5; }
+    [data-theme="dark"] [data-annexe-bloc] { --ink-brand-2: #8fb4ee; }
+    [data-annexe-bloc] { --ink-e6ebf5: #e6ebf5; }
+    [data-theme="dark"] [data-annexe-bloc] { --ink-e6ebf5: #cbced3; }
+  </style>
+</helmet>
+<div data-annexe-bloc="" style="display:flex;flex-direction:column;gap:6px;min-width:0">
+  <sc-if value="{{ isSub }}" hint-placeholder-val="{{ false }}">
+    <span style="font-size:12px;font-weight:700;color:var(--ink-brand);text-wrap:pretty">{{ text }}</span>
+  </sc-if>
+  <sc-if value="{{ isText }}" hint-placeholder-val="{{ false }}">
+    <span style="font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">{{ text }}</span>
+  </sc-if>
+  <sc-if value="{{ isCode }}" hint-placeholder-val="{{ false }}">
+    <pre style="margin:0;padding:14px 16px;border:1px solid var(--field-brand);border-left:3px solid var(--ds-brand-fill, var(--field-brand));border-radius:4px;background:#0e1420;color:var(--ink-e6ebf5);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:400;line-height:1.6;letter-spacing:0.01em;font-variant-ligatures:none;tab-size:2;overflow-x:auto">{{ text }}</pre>
+  </sc-if>
+  <sc-if value="{{ isTable }}" hint-placeholder-val="{{ false }}">
+    <span style="display:block;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;background:var(--surface)">
+        <thead>
+          <tr style="background:var(--surface);height:30px">
+            <sc-for list="{{ head }}" as="h" hint-placeholder-count="3">
+              <th style="text-align:left;padding:0 12px;font-size:11px;font-weight:600;color:var(--ink-brand-2);border-bottom:1px solid rgba(0,0,0,0.12);white-space:nowrap">{{ h }}</th>
+            </sc-for>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ body }}" as="r" hint-placeholder-count="3">
+            <tr style="background:{{ r.zebra }}">
+              <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
+                <td style="padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.12);color:var(--color-neutral-800);text-wrap:pretty">
+                  <sc-if value="{{ c.isBadges }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                      <sc-for list="{{ c.badges }}" as="bd" hint-placeholder-count="2">
+                        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:4px;background:{{ bd.bg }};color:{{ bd.fg }};font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">
+                          {{ bd.code }}
+                          <sc-if value="{{ bd.hint }}" hint-placeholder-val="{{ false }}">
+                            <span style="font-family:inherit;font-size:10px;font-weight:400;opacity:0.75">{{ bd.hint }}</span>
+                          </sc-if>
+                        </span>
+                      </sc-for>
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">{{ c.text }}</sc-if>
+                </td>
+              </sc-for>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </span>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;bloc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;}}">
+const NATURE_TONES = {
+  TRADE: { bg: 'rgba(15,118,110,0.16)', fg: 'var(--ink-ok)' },
+  TRANSFER: { bg: 'rgba(2,132,199,0.16)', fg: 'var(--ink-info)' },
+  CORPORATE: { bg: 'rgba(180,83,9,0.16)', fg: 'var(--ink-warn)' },
+  CASHFLOW: { bg: 'rgba(162,28,175,0.16)', fg: 'var(--ink-magenta)' }
+};
+const CODE_TONE = { bg: 'rgba(67,56,202,0.16)', fg: 'var(--ink-code)' };
+
+// Codes de l'annexe : opérations, natures, méthodes, indicateurs et nomenclature CAEV.
+const KNOWN_CODES = ['TXN','STRUCT','NATURE','PREV','ANOMALIE','BUY','SELL','BUYOPT','DIVOPT','SPLIT','SPINOFF','MERGER','DIV','TOUT','TIN','TRANSFER','DEPOSIT','WITHDRAW','INTEREST','LENDING','FEE','REFUND','OVERDRAFT','LIMIT','TAX','TRADE','SUBSCRIPTION','CORPORATE','CASHFLOW','PRU','METHODE','MV','UPL','RPL','DAY','EXP','FIFO','LIFO','MID','CUMP','CAPI','BPA','EPS','PER','YIELD','PAYOUT','PBR','EVEBITDA','VE','VOL','BETA','SHARPE','MDD','TWR','MWR','TRI','BOOK','ORDER','INDEX','FLOAT','MIC','DUAL','OBLIGATOIRE','AVEC CHOIX','VOLONTAIRE','COUVERTURE','DVCA','DVSE','DVOP','DRIP','INTR','SPLF','SPLR','BONU','RHDI','EXRI','MRGR','SOFF','EXOF','TEND','BIDS','CAPD','REDM','LIQU','CONV','PARI','CHAN','ODLT','CONS'];
+
+class Component extends DCLogic {
+  cell(text) {
+    // Une cellule faite uniquement de codes en capitales devient une suite de badges.
+    const parts = text.split(',').map((x) => x.trim()).filter(Boolean);
+    const parsed = parts.map((p) => {
+      const m = p.match(/^([A-Z][A-Z0-9+_ ]{1,22})(?:\s*\(([^)]+)\))?$/);
+      if (!m) return null;
+      const code = m[1].trim();
+      const known = KNOWN_CODES.indexOf(code) >= 0
+        || code.split(' + ').every(function (x) { return KNOWN_CODES.indexOf(x.trim()) >= 0; });
+      if (!known) return null;
+      return { code: code, hint: m[2] ? '· ' + m[2] : '' };
+    });
+    if (parts.length && parsed.every(function (x) { return !!x; })) {
+      return {
+        isBadges: true, isText: false, text: text,
+        badges: parsed.map((x) => {
+          const tone = NATURE_TONES[x.code] || CODE_TONE;
+          return { code: x.code, hint: x.hint, bg: tone.bg, fg: tone.fg };
+        })
+      };
+    }
+    return { isBadges: false, isText: true, text: text, badges: [] };
+  }
+
+  renderVals() {
+    const b = this.props.bloc || {};
+    return {
+      isSub: b.kind === 'sub',
+      isText: b.kind === 'text',
+      isCode: b.kind === 'code',
+      isTable: b.kind === 'table',
+      text: b.text || '',
+      head: b.head || [],
+      body: (b.body || []).map((cells, i) => ({
+        cells: cells.map((c) => this.cell(String(c || ''))),
+        zebra: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+  

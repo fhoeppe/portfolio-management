@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="ReportsPage"] { --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); }
+    [data-component="ReportsPage"], [data-component="ReportsPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="ReportsPage"] input, [data-component="ReportsPage"] select { font-family: inherit; }
+    [data-component="ReportsPage"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+    [data-component="ReportsPage"] ::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+    [data-component="ReportsPage"] { container-type: inline-size; }
+    @container (max-width: 720px) {
+      [data-reports-config] { grid-template-columns: minmax(0, 1fr) !important; }
+    }
+    [data-component="ReportsPage"] h1, [data-component="ReportsPage"] h2, [data-component="ReportsPage"] h3 { color: #002a6e; }
+    [data-component="ReportsPage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="ReportsPage"] input:focus, [data-component="ReportsPage"] select:focus, [data-component="ReportsPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="ReportsPage"] input:focus-visible, [data-component="ReportsPage"] select:focus-visible, [data-component="ReportsPage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="ReportsPage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="ReportsPage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="ReportsPage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="ReportsPage"] button:active { filter: brightness(0.94); }
+    [data-component="ReportsPage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="ReportsPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="ReportsPage"] h1,
+    [data-theme="dark"] [data-component="ReportsPage"] h2,
+    [data-theme="dark"] [data-component="ReportsPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="ReportsPage"] input,
+    [data-theme="dark"] [data-component="ReportsPage"] select,
+    [data-theme="dark"] [data-component="ReportsPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="ReportsPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="ReportsPage"] { --field-brand: #12325e; }
+    [data-component="ReportsPage"] { --ink-brand-2: #003da5; --ink-ok-2: #0f766e; }
+    [data-theme="dark"] [data-component="ReportsPage"] { --ink-brand-2: #8fb4ee; --ink-ok-2: #4fd1c5; }
+    [data-theme="dark"] [data-component="ReportsPage"] { --ink-brand: #9db6d9; }
+  </style>
+</helmet>
+
+<div data-component="ReportsPage" data-screen-label="Rapports" style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="min-width:0">
+      <h1 style="font-size:18px;margin:0;line-height:1.2">Rapports</h1>
+      <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">Générer un rapport depuis le catalogue</p>
+    </div>
+    <label style="margin-left:auto;display:flex;flex-direction:column;gap:4px;min-width:0;width:420px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+      Rapport à générer
+      <select value="{{ selectedId }}" onChange="{{ setReport }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <optgroup label="{{ g.label }}">
+            <sc-for list="{{ g.reports }}" as="r" hint-placeholder-count="3">
+              <option value="{{ r.value }}">{{ r.name }}</option>
+            </sc-for>
+          </optgroup>
+        </sc-for>
+      </select>
+    </label>
+  </div>
+
+  <div style="flex:1;min-height:0;display:flex">
+
+    <div style="flex:1;min-width:0;min-height:0;overflow-y:auto;padding:16px 20px 24px">
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden;margin-bottom:16px">
+        <div style="display:flex;align-items:flex-start;gap:16px;padding:14px 18px;border-bottom:1px solid var(--color-neutral-200)">
+          <div style="min-width:0">
+            <h2 style="margin:0;font-size:15px">{{ selected.name }}</h2>
+            <p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:var(--color-neutral-700);text-wrap:pretty">{{ selected.desc }}</p>
+          </div>
+          <span style="flex:none;padding:3px 8px;border:1px solid var(--color-neutral-300);border-radius:999px;font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">{{ selected.freq }}</span>
+        </div>
+
+        <div data-reports-config="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px;padding:16px 18px">
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Portefeuille
+            <select value="{{ params.scope }}" onChange="{{ setScope }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+              <sc-for list="{{ scopeOptions }}" as="o" hint-placeholder-count="4">
+                <option value="{{ o.value }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Devise de présentation
+            <select value="{{ params.currency }}" onChange="{{ setCurrency }}" style="width:150px;max-width:100%;height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+              <option value="EUR">EUR — euro</option>
+              <option value="USD">USD — dollar</option>
+              <option value="CHF">CHF — franc suisse</option>
+            </select>
+          </label>
+
+          <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700)">Période</span>
+            <span style="display:inline-flex;align-self:flex-start;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+              <sc-for list="{{ periodTabs }}" as="p" hint-placeholder-count="4">
+                <button onClick="{{ p.onClick }}" style="height:30px;padding:0 13px;border:0;border-left:{{ p.divider }};background:{{ p.bg }};color:{{ p.fg }};font-size:12px;font-weight:{{ p.weight }};white-space:nowrap;cursor:pointer">{{ p.label }}</button>
+              </sc-for>
+            </span>
+          </div>
+
+          <sc-if value="{{ isCustom }}" hint-placeholder-val="{{ false }}">
+            <div style="grid-column:1 / -1;display:flex;align-items:flex-end;gap:10px">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Du
+                <input type="date" value="{{ params.from }}" onChange="{{ setFrom }}" style="width:150px;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Au
+                <input type="date" value="{{ params.to }}" onChange="{{ setTo }}" style="width:150px;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+            </div>
+          </sc-if>
+
+          <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700)">Options</span>
+            <div style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:8px 20px">
+              <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+                <label style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--color-neutral-800);cursor:pointer">
+                  <input type="checkbox" checked="{{ o.checked }}" onChange="{{ o.onToggle }}" style="width:15px;height:15px;margin:0;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+                  {{ o.label }}
+                </label>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="grid-column:1 / -1;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;padding-top:4px;border-top:1px solid var(--color-neutral-200)">
+            <div style="display:flex;flex-direction:column;gap:6px;padding-top:12px">
+              <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700)">Format</span>
+              <span style="display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+                <sc-for list="{{ formatTabs }}" as="f" hint-placeholder-count="3">
+                  <button onClick="{{ f.onClick }}" style="height:30px;padding:0 14px;border:0;border-left:{{ f.divider }};background:{{ f.bg }};color:{{ f.fg }};font-size:12px;font-weight:{{ f.weight }};cursor:pointer">{{ f.label }}</button>
+                </sc-for>
+              </span>
+            </div>
+            <span style="flex:1;min-width:120px;padding-bottom:8px;font-size:11px;color:var(--color-neutral-700)">{{ recap }}</span>
+            <button onClick="{{ generate }}" style="display:flex;align-items:center;gap:8px;height:32px;padding:0 16px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+              Générer le rapport
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border-bottom:1px solid var(--color-neutral-200)">
+          <h2 style="margin:0;font-size:15px">Générations récentes</h2>
+          <span style="font-size:11px;color:var(--color-neutral-700)">{{ jobCount }}</span>
+        </div>
+
+        <sc-if value="{{ hasJobs }}" hint-placeholder-val="{{ true }}">
+          <div style="overflow-x:auto">
+          <table style="width:100%;min-width:620px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 18px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Rapport</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Périmètre</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Période</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Généré</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">État</th>
+                <th style="padding:8px 18px 8px 12px;border-bottom:1px solid var(--color-neutral-200)"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ jobs }}" as="j" hint-placeholder-count="3">
+                <tr>
+                  <td style="padding:10px 18px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <span style="flex:none;padding:1px 5px;border-radius:3px;background:var(--color-neutral-200);font-size:9px;font-weight:700;letter-spacing:0.05em;color:var(--color-neutral-800)">{{ j.format }}</span>
+                      <span style="font-weight:600">{{ j.name }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ j.scope }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ j.period }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ j.at }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ j.stateBg }};color:{{ j.stateFg }};font-size:11px;font-weight:600">
+                      <span style="width:6px;height:6px;border-radius:999px;background:{{ j.stateFg }}"></span>
+                      {{ j.stateLabel }}
+                    </span>
+                  </td>
+                  <td style="padding:10px 18px 10px 12px;border-bottom:1px solid var(--color-neutral-200);text-align:right;white-space:nowrap">
+                    <span style="display:inline-flex;gap:6px">
+                      <sc-if value="{{ j.ready }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ j.onDownload }}" style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+                          Télécharger
+                        </button>
+                      </sc-if>
+                      <button onClick="{{ j.onRemove }}" matTooltip="Retirer de la liste" title="Retirer de la liste" aria-label="Retirer de la liste" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:var(--color-accent-100);color:var(--color-accent-700)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noJobs }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0;padding:22px 18px;font-size:12px;color:var(--color-neutral-700)">Aucune génération pour l'instant.</p>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820}}">
+const CATALOG = [
+  { id: 'valo', group: 'Portefeuille', name: 'Valorisation de portefeuille', freq: 'Mensuel', desc: 'Inventaire valorisé des positions à la date de fin, avec prix, quantités et contre-valeur.' },
+  { id: 'perf', group: 'Portefeuille', name: 'Performance et attribution', freq: 'Mensuel', desc: 'Rendement de la période, contribution par classe d\'actifs et écart au benchmark.' },
+  { id: 'alloc', group: 'Portefeuille', name: 'Composition et allocation', freq: 'Trimestriel', desc: 'Répartition par classe d\'actifs, secteur, devise et zone, comparée aux cibles du compte.' },
+  { id: 'client', group: 'Client', name: 'Relevé client', freq: 'Trimestriel', desc: 'Relevé destiné au client : synthèse, performance, mouvements et frais de la période.' },
+  { id: 'frais', group: 'Client', name: 'Relevé de frais et commissions', freq: 'Annuel', desc: 'Détail des frais de gestion, droits de garde et commissions de transaction.' },
+  { id: 'trx', group: 'Opérations', name: 'Registre des transactions', freq: 'À la demande', desc: 'Journal des ordres exécutés sur la période, avec contrepartie et frais associés.' },
+  { id: 'recon', group: 'Opérations', name: 'Rapprochement dépositaire', freq: 'Hebdomadaire', desc: 'Écarts entre positions internes et positions dépositaire, ligne par ligne.' },
+  { id: 'limites', group: 'Conformité', name: 'Contrôle des limites', freq: 'Mensuel', desc: 'Dépassements de bandes d\'allocation, limites de concentration et contraintes du compte.' },
+  { id: 'mifid', group: 'Conformité', name: 'Reporting réglementaire MiFID II', freq: 'Trimestriel', desc: 'Rapport périodique réglementaire : coûts et charges, adéquation, information sur les pertes.' }
+];
+
+const SCOPES = [
+  { value: 'bgm', label: 'Balanced Growth — BGM-004' },
+  { value: 'income', label: 'Income & Preservation — INP-011' },
+  { value: 'growth', label: 'Global Growth — GLG-002' },
+  { value: 'all', label: 'Tous les comptes gérés' }
+];
+
+const OPTIONS = [
+  { key: 'charts', label: 'Inclure les graphiques' },
+  { key: 'bench', label: 'Comparer au benchmark' },
+  { key: 'lines', label: 'Détail ligne par ligne' },
+  { key: 'annex', label: 'Annexes et notes de méthode' }
+];
+
+const FORMATS = ['PDF', 'XLSX', 'CSV'];
+
+function iso(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fmtDate(s) {
+  const p = s.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const now = new Date();
+    this.state = {
+      query: '',
+      selectedId: 'valo',
+      period: 'month',
+      params: {
+        scope: 'bgm', currency: 'EUR',
+        from: iso(new Date(now.getFullYear(), now.getMonth(), 1)),
+        to: iso(now),
+        format: 'PDF',
+        opts: { charts: true, bench: true, lines: false, annex: false }
+      },
+      jobs: [
+        { id: 'j2', name: 'Contrôle des limites', format: 'PDF', scope: 'BGM-004', period: 'Juillet 2026', at: '01/08/2026 07:10', state: 'ready' },
+        { id: 'j1', name: 'Relevé client', format: 'PDF', scope: 'Tous les comptes', period: 'T2 2026', at: '03/07/2026 18:22', state: 'ready' }
+      ]
+    };
+  }
+
+  componentWillUnmount() { (this.timers || []).forEach(clearTimeout); }
+
+  setPeriod(p) {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    let from = this.state.params.from, to = this.state.params.to;
+    if (p === 'month') { from = iso(new Date(y, m, 1)); to = iso(now); }
+    else if (p === 'quarter') { const q = Math.floor(m / 3) * 3; from = iso(new Date(y, q, 1)); to = iso(now); }
+    else if (p === 'year') { from = iso(new Date(y, 0, 1)); to = iso(now); }
+    this.setState((s) => ({ period: p, params: Object.assign({}, s.params, { from, to }) }));
+  }
+  patch(p) { this.setState((s) => ({ params: Object.assign({}, s.params, p) })); }
+
+  periodLabel() {
+    const p = this.state.period;
+    const MON = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+    const f = this.state.params.from.split('-');
+    if (p === 'month') return MON[+f[1] - 1].charAt(0).toUpperCase() + MON[+f[1] - 1].slice(1) + ' ' + f[0];
+    if (p === 'quarter') return 'T' + (Math.floor((+f[1] - 1) / 3) + 1) + ' ' + f[0];
+    if (p === 'year') return 'Année ' + f[0];
+    return fmtDate(this.state.params.from) + ' – ' + fmtDate(this.state.params.to);
+  }
+
+  generate() {
+    const rep = CATALOG.find((r) => r.id === this.state.selectedId) || CATALOG[0];
+    const scope = SCOPES.find((s) => s.value === this.state.params.scope) || SCOPES[0];
+    const now = new Date();
+    const id = 'g' + Date.now();
+    const job = {
+      id, name: rep.name, format: this.state.params.format,
+      scope: this.state.params.scope === 'all' ? 'Tous les comptes' : scope.label.split('—')[1].trim(),
+      period: this.periodLabel(),
+      at: fmtDate(iso(now)) + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
+      state: 'running'
+    };
+    this.setState((s) => ({ jobs: [job].concat(s.jobs) }));
+    this.timers = this.timers || [];
+    this.timers.push(setTimeout(() => {
+      this.setState((s) => ({ jobs: s.jobs.map((j) => (j.id === id ? Object.assign({}, j, { state: 'ready' }) : j)) }));
+    }, 1400));
+  }
+
+  tab(label, on, fn, first) {
+    return {
+      label, onClick: fn,
+      divider: first ? '0' : '1px solid rgba(0,61,165,0.30)',
+      bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+      hoverBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.16)',
+      fg: on ? '#ffffff' : 'var(--ink-brand)',
+      weight: on ? '600' : '400'
+    };
+  }
+
+  renderVals() {
+    const match = CATALOG;
+    const groupNames = [];
+    match.forEach((r) => { if (groupNames.indexOf(r.group) < 0) groupNames.push(r.group); });
+
+    const selected = CATALOG.find((r) => r.id === this.state.selectedId) || CATALOG[0];
+    const params = this.state.params;
+    const scopeLabel = (SCOPES.find((s) => s.value === params.scope) || SCOPES[0]).label;
+    const custom = this.state.period === 'custom';
+    const activeOpts = OPTIONS.filter((o) => params.opts[o.key]).length;
+
+    return {
+      selectedId: this.state.selectedId,
+      setReport: (e) => this.setState({ selectedId: e.target.value }),
+      groups: groupNames.map((g) => ({
+        label: g,
+        reports: match.filter((r) => r.group === g).map((r) => ({ value: r.id, name: r.name }))
+      })),
+
+      selected: { name: selected.name, desc: selected.desc, freq: selected.freq },
+      params,
+      scopeOptions: SCOPES,
+      isCustom: custom,
+      periodTabs: [
+        this.tab('Mois en cours', this.state.period === 'month', () => this.setPeriod('month'), true),
+        this.tab('Trimestre', this.state.period === 'quarter', () => this.setPeriod('quarter')),
+        this.tab('Année', this.state.period === 'year', () => this.setPeriod('year')),
+        this.tab('Personnalisée', custom, () => this.setPeriod('custom'))
+      ],
+      formatTabs: FORMATS.map((f, i) => this.tab(f, params.format === f, () => this.patch({ format: f }), i === 0)),
+      options: OPTIONS.map((o) => ({
+        label: o.label, checked: !!params.opts[o.key],
+        onToggle: (e) => this.patch({ opts: Object.assign({}, params.opts, { [o.key]: e.target.checked }) })
+      })),
+      recap: scopeLabel + ' · ' + this.periodLabel() + ' · ' + params.currency + ' · ' + activeOpts + (activeOpts > 1 ? ' options' : ' option'),
+
+      setScope: (e) => this.patch({ scope: e.target.value }),
+      setCurrency: (e) => this.patch({ currency: e.target.value }),
+      setFrom: (e) => this.patch({ from: e.target.value }),
+      setTo: (e) => this.patch({ to: e.target.value }),
+      generate: () => this.generate(),
+
+      hasJobs: this.state.jobs.length > 0,
+      noJobs: this.state.jobs.length === 0,
+      jobCount: this.state.jobs.length + (this.state.jobs.length > 1 ? ' rapports' : ' rapport'),
+      jobs: this.state.jobs.map((j) => ({
+        name: j.name, format: j.format, scope: j.scope, period: j.period, at: j.at,
+        ready: j.state === 'ready',
+        stateLabel: j.state === 'ready' ? 'Prêt' : 'En cours',
+        stateBg: j.state === 'ready' ? 'rgba(15,118,110,0.10)' : 'var(--color-neutral-200)',
+        stateFg: j.state === 'ready' ? 'var(--ink-ok-2)' : 'var(--color-neutral-700)',
+        onDownload: () => {
+          const blob = new Blob(['Rapport : ' + j.name + '\nPérimètre : ' + j.scope + '\nPériode : ' + j.period + '\nGénéré : ' + j.at + '\n'], { type: 'text/plain' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = j.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.' + j.format.toLowerCase() + '.txt';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        },
+        onRemove: () => this.setState((s) => ({ jobs: s.jobs.filter((x) => x.id !== j.id) }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

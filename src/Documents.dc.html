@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="DocumentsPage"] { --ink-warn-2: #b45309; --ink-ok-2: #0f766e; --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); container-type: inline-size; }
+    [data-component="DocumentsPage"], [data-component="DocumentsPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="DocumentsPage"] input, [data-component="DocumentsPage"] select, [data-component="DocumentsPage"] textarea { font-family: inherit; }
+    [data-component="DocumentsPage"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+    [data-component="DocumentsPage"] ::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+    @container (max-width: 900px) {
+      [data-docs-review] { grid-template-columns: minmax(0, 1fr) !important; }
+      [data-docs-grid2] { grid-template-columns: minmax(0, 1fr) !important; }
+      [data-docs-stepper] { flex-wrap: wrap !important; gap: 10px 16px; }
+      [data-docs-step] { flex: 0 0 auto !important; }
+      [data-docs-step-line] { display: none !important; }
+      [data-docs-step-hint] { display: none !important; }
+    }
+    [data-component="DocumentsPage"] h1, [data-component="DocumentsPage"] h2, [data-component="DocumentsPage"] h3 { color: #002a6e; }
+    [data-component="DocumentsPage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="DocumentsPage"] input:focus, [data-component="DocumentsPage"] select:focus, [data-component="DocumentsPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="DocumentsPage"] input:focus-visible, [data-component="DocumentsPage"] select:focus-visible, [data-component="DocumentsPage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="DocumentsPage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="DocumentsPage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="DocumentsPage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="DocumentsPage"] button:active { filter: brightness(0.94); }
+    [data-component="DocumentsPage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="DocumentsPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="DocumentsPage"] h1,
+    [data-theme="dark"] [data-component="DocumentsPage"] h2,
+    [data-theme="dark"] [data-component="DocumentsPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="DocumentsPage"] input,
+    [data-theme="dark"] [data-component="DocumentsPage"] select,
+    [data-theme="dark"] [data-component="DocumentsPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="DocumentsPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="DocumentsPage"] { --field-brand: #12325e; }
+    [data-component="DocumentsPage"] { --ink-brand-2: #003da5; }
+    [data-theme="dark"] [data-component="DocumentsPage"] { --ink-brand-2: #8fb4ee; }
+    [data-theme="dark"] [data-component="DocumentsPage"] { --ink-warn-2: #f3b782; --ink-ok-2: #4fd1c5; --ink-brand: #9db6d9; }
+  </style>
+</helmet>
+
+<div data-component="DocumentsPage" data-screen-label="Gestion documentaire" style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;padding:14px 20px 0;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="min-width:0">
+        <h1 style="font-size:18px;margin:0;line-height:1.2;letter-spacing:0.02em;text-transform:uppercase">GESTION DOCUMENTAIRE</h1>
+        <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+      </div>
+      <span style="margin-left:auto;padding-top:4px;font-size:11px;color:var(--color-neutral-700)">{{ headerStat }}</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:2px;margin-top:12px">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;height:{{ t.height }};padding:{{ t.padding }};border:1px solid {{ t.borderColor }};border-bottom:0;border-radius:6px 6px 0 0;background:{{ t.bg }};color:{{ t.fg }};font-size:{{ t.size }};font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.97)">
+          <sc-if value="{{ t.isLibrary }}" hint-placeholder-val="{{ true }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isCapture }}" hint-placeholder-val="{{ false }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M12 18v-6"></path><path d="M9 15h6"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isReview }}" hint-placeholder-val="{{ false }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </sc-if>
+          {{ t.label }}
+          <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
+            <span style="padding:1px 6px;border-radius:999px;background:{{ t.badgeBg }};font-size:10px;font-weight:700;color:{{ t.badgeFg }}">{{ t.badge }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 24px">
+
+    <sc-if value="{{ isLibrary }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="display:flex;align-items:center;gap:8px;width:240px;height:28px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="flex:none;color:var(--color-neutral-500)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input value="{{ query }}" onChange="{{ setQuery }}" placeholder="Rechercher un document" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:inherit;font-size:12px;outline:none" />
+          </span>
+          <select value="{{ filterType }}" onChange="{{ setFilterType }}" style="height:28px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:12px;outline:none">
+            <option value="all">Toutes les natures</option>
+            <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ filterState }}" onChange="{{ setFilterState }}" style="height:28px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:12px;outline:none">
+            <option value="all">Tous les états</option>
+            <option value="draft">Brouillon</option>
+            <option value="review">À revoir</option>
+            <option value="valid">Validé</option>
+            <option value="archived">Archivé</option>
+          </select>
+          <button onClick="{{ goCapture }}" style="margin-left:auto;display:flex;align-items:center;gap:8px;height:28px;padding:0 12px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            Nouveau document
+          </button>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:800px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Document</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Type</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Dossier</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Version</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">État</th>
+                <th style="padding:8px 16px 8px 12px;border-bottom:1px solid var(--color-neutral-200)"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="d" hint-placeholder-count="8">
+                <tr>
+                  <td style="padding:10px 16px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:center;gap:9px">
+                      <span style="flex:none;padding:1px 5px;border-radius:3px;background:var(--color-neutral-200);font-size:9px;font-weight:700;color:var(--color-neutral-800)">{{ d.ext }}</span>
+                      <span style="min-width:0">
+                        <span style="display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.name }}</span>
+                        <span style="display:block;font-size:11px;color:var(--color-neutral-700)">{{ d.meta }}</span>
+                      </span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ d.type }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ d.folder }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:inline-flex;align-items:center;gap:6px">
+                      <span style="padding:1px 6px;border:1px solid var(--color-neutral-300);border-radius:3px;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ d.version }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-700)">{{ d.versionMeta }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ d.stateBg }};color:{{ d.stateFg }};font-size:11px;font-weight:600">
+                      <span style="width:6px;height:6px;border-radius:999px;background:{{ d.stateFg }}"></span>
+                      {{ d.stateLabel }}
+                    </span>
+                  </td>
+                  <td style="padding:10px 16px 10px 12px;border-bottom:1px solid var(--color-neutral-200);text-align:right;white-space:nowrap">
+                    <span style="display:inline-flex;gap:6px">
+                      <button onClick="{{ d.onNewVersion }}" style="height:26px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Nouvelle version</button>
+                      <button onClick="{{ d.onReview }}" style="height:26px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Métadonnées</button>
+                      <button onClick="{{ d.onRemove }}" matTooltip="Supprimer" title="Supprimer" aria-label="Supprimer" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:var(--color-accent-100);color:var(--color-accent-700)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0;padding:22px 16px;font-size:12px;color:var(--color-neutral-700)">Aucun document ne correspond aux critères.</p>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCapture }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div data-docs-stepper="" style="display:flex;flex-wrap:nowrap;align-items:center;padding:14px 18px;border-bottom:1px solid var(--color-neutral-200)">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+            <div data-docs-step="" style="flex:0 1 auto;min-width:0;display:flex;align-items:center;gap:10px">
+              <button onClick="{{ s.onClick }}" style="display:flex;align-items:center;gap:9px;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer">
+                <span style="flex:none;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:999px;background:{{ s.badgeBg }};color:{{ s.badgeFg }};font-size:12px;font-weight:500">
+                  <sc-if value="{{ s.isDone }}" hint-placeholder-val="{{ false }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ s.isPending }}" hint-placeholder-val="{{ true }}">{{ s.badge }}</sc-if>
+                </span>
+                <span style="min-width:0;overflow:hidden">
+                  <span style="display:block;font-size:13px;font-weight:{{ s.weight }};color:{{ s.fg }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.title }}</span>
+                  <span data-docs-step-hint="" style="display:block;font-size:10px;color:var(--color-neutral-600);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.hint }}</span>
+                </span>
+              </button>
+              <sc-if value="{{ s.hasLine }}" hint-placeholder-val="{{ true }}">
+                <span data-docs-step-line="" style="flex:1 1 24px;min-width:24px;margin:0 8px;height:1px;background:{{ s.line }}"></span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="padding:18px">
+          <sc-if value="{{ stepFile }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700)">Mode de saisie</span>
+                <span style="display:inline-flex;align-self:flex-start;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+                  <sc-for list="{{ modeTabs }}" as="m" hint-placeholder-count="2">
+                    <button onClick="{{ m.onClick }}" style="height:30px;padding:0 14px;border:0;border-left:{{ m.divider }};background:{{ m.bg }};color:{{ m.fg }};font-size:12px;font-weight:{{ m.weight }};white-space:nowrap;cursor:pointer">{{ m.label }}</button>
+                  </sc-for>
+                </span>
+                <span style="font-size:11px;color:var(--color-neutral-700)">{{ modeHint }}</span>
+              </div>
+
+              <sc-if value="{{ isFileMode }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:14px;padding:20px 18px;border:1px dashed var(--color-neutral-400);border-radius:6px;background:var(--color-neutral-100)">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--color-neutral-600)"><path d="M12 13v8"></path><path d="m8 17 4-4 4 4"></path><path d="M20.4 14.5A4.5 4.5 0 0 0 18 6h-1.3A7 7 0 1 0 4 12.9"></path></svg>
+                <span style="min-width:0">
+                  <span style="display:block;font-size:13px;font-weight:600">Déposer un fichier</span>
+                  <span style="display:block;font-size:11px;color:var(--color-neutral-700)">PDF, DOCX, XLSX ou image — 25 Mo maximum.</span>
+                </span>
+                <button onClick="{{ pickFile }}" style="margin-left:auto;height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Parcourir</button>
+              </div>
+              </sc-if>
+
+              <sc-if value="{{ isManualMode }}" hint-placeholder-val="{{ false }}">
+                <div data-docs-grid2="" style="display:grid;grid-template-columns:minmax(0, 360px) minmax(0, 1fr);gap:16px;align-items:start">
+
+                  <div style="border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden;background:var(--color-neutral-100)">
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--field-brand);background:var(--surface)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--color-neutral-600)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>
+                      <span style="flex:1;min-width:0;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ preview.name }}</span>
+                      <button onClick="{{ prevPage }}" matTooltip="Page précédente" title="Page précédente" aria-label="Page précédente" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid var(--color-neutral-300);border-radius:4px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+                      </button>
+                      <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ preview.pageLabel }}</span>
+                      <button onClick="{{ nextPage }}" matTooltip="Page suivante" title="Page suivante" aria-label="Page suivante" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid var(--color-neutral-300);border-radius:4px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                      </button>
+                    </div>
+
+                    <div onMouseDown="{{ dragStart }}" onMouseMove="{{ dragMove }}" onMouseUp="{{ dragEnd }}" onMouseLeave="{{ dragEnd }}" onWheel="{{ wheelZoom }}" style="position:relative;height:360px;overflow:hidden;background:var(--color-neutral-200);cursor:{{ preview.cursor }}">
+                      <div style="position:absolute;top:50%;left:50%;width:260px;transform:translate(-50%, -50%) translate({{ preview.tx }}, {{ preview.ty }}) scale({{ preview.scale }});transform-origin:center center">
+                        <div style="display:flex;flex-direction:column;gap:8px;aspect-ratio:1 / 1.414;padding:20px 18px;background:var(--surface);border:1px solid var(--color-neutral-300);box-shadow:var(--shadow-sm);user-select:none">
+                          <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-neutral-600)">{{ preview.kicker }}</span>
+                          <span style="font-size:12px;font-weight:700;line-height:1.3">{{ preview.title }}</span>
+                          <span style="height:1px;background:var(--color-neutral-300)"></span>
+                          <sc-for list="{{ preview.lines }}" as="l" hint-placeholder-count="9">
+                            <span style="height:6px;border-radius:2px;background:var(--color-neutral-200);width:{{ l.w }}"></span>
+                          </sc-for>
+                          <span style="margin-top:auto;font-size:9px;color:var(--color-neutral-600)">{{ preview.footer }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--color-neutral-300);background:var(--surface)">
+                      <button onClick="{{ zoomOut }}" matTooltip="Réduire" title="Réduire" aria-label="Réduire" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--color-neutral-300);border-radius:4px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+                      </button>
+                      <span style="width:46px;text-align:center;font-size:11px;font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ preview.zoomLabel }}</span>
+                      <button onClick="{{ zoomIn }}" matTooltip="Agrandir" title="Agrandir" aria-label="Agrandir" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--color-neutral-300);border-radius:4px;background:var(--surface);color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                      </button>
+                      <button onClick="{{ resetView }}" style="margin-left:auto;height:24px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:4px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Ajuster</button>
+                      <button onClick="{{ openViewer }}" matTooltip="Ouvrir dans une nouvelle fenêtre" title="Ouvrir dans une nouvelle fenêtre" style="display:flex;align-items:center;gap:6px;height:24px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:4px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+                        Ouvrir dans une fenêtre
+                      </button>
+                    </div>
+                  </div>
+
+                  <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px">
+                    <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Intitulé du document
+                      <input value="{{ draft.title }}" onChange="{{ setTitle }}" placeholder="Convention de mandat BGM-004" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Nature du document
+                      <select value="{{ draft.type }}" onChange="{{ setType }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                        <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="5">
+                          <option value="{{ o.value }}">{{ o.label }}</option>
+                        </sc-for>
+                      </select>
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Type de document
+                      <select value="{{ draft.form }}" onChange="{{ setForm }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                        <sc-for list="{{ formOptions }}" as="o" hint-placeholder-count="6">
+                          <option value="{{ o.value }}">{{ o.label }}</option>
+                        </sc-for>
+                      </select>
+                    </label>
+                    <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Dossier de rattachement
+                      <select value="{{ draft.folder }}" onChange="{{ setFolder }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                        <sc-for list="{{ folderOptions }}" as="o" hint-placeholder-count="4">
+                          <option value="{{ o.value }}">{{ o.label }}</option>
+                        </sc-for>
+                      </select>
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Référence document
+                      <input value="{{ draft.reference }}" onChange="{{ setReference }}" placeholder="DOC-BGM-004-0012" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Émetteur
+                      <input value="{{ draft.issuer }}" onChange="{{ setIssuer }}" placeholder="Client, dépositaire, autorité…" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Date d'émission
+                      <input type="date" value="{{ draft.date }}" onChange="{{ setDate }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Date de réception
+                      <input type="date" value="{{ draft.received }}" onChange="{{ setReceived }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Échéance
+                      <input type="date" value="{{ draft.due }}" onChange="{{ setDue }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Nombre de pages
+                      <input value="{{ draft.pages }}" onChange="{{ setPages }}" placeholder="9" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                    <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Mots-clés
+                      <input value="{{ draft.tags }}" onChange="{{ setTags }}" placeholder="mandat, kyc, 2026" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isFileMode }}" hint-placeholder-val="{{ true }}">
+              <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px">
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  {{ fileFieldLabel }}
+                  <input value="{{ draft.file }}" onChange="{{ setFile }}" placeholder="convention-mandat-bgm-004.pdf" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  Source
+                  <select value="{{ draft.source }}" onChange="{{ setSource }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                    <option value="upload">Dépôt manuel</option>
+                    <option value="mail">Boîte e-mail dédiée</option>
+                    <option value="scan">Numérisation</option>
+                    <option value="flux">Flux dépositaire</option>
+                  </select>
+                </label>
+              </div>
+              </sc-if>
+
+              <div style="display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--color-neutral-300);border-radius:6px">
+                <label style="display:flex;align-items:center;gap:9px;font-size:12px;font-weight:600;color:var(--color-text);cursor:pointer">
+                  <input type="checkbox" checked="{{ draft.isNewVersion }}" onChange="{{ setIsNewVersion }}" style="width:15px;height:15px;margin:0;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+                  Nouvelle version d'un document existant
+                </label>
+                <sc-if value="{{ draft.isNewVersion }}" hint-placeholder-val="{{ false }}">
+                  <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px">
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Document d'origine
+                      <select value="{{ draft.parentId }}" onChange="{{ setParent }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                        <sc-for list="{{ docOptions }}" as="o" hint-placeholder-count="4">
+                          <option value="{{ o.value }}">{{ o.label }}</option>
+                        </sc-for>
+                      </select>
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                      Motif de la révision
+                      <input value="{{ draft.versionNote }}" onChange="{{ setVersionNote }}" placeholder="Avenant signé, correction d'annexe…" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                    </label>
+                  </div>
+                  <span style="font-size:11px;color:var(--color-neutral-700)">{{ versionPreview }}</span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepOcr }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--color-neutral-100)">
+                <span style="flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:{{ ocr.dotBg }};color:{{ ocr.dotFg }}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M7 12h10"></path></svg>
+                </span>
+                <span style="min-width:0">
+                  <span style="display:block;font-size:13px;font-weight:600">{{ ocr.title }}</span>
+                  <span style="display:block;font-size:11px;color:var(--color-neutral-700)">{{ ocr.hint }}</span>
+                </span>
+                <button onClick="{{ runOcr }}" style="margin-left:auto;height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">{{ ocr.action }}</button>
+              </div>
+              <sc-if value="{{ ocr.done }}" hint-placeholder-val="{{ false }}">
+                <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr))">
+                  <sc-for list="{{ ocr.stats }}" as="s" hint-placeholder-count="6">
+                    <div style="display:flex;align-items:baseline;gap:12px;padding:8px 2px;border-bottom:1px solid var(--color-neutral-200)">
+                      <span style="flex:none;width:150px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">{{ s.label }}</span>
+                      <span style="min-width:0;font-size:12px">{{ s.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ ocr.done }}" hint-placeholder-val="{{ false }}">
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  Texte reconnu (extrait)
+                  <textarea value="{{ ocr.text }}" rows="4" readOnly="{{ true }}" style="padding:8px 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--color-neutral-100);color:var(--color-neutral-800);font-size:12px;font-weight:400;resize:vertical;outline:none"></textarea>
+                </label>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepIa }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--color-neutral-100)">
+                <span style="flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:{{ ia.dotBg }};color:{{ ia.dotFg }}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"></path><path d="M12 18v3"></path><path d="M5.6 5.6l2.1 2.1"></path><path d="M16.3 16.3l2.1 2.1"></path><path d="M3 12h3"></path><path d="M18 12h3"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+                <span style="min-width:0">
+                  <span style="display:block;font-size:13px;font-weight:600">{{ ia.title }}</span>
+                  <span style="display:block;font-size:11px;color:var(--color-neutral-700)">{{ ia.hint }}</span>
+                </span>
+                <button onClick="{{ runIa }}" style="margin-left:auto;height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">{{ ia.action }}</button>
+              </div>
+              <sc-if value="{{ ia.done }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+                  <sc-for list="{{ ia.fields }}" as="f" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--color-neutral-200)">
+                      <span style="flex:none;width:150px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">{{ f.label }}</span>
+                      <span style="flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.value }}</span>
+                      <span style="flex:none;padding:1px 7px;border-radius:999px;background:{{ f.confBg }};color:{{ f.confFg }};font-size:10px;font-weight:700">{{ f.conf }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ ia.done }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <button onClick="{{ applyIa }}" style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;cursor:pointer">Appliquer au classement</button>
+                  <span style="font-size:11px;color:var(--color-neutral-700)">{{ ia.applied }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepClass }}" hint-placeholder-val="{{ false }}">
+            <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Nature du document
+                <select value="{{ draft.type }}" onChange="{{ setType }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="5">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Type de document
+                <select value="{{ draft.form }}" onChange="{{ setForm }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <sc-for list="{{ formOptions }}" as="o" hint-placeholder-count="6">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Dossier de rattachement
+                <select value="{{ draft.folder }}" onChange="{{ setFolder }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <sc-for list="{{ folderOptions }}" as="o" hint-placeholder-count="4">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Date du document
+                <input type="date" value="{{ draft.date }}" onChange="{{ setDate }}" style="width:160px;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Émetteur
+                <input value="{{ draft.issuer }}" onChange="{{ setIssuer }}" placeholder="Dépositaire, client, autorité…" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+              <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Mots-clés
+                <input value="{{ draft.tags }}" onChange="{{ setTags }}" placeholder="mandat, kyc, 2026" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepDiff }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px">
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  Confidentialité
+                  <select value="{{ draft.access }}" onChange="{{ setAccess }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                    <option value="interne">Interne — équipe de gestion</option>
+                    <option value="client">Partagé avec le client</option>
+                    <option value="restreint">Restreint — conformité</option>
+                  </select>
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  Durée de conservation
+                  <select value="{{ draft.retention }}" onChange="{{ setRetention }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                    <option value="5">5 ans</option>
+                    <option value="10">10 ans</option>
+                    <option value="perm">Illimitée</option>
+                  </select>
+                </label>
+              </div>
+              <label style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--color-neutral-800);cursor:pointer">
+                <input type="checkbox" checked="{{ draft.needsReview }}" onChange="{{ setNeedsReview }}" style="width:15px;height:15px;margin:0;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+                Soumettre à revue avant validation
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Note interne
+                <textarea value="{{ draft.notes }}" onChange="{{ setNotes }}" rows="3" placeholder="Contexte, pièces liées, points à vérifier…" style="padding:8px 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;resize:vertical;outline:none"></textarea>
+              </label>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepCheck }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <p style="margin:0;font-size:12px;color:var(--color-neutral-700)">Vérifiez les informations avant enregistrement.</p>
+              <div style="border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+                <sc-for list="{{ recap }}" as="r" hint-placeholder-count="8">
+                  <div style="display:flex;align-items:center;gap:16px;padding:9px 14px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="flex:none;width:190px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">{{ r.label }}</span>
+                    <span style="min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis">{{ r.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+          <span style="font-size:11px;color:var(--color-neutral-700)">{{ stepLabel }}</span>
+          <button onClick="{{ prevStep }}" style="margin-left:auto;height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Précédent</button>
+          <sc-if value="{{ notLastStep }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ nextStep }}" style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;cursor:pointer">Suivant</button>
+          </sc-if>
+          <sc-if value="{{ lastStep }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ submitDoc }}" style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;cursor:pointer">{{ submitLabel }}</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+      <div data-docs-review="" style="display:grid;grid-template-columns:minmax(240px, 300px) minmax(360px, 1fr);gap:16px;align-items:start">
+
+        <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+          <div style="padding:11px 14px;border-bottom:1px solid var(--color-neutral-200);font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700)">File de revue</div>
+          <sc-for list="{{ queue }}" as="q" hint-placeholder-count="5">
+            <button onClick="{{ q.onSelect }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;padding:10px 14px;border:0;border-left:3px solid {{ q.mark }};border-bottom:1px solid var(--color-neutral-200);background:{{ q.bg }};color:var(--color-text);text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+              <span style="display:flex;align-items:center;gap:8px;width:100%">
+                <span style="flex:1;min-width:0;font-size:12px;font-weight:{{ q.weight }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ q.name }}</span>
+                <span style="flex:none;padding:1px 5px;border:1px solid var(--color-neutral-300);border-radius:3px;font-size:9px;font-weight:700">{{ q.version }}</span>
+              </span>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ q.meta }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-bottom:1px solid var(--color-neutral-200)">
+              <div style="min-width:0">
+                <h2 style="margin:0;font-size:15px">{{ current.name }}</h2>
+                <p style="margin:4px 0 0;font-size:11px;color:var(--color-neutral-700)">{{ current.meta }}</p>
+              </div>
+              <span style="flex:none;display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ current.stateBg }};color:{{ current.stateFg }};font-size:11px;font-weight:600">
+                <span style="width:6px;height:6px;border-radius:999px;background:{{ current.stateFg }}"></span>
+                {{ current.stateLabel }}
+              </span>
+            </div>
+
+            <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:14px;padding:16px 18px">
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Intitulé
+                <input value="{{ current.name }}" onChange="{{ editName }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Nature du document
+                <select value="{{ current.type }}" onChange="{{ editType }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="5">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Type de document
+                <select value="{{ current.form }}" onChange="{{ editForm }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <sc-for list="{{ formOptions }}" as="o" hint-placeholder-count="6">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Dossier
+                <select value="{{ current.folder }}" onChange="{{ editFolder }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <sc-for list="{{ folderOptions }}" as="o" hint-placeholder-count="4">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Confidentialité
+                <select value="{{ current.access }}" onChange="{{ editAccess }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                  <option value="interne">Interne — équipe de gestion</option>
+                  <option value="client">Partagé avec le client</option>
+                  <option value="restreint">Restreint — conformité</option>
+                </select>
+              </label>
+              <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                Mots-clés
+                <input value="{{ current.tags }}" onChange="{{ editTags }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </label>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+              <button onClick="{{ reject }}" style="height:30px;padding:0 14px;border:1px solid var(--color-accent-300);border-radius:6px;background:transparent;color:var(--color-accent-700);font-size:12px;font-weight:600;cursor:pointer" style-hover="background:var(--color-accent-100)">Renvoyer en brouillon</button>
+              <button onClick="{{ archive }}" style="height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Archiver</button>
+              <button onClick="{{ validate }}" style="margin-left:auto;height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;cursor:pointer">Valider le document</button>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border-bottom:1px solid var(--color-neutral-200)">
+              <h3 style="margin:0;font-size:14px">Métadonnées du document</h3>
+              <span style="font-size:11px;color:var(--color-neutral-700)">{{ metaCount }}</span>
+            </div>
+            <div data-docs-grid2="" style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr))">
+              <sc-for list="{{ metaList }}" as="m" hint-placeholder-count="18">
+                <div style="display:flex;align-items:baseline;gap:12px;padding:8px 18px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="flex:none;width:150px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">{{ m.label }}</span>
+                  <span style="min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums">{{ m.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border-bottom:1px solid var(--color-neutral-200)">
+              <h3 style="margin:0;font-size:14px">Historique des versions</h3>
+              <button onClick="{{ addVersion }}" style="display:flex;align-items:center;gap:7px;height:28px;padding:0 12px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                Déposer une version
+              </button>
+            </div>
+            <div style="overflow-x:auto">
+              <table style="width:100%;min-width:560px;border-collapse:collapse;font-size:12px">
+                <thead>
+                  <tr style="background:rgba(0,61,165,0.14)">
+                    <th style="text-align:left;padding:8px 18px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Version</th>
+                    <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Déposée le</th>
+                    <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Auteur</th>
+                    <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Motif</th>
+                    <th style="padding:8px 18px 8px 12px;border-bottom:1px solid var(--color-neutral-200)"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+                    <tr>
+                      <td style="padding:10px 18px;border-bottom:1px solid var(--color-neutral-200)">
+                        <span style="display:inline-flex;align-items:center;gap:7px">
+                          <span style="padding:1px 6px;border:1px solid var(--color-neutral-300);border-radius:3px;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ v.label }}</span>
+                          <sc-if value="{{ v.isCurrent }}" hint-placeholder-val="{{ false }}">
+                            <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ds-brand-fill, var(--ink-brand-2))">Courante</span>
+                          </sc-if>
+                        </span>
+                      </td>
+                      <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ v.date }}</td>
+                      <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ v.author }}</td>
+                      <td style="padding:10px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ v.note }}</td>
+                      <td style="padding:10px 18px 10px 12px;border-bottom:1px solid var(--color-neutral-200);text-align:right;white-space:nowrap">
+                        <span style="display:inline-flex;gap:6px">
+                          <sc-if value="{{ v.canRestore }}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{ v.onRestore }}" style="height:26px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Restaurer</button>
+                          </sc-if>
+                          <button onClick="{{ v.onCompare }}" style="height:26px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">{{ v.compareLabel }}</button>
+                        </span>
+                      </td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+            <sc-if value="{{ compareOpen }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:12px 18px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100);font-size:11px;color:var(--color-neutral-800)">{{ compareText }}</p>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820}}">
+const TYPES = [
+  { value: 'mandat', label: 'Convention de mandat' },
+  { value: 'kyc', label: 'Dossier KYC' },
+  { value: 'cni', label: "Carte d'identité (CNI)" },
+  { value: 'passeport', label: 'Passeport' },
+  { value: 'domicile', label: 'Justificatif de domicile' },
+  { value: 'facture', label: 'Facture' },
+  { value: 'releve', label: 'Relevé bancaire' },
+  { value: 'contrat', label: 'Contrat' },
+  { value: 'procuration', label: 'Procuration' },
+  { value: 'attestation', label: 'Attestation' },
+  { value: 'reporting', label: 'Reporting client' },
+  { value: 'ordre', label: "Ordre / confirmation d'exécution" },
+  { value: 'juridique', label: 'Pièce juridique' },
+  { value: 'compta', label: 'Pièce comptable' }
+];
+
+const FORMS = [
+  { value: 'original', label: 'Original' },
+  { value: 'copie', label: 'Copie simple' },
+  { value: 'certifiee', label: 'Copie certifiée conforme' },
+  { value: 'duplicata', label: 'Duplicata' },
+  { value: 'scan', label: 'Numérisation d\'original' },
+  { value: 'electronique', label: 'Original électronique signé' }
+];
+function formLabel(v) { const f = FORMS.find((x) => x.value === v); return f ? f.label : v; }
+
+const FOLDERS = [
+  { value: 'BGM-004', label: 'Balanced Growth — BGM-004' },
+  { value: 'INP-011', label: 'Income & Preservation — INP-011' },
+  { value: 'GLG-002', label: 'Global Growth — GLG-002' },
+  { value: 'GEN', label: 'Dossier général' }
+];
+
+const STATES = {
+  draft: { label: 'Brouillon', bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)' },
+  review: { label: 'À revoir', bg: 'rgba(180,83,9,0.10)', fg: 'var(--ink-warn-2)' },
+  valid: { label: 'Validé', bg: 'rgba(15,118,110,0.10)', fg: 'var(--ink-ok-2)' },
+  archived: { label: 'Archivé', bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-600)' }
+};
+
+function iso(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fr(s) { const p = String(s).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+function typeLabel(v) { const t = TYPES.find((x) => x.value === v); return t ? t.label : v; }
+function folderLabel(v) { const f = FOLDERS.find((x) => x.value === v); return f ? f.label : v; }
+
+const SEED = [
+  { id: 'd1', name: 'Convention de mandat BGM-004', file: 'convention-mandat-bgm-004.pdf', ext: 'PDF', type: 'mandat', folder: 'BGM-004', state: 'valid', access: 'client', tags: 'mandat, signature, 2026', issuer: 'Client',
+    versions: [
+      { n: 1, date: '2026-02-11', author: 'F. Hoeppe', note: 'Version initiale', size: '1,2 Mo' },
+      { n: 2, date: '2026-06-03', author: 'F. Hoeppe', note: 'Avenant profil de risque', size: '1,3 Mo' },
+      { n: 3, date: '2026-08-14', author: 'A. Meyer', note: 'Annexe frais actualisée', size: '1,4 Mo' }
+    ] },
+  { id: 'd2', name: 'Dossier KYC — Meridian Family', file: 'kyc-meridian-family.pdf', ext: 'PDF', type: 'kyc', folder: 'GEN', state: 'review', access: 'restreint', tags: 'kyc, onboarding', issuer: 'Conformité',
+    versions: [
+      { n: 1, date: '2026-08-20', author: 'A. Meyer', note: 'Pièces collectées', size: '4,1 Mo' },
+      { n: 2, date: '2026-08-28', author: 'A. Meyer', note: 'Justificatif de domicile ajouté', size: '4,6 Mo' }
+    ] },
+  { id: 'd3', name: 'Reporting trimestriel T2 2026', file: 'reporting-t2-2026.pdf', ext: 'PDF', type: 'reporting', folder: 'BGM-004', state: 'valid', access: 'client', tags: 'reporting, t2', issuer: 'Interne',
+    versions: [{ n: 1, date: '2026-07-03', author: 'Interne', note: 'Édition automatique', size: '2,8 Mo' }] },
+  { id: 'd4', name: 'Confirmations dépositaire — août', file: 'confirmations-aout-2026.xlsx', ext: 'XLSX', type: 'ordre', folder: 'GEN', state: 'review', access: 'interne', tags: 'ordres, dépositaire', issuer: 'Dépositaire',
+    versions: [{ n: 1, date: '2026-08-29', author: 'Flux', note: 'Import automatique', size: '640 Ko' }] },
+  { id: 'd5', name: 'Statuts Infrastructure Fund II', file: 'statuts-infra-ii.pdf', ext: 'PDF', type: 'juridique', folder: 'GLG-002', state: 'valid', access: 'interne', tags: 'juridique, fonds', issuer: 'Cranmore',
+    versions: [
+      { n: 1, date: '2025-11-04', author: 'Cranmore', note: 'Version initiale', size: '3,3 Mo' },
+      { n: 2, date: '2026-05-19', author: 'Cranmore', note: 'Modification du règlement', size: '3,5 Mo' }
+    ] },
+  { id: 'd6', name: 'Grille tarifaire 2026', file: 'grille-tarifaire-2026.docx', ext: 'DOCX', type: 'compta', folder: 'GEN', state: 'draft', access: 'interne', tags: 'frais, tarifs', issuer: 'Interne',
+    versions: [{ n: 1, date: '2026-08-25', author: 'F. Hoeppe', note: 'Brouillon de travail', size: '210 Ko' }] },
+  { id: 'd7', name: 'Relevé client INP-011 — juillet', file: 'releve-inp-011-juillet.pdf', ext: 'PDF', type: 'reporting', folder: 'INP-011', state: 'archived', access: 'client', tags: 'relevé, juillet', issuer: 'Interne',
+    versions: [{ n: 1, date: '2026-08-02', author: 'Interne', note: 'Édition automatique', size: '1,9 Mo' }] }
+];
+
+const STEPS = [
+  { key: 'file', title: 'Fichier', hint: 'Dépôt et source' },
+  { key: 'ocr', title: 'Analyse OCR', hint: 'Reconnaissance du texte' },
+  { key: 'ia', title: 'Analyse IA', hint: 'Métadonnées proposées' },
+  { key: 'class', title: 'Classement', hint: 'Type, dossier, mots-clés' },
+  { key: 'diff', title: 'Diffusion', hint: 'Accès et conservation' },
+  { key: 'check', title: 'Contrôle', hint: 'Récapitulatif' }
+];
+
+class Component extends DCLogic {
+  state = {
+    tab: 'library',
+    query: '',
+    filterType: 'all',
+    filterState: 'all',
+    docs: SEED,
+    step: 0,
+    draft: this.blank(),
+    selectedId: 'd2',
+    page: 1,
+    zoom: 1,
+    panX: 0,
+    panY: 0,
+    dragging: false,
+    ocrDone: false,
+    iaDone: false,
+    iaApplied: false,
+    compareOpen: false,
+    compareText: ''
+  };
+
+  blank() {
+    return {
+      mode: 'file', file: '', title: '', reference: '', received: iso(new Date()), due: '', pages: '',
+      source: 'upload', type: 'mandat', form: 'original', folder: 'BGM-004', date: iso(new Date()),
+      issuer: '', tags: '', access: 'interne', retention: '10', needsReview: true, notes: '',
+      isNewVersion: false, parentId: 'd1', versionNote: ''
+    };
+  }
+
+  patch(p) { this.setState((s) => ({ draft: Object.assign({}, s.draft, p) })); }
+
+  stepDisabled(i) {
+    const manual = (this.state.draft.mode || 'file') === 'manual';
+    return manual && (STEPS[i].key === 'ocr' || STEPS[i].key === 'ia');
+  }
+
+  jump(dir) {
+    let i = this.state.step + dir;
+    while (i > 0 && i < STEPS.length - 1 && this.stepDisabled(i)) i += dir;
+    if (this.stepDisabled(i)) i = dir > 0 ? STEPS.length - 1 : 0;
+    this.setState({ step: Math.max(0, Math.min(STEPS.length - 1, i)) });
+  }
+  current() { return this.state.docs.find((d) => d.id === this.state.selectedId) || this.state.docs[0]; }
+  editCurrent(p) {
+    this.setState((s) => ({ docs: s.docs.map((d) => (d.id === s.selectedId ? Object.assign({}, d, p) : d)) }));
+  }
+
+  lastVersion(doc) { return doc.versions[doc.versions.length - 1]; }
+
+  submit() {
+    const d = this.state.draft;
+    const name = (d.title || '').trim() || (d.file || '').replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').trim() || 'Nouveau document';
+    const ext = ((d.file || '').split('.').pop() || 'pdf').toUpperCase();
+    if (d.isNewVersion) {
+      this.setState((s) => ({
+        docs: s.docs.map((doc) => {
+          if (doc.id !== d.parentId) return doc;
+          const n = this.lastVersion(doc).n + 1;
+          return Object.assign({}, doc, {
+            state: d.needsReview ? 'review' : doc.state,
+            versions: doc.versions.concat([{ n, date: d.date, author: 'F. Hoeppe', note: d.versionNote || 'Nouvelle version', size: '—' }])
+          });
+        }),
+        tab: 'review', selectedId: d.parentId, step: 0, draft: this.blank(), ocrDone: false, iaDone: false, iaApplied: false
+      }));
+      return;
+    }
+    const id = 'n' + Date.now();
+    this.setState((s) => ({
+      docs: [{
+        id, name, file: d.file || 'document.pdf', ext, type: d.type, folder: d.folder,
+        state: d.needsReview ? 'review' : 'draft', access: d.access, tags: d.tags, issuer: d.issuer || '—',
+        versions: [{ n: 1, date: d.date, author: 'F. Hoeppe', note: 'Version initiale', size: '—' }]
+      }].concat(s.docs),
+      tab: 'library', step: 0, draft: this.blank(), ocrDone: false, iaDone: false, iaApplied: false
+    }));
+  }
+
+  renderVals() {
+    const tab = this.state.tab;
+    const docs = this.state.docs;
+    const q = this.state.query.trim().toLowerCase();
+    const filtered = docs.filter((d) => {
+      if (this.state.filterType !== 'all' && d.type !== this.state.filterType) return false;
+      if (this.state.filterState !== 'all' && d.state !== this.state.filterState) return false;
+      if (q && (d.name + ' ' + d.tags + ' ' + d.file).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    const reviewCount = docs.filter((d) => d.state === 'review').length;
+    const cur = this.current();
+    const curLast = cur ? this.lastVersion(cur) : null;
+    const step = this.state.step;
+
+    const tabDef = [
+      { key: 'library', label: 'Gestion documentaire' },
+      { key: 'capture', label: 'Nouveau document' },
+      { key: 'review', label: 'Revue et métadonnées', badge: reviewCount }
+    ];
+
+    return {
+      subtitle: tab === 'library' ? 'Bibliothèque des pièces rattachées aux comptes'
+        : tab === 'capture' ? 'Saisie guidée en six étapes, OCR puis analyse IA'
+        : 'Contrôle des métadonnées et des versions',
+      headerStat: docs.length + ' documents · ' + reviewCount + ' en attente de revue',
+      tabs: tabDef.map((t) => {
+        const on = tab === t.key;
+        return {
+          label: t.label,
+          isLibrary: t.key === 'library',
+          isCapture: t.key === 'capture',
+          isReview: t.key === 'review',
+          hasBadge: !!t.badge,
+          badge: t.badge,
+          height: on ? '40px' : '32px',
+          padding: on ? '0 20px' : '0 14px',
+          size: on ? '14px' : '12px',
+          bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          borderColor: 'var(--ds-brand-fill, var(--field-brand))',
+          weight: on ? '700' : '400',
+          badgeBg: on ? 'rgba(255,255,255,0.22)' : 'var(--color-neutral-300)',
+          badgeFg: on ? '#ffffff' : 'var(--color-neutral-700)',
+          onClick: () => this.setState({ tab: t.key })
+        };
+      }),
+      isLibrary: tab === 'library', isCapture: tab === 'capture', isReview: tab === 'review',
+
+      query: this.state.query,
+      setQuery: (e) => this.setState({ query: e.target.value }),
+      filterType: this.state.filterType,
+      setFilterType: (e) => this.setState({ filterType: e.target.value }),
+      filterState: this.state.filterState,
+      setFilterState: (e) => this.setState({ filterState: e.target.value }),
+      typeOptions: TYPES,
+      formOptions: FORMS,
+      folderOptions: FOLDERS,
+      docOptions: docs.map((d) => ({ value: d.id, label: d.name + ' (v' + this.lastVersion(d).n + ')' })),
+      goCapture: () => this.setState({ tab: 'capture', step: 0, draft: this.blank() }),
+      noRows: filtered.length === 0,
+      rows: filtered.map((d) => {
+        const last = this.lastVersion(d);
+        const st = STATES[d.state];
+        return {
+          name: d.name, ext: d.ext, meta: d.file + ' · ' + last.size,
+          type: typeLabel(d.type) + ' · ' + formLabel(d.form || 'original'), folder: d.folder,
+          version: 'v' + last.n,
+          versionMeta: fr(last.date),
+          stateLabel: st.label, stateBg: st.bg, stateFg: st.fg,
+          onReview: () => this.setState({ tab: 'review', selectedId: d.id, compareOpen: false }),
+          onNewVersion: () => this.setState({
+            tab: 'capture', step: 0,
+            draft: Object.assign(this.blank(), { isNewVersion: true, parentId: d.id, type: d.type, folder: d.folder })
+          }),
+          onRemove: () => this.setState((s) => ({ docs: s.docs.filter((x) => x.id !== d.id) }))
+        };
+      }),
+
+      steps: STEPS.map((s, i) => {
+        const off = this.stepDisabled(i);
+        return {
+          title: s.title,
+          hint: off ? 'Désactivé — saisie manuelle' : s.hint,
+          badge: off ? '—' : String(i + 1),
+          isDone: !off && i < step,
+          isPending: off || i >= step,
+          badgeBg: off ? 'rgba(0,0,0,0.12)' : i <= step ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--color-neutral-700)',
+          badgeFg: off ? 'var(--color-neutral-500)' : '#ffffff',
+          fg: off ? 'var(--color-neutral-500)' : i === step ? 'var(--color-text)' : 'var(--color-neutral-700)',
+          weight: i === step && !off ? '500' : '400',
+          hasLine: i < STEPS.length - 1,
+          line: 'rgba(0,0,0,0.12)',
+          onClick: () => { if (!off) this.setState({ step: i }); }
+        };
+      }),
+      isFileMode: (this.state.draft.mode || 'file') === 'file',
+      isManualMode: (this.state.draft.mode || 'file') === 'manual',
+      preview: {
+        name: this.state.draft.file || 'document-a-saisir.pdf',
+        pageLabel: this.state.page + ' / 9',
+        scale: this.state.zoom.toFixed(2),
+        tx: Math.round(this.state.panX) + 'px',
+        ty: Math.round(this.state.panY) + 'px',
+        zoomLabel: Math.round(this.state.zoom * 100) + ' %',
+        cursor: this.state.dragging ? 'grabbing' : 'grab',
+        kicker: 'Page ' + this.state.page,
+        title: this.state.draft.title || typeLabel(this.state.draft.type),
+        footer: 'Aperçu — ' + (this.state.draft.reference || 'référence à saisir'),
+        lines: [96, 88, 92, 70, 84, 90, 62, 88, 46, 78, 84, 58].map((w) => ({ w: w + '%' }))
+      },
+      zoomIn: () => this.setState((s) => ({ zoom: Math.min(4, +(s.zoom + 0.2).toFixed(2)) })),
+      zoomOut: () => this.setState((s) => ({ zoom: Math.max(0.4, +(s.zoom - 0.2).toFixed(2)) })),
+      resetView: () => this.setState({ zoom: 1, panX: 0, panY: 0 }),
+      openViewer: () => {
+        const d = this.state.draft;
+        const q = 'name=' + encodeURIComponent(d.file || 'document-a-saisir.pdf')
+          + '&title=' + encodeURIComponent(d.title || typeLabel(d.type))
+          + '&ref=' + encodeURIComponent(d.reference || '')
+          + '&pages=' + encodeURIComponent(d.pages || '9');
+        window.open('Visionneuse Document.dc.html?' + q, '_blank', 'noopener');
+      },
+      wheelZoom: (e) => {
+        e.preventDefault();
+        const d = e.deltaY > 0 ? -0.1 : 0.1;
+        this.setState((s) => ({ zoom: Math.max(0.4, Math.min(4, +(s.zoom + d).toFixed(2))) }));
+      },
+      dragStart: (e) => {
+        e.preventDefault();
+        this.drag = { x: e.clientX, y: e.clientY, px: this.state.panX, py: this.state.panY };
+        this.setState({ dragging: true });
+      },
+      dragMove: (e) => {
+        if (!this.state.dragging || !this.drag) return;
+        this.setState({
+          panX: this.drag.px + (e.clientX - this.drag.x),
+          panY: this.drag.py + (e.clientY - this.drag.y)
+        });
+      },
+      dragEnd: () => { if (this.state.dragging) this.setState({ dragging: false }); },
+      prevPage: () => this.setState((s) => ({ page: Math.max(1, s.page - 1) })),
+      nextPage: () => this.setState((s) => ({ page: Math.min(9, s.page + 1) })),
+      setTitle: (e) => this.patch({ title: e.target.value }),
+      setReference: (e) => this.patch({ reference: e.target.value }),
+      setReceived: (e) => this.patch({ received: e.target.value }),
+      setDue: (e) => this.patch({ due: e.target.value }),
+      setPages: (e) => this.patch({ pages: e.target.value }),
+      fileFieldLabel: (this.state.draft.mode || 'file') === 'file' ? 'Nom du fichier' : 'Référence de la saisie',
+      modeHint: (this.state.draft.mode || 'file') === 'file'
+        ? 'Le fichier déposé passe par la reconnaissance OCR puis l\'analyse IA.'
+        : 'Saisie manuelle : les étapes Analyse OCR et Analyse IA sont désactivées.',
+      modeTabs: [
+        { key: 'file', label: 'Dépôt de fichier' },
+        { key: 'manual', label: 'Saisie manuelle' }
+      ].map((m, i) => {
+        const on = (this.state.draft.mode || 'file') === m.key;
+        return {
+          label: m.label,
+          divider: i === 0 ? '0' : '1px solid rgba(0,61,165,0.30)',
+          bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+          hoverBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.16)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          weight: on ? '600' : '400',
+          onClick: () => this.setState((s) => ({
+            draft: Object.assign({}, s.draft, { mode: m.key }),
+            ocrDone: m.key === 'file' ? s.ocrDone : false,
+            iaDone: m.key === 'file' ? s.iaDone : false,
+            iaApplied: m.key === 'file' ? s.iaApplied : false
+          }))
+        };
+      }),
+      stepFile: step === 0, stepOcr: step === 1, stepIa: step === 2,
+      stepClass: step === 3, stepDiff: step === 4, stepCheck: step === 5,
+      ocr: {
+        done: this.state.ocrDone,
+        title: this.state.ocrDone ? 'Reconnaissance terminée' : 'Reconnaissance de texte',
+        hint: this.state.ocrDone ? 'Le document est indexé et interrogeable.' : 'Lance l\'OCR sur le fichier déposé avant l\'analyse IA.',
+        action: this.state.ocrDone ? 'Relancer' : 'Lancer l\'OCR',
+        dotBg: this.state.ocrDone ? 'rgba(15,118,110,0.12)' : 'var(--color-neutral-200)',
+        dotFg: this.state.ocrDone ? 'var(--ink-ok-2)' : 'var(--color-neutral-700)',
+        stats: [
+          { label: 'Pages traitées', value: '9 / 9' },
+          { label: 'Qualité moyenne', value: '98,2 %' },
+          { label: 'Langue détectée', value: 'Français' },
+          { label: 'Caractères extraits', value: '18 402' },
+          { label: 'Signatures détectées', value: '2' },
+          { label: 'Tableaux détectés', value: '3' }
+        ],
+        text: 'CONVENTION DE GESTION DISCRÉTIONNAIRE — Compte BGM-004\nEntre les soussignés : le Client, ci-après dénommé « le Mandant », et la Société de gestion…\nArticle 3 — Profil de risque : équilibré. Allocation cible : actions 55 %, obligations 26 %…'
+      },
+      ia: {
+        done: this.state.iaDone,
+        title: this.state.iaDone ? 'Métadonnées proposées' : 'Extraction assistée par IA',
+        hint: this.state.iaDone ? 'Vérifiez puis appliquez au classement.' : 'Analyse le texte reconnu pour proposer le classement.',
+        action: this.state.iaDone ? 'Relancer' : "Lancer l'analyse",
+        dotBg: this.state.iaDone ? 'rgba(15,118,110,0.12)' : 'var(--color-neutral-200)',
+        dotFg: this.state.iaDone ? 'var(--ink-ok-2)' : 'var(--color-neutral-700)',
+        applied: this.state.iaApplied ? 'Proposition appliquée aux champs de classement.' : '',
+        fields: [
+          { label: 'Type de document', value: 'Convention de mandat', conf: '96 %', level: 'high' },
+          { label: 'Dossier', value: 'Balanced Growth — BGM-004', conf: '92 %', level: 'high' },
+          { label: "Date d'émission", value: '11/02/2026', conf: '88 %', level: 'high' },
+          { label: 'Émetteur', value: 'Client — Cheval Blanc SCI', conf: '74 %', level: 'mid' },
+          { label: 'Mots-clés', value: 'mandat, profil équilibré, signature', conf: '69 %', level: 'mid' },
+          { label: 'Échéance', value: '11/02/2029', conf: '52 %', level: 'low' }
+        ].map((f) => ({
+          label: f.label, value: f.value, conf: f.conf,
+          confBg: f.level === 'high' ? 'rgba(15,118,110,0.12)' : f.level === 'mid' ? 'rgba(180,83,9,0.12)' : 'var(--color-neutral-200)',
+          confFg: f.level === 'high' ? 'var(--ink-ok-2)' : f.level === 'mid' ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)'
+        }))
+      },
+      runOcr: () => this.setState({ ocrDone: true }),
+      runIa: () => this.setState({ iaDone: true }),
+      applyIa: () => {
+        this.patch({ type: 'mandat', folder: 'BGM-004', date: '2026-02-11', issuer: 'Cheval Blanc SCI', tags: 'mandat, profil équilibré, signature' });
+        this.setState({ iaApplied: true });
+      },
+      stepLabel: 'Étape ' + (step + 1) + ' sur ' + STEPS.length + ' — ' + STEPS[step].title,
+      notLastStep: step < STEPS.length - 1,
+      lastStep: step === STEPS.length - 1,
+      submitLabel: this.state.draft.isNewVersion ? 'Enregistrer la nouvelle version' : 'Enregistrer le document',
+      prevStep: () => this.jump(-1),
+      nextStep: () => this.jump(1),
+      submitDoc: () => this.submit(),
+
+      draft: this.state.draft,
+      setFile: (e) => this.patch({ file: e.target.value }),
+      setSource: (e) => this.patch({ source: e.target.value }),
+      setType: (e) => this.patch({ type: e.target.value }),
+      setForm: (e) => this.patch({ form: e.target.value }),
+      editForm: (e) => this.editCurrent({ form: e.target.value }),
+      setFolder: (e) => this.patch({ folder: e.target.value }),
+      setDate: (e) => this.patch({ date: e.target.value }),
+      setIssuer: (e) => this.patch({ issuer: e.target.value }),
+      setTags: (e) => this.patch({ tags: e.target.value }),
+      setAccess: (e) => this.patch({ access: e.target.value }),
+      setRetention: (e) => this.patch({ retention: e.target.value }),
+      setNeedsReview: (e) => this.patch({ needsReview: e.target.checked }),
+      setNotes: (e) => this.patch({ notes: e.target.value }),
+      setIsNewVersion: (e) => this.patch({ isNewVersion: e.target.checked }),
+      setParent: (e) => this.patch({ parentId: e.target.value }),
+      setVersionNote: (e) => this.patch({ versionNote: e.target.value }),
+      pickFile: () => this.patch({ file: this.state.draft.file || 'document-scanne.pdf' }),
+      versionPreview: (() => {
+        const parent = docs.find((d) => d.id === this.state.draft.parentId);
+        if (!parent) return '';
+        return 'Sera enregistré en version v' + (this.lastVersion(parent).n + 1) + ' de « ' + parent.name + ' ».';
+      })(),
+      recap: [
+        { label: 'Mode de saisie', value: (this.state.draft.mode || 'file') === 'manual' ? 'Saisie manuelle (sans OCR ni IA)' : 'Dépôt de fichier' },
+        { label: 'Fichier', value: this.state.draft.file || '—' },
+        { label: 'Enregistrement', value: this.state.draft.isNewVersion ? 'Nouvelle version' : 'Nouveau document' },
+        { label: 'Nature du document', value: typeLabel(this.state.draft.type) },
+        { label: 'Type de document', value: formLabel(this.state.draft.form) },
+        { label: 'Dossier', value: folderLabel(this.state.draft.folder) },
+        { label: 'Date du document', value: fr(this.state.draft.date) },
+        { label: 'Émetteur', value: this.state.draft.issuer || '—' },
+        { label: 'Mots-clés', value: this.state.draft.tags || '—' },
+        { label: 'Confidentialité', value: this.state.draft.access === 'client' ? 'Partagé avec le client' : this.state.draft.access === 'restreint' ? 'Restreint — conformité' : 'Interne — équipe de gestion' },
+        { label: 'Conservation', value: this.state.draft.retention === 'perm' ? 'Illimitée' : this.state.draft.retention + ' ans' },
+        { label: 'Revue', value: this.state.draft.needsReview ? 'Soumis à revue' : 'Sans revue' }
+      ],
+
+      queue: docs.map((d) => {
+        const on = d.id === this.state.selectedId;
+        return {
+          name: d.name, version: 'v' + this.lastVersion(d).n,
+          meta: STATES[d.state].label + ' · ' + d.folder,
+          bg: on ? 'var(--color-neutral-100)' : 'var(--surface)',
+          mark: on ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'transparent',
+          weight: on ? '700' : '400',
+          onSelect: () => this.setState({ selectedId: d.id, compareOpen: false })
+        };
+      }),
+      current: cur ? {
+        name: cur.name, type: cur.type, form: cur.form || 'original', folder: cur.folder, access: cur.access, tags: cur.tags,
+        meta: cur.file + ' · ' + typeLabel(cur.type) + ' · v' + curLast.n + ' du ' + fr(curLast.date) + ' · ' + cur.issuer,
+        stateLabel: STATES[cur.state].label, stateBg: STATES[cur.state].bg, stateFg: STATES[cur.state].fg
+      } : {},
+      metaCount: cur ? (31 + ' champs · dernière mise à jour ' + fr(curLast.date)) : '',
+      metaList: cur ? [
+        { label: 'Identifiant', value: cur.id.toUpperCase() + '-' + cur.folder },
+        { label: 'Nom de fichier', value: cur.file },
+        { label: 'Format', value: cur.ext },
+        { label: 'Taille', value: curLast.size },
+        { label: 'Nature du document', value: typeLabel(cur.type) },
+        { label: 'Type de document', value: formLabel(cur.form || 'original') },
+        { label: 'Dossier', value: folderLabel(cur.folder) },
+        { label: 'Émetteur', value: cur.issuer },
+        { label: 'Source', value: cur.issuer === 'Dépositaire' || cur.issuer === 'Flux' ? 'Flux dépositaire' : 'Dépôt manuel' },
+        { label: 'Référence document', value: 'DOC-' + cur.folder + '-' + cur.id.replace(/\D/g, '').padStart(4, '0') },
+        { label: "Date d'émission", value: fr(cur.versions[0].date) },
+        { label: 'Date de réception', value: fr(curLast.date) },
+        { label: 'Date de dépôt', value: fr(curLast.date) },
+        { label: 'Échéance', value: cur.type === 'mandat' ? fr((+cur.versions[0].date.slice(0, 4) + 3) + cur.versions[0].date.slice(4)) : 'Sans échéance' },
+        { label: 'Date de revue', value: cur.state === 'review' ? 'En cours' : fr(curLast.date) },
+        { label: 'Revue par', value: cur.state === 'valid' ? 'A. Meyer' : '—' },
+        { label: 'Prochaine revue', value: fr((+curLast.date.slice(0, 4) + 1) + curLast.date.slice(4)) },
+        { label: 'Déposé par', value: curLast.author },
+        { label: 'Version courante', value: 'v' + curLast.n },
+        { label: 'Nombre de versions', value: String(cur.versions.length) },
+        { label: 'État', value: STATES[cur.state].label },
+        { label: 'Confidentialité', value: cur.access === 'client' ? 'Partagé avec le client' : cur.access === 'restreint' ? 'Restreint — conformité' : 'Interne' },
+        { label: 'Conservation', value: '10 ans' },
+        { label: 'Échéance de purge', value: fr((+cur.versions[0].date.slice(0, 4) + 10) + cur.versions[0].date.slice(4)) },
+        { label: 'Mots-clés', value: cur.tags || '—' },
+        { label: 'Langue', value: 'Français' },
+        { label: 'Pages', value: cur.ext === 'PDF' ? String(6 + cur.versions.length * 3) : '—' },
+        { label: 'Empreinte SHA-256', value: (cur.id + curLast.n + cur.file).replace(/[^a-z0-9]/gi, '').padEnd(16, '0').slice(0, 16).toLowerCase() + '…' },
+        { label: 'Signature électronique', value: cur.type === 'mandat' ? 'Signée — horodatée' : 'Non applicable' },
+        { label: 'Indexation OCR', value: cur.ext === 'PDF' ? 'Effectuée' : 'Non requise' },
+        { label: 'Dernière modification', value: fr(curLast.date) + ' — ' + curLast.author }
+      ] : [],
+      editName: (e) => this.editCurrent({ name: e.target.value }),
+      editType: (e) => this.editCurrent({ type: e.target.value }),
+      editFolder: (e) => this.editCurrent({ folder: e.target.value }),
+      editAccess: (e) => this.editCurrent({ access: e.target.value }),
+      editTags: (e) => this.editCurrent({ tags: e.target.value }),
+      validate: () => this.editCurrent({ state: 'valid' }),
+      reject: () => this.editCurrent({ state: 'draft' }),
+      archive: () => this.editCurrent({ state: 'archived' }),
+      addVersion: () => this.setState((s) => ({
+        tab: 'capture', step: 0,
+        draft: Object.assign(this.blank(), { isNewVersion: true, parentId: s.selectedId })
+      })),
+      versions: cur ? cur.versions.slice().reverse().map((v, i) => ({
+        label: 'v' + v.n,
+        isCurrent: i === 0,
+        canRestore: i !== 0,
+        date: fr(v.date), author: v.author, note: v.note,
+        compareLabel: i === 0 ? 'Détails' : 'Comparer',
+        onRestore: () => this.setState((s) => ({
+          docs: s.docs.map((d) => {
+            if (d.id !== cur.id) return d;
+            const n = this.lastVersion(d).n + 1;
+            return Object.assign({}, d, {
+              versions: d.versions.concat([{ n, date: iso(new Date()), author: 'F. Hoeppe', note: 'Restauration de la v' + v.n, size: v.size }])
+            });
+          }),
+          compareOpen: true,
+          compareText: 'La v' + v.n + ' a été replacée en version courante (enregistrée comme nouvelle version).'
+        })),
+        onCompare: () => this.setState({
+          compareOpen: true,
+          compareText: i === 0
+            ? 'v' + v.n + ' — déposée le ' + fr(v.date) + ' par ' + v.author + ' · ' + v.size + ' · ' + v.note
+            : 'Comparaison v' + v.n + ' → v' + curLast.n + ' : ' + v.note + ' (' + fr(v.date) + ') puis ' + curLast.note + ' (' + fr(curLast.date) + ').'
+        })
+      })) : [],
+      compareOpen: this.state.compareOpen,
+      compareText: this.state.compareText
+    };
+  }
+}
+</script>
+</body>
+</html>

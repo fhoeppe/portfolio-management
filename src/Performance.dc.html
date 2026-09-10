@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="PerfPage"] { --surface: var(--theme-surface, #ffffff); --ink-brand: #002a6e; --ink-brand-2: #003da5; --ink-ok: #0b5f57; --ink-ok-2: #0f766e; --ink-warn: #8f3f06; --ink-warn-2: #b45309; --ink-alt: #5b3ea8; --field-brand: #002a6e; container-type: inline-size; }
+    [data-theme="dark"] [data-component="PerfPage"] { --theme-surface: #1d1b1a; --color-text: #f3f2f2; --ink-brand: #9db6d9; --ink-brand-2: #8fb4ee; --ink-ok: #5fd6c4; --ink-ok-2: #4fd1c5; --ink-warn: #f0a868; --ink-warn-2: #f3b782; --ink-alt: #c4b5fd; --field-brand: #12325e;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f; --color-neutral-400: #4a4643; --color-neutral-600: #8a8582; --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; }
+    [data-component="PerfPage"], [data-component="PerfPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="PerfPage"] h1, [data-component="PerfPage"] h2, [data-component="PerfPage"] h3 { color: var(--ink-brand); }
+    [data-component="PerfPage"] svg:not(button svg) { color: var(--ink-brand); }
+    [data-component="PerfPage"] select:focus, [data-component="PerfPage"] input:focus { outline: none; border-color: var(--ink-brand-2); box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    @container (max-width: 1040px) {
+      [data-perf-kpi] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      [data-perf-split] { grid-template-columns: minmax(0, 1fr) !important; }
+    }
+    /* Survol d'un segment : sa teinte et sa bordure s'accentuent, sans toucher aux voisins. */
+    [data-perf-bars] > span > span { transition: filter 140ms ease, border-width 140ms ease; }
+    [data-perf-bars] > span > span:hover {
+      filter: saturate(1.55) brightness(0.88);
+      border-width: 2px !important;
+    }
+
+    /* Infobulles : rendu immédiat, fond noir, angles arrondis. */
+    [data-component="PerfPage"] [matTooltip]:not(tr):not(td):not(th) { position: relative; }
+    [data-component="PerfPage"] [matTooltip]:not(tr):not(td):not(th):hover::after {
+      content: attr(matTooltip);
+      position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+      width: max-content; max-width: min(300px, 60vw);
+      padding: 7px 11px; border-radius: 7px;
+      background: #161514; color: #ffffff;
+      font-family: inherit; font-size: 12.5px; font-weight: 400; line-height: 1.4;
+      letter-spacing: 0; text-align: left; text-transform: none; white-space: normal;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.32);
+      z-index: 500; pointer-events: none;
+    }
+    [data-component="PerfPage"] [matTooltip]:not(tr):not(td):not(th):hover::before {
+      content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%;
+      margin-left: -5px; border: 5px solid transparent; border-top-color: #161514;
+      z-index: 500; pointer-events: none;
+    }
+    /* Près du bord haut, l'infobulle passe sous l'élément. */
+    [data-component="PerfPage"] [data-tip-below][matTooltip]:hover::after {
+      bottom: auto; top: calc(100% + 7px);
+    }
+    [data-component="PerfPage"] [data-tip-below][matTooltip]:hover::before {
+      bottom: auto; top: calc(100% + 2px);
+      border-top-color: transparent; border-bottom-color: #161514;
+    }
+    /* Près du bord gauche ou droit, elle s'aligne sur ce bord. */
+    [data-component="PerfPage"] [data-tip-start][matTooltip]:hover::after { left: 0; transform: none; }
+    [data-component="PerfPage"] [data-tip-start][matTooltip]:hover::before { left: 14px; }
+    [data-component="PerfPage"] [data-tip-end][matTooltip]:hover::after { left: auto; right: 0; transform: none; }
+    [data-component="PerfPage"] [data-tip-end][matTooltip]:hover::before { left: auto; right: 9px; }
+  </style>
+</helmet>
+
+<div data-component="PerfPage" data-screen-label="Analyse de la performance" style="display:flex;flex-direction:column;height:100%;min-height:0;overflow-y:auto;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;padding:14px 20px 0;background:var(--surface)">
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div style="min-width:0">
+        <h1 style="font-size:18px;margin:0;line-height:1.2">Analyse de la performance</h1>
+        <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+      </div>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span data-mat-form-field="" style="display:flex">
+          <select data-mat-select="" value="{{ scope }}" onChange="{{ setScope }}" matTooltip="Périmètre analysé" style="height:30px;min-width:230px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;outline:none;cursor:pointer">
+            <sc-for list="{{ scopeOptions }}" as="o" hint-placeholder-count="4">
+              <option data-mat-option="" value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </span>
+        <span role="group" aria-label="Période" style="display:inline-flex;align-items:stretch;border:1px solid rgba(0,0,0,0.12);border-radius:4px;overflow:hidden;background:var(--surface)">
+          <sc-for list="{{ periods }}" as="p" hint-placeholder-count="6">
+            <button role="radio" aria-checked="{{ p.on }}" onClick="{{ p.onClick }}" style="height:30px;padding:0 11px;border:0;border-left:{{ p.divider }};background:{{ p.bg }};color:{{ p.fg }};font-family:inherit;font-size:12px;font-weight:{{ p.weight }};white-space:nowrap;cursor:pointer" style-hover="background:{{ p.hoverBg }}">{{ p.label }}</button>
+          </sc-for>
+        </span>
+      </span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:2px;margin-top:12px;border-bottom:1px solid var(--ink-brand)">
+      <sc-for list="{{ pageTabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;height:{{ t.height }};padding:{{ t.padding }};border:1px solid var(--ink-brand-2);border-bottom:0;border-radius:6px 6px 0 0;background:{{ t.bg }};color:{{ t.fg }};font-family:inherit;font-size:{{ t.size }};font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.97)">
+          <sc-if value="{{ t.isOverview }}" hint-placeholder-val="{{ true }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isDetail }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3h18v18H3z"></path><path d="M3 9h18"></path><path d="M3 15h18"></path><path d="M9 3v18"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isAttrib }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 2a10 10 0 1 0 10 10H12Z"></path><path d="M12 2v10h10A10 10 0 0 0 12 2Z"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isHistory }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 8v4l3 2"></path><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-9 9"></path><path d="M3 4v5h5"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isRisk }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 2 2 20h20L12 2Z"></path><path d="M12 9v5"></path><path d="M12 17h.01"></path></svg>
+          </sc-if>
+          {{ t.label }}
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ showKpis }}" hint-placeholder-val="{{ true }}">
+  <div data-perf-kpi="" style="flex:none;display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:1px;background:var(--ink-brand);border-bottom:1px solid var(--ink-brand)">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="min-width:0;padding:13px 14px 15px;background:{{ k.bg }}">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:{{ k.labelColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.label }}</div>
+        <div style="margin-top:5px;font-size:20px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.value }}</div>
+        <div style="margin-top:3px;font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onOverview }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 16px;background:var(--field-brand);color:#ffffff">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg>
+        <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#ffffff">Performance cumulée</h2>
+        <span style="margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums">{{ chartNote }}</span>
+      </div>
+      <div style="padding:14px 16px 10px">
+        <svg viewBox="0 0 720 240" preserveAspectRatio="none" role="img" aria-label="Performance cumulée du portefeuille contre son indice de référence" style="display:block;width:100%;height:240px">
+          <sc-for list="{{ gridLines }}" as="g" hint-placeholder-count="5">
+            <line x1="0" y1="{{ g.y }}" x2="720" y2="{{ g.y }}" stroke="var(--color-neutral-300)" stroke-width="1"></line>
+          </sc-for>
+          <line x1="0" y1="{{ zeroY }}" x2="720" y2="{{ zeroY }}" stroke="var(--color-neutral-600)" stroke-width="1.5" stroke-dasharray="4 3"></line>
+          <path d="{{ benchArea }}" fill="rgba(91,62,168,0.10)"></path>
+          <path d="{{ benchPath }}" fill="none" stroke="var(--ink-alt)" stroke-width="2" stroke-linejoin="round" stroke-dasharray="5 4"></path>
+          <path d="{{ portArea }}" fill="rgba(0,61,165,0.12)"></path>
+          <path d="{{ portPath }}" fill="none" stroke="var(--ink-brand-2)" stroke-width="2.6" stroke-linejoin="round"></path>
+        </svg>
+        <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:4px">
+          <sc-for list="{{ ticks }}" as="tk" hint-placeholder-count="6">
+            <span style="flex:1;min-width:0;font-size:10px;color:var(--color-neutral-700);text-align:{{ tk.align }};white-space:nowrap">{{ tk.label }}</span>
+          </sc-for>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 16px 12px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <sc-for list="{{ chartLegend }}" as="l" hint-placeholder-count="2">
+          <span style="display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--color-neutral-800);white-space:nowrap">
+            <span style="width:16px;height:3px;border-radius:2px;background:{{ l.color }}"></span>
+            {{ l.label }}
+            <span style="font-weight:700;font-variant-numeric:tabular-nums;color:{{ l.valueColor }}">{{ l.value }}</span>
+          </span>
+        </sc-for>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ chartFootnote }}</span>
+      </div>
+    </div>
+
+    <div data-perf-split="" style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+          <h2 style="margin:0;font-size:14px">Performance par période</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">Net de frais</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table mat-table="" class="mat-table" style="width:100%;min-width:520px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+            <thead>
+              <tr class="mat-header-row" style="background:var(--surface);height:32px">
+                <th data-mat-column="period" style="width:120px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Période</th>
+                <th data-mat-column="port" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Portefeuille</th>
+                <th data-mat-column="bench" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Référence</th>
+                <th data-mat-column="delta" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Écart</th>
+                <th data-mat-column="contrib" style="width:150px;text-align:right;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Contribution</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ periodRows }}" as="r" hint-placeholder-count="6">
+                <tr class="mat-row" style="height:36px;background:{{ r.bg }}">
+                  <td data-mat-column="period" style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200);font-weight:600;white-space:nowrap">{{ r.label }}</td>
+                  <td data-mat-column="port" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.portColor }}">{{ r.port }}</td>
+                  <td data-mat-column="bench" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ r.bench }}</td>
+                  <td data-mat-column="delta" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.deltaColor }}">{{ r.delta }}</td>
+                  <td data-mat-column="contrib" style="padding:0 16px 0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:center;gap:7px;justify-content:flex-end">
+                      <span style="flex:1;min-width:0;height:6px;border-radius:3px;background:var(--color-neutral-200);overflow:hidden">
+                        <span style="display:block;width:{{ r.barWidth }};height:100%;background:{{ r.barColor }}"></span>
+                      </span>
+                      <span style="flex:none;font-size:11px;font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ r.contrib }}</span>
+                    </span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+          <h2 style="margin:0;font-size:14px">Mesures de performance</h2>
+        </div>
+        <sc-for list="{{ measures }}" as="m" hint-placeholder-count="6">
+          <div style="display:flex;align-items:baseline;gap:12px;padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span matTooltip="{{ m.hint }}" style="flex:1;min-width:0;font-size:12px;color:var(--color-neutral-800);text-wrap:pretty">{{ m.label }}</span>
+            <span style="flex:none;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ m.color }}">{{ m.value }}</span>
+          </div>
+        </sc-for>
+        <p style="margin:0;padding:11px 16px;font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ measuresNote }}</p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onDetail }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">Le détail mois par mois puis ligne à ligne : ce qui a produit la performance, avec le poids et le risque porté par chaque position.</p>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 16px;background:var(--field-brand);color:#ffffff">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3v18h18"></path><path d="M7 16v-5"></path><path d="M12 16V8"></path><path d="M17 16v-3"></path></svg>
+        <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#ffffff">{{ freqTitle }}</h2>
+        <span role="group" aria-label="Fréquence d'observation" style="margin-left:auto;display:inline-flex;align-items:stretch;border:1px solid rgba(255,255,255,0.35);border-radius:4px;overflow:hidden">
+          <sc-for list="{{ freqModes }}" as="fq" hint-placeholder-count="4">
+            <button role="radio" aria-checked="{{ fq.on }}" onClick="{{ fq.onClick }}" matTooltip="{{ fq.hint }}" style="height:26px;padding:0 10px;border:0;border-left:{{ fq.divider }};background:{{ fq.bg }};color:#ffffff;font-family:inherit;font-size:11px;font-weight:{{ fq.weight }};white-space:nowrap;cursor:pointer" style-hover="background:rgba(255,255,255,0.28)">{{ fq.label }}</button>
+          </sc-for>
+        </span>
+        <span style="font-size:12px;font-variant-numeric:tabular-nums">{{ monthlyNote }}</span>
+      </div>
+      <div style="display:flex;align-items:stretch;gap:10px;padding:16px;overflow-x:auto">
+        <sc-for list="{{ monthly }}" as="m" hint-placeholder-count="12">
+          <span style="flex:1;min-width:52px;display:flex;flex-direction:column;align-items:center;gap:5px">
+            <span style="font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ m.color }};white-space:nowrap">{{ m.value }}</span>
+            <span style="width:100%;height:104px;display:flex;flex-direction:column;justify-content:{{ m.justify }}">
+              <span style="display:flex;align-items:{{ m.align }};gap:3px;width:100%;height:{{ m.height }}">
+                <span style="flex:1;height:100%;border-radius:2px;background:{{ m.barColor }}"></span>
+                <span style="flex:1;height:{{ m.benchHeight }};border-radius:2px;background:rgba(91,62,168,0.45)"></span>
+              </span>
+            </span>
+            <span style="font-size:10px;color:var(--color-neutral-700);white-space:nowrap">{{ m.label }}</span>
+          </span>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 16px 12px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--color-neutral-800)"><span style="width:12px;height:8px;border-radius:2px;background:var(--ink-ok)"></span>Portefeuille</span>
+        <span style="display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--color-neutral-800)"><span style="width:12px;height:8px;border-radius:2px;background:rgba(91,62,168,0.45)"></span>Référence</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ monthlyFootnote }}</span>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Détail par ligne</h2>
+        <span role="group" aria-label="Tri" style="display:inline-flex;align-items:stretch;border:1px solid rgba(0,0,0,0.12);border-radius:4px;overflow:hidden;background:var(--surface)">
+          <sc-for list="{{ sortModes }}" as="sm" hint-placeholder-count="3">
+            <button role="radio" aria-checked="{{ sm.on }}" onClick="{{ sm.onClick }}" style="height:26px;padding:0 10px;border:0;border-left:{{ sm.divider }};background:{{ sm.bg }};color:{{ sm.fg }};font-family:inherit;font-size:11px;font-weight:{{ sm.weight }};white-space:nowrap;cursor:pointer" style-hover="background:{{ sm.hoverBg }}">{{ sm.label }}</button>
+          </sc-for>
+        </span>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ holdingsNote }}</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:880px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr class="mat-header-row" style="background:var(--surface);height:32px">
+              <th data-mat-column="ticker" style="width:96px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Ticker</th>
+              <th data-mat-column="name" style="text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Ligne</th>
+              <th data-mat-column="cls" style="width:120px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Classe</th>
+              <th data-mat-column="weight" style="width:96px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Poids</th>
+              <th data-mat-column="perf" style="width:104px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Performance</th>
+              <th data-mat-column="contrib" style="width:150px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Contribution</th>
+              <th data-mat-column="vol" style="width:96px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Volatilité</th>
+              <th data-mat-column="beta" style="width:82px;text-align:right;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Bêta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ holdings }}" as="h" hint-placeholder-count="8">
+              <tr class="mat-row" style="height:36px;background:{{ h.bg }}">
+                <td data-mat-column="ticker" style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700">{{ h.ticker }}</span>
+                </td>
+                <td data-mat-column="name" style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ h.name }}</td>
+                <td data-mat-column="cls" style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:{{ h.clsBg }};color:{{ h.clsFg }};font-size:10px;font-weight:700;white-space:nowrap">{{ h.cls }}</span>
+                </td>
+                <td data-mat-column="weight" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ h.weight }}</td>
+                <td data-mat-column="perf" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600;color:{{ h.perfColor }}">{{ h.perf }}</td>
+                <td data-mat-column="contrib" style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:flex;align-items:center;gap:7px;justify-content:flex-end">
+                    <span style="flex:1;min-width:0;height:6px;display:flex;justify-content:{{ h.justify }}">
+                      <span style="display:block;width:{{ h.barWidth }};height:100%;border-radius:2px;background:{{ h.barColor }}"></span>
+                    </span>
+                    <span style="flex:none;width:62px;text-align:right;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ h.contribColor }}">{{ h.contrib }}</span>
+                  </span>
+                </td>
+                <td data-mat-column="vol" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ h.vol }}</td>
+                <td data-mat-column="beta" style="padding:0 16px 0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ h.beta }}</td>
+              </tr>
+            </sc-for>
+            <tr style="height:34px;background:rgba(0,61,165,0.10)">
+              <td colSpan="3" style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">Total portefeuille</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700">{{ totalWeight }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ totalPerfColor }}">{{ totalPerf }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ totalContribColor }}">{{ totalContrib }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700">{{ totalVol }}</td>
+              <td style="padding:0 16px 0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700">{{ totalBeta }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onAttrib }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">L'écart avec la référence se décompose en effet d'allocation — le poids donné à chaque poche — et en effet de sélection — le choix des titres à l'intérieur de la poche.</p>
+
+    <sc-for list="{{ attribBlocks }}" as="b" hint-placeholder-count="2">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+          <h2 style="margin:0;font-size:14px">{{ b.title }}</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ b.note }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table mat-table="" class="mat-table" style="width:100%;min-width:700px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+            <thead>
+              <tr class="mat-header-row" style="background:var(--surface);height:32px">
+                <th style="text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">{{ b.dimension }}</th>
+                <th style="width:104px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Poids</th>
+                <th style="width:104px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Réf.</th>
+                <th style="width:118px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Allocation</th>
+                <th style="width:118px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Sélection</th>
+                <th style="width:118px;text-align:right;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="5">
+                <tr class="mat-row" style="height:36px;background:{{ r.bg }}">
+                  <td style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ r.weight }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ r.benchWeight }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ r.allocColor }}">{{ r.alloc }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ r.selColor }}">{{ r.sel }}</td>
+                  <td style="padding:0 16px 0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:700;color:{{ r.totalColor }}">{{ r.total }}</td>
+                </tr>
+              </sc-for>
+              <tr style="height:34px;background:rgba(0,61,165,0.10)">
+                <td style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">Total</td>
+                <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700">{{ b.totalWeight }}</td>
+                <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ b.totalBench }}</td>
+                <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ b.allocColor }}">{{ b.totalAlloc }}</td>
+                <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ b.selColor }}">{{ b.totalSel }}</td>
+                <td style="padding:0 16px 0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ b.totalColor }}">{{ b.total }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Principaux contributeurs</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ contribNote }}</span>
+      </div>
+      <sc-for list="{{ contributors }}" as="c" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="flex:none;display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700">{{ c.ticker }}</span>
+          <span style="flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</span>
+          <span style="flex:none;width:180px;display:flex;align-items:center;gap:6px">
+            <span style="flex:1;min-width:0;height:8px;display:flex;justify-content:{{ c.justify }}">
+              <span style="display:block;width:{{ c.barWidth }};height:100%;border-radius:2px;background:{{ c.barColor }}"></span>
+            </span>
+          </span>
+          <span style="flex:none;width:86px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ c.color }}">{{ c.value }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onRisk }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">La performance ne se lit qu'au regard du risque pris pour l'obtenir : volatilité, pertes maximales et rendement par unité de risque.</p>
+
+    <div data-perf-split="" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+          <h2 style="margin:0;font-size:14px">Indicateurs de risque</h2>
+        </div>
+        <sc-for list="{{ riskRows }}" as="r" hint-placeholder-count="7">
+          <div style="display:flex;align-items:baseline;gap:12px;padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span matTooltip="{{ r.hint }}" style="flex:1;min-width:0;font-size:12px;color:var(--color-neutral-800);text-wrap:pretty">{{ r.label }}</span>
+            <span style="flex:none;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">réf. {{ r.bench }}</span>
+            <span style="flex:none;width:74px;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ r.color }}">{{ r.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+          <h2 style="margin:0;font-size:14px">Périodes de perte</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ drawdownNote }}</span>
+        </div>
+        <sc-for list="{{ drawdowns }}" as="d" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:5px;padding:10px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="display:flex;align-items:baseline;gap:10px">
+              <span style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.label }}</span>
+              <span style="flex:none;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-warn-2)">{{ d.depth }}</span>
+            </span>
+            <span style="height:6px;border-radius:3px;background:var(--color-neutral-200);overflow:hidden">
+              <span style="display:block;width:{{ d.barWidth }};height:100%;background:var(--ink-warn-2)"></span>
+            </span>
+            <span style="font-size:11px;color:var(--color-neutral-700)">{{ d.detail }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Rendement par année civile</h2>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:14px;padding:16px;overflow-x:auto">
+        <sc-for list="{{ years }}" as="y" hint-placeholder-count="5">
+          <span style="flex:1;min-width:64px;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <span style="font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ y.color }}">{{ y.value }}</span>
+            <span style="width:100%;height:120px;display:flex;flex-direction:column;justify-content:{{ y.justify }}">
+              <span style="display:block;width:100%;height:{{ y.height }};border-radius:2px;background:{{ y.barColor }}"></span>
+            </span>
+            <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ y.label }}</span>
+            <span style="font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">réf. {{ y.bench }}</span>
+          </span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onHistory }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">Le résultat cumulé décomposé par nature : plus-values réalisées, dividendes encaissés, frais et taxes. Chaque zone de la barre ouvre son détail ligne à ligne.</p>
+
+    <div data-perf-split="" style="display:grid;grid-template-columns:minmax(0,0.72fr) minmax(0,1fr);gap:16px;align-items:start">
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--field-brand);color:#ffffff">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 2a10 10 0 1 0 10 10H12Z"></path><path d="M12 2v10h10A10 10 0 0 0 12 2Z"></path></svg>
+          <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#ffffff">Composition du résultat</h2>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:16px">
+          <span style="display:flex;align-items:baseline;gap:10px">
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">Résultat net cumulé</span>
+            <span style="margin-left:auto;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ netColor }}">{{ netTotal }}</span>
+          </span>
+          <span style="display:flex;width:100%;height:26px;border-radius:3px;overflow:hidden;background:var(--color-neutral-200)">
+            <sc-for list="{{ bands }}" as="b" hint-placeholder-count="4">
+              <button onClick="{{ b.onClick }}" matTooltip="{{ b.hint }}" aria-pressed="{{ b.on }}" style="flex:none;width:{{ b.width }};height:100%;padding:0;border:0;border-right:1px solid rgba(255,255,255,0.55);background:{{ b.color }};opacity:{{ b.opacity }};cursor:pointer;transition:opacity 140ms ease" style-hover="opacity:1"></button>
+            </sc-for>
+          </span>
+          <sc-for list="{{ bands }}" as="b" hint-placeholder-count="4">
+            <button onClick="{{ b.onClick }}" aria-pressed="{{ b.on }}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid {{ b.border }};border-radius:6px;background:{{ b.rowBg }};color:var(--color-text);font-family:inherit;font-size:12px;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+              <span style="flex:none;width:12px;height:12px;border-radius:3px;background:{{ b.color }}"></span>
+              <span style="flex:1;min-width:0;font-weight:{{ b.weight }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.label }}</span>
+              <span style="flex:none;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ b.share }}</span>
+              <span style="flex:none;width:88px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:{{ b.valueColor }}">{{ b.value }}</span>
+            </button>
+          </sc-for>
+          <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">Parts calculées sur la somme des flux en valeur absolue, montants en milliers d'euros.</span>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+          <span style="flex:none;width:12px;height:12px;border-radius:3px;background:{{ detailColor }}"></span>
+          <h2 style="margin:0;font-size:14px">{{ detailTitle }}</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ detailNote }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table mat-table="" class="mat-table" style="width:100%;min-width:620px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+            <thead>
+              <tr class="mat-header-row" style="background:var(--surface);height:32px">
+                <sc-for list="{{ detailCols }}" as="c" hint-placeholder-count="6">
+                  <th style="width:{{ c.width }};text-align:{{ c.align }};padding:{{ c.pad }};font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300);white-space:nowrap">{{ c.label }}</th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ detailRows }}" as="r" hint-placeholder-count="5">
+                <tr class="mat-row" style="height:36px;background:{{ r.bg }}">
+                  <td style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.a }}</td>
+                  <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800);white-space:nowrap">{{ r.b }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.c }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800);white-space:nowrap">{{ r.d }}</td>
+                  <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800);white-space:nowrap">{{ r.e }}</td>
+                  <td style="padding:0 16px 0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:700;color:{{ r.color }}">{{ r.f }}</td>
+                </tr>
+              </sc-for>
+              <tr style="height:34px;background:rgba(0,61,165,0.10)">
+                <td colSpan="5" style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">{{ detailTotalLabel }}</td>
+                <td style="padding:0 16px 0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ detailTotalColor }}">{{ detailTotal }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Résultat par année civile</h2>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:9px">
+          <span style="font-size:11px;color:var(--color-neutral-700);white-space:nowrap">Opacité</span>
+          <span mat-slider="" min="20" max="100" step="5" style="position:relative;display:inline-flex;align-items:center;width:124px;height:20px">
+            <span aria-hidden="true" style="position:absolute;left:0;right:0;height:4px;border-radius:2px;background:color-mix(in srgb, var(--ink-brand-2) 24%, transparent)"></span>
+            <span aria-hidden="true" style="position:absolute;left:0;width:{{ fillTrack }};height:4px;border-radius:2px;background:var(--ink-brand-2)"></span>
+            <span aria-hidden="true" style="position:absolute;left:{{ fillTrack }};width:14px;height:14px;margin-left:-7px;border-radius:999px;background:var(--ink-brand-2);box-shadow:0 1px 3px rgba(0,0,0,0.28)"></span>
+            <input mat-slider-thumb="" type="range" min="20" max="100" step="5" value="{{ fillOpacity }}" onChange="{{ setFillOpacity }}" matTooltip="Opacité du remplissage des barres" aria-label="Opacité du remplissage des barres" style="position:relative;z-index:1;width:100%;height:20px;margin:0;opacity:0;cursor:pointer" />
+          </span>
+          <span style="width:40px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-brand);white-space:nowrap">{{ fillOpacityLabel }}</span>
+        </span>
+        <span style="font-size:11px;color:var(--color-neutral-700)">{{ yearsNote }}</span>
+      </div>
+      <div style="padding:18px 16px;overflow-x:auto">
+        <div style="min-width:694px;display:flex;flex-direction:column">
+          <div style="position:relative">
+            <span aria-hidden="true" style="position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none">
+              <sc-for list="{{ chartLevels }}" as="lv" hint-placeholder-count="5">
+                <span style="position:relative;display:block;height:0;border-top:1px dashed var(--color-neutral-300)">
+                  <span style="position:absolute;top:-8px;left:0;font-size:10px;font-variant-numeric:tabular-nums;color:var(--color-neutral-600);background:var(--surface);padding:0 3px">{{ lv.label }}</span>
+                </span>
+              </sc-for>
+            </span>
+            <div data-perf-bars="" style="position:relative;z-index:1;display:flex;align-items:stretch;gap:20px;height:240px;padding:0 20px 0 74px">
+            <sc-for list="{{ resultYears }}" as="y" hint-placeholder-count="5">
+              <span style="flex:1;min-width:96px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px">
+                <sc-for list="{{ y.up }}" as="u" hint-placeholder-count="2">
+                  <span matTooltip="{{ u.hint }}" style="display:block;width:100%;height:{{ u.height }};border:{{ u.weight }} solid {{ u.border }};border-bottom:0;border-radius:4px 4px 0 0;background:{{ u.color }};opacity:{{ u.opacity }};transition:opacity 160ms ease"></span>
+                </sc-for>
+              </span>
+            </sc-for>
+            </div>
+          </div>
+          <div style="height:2px;width:calc(100% + 20px);margin:0 -10px;background:var(--color-neutral-500)"></div>
+          <div style="position:relative">
+            <span aria-hidden="true" style="position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none">
+              <sc-for list="{{ chartLevelsDown }}" as="lv" hint-placeholder-count="3">
+                <span style="position:relative;display:block;height:0;border-top:1px dashed var(--color-neutral-300)">
+                  <span style="position:absolute;top:-8px;left:0;font-size:10px;font-variant-numeric:tabular-nums;color:var(--color-neutral-600);background:var(--surface);padding:0 3px">{{ lv.label }}</span>
+                </span>
+              </sc-for>
+            </span>
+            <div data-perf-bars="" style="position:relative;z-index:1;display:flex;align-items:stretch;gap:20px;height:150px;padding:0 20px 0 74px">
+            <sc-for list="{{ resultYears }}" as="y" hint-placeholder-count="5">
+              <span style="flex:1;min-width:96px;height:100%;display:flex;flex-direction:column;justify-content:flex-start;gap:2px">
+                <sc-for list="{{ y.down }}" as="d" hint-placeholder-count="2">
+                  <span matTooltip="{{ d.hint }}" style="display:block;width:100%;height:{{ d.height }};border:{{ d.weight }} solid {{ d.border }};border-top:0;border-radius:0 0 4px 4px;background:{{ d.color }};opacity:{{ d.opacity }};transition:opacity 160ms ease"></span>
+                </sc-for>
+              </span>
+            </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04);overflow-x:auto">
+        <div style="min-width:694px;display:flex;gap:20px;padding:8px 36px 8px 90px">
+          <sc-for list="{{ resultYears }}" as="y" hint-placeholder-count="5">
+            <button onClick="{{ y.onSelect }}" aria-pressed="{{ y.on }}" style="flex:1;min-width:96px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0;border:0;border-radius:4px;background:{{ y.labelBg }};font-family:inherit;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+              <span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ y.netColor }};opacity:{{ y.labelOpacity }}">{{ y.net }}</span>
+              <span style="font-size:11px;font-weight:{{ y.labelWeight }};color:var(--color-neutral-700);font-variant-numeric:tabular-nums;opacity:{{ y.labelOpacity }}">{{ y.year }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 16px 12px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <sc-for list="{{ yearsLegend }}" as="l" hint-placeholder-count="4">
+          <span style="display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--color-neutral-800);white-space:nowrap">
+            <span style="width:12px;height:8px;border-radius:2px;background:{{ l.color }}"></span>
+            {{ l.label }}
+            <span style="font-weight:700;font-variant-numeric:tabular-nums;color:{{ l.valueColor }}">{{ l.value }}</span>
+          </span>
+        </sc-for>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">Apports au résultat au-dessus de l'axe, prélèvements en dessous.</span>
+      </div>
+      <div style="overflow-x:auto;border-top:1px solid var(--color-neutral-200)">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:780px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr class="mat-header-row" style="background:var(--surface);height:32px">
+              <th data-mat-column="year" style="width:96px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Année</th>
+              <th data-mat-column="gain" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Plus-values</th>
+              <th data-mat-column="loss" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Moins-values</th>
+              <th data-mat-column="div" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Dividendes</th>
+              <th data-mat-column="fees" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Frais</th>
+              <th data-mat-column="tax" style="text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Taxes</th>
+              <th data-mat-column="net" style="width:126px;text-align:right;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Résultat net</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ yearRows }}" as="y" hint-placeholder-count="5">
+              <tr class="mat-row" onClick="{{ y.onSelect }}" aria-selected="{{ y.on }}" style="height:34px;background:{{ y.bg }};cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                <td data-mat-column="year" style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200);border-left:3px solid {{ y.mark }};font-weight:{{ y.weight }};font-variant-numeric:tabular-nums">{{ y.year }}</td>
+                <td data-mat-column="gain" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ y.gainColor }}">{{ y.gain }}</td>
+                <td data-mat-column="loss" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ y.lossColor }}">{{ y.loss }}</td>
+                <td data-mat-column="div" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ y.divColor }}">{{ y.div }}</td>
+                <td data-mat-column="fees" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ y.feesColor }}">{{ y.fees }}</td>
+                <td data-mat-column="tax" style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ y.taxColor }}">{{ y.tax }}</td>
+                <td data-mat-column="net" style="padding:0 16px 0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:700;color:{{ y.netColor }}">{{ y.net }}</td>
+              </tr>
+            </sc-for>
+            <tr style="height:34px;background:rgba(0,61,165,0.10)">
+              <td style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">Cumul</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ sumGainColor }}">{{ sumGain }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ sumLossColor }}">{{ sumLoss }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ sumDivColor }}">{{ sumDiv }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ sumFeesColor }}">{{ sumFees }}</td>
+              <td style="padding:0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ sumTaxColor }}">{{ sumTax }}</td>
+              <td style="padding:0 16px 0 12px;text-align:right;border-top:1px solid rgba(0,61,165,0.28);font-variant-numeric:tabular-nums;font-weight:700;color:{{ sumNetColor }}">{{ sumNet }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div aria-hidden="true" style="height:120px;background:transparent;border:0;overflow:hidden"></div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;colorGain&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#8fd4c4&quot;,&quot;options&quot;:[&quot;#8fd4c4&quot;,&quot;#a8d8b9&quot;,&quot;#9ecfd8&quot;,&quot;#b8e0d4&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Couleurs du graphique annuel&quot;},&quot;colorLoss&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#e59289&quot;,&quot;options&quot;:[&quot;#e59289&quot;,&quot;#eb9f96&quot;,&quot;#dd857c&quot;,&quot;#f0aba3&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Couleurs du graphique annuel&quot;},&quot;colorDividend&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#a8c5e8&quot;,&quot;options&quot;:[&quot;#a8c5e8&quot;,&quot;#b4c8ea&quot;,&quot;#9fb8dd&quot;,&quot;#c0d4f0&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Couleurs du graphique annuel&quot;},&quot;colorFees&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#f0c9a0&quot;,&quot;options&quot;:[&quot;#f0c9a0&quot;,&quot;#f2d4b0&quot;,&quot;#e8bc8c&quot;,&quot;#f5dcc0&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Couleurs du graphique annuel&quot;},&quot;colorTax&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#e8b0a8&quot;,&quot;options&quot;:[&quot;#e8b0a8&quot;,&quot;#eebcb4&quot;,&quot;#e0a098&quot;,&quot;#f0c4bc&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Couleurs du graphique annuel&quot;}}">
+// Séries de performance cumulée, en pourcentage depuis le début de la période.
+const SERIES = {
+  ytd: {
+    label: 'Depuis janvier',
+    ticks: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.'],
+    port: [0, 1.4, 0.6, 2.8, 4.1, 3.2, 5.6, 6.9, 7.4],
+    bench: [0, 1.1, 0.2, 2.1, 3.4, 2.6, 4.5, 5.4, 5.9]
+  },
+  m1: {
+    label: '1 mois',
+    ticks: ['04/08', '11/08', '18/08', '25/08', '01/09', '08/09'],
+    port: [0, 0.6, 0.2, 1.1, 1.6, 1.9],
+    bench: [0, 0.5, 0.1, 0.8, 1.2, 1.4]
+  },
+  m3: {
+    label: '3 mois',
+    ticks: ['juin', 'juil.', 'août', 'sept.'],
+    port: [0, 1.8, 3.1, 4.2],
+    bench: [0, 1.5, 2.4, 3.3]
+  },
+  m6: {
+    label: '6 mois',
+    ticks: ['mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.'],
+    port: [0, 1.9, 3.2, 2.4, 4.7, 6.0, 6.5],
+    bench: [0, 1.6, 2.7, 1.9, 3.8, 4.7, 5.2]
+  },
+  y1: {
+    label: '1 an',
+    ticks: ['09/25', '11/25', '01/26', '03/26', '05/26', '07/26', '09/26'],
+    port: [0, 2.6, 1.9, 4.8, 7.2, 9.4, 10.8],
+    bench: [0, 2.1, 1.2, 3.6, 5.6, 7.4, 8.6]
+  },
+  y3: {
+    label: '3 ans',
+    ticks: ['2023', '2024', '2025', '2026'],
+    port: [0, 9.6, 16.4, 27.9],
+    bench: [0, 8.1, 13.2, 22.4]
+  },
+  y5: {
+    label: '5 ans',
+    ticks: ['2021', '2022', '2023', '2024', '2025', '2026'],
+    port: [0, 11.4, 2.0, 11.8, 18.7, 30.6],
+    bench: [0, 9.8, -2.5, 5.4, 10.4, 19.3]
+  },
+  max: {
+    label: 'Max',
+    ticks: ['2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'],
+    port: [0, 6.2, 14.1, 27.1, 15.9, 26.8, 34.9, 48.6],
+    bench: [0, 4.8, 11.2, 22.1, 8.4, 17.2, 23.6, 34.1]
+  }
+};
+
+const PERIOD_ROWS = [
+  { label: '1 mois', port: 1.9, bench: 1.4, contrib: 0.4 },
+  { label: '3 mois', port: 4.2, bench: 3.3, contrib: 0.9 },
+  { label: '6 mois', port: 6.5, bench: 5.2, contrib: 1.4 },
+  { label: 'Depuis janvier', port: 7.4, bench: 5.9, contrib: 1.6 },
+  { label: '1 an', port: 10.8, bench: 8.6, contrib: 2.3 },
+  { label: '3 ans annualisés', port: 8.5, bench: 6.9, contrib: 5.4 }
+];
+
+const ATTRIB_CLASS = [
+  { label: 'Actions', weight: 58.4, benchWeight: 55.0, alloc: 0.24, sel: 0.86 },
+  { label: 'Obligations', weight: 24.1, benchWeight: 28.0, alloc: 0.18, sel: -0.12 },
+  { label: 'Alternatifs', weight: 11.2, benchWeight: 10.0, alloc: 0.09, sel: 0.31 },
+  { label: 'Trésorerie', weight: 6.3, benchWeight: 7.0, alloc: -0.04, sel: 0.02 }
+];
+
+const ATTRIB_GEO = [
+  { label: 'Europe', weight: 41.6, benchWeight: 38.0, alloc: 0.19, sel: 0.42 },
+  { label: 'Amérique du Nord', weight: 34.2, benchWeight: 36.0, alloc: -0.08, sel: 0.61 },
+  { label: 'Asie-Pacifique', weight: 12.7, benchWeight: 13.0, alloc: 0.03, sel: -0.18 },
+  { label: 'Marchés émergents', weight: 5.2, benchWeight: 6.0, alloc: -0.06, sel: 0.14 },
+  { label: 'Trésorerie', weight: 6.3, benchWeight: 7.0, alloc: -0.04, sel: 0.02 }
+];
+
+const CONTRIBUTORS = [
+  { ticker: 'MC', name: 'LVMH', value: 1.24 },
+  { ticker: 'AAPL', name: 'Apple Inc.', value: 0.86 },
+  { ticker: 'OR', name: "L'Oréal", value: 0.52 },
+  { ticker: 'USLC', name: 'US Large Cap Core', value: 0.38 },
+  { ticker: 'IGCRD', name: 'Investment Grade Credit', value: -0.21 },
+  { ticker: 'EMEQ', name: 'Emerging Markets Equity', value: -0.44 }
+];
+
+// Fréquence d'observation du rendement : le pas de mesure des séries.
+const FREQUENCIES = [
+  { key: 'daily', label: 'Quotidienne', title: 'quotidien', points: 252, hint: '252 observations par an — jours de bourse' },
+  { key: 'weekly', label: 'Hebdomadaire', title: 'hebdomadaire', points: 52, hint: '52 observations par an — clôtures du vendredi' },
+  { key: 'monthly', label: 'Mensuelle', title: 'mensuel', points: 12, hint: '12 observations par an — clôtures de fin de mois' },
+  { key: 'quarterly', label: 'Trimestrielle', title: 'trimestriel', points: 4, hint: '4 observations par an — fins de trimestre' }
+];
+
+// Rendements par pas d'observation, portefeuille et référence.
+const BY_FREQ = {
+  weekly: [
+    { label: 's. 27', port: 0.6, bench: 0.4 }, { label: 's. 28', port: -0.3, bench: -0.4 },
+    { label: 's. 29', port: 0.8, bench: 0.6 }, { label: 's. 30', port: 0.2, bench: 0.3 },
+    { label: 's. 31', port: -0.4, bench: -0.5 }, { label: 's. 32', port: 0.5, bench: 0.4 },
+    { label: 's. 33', port: 0.3, bench: 0.2 }, { label: 's. 34', port: -0.2, bench: -0.1 },
+    { label: 's. 35', port: 0.4, bench: 0.3 }, { label: 's. 36', port: 0.1, bench: 0.1 },
+    { label: 's. 37', port: 0.3, bench: 0.2 }
+  ],
+  quarterly: [
+    { label: 'T4 25', port: 0.4, bench: -1.9 }, { label: 'T1 26', port: 2.9, bench: 1.7 },
+    { label: 'T2 26', port: 2.8, bench: 2.4 }, { label: 'T3 26', port: 2.3, bench: 1.7 }
+  ]
+};
+
+const MONTHLY = [
+  { label: 'oct. 25', port: -5.9, bench: -6.8 },
+  { label: 'nov. 25', port: 4.8, bench: 3.9 },
+  { label: 'déc. 25', port: 1.6, bench: 1.2 },
+  { label: 'janv. 26', port: 2.1, bench: 1.7 },
+  { label: 'févr. 26', port: -1.4, bench: -1.9 },
+  { label: 'mars 26', port: 2.2, bench: 1.9 },
+  { label: 'avr. 26', port: 1.3, bench: 1.3 },
+  { label: 'mai 26', port: -0.9, bench: -0.8 },
+  { label: 'juin 26', port: 2.4, bench: 1.9 },
+  { label: 'juil. 26', port: 1.3, bench: 0.9 },
+  { label: 'août 26', port: 0.6, bench: 0.5 },
+  { label: 'sept. 26', port: 0.4, bench: 0.3 }
+];
+
+// Détail ligne à ligne : poids, performance, contribution et risque porté.
+// Vingt derniers jours de bourse, reconstitués depuis la série mensuelle.
+BY_FREQ.daily = (function () {
+  const out = [];
+  const seed = [0.21, -0.14, 0.32, 0.08, -0.26, 0.41, 0.12, -0.09, 0.28, 0.05,
+                -0.18, 0.34, 0.16, -0.22, 0.11, 0.24, -0.07, 0.19, 0.13, 0.06];
+  seed.forEach(function (p, i) {
+    const d = 8 - Math.floor(i / 5) * 2;
+    out.push({ label: String(d).padStart(2, '0') + '/09', port: p, bench: Number((p * 0.78).toFixed(2)) });
+  });
+  return out;
+})();
+BY_FREQ.monthly = MONTHLY;
+
+const HOLDINGS = [
+  { ticker: 'MC', name: 'LVMH', cls: 'Actions', weight: 12.4, perf: 14.8, contrib: 1.24, vol: 21.4, beta: 1.18 },
+  { ticker: 'AAPL', name: 'Apple Inc.', cls: 'Actions', weight: 9.8, perf: 11.2, contrib: 0.86, vol: 24.1, beta: 1.24 },
+  { ticker: 'OR', name: "L'Oréal", cls: 'Actions', weight: 8.1, perf: 7.4, contrib: 0.52, vol: 17.8, beta: 0.94 },
+  { ticker: 'AI', name: 'Air Liquide', cls: 'Actions', weight: 6.9, perf: 5.1, contrib: 0.34, vol: 15.2, beta: 0.81 },
+  { ticker: 'USLC', name: 'US Large Cap Core', cls: 'ETF', weight: 11.6, perf: 4.1, contrib: 0.38, vol: 14.6, beta: 1.02 },
+  { ticker: 'EUEQ', name: 'Europe ex-UK Equity', cls: 'ETF', weight: 9.6, perf: 3.2, contrib: 0.29, vol: 13.9, beta: 0.96 },
+  { ticker: 'IGCRD', name: 'Investment Grade Credit', cls: 'Obligations', weight: 14.2, perf: -1.4, contrib: -0.21, vol: 5.1, beta: 0.18 },
+  { ticker: 'TSY10', name: 'US Treasury 7-10Y', cls: 'Obligations', weight: 9.9, perf: 1.8, contrib: 0.18, vol: 6.4, beta: 0.12 },
+  { ticker: 'EMEQ', name: 'Emerging Markets Equity', cls: 'Actions', weight: 5.2, perf: -7.9, contrib: -0.44, vol: 26.8, beta: 1.34 },
+  { ticker: 'INFRA', name: 'Infrastructures européennes', cls: 'Alternatifs', weight: 6.0, perf: 6.2, contrib: 0.31, vol: 11.2, beta: 0.54 },
+  { ticker: 'CASH', name: 'Trésorerie et équivalents', cls: 'Trésorerie', weight: 6.3, perf: 2.4, contrib: 0.14, vol: 0.2, beta: 0.01 }
+];
+
+// Composition du résultat cumulé, en milliers d'euros.
+const RESULT = {
+  pnl: 4820, div: 2140, fees: -286, tax: -642
+};
+
+// Détail par nature : ce qui compose chaque zone de la barre.
+const RESULT_LINES = {
+  pnl: {
+    title: 'Plus et moins-values réalisées',
+    cols: ['Titre', 'Cession', 'Quantité', 'Prix de revient', 'Produit', 'Résultat'],
+    rows: [
+      { a: 'MC — LVMH', b: '12/06/2026', c: '40', d: '24 120', e: '31 480', f: 7360 },
+      { a: 'AAPL — Apple Inc.', b: '28/04/2026', c: '60', d: '8 940', e: '11 220', f: 2280 },
+      { a: 'OR — L\'Oréal', b: '19/03/2026', c: '25', d: '9 640', e: '10 810', f: 1170 },
+      { a: 'EMEQ — Emerging Markets', b: '05/02/2026', c: '300', d: '14 700', e: '12 480', f: -2220 },
+      { a: 'IGCRD — IG Credit', b: '21/01/2026', c: '150', d: '15 900', e: '14 940', f: -960 }
+    ]
+  },
+  div: {
+    title: 'Dividendes encaissés',
+    cols: ['Titre', 'Détachement', 'Quantité', 'Brut unitaire', 'Retenue', 'Net'],
+    rows: [
+      { a: 'OR — L\'Oréal', b: '26/08/2026', c: '100', d: '2,20', e: '−66', f: 154 },
+      { a: 'AI — Air Liquide', b: '14/05/2026', c: '180', d: '3,10', e: '−167', f: 391 },
+      { a: 'MC — LVMH', b: '23/04/2026', c: '40', d: '13,00', e: '−156', f: 364 },
+      { a: 'TSY10 — US Treasury', b: '15/03/2026', c: '200', d: '4,80', e: '−144', f: 816 },
+      { a: 'AAPL — Apple Inc.', b: '09/02/2026', c: '120', d: '0,96', e: '−17', f: 98 }
+    ]
+  },
+  fees: {
+    title: 'Frais de courtage et droits de garde',
+    cols: ['Nature', 'Date', 'Compte', 'Opération', 'Assiette', 'Montant'],
+    rows: [
+      { a: 'Droits de garde', b: '30/06/2026', c: 'Degiro — CTO', d: 'Semestriel', e: '284 100', f: -142 },
+      { a: 'Courtage', b: '12/06/2026', c: 'Degiro — CTO', d: 'Cession MC', e: '31 480', f: -62 },
+      { a: 'Droits de garde', b: '31/12/2025', c: 'Bourse Direct — PEA', d: 'Semestriel', e: '148 900', f: -49 },
+      { a: 'Courtage', b: '28/04/2026', c: 'Degiro — CTO', d: 'Cession AAPL', e: '11 220', f: -21 },
+      { a: 'Courtage', b: '05/02/2026', c: 'Trade Republic — CTO', d: 'Cession EMEQ', e: '12 480', f: -12 }
+    ]
+  },
+  tax: {
+    title: 'Taxes et retenues à la source',
+    cols: ['Nature', 'Date', 'Source', 'Assiette', 'Taux', 'Montant'],
+    rows: [
+      { a: 'Retenue à la source', b: '15/03/2026', c: 'États-Unis', d: '960', e: '15,0 %', f: -144 },
+      { a: 'Retenue à la source', b: '14/05/2026', c: 'France', d: '558', e: '30,0 %', f: -167 },
+      { a: 'Retenue à la source', b: '23/04/2026', c: 'France', d: '520', e: '30,0 %', f: -156 },
+      { a: 'Retenue à la source', b: '26/08/2026', c: 'France', d: '220', e: '30,0 %', f: -66 },
+      { a: 'Taxe sur transactions', b: '12/06/2026', c: 'France', d: '31 480', e: '0,30 %', f: -94 }
+    ]
+  }
+};
+
+// Résultat par année civile, en milliers d'euros.
+// Plus et moins-values séparées, dividendes, frais et taxes, en milliers d'euros.
+const RESULT_YEARS_DETAIL = [
+  { year: '2022', gain: 1240, loss: -3080, div: 1420, fees: -240, tax: -412 },
+  { year: '2023', gain: 3840, loss: -880, div: 1610, fees: -258, tax: -478 },
+  { year: '2024', gain: 2610, loss: -870, div: 1780, fees: -262, tax: -524 },
+  { year: '2025', gain: 4180, loss: -760, div: 1960, fees: -274, tax: -588 },
+  { year: '2026', gain: 5940, loss: -1120, div: 2140, fees: -286, tax: -642 }
+];
+
+const RESULT_YEARS = [
+  { year: '2022', pnl: -1840, div: 1420, fees: -240, tax: -412 },
+  { year: '2023', pnl: 2960, div: 1610, fees: -258, tax: -478 },
+  { year: '2024', pnl: 1740, div: 1780, fees: -262, tax: -524 },
+  { year: '2025', pnl: 3420, div: 1960, fees: -274, tax: -588 },
+  { year: '2026', pnl: 4820, div: 2140, fees: -286, tax: -642 }
+];
+
+const RISK = [
+  { label: 'Volatilité annualisée', value: 9.4, bench: 10.8, unit: '%', good: 'low', hint: "Écart-type annualisé des rendements quotidiens" },
+  { label: 'Ratio de Sharpe', value: 0.82, bench: 0.63, unit: '', good: 'high', hint: 'Rendement excédentaire par unité de volatilité totale' },
+  { label: 'Ratio de Sortino', value: 1.18, bench: 0.87, unit: '', good: 'high', hint: 'Rendement excédentaire par unité de volatilité baissière' },
+  { label: 'Ratio d\'information', value: 0.54, bench: 0, unit: '', good: 'high', hint: "Écart de performance rapporté au risque actif" },
+  { label: 'Bêta contre référence', value: 0.91, bench: 1, unit: '', good: 'low', hint: 'Sensibilité aux mouvements de la référence' },
+  { label: 'Erreur de suivi', value: 4.1, bench: 0, unit: '%', good: 'low', hint: "Volatilité de l'écart avec la référence" },
+  { label: 'Perte maximale', value: -12.6, bench: -15.4, unit: '%', good: 'high', hint: 'Recul le plus profond entre un sommet et le point bas suivant' }
+];
+
+const DRAWDOWNS = [
+  { label: 'Mars — avril 2026', depth: -6.4, detail: '28 jours de recul · récupéré en 41 jours' },
+  { label: 'Octobre 2025', depth: -12.6, detail: '19 jours de recul · récupéré en 63 jours' },
+  { label: 'Juin — juillet 2025', depth: -4.8, detail: '22 jours de recul · récupéré en 18 jours' },
+  { label: 'Février 2024', depth: -8.1, detail: '15 jours de recul · récupéré en 34 jours' }
+];
+
+const YEARS = [
+  { label: '2022', port: -8.4, bench: -11.2 },
+  { label: '2023', port: 9.6, bench: 8.1 },
+  { label: '2024', port: 6.2, bench: 4.7 },
+  { label: '2025', port: 9.9, bench: 8.1 },
+  { label: '2026', port: 7.4, bench: 5.9 }
+];
+
+function fr(v, d) {
+  return Number(v).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function pct(v, d) {
+  const n = d === undefined ? 2 : d;
+  return (v > 0 ? '+' : v < 0 ? '−' : '') + fr(Math.abs(v), n) + ' %';
+}
+function keur(v) {
+  return (v > 0 ? '+' : v < 0 ? '−' : '') + fr(Math.abs(v), 0) + ' k€';
+}
+function eur(v) {
+  return (v > 0 ? '+' : v < 0 ? '−' : '') + fr(Math.abs(v), 0) + ' €';
+}
+function bps(v) {
+  return (v > 0 ? '+' : v < 0 ? '−' : '') + fr(Math.abs(v) * 100, 0) + ' pb';
+}
+function tone(v, invert) {
+  const good = invert ? v < 0 : v > 0;
+  if (v === 0) return 'var(--color-text)';
+  return good ? 'var(--ink-ok)' : 'var(--ink-warn-2)';
+}
+function kpiTint(v, invert) {
+  const good = invert ? v < 0 : v > 0;
+  if (v === 0) return { bg: 'var(--surface)', ink: 'var(--color-neutral-700)', value: 'var(--color-text)' };
+  const mag = Math.min(1, Math.abs(v) / 12);
+  const a = (0.10 + mag * 0.06).toFixed(3);
+  const hue = good ? 168 : 32;
+  return {
+    bg: 'linear-gradient(oklch(0.62 ' + a + ' ' + hue + ' / ' + a + '), oklch(0.62 ' + a + ' ' + hue + ' / ' + a + ')), var(--surface)',
+    ink: good ? 'var(--ink-ok)' : 'var(--ink-warn-2)',
+    value: good ? 'var(--ink-ok)' : 'var(--ink-warn-2)'
+  };
+}
+
+class Component extends DCLogic {
+  componentDidMount() {
+    // Replace l'infobulle selon la place disponible autour de l'élément survolé.
+    this.placeTip = (e) => {
+      const el = e.target && e.target.closest ? e.target.closest('[matTooltip]') : null;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const vw = window.innerWidth || 1000, vh = window.innerHeight || 800;
+      el.removeAttribute('data-tip-below');
+      el.removeAttribute('data-tip-start');
+      el.removeAttribute('data-tip-end');
+      // Plancher réel : le premier ancêtre qui rogne, sinon le bandeau de contexte.
+      let ceil = 0;
+      let n = el.parentElement;
+      while (n) {
+        const cs = getComputedStyle(n);
+        if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') {
+          ceil = Math.max(ceil, n.getBoundingClientRect().top);
+          break;
+        }
+        n = n.parentElement;
+      }
+      const ctx = document.querySelector('[data-component="ContextBar"]');
+      if (ctx) {
+        const b = ctx.getBoundingClientRect();
+        if (b.height) ceil = Math.max(ceil, b.bottom + 8);
+      }
+      const tipH = 52;
+      if (r.top - ceil < tipH) el.setAttribute('data-tip-below', '');
+      const half = Math.min(300, vw * 0.6) / 2;
+      const mid = r.left + r.width / 2;
+      if (mid - half < 12) el.setAttribute('data-tip-start', '');
+      else if (mid + half > vw - 12) el.setAttribute('data-tip-end', '');
+    };
+    document.addEventListener('mouseover', this.placeTip, true);
+  }
+
+  componentWillUnmount() {
+    if (this.placeTip) document.removeEventListener('mouseover', this.placeTip, true);
+  }
+
+  state = { tab: 'overview', period: 'ytd', scope: 'all', sortBy: 'contrib', freq: 'monthly', band: 'pnl', selYear: null, fill: 25 };
+
+  // Trace une série en pourcentage sur la boîte 720 × 240 du graphique.
+  geometry(values, min, max) {
+    const H = 240, W = 720, pad = 16;
+    const span = (max - min) || 1;
+    const y = (v) => pad + (H - pad * 2) * (1 - (v - min) / span);
+    const x = (i, n) => (n <= 1 ? 0 : (W * i) / (n - 1));
+    const pts = values.map((v, i) => [x(i, values.length), y(v)]);
+    const path = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const area = path + ' L' + W + ' ' + y(min).toFixed(1) + ' L0 ' + y(min).toFixed(1) + ' Z';
+    return { path: path, area: area, y: y };
+  }
+
+  renderVals() {
+    const s = SERIES[this.state.period] || SERIES.ytd;
+    const all = s.port.concat(s.bench);
+    const min = Math.min.apply(null, all.concat([0]));
+    const max = Math.max.apply(null, all);
+    const port = this.geometry(s.port, min, max);
+    const bench = this.geometry(s.bench, min, max);
+
+    const last = s.port[s.port.length - 1];
+    const lastBench = s.bench[s.bench.length - 1];
+    const delta = last - lastBench;
+
+    const maxContrib = Math.max.apply(null, PERIOD_ROWS.map((r) => Math.abs(r.contrib)));
+    const maxAbsContributor = Math.max.apply(null, CONTRIBUTORS.map((c) => Math.abs(c.value)));
+    const maxDrawdown = Math.max.apply(null, DRAWDOWNS.map((d) => Math.abs(d.depth)));
+    const maxYear = Math.max.apply(null, YEARS.map((y) => Math.abs(y.port)));
+
+    const block = (title, dimension, rows, note) => {
+      const sum = (k) => rows.reduce((n, r) => n + r[k], 0);
+      const tAlloc = sum('alloc'), tSel = sum('sel');
+      return {
+        title: title, dimension: dimension, note: note,
+        rows: rows.map((r, i) => ({
+          label: r.label,
+          weight: fr(r.weight, 1) + ' %',
+          benchWeight: fr(r.benchWeight, 1) + ' %',
+          alloc: bps(r.alloc), allocColor: tone(r.alloc),
+          sel: bps(r.sel), selColor: tone(r.sel),
+          total: bps(r.alloc + r.sel), totalColor: tone(r.alloc + r.sel),
+          bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+        })),
+        totalWeight: fr(sum('weight'), 1) + ' %',
+        totalBench: fr(sum('benchWeight'), 1) + ' %',
+        totalAlloc: bps(tAlloc), allocColor: tone(tAlloc),
+        totalSel: bps(tSel), selColor: tone(tSel),
+        total: bps(tAlloc + tSel), totalColor: tone(tAlloc + tSel)
+      };
+    };
+
+    return {
+      subtitle: 'Performance nette de frais, au 08/09/2026 · référence composite 60 / 40, dividendes réinvestis',
+
+      scope: this.state.scope,
+      setScope: (e) => this.setState({ scope: e.target.value }),
+      scopeOptions: [
+        { value: 'all', label: 'Tous les comptes actifs' },
+        { value: 'DG-CTO', label: 'Degiro — CTO Degiro' },
+        { value: 'BD-PEA', label: 'Bourse Direct — PEA Bourse Direct' },
+        { value: 'TR-CTO', label: 'Trade Republic — CTO Trade Republic' }
+      ],
+
+      periods: ['m1', 'm3', 'm6', 'ytd', 'y1', 'y3', 'y5', 'max'].map((k, i) => {
+        const on = this.state.period === k;
+        return {
+          label: k === 'ytd' ? 'YTD' : SERIES[k].label,
+          on: on,
+          divider: i === 0 ? '0' : '1px solid rgba(0,0,0,0.12)',
+          bg: on ? 'var(--field-brand)' : 'transparent',
+          hoverBg: on ? 'var(--field-brand)' : 'rgba(0,61,165,0.10)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          weight: on ? '700' : '400',
+          onClick: () => this.setState({ period: k })
+        };
+      }),
+
+      pageTabs: [
+        { key: 'overview', label: 'Vue d\'ensemble' },
+        { key: 'detail', label: 'Analyse détaillée' },
+        { key: 'history', label: 'Historique détaillé' },
+        { key: 'attrib', label: 'Attribution' },
+        { key: 'risk', label: 'Risque et pertes' }
+      ].map((t) => {
+        const on = this.state.tab === t.key;
+        return {
+          label: t.label,
+          isOverview: t.key === 'overview', isDetail: t.key === 'detail', isAttrib: t.key === 'attrib', isRisk: t.key === 'risk', isHistory: t.key === 'history',
+          height: on ? '40px' : '32px',
+          padding: on ? '0 20px' : '0 14px',
+          size: on ? '14px' : '12px',
+          bg: on ? 'var(--field-brand)' : 'rgba(0,61,165,0.08)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          weight: on ? '700' : '400',
+          onClick: () => this.setState({ tab: t.key })
+        };
+      }),
+      onOverview: this.state.tab === 'overview',
+      onDetail: this.state.tab === 'detail',
+      onAttrib: this.state.tab === 'attrib',
+      onRisk: this.state.tab === 'risk',
+      onHistory: this.state.tab === 'history',
+      showKpis: this.state.tab !== 'history',
+
+      kpis: [
+        (function () {
+          const t = kpiTint(last);
+          return { label: 'Performance ' + (SERIES[this.state.period] || SERIES.ytd).label.toLowerCase(), value: pct(last), note: 'Nette de frais de gestion', bg: t.bg, labelColor: t.ink, color: t.value };
+        }).call(this),
+        (function () {
+          const t = kpiTint(delta);
+          return { label: 'Écart avec la référence', value: bps(delta), note: 'Composite 60 actions / 40 obligations', bg: t.bg, labelColor: t.ink, color: t.value };
+        })(),
+        (function () {
+          const t = kpiTint(0.82 - 0.63);
+          return { label: 'Ratio de Sharpe', value: fr(0.82, 2), note: 'Référence 0,63 · taux sans risque 2,4 %', bg: t.bg, labelColor: t.ink, color: t.value };
+        })(),
+        (function () {
+          const t = kpiTint(-12.6, true);
+          return { label: 'Perte maximale', value: pct(-12.6, 1), note: 'Octobre 2025 · récupérée en 63 jours', bg: t.bg, labelColor: t.ink, color: t.value };
+        })()
+      ],
+
+      chartNote: 'base 100 au ' + s.ticks[0] + ' · ' + s.port.length + ' points',
+      chartFootnote: 'Séries reconstituées nettes de frais, dividendes réinvestis.',
+      portPath: port.path, portArea: port.area,
+      benchPath: bench.path, benchArea: bench.area,
+      zeroY: port.y(0).toFixed(1),
+      gridLines: [0, 0.25, 0.5, 0.75, 1].map((f) => ({ y: (16 + (240 - 32) * f).toFixed(1) })),
+      ticks: s.ticks.map((t, i) => ({
+        label: t,
+        align: i === 0 ? 'left' : i === s.ticks.length - 1 ? 'right' : 'center'
+      })),
+      chartLegend: [
+        { label: 'Portefeuille', color: 'var(--ink-brand-2)', value: pct(last), valueColor: tone(last) },
+        { label: 'Référence', color: 'var(--ink-alt)', value: pct(lastBench), valueColor: tone(lastBench) }
+      ],
+
+      periodRows: PERIOD_ROWS.map((r, i) => ({
+        label: r.label,
+        port: pct(r.port, 1), portColor: tone(r.port),
+        bench: pct(r.bench, 1),
+        delta: bps(r.port - r.bench), deltaColor: tone(r.port - r.bench),
+        contrib: bps(r.contrib),
+        barWidth: (Math.abs(r.contrib) / maxContrib * 100).toFixed(1) + '%',
+        barColor: tone(r.contrib),
+        bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+      })),
+
+      measures: [
+        { label: 'Rendement annualisé sur 3 ans', value: pct(8.5, 1), color: tone(8.5), hint: 'Taux de croissance annuel composé' },
+        { label: 'Rendement de la référence', value: pct(6.9, 1), color: 'var(--color-text)', hint: 'Composite 60 / 40 sur la même période' },
+        { label: 'Écart annualisé', value: bps(1.6), color: tone(1.6), hint: 'Surperformance annualisée nette de frais' },
+        { label: 'Meilleur mois', value: pct(4.8, 1), color: tone(4.8), hint: 'Novembre 2025' },
+        { label: 'Pire mois', value: pct(-5.9, 1), color: tone(-5.9), hint: 'Octobre 2025' },
+        { label: 'Mois positifs', value: '24 / 36', color: 'var(--color-text)', hint: 'Sur les trois dernières années' }
+      ],
+      measuresNote: 'Les rendements passés ne préjugent pas des rendements futurs.',
+
+      freqTitle: 'Rendement ' + (FREQUENCIES.find((f) => f.key === (this.state.freq || 'monthly')) || FREQUENCIES[2]).title,
+      freqModes: FREQUENCIES.map((f, i) => {
+        const on = (this.state.freq || 'monthly') === f.key;
+        return {
+          label: f.label, hint: f.hint, on: on,
+          divider: i === 0 ? '0' : '1px solid rgba(255,255,255,0.35)',
+          bg: on ? 'rgba(255,255,255,0.30)' : 'transparent',
+          weight: on ? '700' : '400',
+          onClick: () => this.setState({ freq: f.key })
+        };
+      }),
+      monthlyNote: (function (self) {
+        const key = self.state.freq || 'monthly';
+        const rows = BY_FREQ[key] || MONTHLY;
+        const f = FREQUENCIES.find((x) => x.key === key) || FREQUENCIES[2];
+        const unit = { daily: 'séances', weekly: 'semaines', monthly: 'mois', quarterly: 'trimestres' }[key];
+        return rows.length + ' ' + unit + ' · ' + rows.filter((r) => r.port > 0).length + ' positifs · '
+          + f.points + ' obs./an';
+      })(this),
+      monthlyFootnote: (function (self) {
+        const key = self.state.freq || 'monthly';
+        const f = FREQUENCIES.find((x) => x.key === key) || FREQUENCIES[2];
+        return 'Rendements nets, non annualisés · ' + f.hint
+          + ' · volatilité annualisée par √' + f.points + '.';
+      })(this),
+      monthly: (function (self) {
+        const rows = BY_FREQ[self.state.freq || 'monthly'] || MONTHLY;
+        const max = Math.max.apply(null, rows.map((m) => Math.max(Math.abs(m.port), Math.abs(m.bench))));
+        return rows.map((m) => ({
+          label: m.label,
+          value: pct(m.port, 1),
+          color: tone(m.port),
+          barColor: tone(m.port),
+          height: (Math.abs(m.port) / max * 100).toFixed(1) + '%',
+          benchHeight: (Math.abs(m.bench) / Math.abs(m.port || 1) * 100).toFixed(1) + '%',
+          justify: m.port >= 0 ? 'flex-end' : 'flex-start',
+          align: m.port >= 0 ? 'flex-end' : 'flex-start'
+        }));
+      })(this),
+
+      sortModes: [
+        { key: 'contrib', label: 'Par contribution' },
+        { key: 'weight', label: 'Par poids' },
+        { key: 'perf', label: 'Par performance' }
+      ].map((m, i) => {
+        const on = (this.state.sortBy || 'contrib') === m.key;
+        return {
+          label: m.label, on: on,
+          divider: i === 0 ? '0' : '1px solid rgba(0,0,0,0.12)',
+          bg: on ? 'rgba(0,61,165,0.14)' : 'transparent',
+          hoverBg: on ? 'rgba(0,61,165,0.20)' : 'rgba(0,0,0,0.04)',
+          fg: on ? 'var(--ink-brand)' : 'var(--color-neutral-800)',
+          weight: on ? '600' : '400',
+          onClick: () => this.setState({ sortBy: m.key })
+        };
+      }),
+      holdingsNote: HOLDINGS.length + ' lignes · ' + HOLDINGS.filter((h) => h.contrib > 0).length + ' contributrices',
+      volHeader: (function (self) {
+        const key = self.state.freq || 'monthly';
+        return key === 'monthly' ? 'Volatilité' : 'Volatilité ann.';
+      })(this),
+      holdings: (function (by) {
+        const maxC = Math.max.apply(null, HOLDINGS.map((h) => Math.abs(h.contrib)));
+        const CLS = {
+          'Actions': { bg: 'rgba(0,61,165,0.14)', fg: 'var(--ink-brand)' },
+          'ETF': { bg: 'rgba(91,62,168,0.16)', fg: 'var(--ink-alt)' },
+          'Obligations': { bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok-2)' },
+          'Alternatifs': { bg: 'rgba(143,63,6,0.14)', fg: 'var(--ink-warn)' },
+          'Trésorerie': { bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-800)' }
+        };
+        return HOLDINGS.slice()
+          .sort((a, b) => Math.abs(b[by]) - Math.abs(a[by]))
+          .map((h, i) => {
+            const c = CLS[h.cls] || CLS['Trésorerie'];
+            return {
+              ticker: h.ticker, name: h.name, cls: h.cls,
+              clsBg: c.bg, clsFg: c.fg,
+              weight: fr(h.weight, 1) + ' %',
+              perf: pct(h.perf, 1), perfColor: tone(h.perf),
+              contrib: bps(h.contrib), contribColor: tone(h.contrib),
+              barWidth: (Math.abs(h.contrib) / maxC * 100).toFixed(1) + '%',
+              barColor: tone(h.contrib),
+              justify: h.contrib >= 0 ? 'flex-start' : 'flex-end',
+              vol: fr(h.vol, 1) + ' %',
+              beta: fr(h.beta, 2),
+              bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+            };
+          });
+      })(this.state.sortBy || 'contrib'),
+      totalWeight: fr(HOLDINGS.reduce((n, h) => n + h.weight, 0), 1) + ' %',
+      totalPerf: pct(HOLDINGS.reduce((n, h) => n + h.perf * h.weight, 0) / HOLDINGS.reduce((n, h) => n + h.weight, 0), 1),
+      totalPerfColor: tone(HOLDINGS.reduce((n, h) => n + h.perf * h.weight, 0)),
+      totalContrib: bps(HOLDINGS.reduce((n, h) => n + h.contrib, 0)),
+      totalContribColor: tone(HOLDINGS.reduce((n, h) => n + h.contrib, 0)),
+      totalVol: fr(HOLDINGS.reduce((n, h) => n + h.vol * h.weight, 0) / HOLDINGS.reduce((n, h) => n + h.weight, 0), 1) + ' %',
+      totalBeta: fr(HOLDINGS.reduce((n, h) => n + h.beta * h.weight, 0) / HOLDINGS.reduce((n, h) => n + h.weight, 0), 2),
+
+
+      // Composition du résultat : parts sur la somme des flux en valeur absolue.
+      netTotal: keur(RESULT.pnl + RESULT.div + RESULT.fees + RESULT.tax),
+      netColor: tone(RESULT.pnl + RESULT.div + RESULT.fees + RESULT.tax),
+      bands: (function (self) {
+        const B = [
+          { key: 'pnl', label: 'P/L réalisé', color: 'var(--ink-ok)', hint: 'Plus et moins-values de cession' },
+          { key: 'div', label: 'Dividendes', color: 'var(--ink-brand-2)', hint: 'Dividendes encaissés nets' },
+          { key: 'fees', label: 'Frais', color: 'var(--ink-warn)', hint: 'Courtage et droits de garde' },
+          { key: 'tax', label: 'Taxes', color: 'var(--ink-warn-2)', hint: 'Retenues à la source et impôts de bourse' }
+        ];
+        const total = B.reduce((n, b) => n + Math.abs(RESULT[b.key]), 0);
+        const sel = self.state.band || 'pnl';
+        return B.map((b) => {
+          const v = RESULT[b.key];
+          const on = sel === b.key;
+          return {
+            label: b.label, color: b.color, on: on,
+            hint: b.hint + ' — ' + keur(v),
+            width: (Math.abs(v) / total * 100).toFixed(2) + '%',
+            share: fr(Math.abs(v) / total * 100, 1) + ' %',
+            value: keur(v), valueColor: tone(v),
+            opacity: on ? '1' : '0.62',
+            border: on ? 'var(--ink-brand-2)' : 'var(--color-neutral-300)',
+            rowBg: on ? 'rgba(0,61,165,0.10)' : 'var(--surface)',
+            weight: on ? '700' : '400',
+            onClick: () => self.setState({ band: b.key })
+          };
+        });
+      })(this),
+
+      detailTitle: (RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).title,
+      detailColor: { pnl: 'var(--ink-ok)', div: 'var(--ink-brand-2)', fees: 'var(--ink-warn)', tax: 'var(--ink-warn-2)' }[this.state.band || 'pnl'],
+      detailNote: (RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).rows.length + ' ligne(s)',
+      detailCols: (RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).cols.map((c, i, arr) => ({
+        label: c,
+        align: i === 0 || i === 1 ? 'left' : 'right',
+        width: i === 0 ? 'auto' : i === 1 ? '108px' : i === arr.length - 1 ? '110px' : '96px',
+        pad: i === 0 ? '0 16px' : i === arr.length - 1 ? '0 16px 0 12px' : '0 12px'
+      })),
+      detailRows: (RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).rows.map((r, i) => ({
+        a: r.a, b: r.b, c: r.c, d: r.d, e: r.e,
+        f: eur(r.f), color: tone(r.f),
+        bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+      })),
+      detailTotalLabel: 'Total ' + (RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).title.toLowerCase(),
+      detailTotal: (function (rows) { return eur(rows.reduce((n, r) => n + r.f, 0)); })((RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).rows),
+      detailTotalColor: (function (rows) { return tone(rows.reduce((n, r) => n + r.f, 0)); })((RESULT_LINES[this.state.band || 'pnl'] || RESULT_LINES.pnl).rows),
+
+      yearsNote: RESULT_YEARS.length + ' années · montants en milliers d\'euros',
+      resultYears: (function (self) {
+        const fillPct = self.state.fill;
+        // Bordure : la teinte pastel assombrie d'environ 30 %.
+        const darken = (hex) => {
+          const n = String(hex).replace('#', '');
+          if (n.length !== 6) return hex;
+          const c = [0, 2, 4].map((i) => Math.max(0, Math.round(parseInt(n.slice(i, i + 2), 16) * 0.68)));
+          return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+        };
+        const P = {
+          gain: self.props.colorGain || '#8fd4c4',
+          div: self.props.colorDividend || '#a8c5e8',
+          fees: self.props.colorFees || '#f0c9a0',
+          tax: self.props.colorTax || '#e8b0a8',
+          loss: self.props.colorLoss || '#e59289'
+        };
+        const scale = Math.max.apply(null, RESULT_YEARS.map((y) => Math.max(
+          Math.max(y.pnl, 0) + y.div,
+          Math.abs(Math.min(y.pnl, 0)) + Math.abs(y.fees) + Math.abs(y.tax)
+        )));
+        const sel = self.state.selYear;
+        const pick = (yr) => () => self.setState({ selYear: self.state.selYear === yr ? null : yr });
+        return RESULT_YEARS.map((y) => {
+          const on = sel === y.year;
+          const dim = sel && !on;
+          const net = y.pnl + y.div + y.fees + y.tax;
+          const up = [];
+          if (y.pnl > 0) up.push({ v: y.pnl, color: P.gain, label: 'P/L réalisé' });
+          up.push({ v: y.div, color: P.div, label: 'Dividendes' });
+          const down = [];
+          if (y.pnl < 0) down.push({ v: -y.pnl, color: P.loss, label: 'P/L réalisé' });
+          down.push({ v: -y.fees, color: P.fees, label: 'Frais' });
+          down.push({ v: -y.tax, color: P.tax, label: 'Taxes' });
+          const px = (v) => (v / scale * 100).toFixed(1) + '%';
+          return {
+            year: y.year,
+            net: keur(net), netColor: tone(net),
+            on: on,
+            onSelect: pick(y.year),
+            labelBg: on ? 'rgba(0,61,165,0.12)' : 'transparent',
+            labelWeight: on ? '700' : '400',
+            labelOpacity: dim ? '0.45' : '1',
+            up: up.map((u) => ({ height: px(u.v), raw: u.color, color: 'color-mix(in srgb, ' + u.color + ' ' + fillPct + '%, transparent)', border: darken(u.raw || u.color), weight: on ? '2px' : '1px', opacity: dim ? '0.26' : '1', hint: y.year + ' · ' + u.label + ' ' + keur(u.v) })),
+            down: down.map((d) => ({ height: px(d.v), raw: d.color, color: 'color-mix(in srgb, ' + d.color + ' ' + fillPct + '%, transparent)', border: darken(d.raw || d.color), weight: on ? '2px' : '1px', opacity: dim ? '0.26' : '1', hint: y.year + ' · ' + d.label + ' ' + keur(-d.v) }))
+          };
+        });
+      })(this),
+      yearRows: RESULT_YEARS_DETAIL.map((y, i) => {
+        const net = y.gain + y.loss + y.div + y.fees + y.tax;
+        const on = this.state.selYear === y.year;
+        return {
+          year: y.year,
+          on: on,
+          weight: on ? '700' : '600',
+          mark: on ? 'var(--ink-brand-2)' : 'transparent',
+          hint: on ? 'Cliquer pour désélectionner ' + y.year : 'Mettre en avant ' + y.year + ' dans le graphique',
+          onSelect: () => this.setState({ selYear: on ? null : y.year }),
+          gain: keur(y.gain), gainColor: tone(y.gain),
+          loss: keur(y.loss), lossColor: tone(y.loss),
+          div: keur(y.div), divColor: tone(y.div),
+          fees: keur(y.fees), feesColor: tone(y.fees),
+          tax: keur(y.tax), taxColor: tone(y.tax),
+          net: keur(net), netColor: tone(net),
+          bg: on ? 'rgba(0,61,165,0.12)' : (i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)')
+        };
+      }),
+      sumGain: keur(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.gain, 0)), sumGainColor: 'var(--ink-ok)',
+      sumLoss: keur(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.loss, 0)), sumLossColor: 'var(--ink-warn-2)',
+      sumDiv: keur(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.div, 0)), sumDivColor: 'var(--ink-ok)',
+      sumFees: keur(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.fees, 0)), sumFeesColor: 'var(--ink-warn-2)',
+      sumTax: keur(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.tax, 0)), sumTaxColor: 'var(--ink-warn-2)',
+      sumNet: keur(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.gain + y.loss + y.div + y.fees + y.tax, 0)),
+      sumNetColor: tone(RESULT_YEARS_DETAIL.reduce((n, y) => n + y.gain + y.loss + y.div + y.fees + y.tax, 0)),
+
+      fillOpacity: String(this.state.fill),
+      fillOpacityLabel: this.state.fill + ' %',
+      fillTrack: ((this.state.fill - 20) / 80 * 100).toFixed(1) + '%',
+      setFillOpacity: (e) => { const v = Number(e.target.value); this.setState({ fill: v }); },
+      chartLevels: (function () {
+        const scale = Math.max.apply(null, RESULT_YEARS.map((y) => Math.max(
+          Math.max(y.pnl, 0) + y.div,
+          Math.abs(Math.min(y.pnl, 0)) + Math.abs(y.fees) + Math.abs(y.tax)
+        )));
+        return [1, 0.75, 0.5, 0.25, 0].map((f) => ({ label: f ? keur(scale * f) : '' }));
+      })(),
+      chartLevelsDown: (function () {
+        const scale = Math.max.apply(null, RESULT_YEARS.map((y) => Math.max(
+          Math.max(y.pnl, 0) + y.div,
+          Math.abs(Math.min(y.pnl, 0)) + Math.abs(y.fees) + Math.abs(y.tax)
+        )));
+        const span = scale * (150 / 240);
+        return [0, 0.5, 1].map((f) => ({ label: f ? keur(-span * f) : '' }));
+      })(),
+      yearsLegend: [
+        { key: 'pnl', label: 'P/L réalisé', color: RESULT_YEARS.reduce((n, y) => n + y.pnl, 0) >= 0 ? (this.props.colorGain || '#8fd4c4') : (this.props.colorLoss || '#e59289') },
+        { key: 'div', label: 'Dividendes', color: this.props.colorDividend || '#a8c5e8' },
+        { key: 'fees', label: 'Frais', color: this.props.colorFees || '#f0c9a0' },
+        { key: 'tax', label: 'Taxes', color: this.props.colorTax || '#e8b0a8' }
+      ].map((l) => {
+        const sum = RESULT_YEARS.reduce((n, y) => n + y[l.key], 0);
+        return { label: l.label, color: l.color, value: keur(sum), valueColor: tone(sum) };
+      }),
+
+      attribBlocks: [
+        block('Attribution par classe d\'actifs', 'Classe d\'actifs', ATTRIB_CLASS, 'Modèle Brinson-Fachler'),
+        block('Attribution par zone géographique', 'Zone', ATTRIB_GEO, 'Modèle Brinson-Fachler')
+      ],
+
+      contribNote: 'Contribution à la performance de la période',
+      contributors: CONTRIBUTORS.map((c) => ({
+        ticker: c.ticker, name: c.name,
+        value: bps(c.value), color: tone(c.value),
+        barWidth: (Math.abs(c.value) / maxAbsContributor * 100).toFixed(1) + '%',
+        barColor: tone(c.value),
+        justify: c.value >= 0 ? 'flex-start' : 'flex-end'
+      })),
+
+      riskRows: RISK.map((r) => ({
+        label: r.label,
+        hint: r.hint,
+        value: r.unit === '%' ? pct(r.value, 1) : fr(r.value, 2),
+        bench: r.bench === 0 ? '—' : (r.unit === '%' ? pct(r.bench, 1) : fr(r.bench, 2)),
+        color: (function () {
+          if (r.bench === 0) return 'var(--color-text)';
+          const better = r.good === 'high' ? r.value > r.bench : r.value < r.bench;
+          return better ? 'var(--ink-ok)' : 'var(--ink-warn-2)';
+        })()
+      })),
+
+      drawdownNote: DRAWDOWNS.length + ' épisodes sur 3 ans',
+      drawdowns: DRAWDOWNS.map((d) => ({
+        label: d.label,
+        depth: pct(d.depth, 1),
+        detail: d.detail,
+        barWidth: (Math.abs(d.depth) / maxDrawdown * 100).toFixed(1) + '%'
+      })),
+
+      years: YEARS.map((y) => ({
+        label: y.label,
+        value: pct(y.port, 1),
+        bench: pct(y.bench, 1),
+        color: tone(y.port),
+        barColor: tone(y.port),
+        height: (Math.abs(y.port) / maxYear * 100).toFixed(1) + '%',
+        justify: y.port >= 0 ? 'flex-end' : 'flex-start'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

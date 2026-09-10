@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="SettingsPage"] { --surface: var(--theme-surface, #ffffff); --ink-brand: #002a6e; --ink-brand-2: #003da5; --ink-ok: #0b5f57; --ink-alt: #5b3ea8; --ink-warn: #8f3f06; --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="SettingsPage"] { --theme-surface: #1d1b1a; --color-text: #f3f2f2; --ink-brand: #9db6d9; --ink-brand-2: #8fb4ee; --ink-ok: #5fd6c4; --ink-alt: #c4b5fd; --ink-warn: #f0a868; --field-brand: #12325e;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f; --color-neutral-400: #4a4643; --color-neutral-600: #8a8582; --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; }
+    [data-component="SettingsPage"], [data-component="SettingsPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="SettingsPage"] h1, [data-component="SettingsPage"] h2 { color: var(--ink-brand); }
+    [data-component="SettingsPage"] input:focus, [data-component="SettingsPage"] select:focus { outline: none; border-color: var(--ink-brand-2); box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    @keyframes param-panel { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  </style>
+  <script src="withholding-rates.js"></script>
+  <script src="mic-registry.js"></script>
+  <script src="places-service.js"></script>
+</helmet>
+
+<div data-component="SettingsPage" data-screen-label="Paramètres" style="display:flex;flex-direction:column;height:100%;min-height:0;overflow-y:auto;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;padding:14px 20px 0;background:var(--surface)">
+    <div style="min-width:0">
+      <h1 style="font-size:18px;margin:0;line-height:1.2">Paramètres</h1>
+      <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+    </div>
+    <div style="display:flex;align-items:flex-end;flex-wrap:wrap;gap:4px 2px;margin-top:12px;border-bottom:1px solid var(--ink-brand)">
+      <sc-for list="{{ pageTabs }}" as="t" hint-placeholder-count="2">
+        <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;height:{{ t.height }};padding:{{ t.padding }};border:1px solid var(--ink-brand-2);border-bottom:0;border-radius:6px 6px 0 0;background:{{ t.bg }};color:{{ t.fg }};font-family:inherit;font-size:{{ t.size }};font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.97)">
+          <sc-if value="{{ t.isPrefs }}" hint-placeholder-val="{{ true }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15H4a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 6 9.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.17l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11h.6a2 2 0 0 1 0 4h-.09Z"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isVenues }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 21h18"></path><path d="M5 21V8l7-5 7 5v13"></path><path d="M9 21v-6h6v6"></path></svg>
+          </sc-if>
+
+          <sc-if value="{{ t.isSettle }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M17 2l4 4-4 4"></path><path d="M21 6H3"></path><path d="M7 22l-4-4 4-4"></path><path d="M3 18h18"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isTax }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M9 14 15 8"></path><circle cx="9.5" cy="8.5" r="1.5"></circle><circle cx="14.5" cy="13.5" r="1.5"></circle><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+          </sc-if>
+          {{ t.label }}
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ onPrefs }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px;max-width:760px">
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Préférences de session</h2>
+      </div>
+      <div style="padding:6px 20px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Densité de l'affichage</span>
+          <span style="display:inline-flex;border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden;flex:none">
+            <span style="padding:4px 11px;font-size:11px;font-weight:600;background:var(--color-neutral-200);color:var(--color-text)">Compact</span>
+            <span style="padding:4px 11px;font-size:11px;color:var(--color-neutral-700);border-left:1px solid var(--color-neutral-300)">Standard</span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Langue de l'interface</span>
+          <span style="display:inline-flex;border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden;flex:none">
+            <span style="padding:4px 11px;font-size:11px;font-weight:600;background:var(--color-neutral-200);color:var(--color-text)">FR</span>
+            <span style="padding:4px 11px;font-size:11px;color:var(--color-neutral-700);border-left:1px solid var(--color-neutral-300)">EN</span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Notifications par e-mail</span>
+          <span style="display:inline-flex;align-items:center;width:34px;height:18px;padding:2px;border-radius:999px;background:var(--field-brand);flex:none"><span style="width:14px;height:14px;border-radius:999px;background:#fff;margin-left:auto"></span></span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0">
+          <span style="font-size:12px;color:var(--color-neutral-800)">Page d'accueil</span>
+          <select value="{{ homePage }}" onChange="{{ setHomePage }}" style="flex:none;width:230px;height:28px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:11px;outline:none">
+            <sc-for list="{{ homeGroups }}" as="g" hint-placeholder-count="4">
+              <optgroup label="{{ g.label }}">
+                <sc-for list="{{ g.items }}" as="o" hint-placeholder-count="3">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </optgroup>
+            </sc-for>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+        <button style="height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Annuler</button>
+        <button style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--field-brand);color:#fff;font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="filter:brightness(1.12)">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onTax }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Régime du titulaire</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">Applique la retenue par défaut aux dividendes et coupons</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:14px;padding:16px">
+        <sc-for list="{{ regimeFields }}" as="f" hint-placeholder-count="3">
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            {{ f.label }}
+            <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+              <select value="{{ f.value }}" onChange="{{ f.onChange }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:13px;outline:none">
+                <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+            </sc-if>
+            <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+              <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-variant-numeric:tabular-nums;outline:none" />
+            </sc-if>
+            <span style="min-height:15px;font-size:11px;font-weight:400;color:var(--color-neutral-700)">{{ f.hint }}</span>
+          </label>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Taux par pays de source</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ rateNote }}</span>
+        <sc-if value="{{ hasRateEdits }}" hint-placeholder-val="{{ false }}">
+          <span style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;font-weight:600;color:var(--ink-brand-2)">{{ rateEditCount }}</span>
+            <button onClick="{{ resetRates }}" matTooltip="Revenir au barème officiel" title="Revenir au barème officiel" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 2v6h6"></path><path d="M3.5 8a9 9 0 1 0 2.1-3.4L3 8"></path></svg>
+            </button>
+          </span>
+        </sc-if>
+      </div>
+      <div style="overflow-x:auto">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:1170px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr class="mat-header-row" style="background:var(--surface);height:32px">
+              <th style="width:230px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Pays de source</th>
+              <th style="width:250px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Places de marché</th>
+              <th style="width:160px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Taux légal</th>
+              <th style="width:180px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Taux conventionnel</th>
+              <th style="width:120px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Retenue appliquée</th>
+              <th style="width:230px;text-align:left;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Récupération</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ rateGroups }}" as="r" hint-placeholder-count="6">
+              <sc-if value="{{ r.isGroup }}" hint-placeholder-val="{{ false }}">
+                <tr style="height:32px;background:rgba(0,61,165,0.10)">
+                  <td colSpan="6" style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);border-bottom:1px solid rgba(0,61,165,0.28)">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand)"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand)">{{ r.continent }}</span>
+                      <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ r.count }}</span>
+                    </span>
+                  </td>
+                </tr>
+              </sc-if>
+              <sc-if value="{{ r.isRow }}" hint-placeholder-val="{{ true }}">
+              <tr class="mat-row" style="height:44px;background:{{ r.bg }}">
+                <td style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                    <span style="flex:none;font-size:13px;line-height:1">{{ r.flag }}</span>
+                    <span style="flex:none;display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700;letter-spacing:0.04em">{{ r.code }}</span>
+                    <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.country }}</span>
+                  </span>
+                </td>
+                <td style="padding:6px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span data-mat-form-field="" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:30px;padding:3px 5px;border:1px solid {{ r.chipBorder }};border-radius:6px;background:var(--surface)">
+                    <sc-for list="{{ r.chips }}" as="ch" hint-placeholder-count="1">
+                      <span data-mat-chip-row="" matTooltip="{{ ch.place }}" title="{{ ch.place }}" style="display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 3px 0 8px;border-radius:999px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">
+                        {{ ch.mic }}
+                        <button onClick="{{ ch.onRemove }}" matTooltip="Retirer cette place" title="Retirer cette place" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.22)">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                        </button>
+                      </span>
+                    </sc-for>
+                    <select data-mat-select="" value="{{ r.addValue }}" onChange="{{ r.onAddPlace }}" matTooltip="Ajouter une place de marché" title="Ajouter une place de marché" style="flex:1 1 60px;min-width:0;height:22px;padding:0 4px;border:1px dashed var(--color-neutral-400);border-radius:999px;background:transparent;color:var(--color-neutral-700);font-family:inherit;font-size:10px;outline:none;cursor:pointer">
+                      <sc-for list="{{ r.addOptions }}" as="o" hint-placeholder-count="4">
+                        <option data-mat-option="" value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                    <sc-if value="{{ r.hasHiddenChips }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ r.restoreChips }}" matTooltip="Revenir aux places d'origine" title="Revenir aux places d'origine" style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.14)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 2v6h6"></path><path d="M3.5 8a9 9 0 1 0 2.1-3.4L3 8"></path></svg>
+                      </button>
+                    </sc-if>
+                  </span>
+                </td>
+                <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:flex;align-items:center;height:30px;border:1px solid {{ r.border }};border-radius:6px;background:var(--surface);overflow:hidden">
+                    <span style="flex:none;display:flex;align-items:center;height:100%;padding:0 9px;background:var(--color-neutral-100);color:var(--color-neutral-700);font-size:12px;font-weight:700;border-right:1px solid var(--color-neutral-300)">%</span>
+                    <input value="{{ r.legal }}" onChange="{{ r.setLegal }}" style="flex:1;min-width:0;height:100%;padding:0 9px;border:0;background:transparent;color:var(--color-text);font-size:13px;font-variant-numeric:tabular-nums;text-align:right;outline:none" />
+                    <span style="flex:none;display:flex;flex-direction:column;height:100%;border-left:1px solid var(--color-neutral-300)">
+                      <button onClick="{{ r.stepLegal.up }}" matTooltip="Augmenter" title="Augmenter" style="flex:1;display:flex;align-items:center;justify-content:center;width:22px;padding:0;border:0;border-bottom:1px solid var(--color-neutral-300);background:var(--color-neutral-100);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 15 6-6 6 6"></path></svg>
+                      </button>
+                      <button onClick="{{ r.stepLegal.down }}" matTooltip="Diminuer" title="Diminuer" style="flex:1;display:flex;align-items:center;justify-content:center;width:22px;padding:0;border:0;background:var(--color-neutral-100);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg>
+                      </button>
+                    </span>
+                  </span>
+                </td>
+                <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:flex;align-items:center;height:30px;border:1px solid {{ r.border }};border-radius:6px;background:var(--surface);overflow:hidden">
+                    <span style="flex:none;display:flex;align-items:center;height:100%;padding:0 9px;background:var(--color-neutral-100);color:var(--color-neutral-700);font-size:12px;font-weight:700;border-right:1px solid var(--color-neutral-300)">%</span>
+                    <input value="{{ r.treaty }}" onChange="{{ r.setTreaty }}" style="flex:1;min-width:0;height:100%;padding:0 9px;border:0;background:transparent;color:var(--color-text);font-size:13px;font-variant-numeric:tabular-nums;text-align:right;outline:none" />
+                    <span style="flex:none;display:flex;flex-direction:column;height:100%;border-left:1px solid var(--color-neutral-300)">
+                      <button onClick="{{ r.stepTreaty.up }}" matTooltip="Augmenter" title="Augmenter" style="flex:1;display:flex;align-items:center;justify-content:center;width:22px;padding:0;border:0;border-bottom:1px solid var(--color-neutral-300);background:var(--color-neutral-100);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 15 6-6 6 6"></path></svg>
+                      </button>
+                      <button onClick="{{ r.stepTreaty.down }}" matTooltip="Diminuer" title="Diminuer" style="flex:1;display:flex;align-items:center;justify-content:center;width:22px;padding:0;border:0;background:var(--color-neutral-100);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m6 9 6 6 6-6"></path></svg>
+                      </button>
+                    </span>
+                  </span>
+                </td>
+                <td style="padding:0 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.color }}">{{ r.applied }}</td>
+                <td style="padding:0 16px 0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <input value="{{ r.recovery }}" onChange="{{ r.setRecovery }}" style="width:100%;height:28px;padding:0 9px;border:1px solid {{ r.border }};border-radius:6px;background:var(--surface);color:var(--color-text);font-size:12px;outline:none" />
+                </td>
+              </tr>
+              </sc-if>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">Le taux conventionnel s'applique sur présentation d'un certificat de résidence fiscale en cours de validité. À défaut, le taux légal est retenu à la source et la différence se réclame par voie de remboursement.</span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+  <sc-if value="{{ onSettle }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Délais de dénouement par place</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ settleNote }}</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:820px;border-collapse:collapse;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr class="mat-header-row" style="background:var(--surface);height:32px">
+              <th style="width:96px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">MIC</th>
+              <th style="text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Place</th>
+              <th style="width:86px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Cycle</th>
+              <th style="width:170px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Bascule</th>
+              <th style="width:160px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Dépositaire</th>
+              <th style="width:200px;text-align:left;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Régime de pénalités</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ settlePlaces }}" as="p" hint-placeholder-count="6">
+              <tr class="mat-row" style="height:38px;background:{{ p.bg }}">
+                <td style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span style="display:flex;align-items:center;gap:8px">
+                    <span style="flex:none;font-size:13px;line-height:1">{{ p.flag }}</span>
+                    <span style="font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;color:var(--ink-brand)">{{ p.mic }}</span>
+                  </span>
+                </td>
+                <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.place }}</td>
+                <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                  <span data-mat-form-field="" matTooltip="Cycle de dénouement" title="Cycle de dénouement" style="position:relative;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 6px 0 3px;border:1px solid {{ p.cycleBorder }};border-radius:999px;background:var(--surface);cursor:pointer">
+                    <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;background:{{ p.cycleBg }};color:{{ p.cycleFg }};font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;pointer-events:none">{{ p.cycle }}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand);pointer-events:none"><path d="m6 9 6 6 6-6"></path></svg>
+                    <select data-mat-select="" value="{{ p.cycle }}" onChange="{{ p.setCycle }}" aria-label="Cycle de dénouement" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;background:transparent;font-family:inherit;font-size:11px;cursor:pointer">
+                      <sc-for list="{{ p.cycleOptions }}" as="o" hint-placeholder-count="2">
+                        <option data-mat-option="" value="{{ o }}">{{ o }}</option>
+                      </sc-for>
+                    </select>
+                  </span>
+                </td>
+                <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-800);white-space:nowrap">{{ p.shift }}</td>
+                <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.csd }}</td>
+                <td style="padding:0 16px 0 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.penalty }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">Le règlement (UE) 909/2014 fixe le dénouement au deuxième jour ouvré et assortit les défauts de pénalités quotidiennes. Le délai se déduit du code MIC de la place, en jours ouvrés de cette place.</span>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Règles de suspens</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">Modèle hybride : position à la négociation, espèces au règlement</span>
+      </div>
+      <sc-for list="{{ suspenseRules }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="flex:0 1 220px;min-width:140px;font-size:12px;color:var(--color-neutral-800);text-wrap:pretty">{{ r.label }}</span>
+          <span style="flex:0 1 180px;min-width:110px;font-size:12px;font-weight:600;color:var(--ink-brand);text-wrap:pretty">{{ r.value }}</span>
+          <span style="flex:1 1 200px;min-width:180px;font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ r.hint }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onVenues }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div mat-expansion-panel-header="" onClick="{{ toggleIsoPanel }}" matTooltip="{{ isoPanelTitle }}" title="{{ isoPanelTitle }}" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:rgba(0,61,165,0.06);cursor:pointer" style-hover="background:rgba(0,61,165,0.12)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand);transform:rotate({{ isoChevron }});transition:transform 160ms ease"><path d="m6 9 6 6 6-6"></path></svg>
+        <span mat-panel-title="" style="display:flex;align-items:center;gap:8px;flex:none">
+          <span style="font-size:14px;font-weight:700;color:var(--ink-brand)">ISO 10383</span>
+          <span style="display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700">MIC</span>
+        </span>
+        <span mat-panel-description="" style="flex:1;min-width:180px;font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">Codification des places de négociation — structure du code et portée dans l'application</span>
+      </div>
+      <sc-if value="{{ isoPanelOpen }}" hint-placeholder-val="{{ true }}">
+      <div mat-expansion-panel-content="" style="border-top:1px solid var(--color-neutral-200);animation:param-panel 240ms cubic-bezier(0.22,0.61,0.36,1) both">
+        <p style="margin:0;padding:14px 16px 12px;font-size:12px;color:var(--color-neutral-800);text-wrap:pretty">La norme ISO 10383 attribue à chaque marché un identifiant de quatre caractères, le MIC (<em>Market Identifier Code</em>). Ce code est la clé de rattachement retenue par l'application : il détermine le pays de source pour la fiscalité, la devise de règlement et le calendrier de jours ouvrés servant au calcul du délai de dénouement.</p>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:0 16px 14px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+          <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            Les MIC Code supportés
+            <span style="font-weight:400;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ isoMicNote }}</span>
+            <sc-if value="{{ micTouched }}" hint-placeholder-val="{{ false }}">
+              <span style="display:flex;align-items:center;gap:6px">
+                <span style="font-weight:600;color:var(--ink-brand-2);font-variant-numeric:tabular-nums">{{ micOffCount }}</span>
+                <button onClick="{{ resetMic }}" matTooltip="Rétablir tous les codes" title="Rétablir tous les codes" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.14)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 2v6h6"></path><path d="M3.5 8a9 9 0 1 0 2.1-3.4L3 8"></path></svg>
+                </button>
+              </span>
+            </sc-if>
+
+                    </span>
+          <span data-mat-form-field="" style="display:flex;flex-direction:column;gap:6px;width:100%;padding:8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface)">
+            <span data-mat-chip-grid="" role="grid" aria-label="Codes MIC supportés" style="display:flex;align-items:flex-start;align-content:flex-start;gap:6px;flex-wrap:wrap;width:100%;min-height:80px">
+            <sc-for list="{{ isoMicChips }}" as="m" hint-placeholder-count="8">
+              <span data-mat-chip-row="" role="row" aria-selected="{{ m.selected }}" style="display:inline-flex;align-items:center;gap:2px;height:24px;padding:0 3px 0 2px;border:1px solid {{ m.border }};border-radius:999px;background:{{ m.bg }}">
+                <button onClick="{{ m.onSelect }}" matTooltip="{{ m.hint }}" title="{{ m.hint }}" style="display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 6px;border:0;border-radius:999px;background:transparent;color:{{ m.fg }};font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;white-space:nowrap;cursor:pointer">
+                  <span style="flex:none;font-size:12px;line-height:1">{{ m.flag }}</span>
+                  {{ m.mic }}
+                </button>
+                <button mat-chip-remove="" onClick="{{ m.onRemove }}" aria-label="{{ m.removeLabel }}" matTooltip="{{ m.removeLabel }}" title="{{ m.removeLabel }}" style="display:flex;align-items:center;justify-content:center;width:17px;height:17px;padding:0;border:0;border-radius:999px;background:transparent;color:{{ m.fg }};cursor:pointer" style-hover="background:rgba(0,0,0,0.14)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                </button>
+              </span>
+            </sc-for>
+                      </span>
+            <input value="{{ micInput }}" onChange="{{ setMicInput }}" onKeyDown="{{ micInputKey }}" list="mic-codes" placeholder="Nouveau code MIC…" aria-label="Ajouter un code MIC" style="width:100%;height:26px;padding:0 8px;border:0;border-top:1px solid var(--color-neutral-200);background:transparent;color:var(--color-text);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;outline:none" />
+            <datalist id="mic-codes">
+              <sc-for list="{{ micAddOptions }}" as="o" hint-placeholder-count="4">
+                <option value="{{ o.value }}">{{ o.label }}</option>
+              </sc-for>
+            </datalist>
+          </span>
+        </div>
+
+        <sc-if value="{{ micHasSel }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;margin:0 16px 14px;padding:12px 14px;border:1px solid var(--ink-brand-2);border-radius:6px;background:rgba(0,61,165,0.06)">
+            <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand)">Registre ISO 10383</span>
+              <span style="font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ micSelNote }}</span>
+              <button onClick="{{ clearMicSel }}" matTooltip="Fermer la fiche" title="Fermer la fiche" style="margin-left:auto;display:flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.14)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+              </button>
+            </span>
+            <sc-for list="{{ micSelCards }}" as="c" hint-placeholder-count="1">
+              <div style="display:flex;flex-direction:column;gap:8px;padding:11px 12px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface)">
+                <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="flex:none;font-size:13px;line-height:1">{{ c.flag }}</span>
+                  <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700">{{ c.mic }}</span>
+                  <span style="min-width:0;font-size:13px;font-weight:600;color:var(--color-text);text-wrap:pretty">{{ c.marketName }}</span>
+                  <span style="margin-left:auto;display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:{{ c.typeBg }};color:{{ c.typeFg }};font-size:10px;font-weight:700;white-space:nowrap">{{ c.typeLabel }}</span>
+                </span>
+                <span style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:8px 14px">
+                  <sc-for list="{{ c.fields }}" as="f" hint-placeholder-count="4">
+                    <span style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                      <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">{{ f.label }}</span>
+                      <span style="font-size:12px;color:var(--color-text);text-wrap:pretty">{{ f.value }}</span>
+                    </span>
+                  </sc-for>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ isoRules }}" as="i" hint-placeholder-count="4">
+          <div style="display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:11px 16px;border-top:1px solid var(--color-neutral-200)">
+            <span style="flex:none;display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;background:var(--color-neutral-200);color:var(--color-neutral-800);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700">{{ i.code }}</span>
+            <span style="flex:0 1 200px;min-width:130px;font-size:12px;font-weight:600;color:var(--color-text);text-wrap:pretty">{{ i.label }}</span>
+            <span style="flex:1 1 220px;min-width:180px;font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ i.hint }}</span>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div mat-expansion-panel-header="" onClick="{{ toggleVenuePanel }}" matTooltip="{{ venuePanelTitle }}" title="{{ venuePanelTitle }}" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06);cursor:pointer" style-hover="background:rgba(0,61,165,0.12)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand);transform:rotate({{ venueChevron }});transition:transform 160ms ease"><path d="m6 9 6 6 6-6"></path></svg>
+        <h2 style="margin:0;font-size:14px">Référentiel des places</h2>
+        <span style="display:flex;align-items:center;gap:8px;width:220px;height:30px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="flex:none;color:var(--color-neutral-600)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input value="{{ venueQuery }}" onChange="{{ setVenueQuery }}" placeholder="Pays, code, MIC, place" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:inherit;font-size:12px;outline:none" />
+        </span>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ venueNote }}</span>
+        <button onClick="{{ resetVenues }}" matTooltip="Revenir au référentiel d'origine" title="Revenir au référentiel d'origine" style="flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 2v6h6"></path><path d="M3.5 8a9 9 0 1 0 2.1-3.4L3 8"></path></svg>
+        </button>
+      </div>
+      <sc-if value="{{ venuePanelOpen }}" hint-placeholder-val="{{ false }}">
+      <div mat-expansion-panel-content="" style="overflow-x:auto;animation:param-panel 240ms cubic-bezier(0.22,0.61,0.36,1) both">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:1140px;border-collapse:collapse;table-layout:fixed;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr class="mat-header-row" style="background:var(--surface);height:32px">
+              <th style="width:176px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Pays</th>
+              <th style="width:262px;text-align:left;padding:0 8px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Places boursières</th>
+              <th style="width:190px;text-align:left;padding:0 8px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Bourse</th>
+              <th style="width:160px;text-align:left;padding:0 8px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Indices</th>
+              <th style="width:84px;text-align:left;padding:0 8px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Devise</th>
+              <th style="width:148px;text-align:left;padding:0 8px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Fuseau horaire</th>
+              <th style="width:120px;text-align:left;padding:0 12px 0 8px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-300)">Séance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ venueGroups }}" as="v" hint-placeholder-count="8">
+              <sc-if value="{{ v.isGroup }}" hint-placeholder-val="{{ false }}">
+                <tr style="height:32px;background:rgba(0,61,165,0.10)">
+                  <td colSpan="7" style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);border-bottom:1px solid rgba(0,61,165,0.28)">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand)"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand)">{{ v.continent }}</span>
+                      <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ v.count }}</span>
+                    </span>
+                  </td>
+                </tr>
+              </sc-if>
+              <sc-if value="{{ v.isRow }}" hint-placeholder-val="{{ true }}">
+                <tr class="mat-row" style="background:{{ v.bg }}">
+                  <td style="padding:0 16px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                      <span style="flex:none;font-size:13px;line-height:1">{{ v.flag }}</span>
+                      <span style="flex:none;display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;background:var(--color-neutral-200);color:var(--color-neutral-800);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700">{{ v.code }}</span>
+                      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ v.country }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:6px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:flex-start;gap:6px;min-width:0">
+
+                    <span data-mat-form-field="" style="flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:30px;padding:3px 5px;border:1px solid {{ v.chipBorder }};border-radius:6px;background:var(--surface)">
+                      <sc-for list="{{ v.chips }}" as="ch" hint-placeholder-count="1">
+                        <span data-mat-chip-row="" matTooltip="{{ ch.place }}" title="{{ ch.place }}" style="display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 3px 0 8px;border-radius:999px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">
+                          {{ ch.mic }}
+                          <button onClick="{{ ch.onRemove }}" matTooltip="Retirer cette place" title="Retirer cette place" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.22)">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                          </button>
+                        </span>
+                      </sc-for>
+                      <sc-if value="{{ v.noChips }}" hint-placeholder-val="{{ false }}">
+                        <span style="padding:0 4px;font-size:11px;color:var(--color-neutral-600)">Aucune place</span>
+                      </sc-if>
+                      <select data-mat-select="" value="{{ v.addValue }}" onChange="{{ v.onAddPlace }}" matTooltip="Ajouter une place boursière" title="Ajouter une place boursière" style="flex:1;min-width:70px;height:22px;padding:0 4px;border:1px dashed var(--color-neutral-400);border-radius:999px;background:transparent;color:var(--color-neutral-700);font-family:inherit;font-size:10px;outline:none;cursor:pointer">
+                        <sc-for list="{{ v.addOptions }}" as="o" hint-placeholder-count="4">
+                          <option data-mat-option="" value="{{ o.value }}">{{ o.label }}</option>
+                        </sc-for>
+                      </select>
+
+                    </span>
+                      <button onClick="{{ v.restoreAlways }}" disabled="{{ v.resetDisabled }}" matTooltip="{{ v.resetTitle }}" title="{{ v.resetTitle }}" style="flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:30px;padding:0;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:{{ v.resetColor }};cursor:{{ v.resetCursor }}" style-hover="background:rgba(0,61,165,0.09)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 2v6h6"></path><path d="M3.5 8a9 9 0 1 0 2.1-3.4L3 8"></path></svg>
+                      </button>
+                    </span>
+                  </td>
+                  <td style="padding:0 8px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                      <sc-for list="{{ v.venues }}" as="bo" hint-placeholder-count="1">
+                        <span matTooltip="{{ bo.hint }}" title="{{ bo.hint }}" style="font-size:11px;color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ bo.name }}</span>
+                      </sc-for>
+                      <sc-if value="{{ v.noVenues }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:11px;color:var(--color-neutral-600)">—</span>
+                      </sc-if>
+                    </span>
+                  </td>
+                  <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0">
+                      <sc-for list="{{ v.indices }}" as="ix" hint-placeholder-count="1">
+                        <span matTooltip="{{ ix.mic }}" title="{{ ix.mic }}" style="display:inline-flex;align-items:center;max-width:100%;height:20px;padding:0 8px;border-radius:999px;background:rgba(124,92,191,0.16);color:var(--ink-alt);font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ix.label }}</span>
+                      </sc-for>
+                      <sc-if value="{{ v.noIndices }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:11px;color:var(--color-neutral-600)">—</span>
+                      </sc-if>
+                    </span>
+                  </td>
+                  <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                      <sc-for list="{{ v.currencies }}" as="cu" hint-placeholder-count="1">
+                        <span style="display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:4px;background:rgba(15,118,110,0.14);color:var(--ink-ok);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700">{{ cu }}</span>
+                      </sc-for>
+                      <sc-if value="{{ v.noCurrencies }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:11px;color:var(--color-neutral-600)">—</span>
+                      </sc-if>
+                    </span>
+                  </td>
+                  <td style="padding:0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                      <sc-for list="{{ v.zones }}" as="z" hint-placeholder-count="1">
+                        <span matTooltip="{{ z.full }}" title="{{ z.full }}" style="font-size:11px;color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ z.label }}</span>
+                      </sc-for>
+                      <sc-if value="{{ v.noZones }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:11px;color:var(--color-neutral-600)">—</span>
+                      </sc-if>
+                    </span>
+                  </td>
+                  <td style="padding:0 16px 0 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                      <sc-for list="{{ v.sessions }}" as="se" hint-placeholder-count="1">
+                        <span matTooltip="{{ se.mic }}" title="{{ se.mic }}" style="font-size:11px;color:var(--color-neutral-800);font-variant-numeric:tabular-nums;white-space:nowrap">{{ se.hours }}</span>
+                      </sc-for>
+                      <sc-if value="{{ v.noSessions }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:11px;color:var(--color-neutral-600)">—</span>
+                      </sc-if>
+                    </span>
+                  </td>
+                </tr>
+              </sc-if>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">Les places rattachées à un pays déterminent les indices de référence et les devises de règlement proposés à la saisie d'un ordre. Retirer une place ne modifie pas les positions déjà détenues.</span>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:880}}">
+// Barème officiel fourni par withholding-rates.js, surchargeable champ par champ.
+function officialRates(residence) {
+  const api = (typeof window !== 'undefined' && window.WithholdingRates) ? window.WithholdingRates : null;
+  return api ? api.forResidence(residence) : [];
+}
+
+const RESIDENCE = [
+  { value: 'FR', label: '🇫🇷 France' },
+  { value: 'BE', label: '🇧🇪 Belgique' },
+  { value: 'LU', label: '🇱🇺 Luxembourg' },
+  { value: 'CH', label: '🇨🇭 Suisse' }
+];
+
+const STATUS = [
+  { value: 'resident', label: 'Résident fiscal — personne physique' },
+  { value: 'nonres', label: 'Non-résident' },
+  { value: 'company', label: 'Personne morale' }
+];
+
+
+const SUSPENSE_RULES = [
+  { label: 'Comptabilisation de la position', value: 'Date de négociation', hint: "L'actif entre au bilan le jour de la transaction" },
+  { label: 'Comptabilisation des espèces', value: 'Date de règlement', hint: 'Le décaissement suit le dénouement effectif' },
+  { label: 'Compte de suspens à l\'achat', value: 'PCG 464', hint: 'Dettes sur acquisitions de valeurs mobilières' },
+  { label: 'Compte de suspens à la vente', value: 'PCG 465', hint: 'Créances sur cessions de valeurs mobilières' },
+  { label: 'Alerte de retard de dénouement', value: 'J+1 après la date prévue', hint: 'Remonte dans les anomalies du tableau de bord' },
+  { label: 'Jours ouvrés de référence', value: 'Calendrier de la place', hint: 'Le délai se compte sur les jours ouvrés du MIC' }
+];
+
+// Indice de référence par place, seule donnée consommée par la colonne Indices.
+
+
+// Référentiels fournis par places-service.js.
+function svc() {
+  return (typeof window !== 'undefined' && window.PlacesService) ? window.PlacesService : null;
+}
+function allPlaces() { const s = svc(); return s ? s.all() : []; }
+function placeOf(mic) { const s = svc(); return (s && s.getByMic(mic)) || null; }
+function indexOfMic(mic) { const p = placeOf(mic); return p ? p.index : ''; }
+function settlePlaces() { const s = svc(); return s ? s.withSettlement() : []; }
+function placeCountries() { const s = svc(); return s ? s.countries() : []; }
+
+// Drapeau émoji depuis un code pays ISO 3166 alpha-2.
+function flagOf(code) {
+  const c = String(code || '').trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(c)) return '';
+  return String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65, 0x1f1e6 + c.charCodeAt(1) - 65);
+}
+
+function pct(v) {
+  return v.toLocaleString('fr-FR', { minimumFractionDigits: v % 1 ? 3 : 2, maximumFractionDigits: 3 }) + ' %';
+}
+
+class Component extends DCLogic {
+  state = { tab: 'prefs', homePage: 'Tableau de bord', rateEdits: {}, cycleEdits: {}, placeRemovals: {}, placeAdds: {}, placePick: {}, venueQuery: '', venuePanelOpen: false, isoPanelOpen: true, micOff: {}, micAdd: [], micInput: '', micSel: {}, venueOff: {}, venueAdd: {}, residence: 'FR', status: 'resident', certificate: '2027-06-30' };
+
+  renderVals() {
+    const tab = this.state.tab;
+    const certified = !!this.state.certificate;
+
+    const self = this;
+    const edits = this.state.rateEdits || {};
+    const source = officialRates(this.state.residence);
+    const num = (x) => Number(String(x).replace(/\s/g, '').replace(',', '.'));
+    const rates = source.map((c, i) => {
+      const e = edits[c.code] || {};
+      const legalRaw = e.legal !== undefined ? e.legal : c.legal;
+      const treatyRaw = e.treaty !== undefined ? e.treaty : c.treaty;
+      const legalVal = Number.isFinite(num(legalRaw)) ? num(legalRaw) : c.legal;
+      const treatyVal = Number.isFinite(num(treatyRaw)) ? num(treatyRaw) : c.treaty;
+      const applied = certified ? treatyVal : legalVal;
+      const gain = legalVal - treatyVal;
+      const touched = e.legal !== undefined || e.treaty !== undefined || e.recovery !== undefined;
+      const step = (field, current) => {
+        const bump = (d) => {
+          const n = Math.min(100, Math.max(0, Math.round((current + d) * 1000) / 1000));
+          self.setState((st) => ({
+            rateEdits: Object.assign({}, st.rateEdits, {
+              [c.code]: Object.assign({}, (st.rateEdits || {})[c.code], { [field]: String(n).replace('.', ',') })
+            })
+          }));
+        };
+        return { up: () => bump(0.5), down: () => bump(-0.5) };
+      };
+      const chipRemovals = (self.state.placeRemovals || {})[c.code] || {};
+      const added = ((self.state.placeAdds || {})[c.code] || []);
+      const own = (svc() ? svc().byCountry(c.code) : []).map((p) => p.mic);
+      const micList = own.concat(added.filter((m) => own.indexOf(m) < 0));
+      const chips = micList
+        .map((m) => placeOf(m))
+        .filter((p) => p && !chipRemovals[p.mic])
+        .sort((a, b) => a.mic.localeCompare(b.mic))
+        .map((p) => ({
+        mic: p.mic, place: p.place,
+        onRemove: (ev) => {
+          if (ev) ev.stopPropagation();
+          self.setState((st) => ({
+            placeRemovals: Object.assign({}, st.placeRemovals, {
+              [c.code]: Object.assign({}, (st.placeRemovals || {})[c.code], { [p.mic]: true })
+            })
+          }));
+        }
+      }));
+      const hiddenChips = allPlaces().filter((p) => p.code === c.code && chipRemovals[p.mic]).length;
+      const set = (field) => (ev) => {
+        const v = ev.target.value;
+        self.setState((st) => ({
+          rateEdits: Object.assign({}, st.rateEdits, {
+            [c.code]: Object.assign({}, (st.rateEdits || {})[c.code], { [field]: v })
+          })
+        }));
+      };
+      return {
+        flag: c.flag, code: c.code, country: c.country, continent: c.continent,
+        chips: chips,
+        addValue: '',
+        addOptions: [{ value: '', label: '' }].concat(
+          allPlaces()
+            .sort((a, b) => a.mic.localeCompare(b.mic))
+            .filter((p) => chips.every((ch) => ch.mic !== p.mic))
+            .map((p) => ({ value: p.mic, label: p.mic + ' — ' + p.place }))
+        ),
+        onAddPlace: (ev) => {
+          const mic = ev.target.value;
+          if (!mic) return;
+          self.setState((st) => {
+            const list = ((st.placeAdds || {})[c.code] || []).slice();
+            if (list.indexOf(mic) < 0) list.push(mic);
+            const rem = Object.assign({}, (st.placeRemovals || {})[c.code]);
+            delete rem[mic];
+            return {
+              placeAdds: Object.assign({}, st.placeAdds, { [c.code]: list }),
+              placeRemovals: Object.assign({}, st.placeRemovals, { [c.code]: rem })
+            };
+          });
+        },
+        chipBorder: (hiddenChips || added.length) ? 'var(--ink-brand-2)' : 'var(--color-neutral-300)',
+        restoreChips: (hiddenChips || added.length) ? (ev) => {
+          if (ev) ev.stopPropagation();
+          self.setState((st) => {
+            const rem = Object.assign({}, st.placeRemovals);
+            const add = Object.assign({}, st.placeAdds);
+            delete rem[c.code];
+            delete add[c.code];
+            return { placeRemovals: rem, placeAdds: add };
+          });
+        } : null,
+        hasHiddenChips: hiddenChips > 0 || added.length > 0,
+        legal: String(legalRaw).replace('.', ','),
+        treaty: String(treatyRaw).replace('.', ','),
+        recovery: e.recovery !== undefined ? e.recovery : c.recovery,
+        applied: pct(applied),
+        color: applied > treatyVal ? 'var(--ink-warn)' : 'var(--ink-ok)',
+        edited: touched,
+        border: touched ? 'var(--ink-brand-2)' : 'var(--color-neutral-300)',
+        setLegal: set('legal'), setTreaty: set('treaty'), setRecovery: set('recovery'),
+        stepLegal: step('legal', legalVal), stepTreaty: step('treaty', treatyVal),
+        tagBg: gain > 0 ? 'rgba(180,83,9,0.12)' : 'var(--color-neutral-200)',
+        tagFg: gain > 0 ? 'var(--ink-warn)' : 'var(--color-neutral-700)',
+        bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+      };
+    });
+
+    return {
+      subtitle: tab === 'tax'
+        ? 'Retenue à la source appliquée aux revenus de vos titres'
+        : tab === 'settle'
+        ? 'Délais de dénouement par place et règles de suspens'
+        : tab === 'venues'
+        ? 'Places rattachées à chaque pays, avec les indices et devises qui en découlent'
+        : "Préférences d'affichage et de notification appliquées à votre session",
+
+      pageTabs: [
+        { key: 'prefs', label: 'Préférences' },
+        { key: 'tax', label: 'Prélèvement à la source' },
+        { key: 'settle', label: 'Règlement-livraison' },
+        { key: 'venues', label: 'Places boursières' }
+      ].map((t) => {
+        const on = tab === t.key;
+        return {
+          label: t.label,
+          isPrefs: t.key === 'prefs', isTax: t.key === 'tax', isSettle: t.key === 'settle', isVenues: t.key === 'venues',
+          height: on ? '40px' : '32px',
+          padding: on ? '0 16px' : '0 12px',
+          size: on ? '14px' : '12px',
+          bg: on ? 'var(--ds-brand-fill, #003da5)' : 'rgba(0,61,165,0.08)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          weight: on ? '700' : '400',
+          onClick: () => this.setState({ tab: t.key })
+        };
+      }),
+      onPrefs: tab === 'prefs',
+      onTax: tab === 'tax',
+      onSettle: tab === 'settle',
+      onVenues: tab === 'venues',
+
+      homePage: this.state.homePage || 'Tableau de bord',
+      setHomePage: (e) => { const v = e.target.value; this.setState({ homePage: v }); },
+      homeGroups: [
+        { label: 'Général', items: ['Accueil'] },
+        { label: 'Gestion', items: ['Tableau de bord', 'Comptes', 'Positions', 'Titres', 'Opérations', 'Trésorerie', 'Transactions', 'Comptabilité', 'Documents'] },
+        { label: 'Marché', items: ['Cours marché', 'Échéances', 'Calendrier'] },
+        { label: 'Administration', items: ['Rapports', 'Paramètres'] }
+      ],
+
+      regimeFields: [
+        {
+          label: 'Pays de résidence fiscale', isSelect: true, isInput: false,
+          value: this.state.residence, options: RESIDENCE,
+          hint: 'Détermine la convention applicable',
+          onChange: (e) => { const v = e.target.value; this.setState({ residence: v }); }
+        },
+        {
+          label: 'Statut du titulaire', isSelect: true, isInput: false,
+          value: this.state.status, options: STATUS,
+          hint: 'Conditionne le taux de faveur',
+          onChange: (e) => { const v = e.target.value; this.setState({ status: v }); }
+        },
+        {
+          label: 'Certificat de résidence — validité', isInput: true, isSelect: false,
+          value: this.state.certificate, placeholder: 'AAAA-MM-JJ',
+          hint: certified ? 'Taux conventionnels appliqués' : 'Sans certificat : taux légal retenu',
+          onChange: (e) => { const v = e.target.value; this.setState({ certificate: v }); }
+        }
+      ],
+
+      resetRates: () => this.setState({ rateEdits: {}, placeAdds: {}, placeRemovals: {} }),
+      hasRateEdits: Object.keys(this.state.rateEdits || {}).length + Object.keys(this.state.placeAdds || {}).length + Object.keys(this.state.placeRemovals || {}).length > 0,
+      rateEditCount: Object.keys(this.state.rateEdits || {}).length + ' pays modifié(s)',
+      rateNote: certified
+        ? source.filter((c) => c.legal > c.treaty).length + ' pays où le certificat réduit la retenue'
+        : 'Certificat absent — taux légal appliqué partout',
+      rateGroups: (function (rows) {
+        const out = [];
+        let last = null;
+        rows.forEach((r) => {
+          if (r.continent !== last) {
+            last = r.continent;
+            out.push({
+              isGroup: true, isRow: false, continent: r.continent,
+              count: rows.filter((x) => x.continent === r.continent).length + ' pays'
+            });
+          }
+          out.push(Object.assign({ isGroup: false, isRow: true }, r));
+        });
+        return out;
+      })(rates),
+      rates: rates,
+
+      settlePlaces: settlePlaces().map((p, i) => {
+        const edited = (this.state.cycleEdits || {})[p.mic];
+        const cycle = edited || (p.settlement ? p.settlement.cycle : 'T+2');
+        return {
+          flag: p.flag, mic: p.mic, place: p.place, cycle: cycle,
+          shift: p.settlement ? p.settlement.shift : '—',
+          csd: p.settlement ? p.settlement.csd : '—',
+          penalty: p.settlement ? p.settlement.penalty : '—',
+          cycleBg: cycle === 'T+1' ? 'rgba(15,118,110,0.14)' : cycle === 'T+0' ? 'rgba(124,92,191,0.16)' : 'rgba(0,61,165,0.12)',
+          cycleFg: cycle === 'T+1' ? 'var(--ink-ok)' : cycle === 'T+0' ? 'var(--ink-alt)' : 'var(--ink-brand)',
+          cycleBorder: edited ? 'var(--ink-brand-2)' : 'var(--color-neutral-300)',
+          cycleOptions: ['T+0', 'T+1', 'T+2', 'T+3'],
+          setCycle: (e) => {
+            const v = e.target.value;
+            this.setState((st) => ({ cycleEdits: Object.assign({}, st.cycleEdits, { [p.mic]: v }) }));
+          },
+          bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+        };
+      }),
+      settleNote: (function (self) {
+        const ed = self.state.cycleEdits || {};
+        const c = (p) => ed[p.mic] || (p.settlement ? p.settlement.cycle : 'T+2');
+        const n1 = settlePlaces().filter((p) => c(p) === 'T+1').length;
+        const n2 = settlePlaces().filter((p) => c(p) === 'T+2').length;
+        const other = settlePlaces().length - n1 - n2;
+        return n1 + ' en T+1 · ' + n2 + ' en T+2' + (other ? ' · ' + other + ' autre(s)' : '');
+      })(this),
+      suspenseRules: SUSPENSE_RULES,
+
+      venueGroups: (function (self) {
+        const q = (self.state.venueQuery || '').trim().toLowerCase();
+        const off = self.state.venueOff || {};
+        const add = self.state.venueAdd || {};
+        const ORDER = ['Amérique du Nord', 'Asie-Pacifique', 'Europe'];
+        const cont = (code) => (code === 'US' || code === 'CA') ? 'Amérique du Nord'
+          : (code === 'JP' || code === 'AU') ? 'Asie-Pacifique' : 'Europe';
+
+        // un pays par code, ses places issues du mapping plus les ajouts
+        const seen = {};
+        const countries = [];
+        allPlaces().forEach((p) => {
+          if (seen[p.code]) return;
+          seen[p.code] = true;
+          countries.push({ code: p.code, flag: p.flag, country: p.country, continent: cont(p.code) });
+        });
+
+        const rows = countries.map((c) => {
+          const removed = off[c.code] || {};
+          const own = (svc() ? svc().byCountry(c.code) : []).map((p) => p.mic);
+          const extra = (add[c.code] || []).filter((m) => own.indexOf(m) < 0);
+          const chips = own.concat(extra)
+            .filter((m) => !removed[m])
+            .map((m) => placeOf(m))
+            .filter(Boolean)
+            .sort((a, b) => a.mic.localeCompare(b.mic))
+            .map((p) => ({
+              mic: p.mic, place: p.place,
+              onRemove: (ev) => {
+                if (ev) ev.stopPropagation();
+                self.setState((st) => ({
+                  venueOff: Object.assign({}, st.venueOff, {
+                    [c.code]: Object.assign({}, (st.venueOff || {})[c.code], { [p.mic]: true })
+                  })
+                }));
+              }
+            }));
+          const touched = Object.keys(removed).length > 0 || extra.length > 0;
+          const reg = (typeof window !== 'undefined' && window.MicRegistry) ? window.MicRegistry : null;
+          const venues = chips.map((ch) => {
+            const e = reg ? reg.getByMic(ch.mic) : null;
+            const p = placeOf(ch.mic) || {};
+            return {
+              name: e ? e.marketName : (p.place || ch.mic),
+              hint: ch.mic + (e && e.city ? ' · ' + e.city : (p.place ? ' · ' + p.place : ''))
+            };
+          });
+          const indices = Array.from(new Set(chips
+            .map((ch) => (placeOf(ch.mic) || {}).index)
+            .filter((x) => x && x !== '—')))
+            .sort((a, b) => a.localeCompare(b, 'fr'))
+            .map((label) => ({
+              label: label,
+              mic: (function (l) {
+                const v = allPlaces().find((x) => x.index === l);
+                const p = v ? placeOf(v.mic) : null;
+                return p ? p.mic + ' — ' + p.place : l;
+              })(label)
+            }));
+          const zones = Array.from(new Set(chips
+            .map((ch) => (placeOf(ch.mic) || {}).tz)
+            .filter(Boolean)))
+            .sort()
+            .map((tz) => ({ label: tz.replace(/_/g, ' '), full: tz }));
+          const sessions = Array.from(new Set(chips
+            .map((ch) => {
+              const p = placeOf(ch.mic) || {};
+              return p.hours ? p.hours + '§' + p.mic : null;
+            })
+            .filter(Boolean)))
+            .map((x) => ({ hours: x.split('§')[0], mic: x.split('§')[1] }))
+            .sort((a, b) => a.hours.localeCompare(b.hours));
+          const currencies = Array.from(new Set(chips
+            .map((ch) => (placeOf(ch.mic) || {}).currency)
+            .filter(Boolean)))
+            .sort();
+          return {
+            isGroup: false, isRow: true,
+            code: c.code, flag: c.flag, country: c.country, continent: c.continent,
+            chips: chips,
+            noChips: chips.length === 0,
+            venues: venues,
+            noVenues: venues.length === 0,
+            indices: indices,
+            noIndices: indices.length === 0,
+            currencies: currencies,
+            noCurrencies: currencies.length === 0,
+            zones: zones,
+            noZones: zones.length === 0,
+            sessions: sessions,
+            noSessions: sessions.length === 0,
+            chipBorder: touched ? 'var(--ink-brand-2)' : 'var(--color-neutral-300)',
+            hasChanges: touched,
+            addValue: '',
+            addOptions: [{ value: '', label: '' }].concat(
+              allPlaces()
+                .sort((a, b) => a.mic.localeCompare(b.mic))
+                .filter((p) => chips.every((ch) => ch.mic !== p.mic))
+                .map((p) => ({ value: p.mic, label: p.mic + ' — ' + p.place }))
+            ),
+            onAddPlace: (ev) => {
+              const mic = ev.target.value;
+              if (!mic) return;
+              self.setState((st) => {
+                const list = ((st.venueAdd || {})[c.code] || []).slice();
+                if (list.indexOf(mic) < 0) list.push(mic);
+                const rem = Object.assign({}, (st.venueOff || {})[c.code]);
+                delete rem[mic];
+                return {
+                  venueAdd: Object.assign({}, st.venueAdd, { [c.code]: list }),
+                  venueOff: Object.assign({}, st.venueOff, { [c.code]: rem })
+                };
+              });
+            },
+            resetDisabled: !touched,
+            resetTitle: touched ? "Revenir aux places d'origine" : 'Aucune modification',
+            resetColor: touched ? 'var(--ink-brand)' : 'var(--color-neutral-400)',
+            resetCursor: touched ? 'pointer' : 'not-allowed',
+            restoreAlways: touched ? (ev) => {
+              if (ev) ev.stopPropagation();
+              self.setState((st) => {
+                const o = Object.assign({}, st.venueOff), a = Object.assign({}, st.venueAdd);
+                delete o[c.code]; delete a[c.code];
+                return { venueOff: o, venueAdd: a };
+              });
+            } : () => {},
+            restore: touched ? (ev) => {
+              if (ev) ev.stopPropagation();
+              self.setState((st) => {
+                const o = Object.assign({}, st.venueOff), a = Object.assign({}, st.venueAdd);
+                delete o[c.code]; delete a[c.code];
+                return { venueOff: o, venueAdd: a };
+              });
+            } : null
+          };
+        })
+        .filter((r) => !q || (r.code + ' ' + r.country + ' ' + r.chips.map((c) => c.mic + ' ' + c.place).join(' ')).toLowerCase().indexOf(q) >= 0)
+        .sort((a, b) => {
+          const d = ORDER.indexOf(a.continent) - ORDER.indexOf(b.continent);
+          return d !== 0 ? d : a.country.localeCompare(b.country, 'fr');
+        });
+
+        const out = [];
+        let last = null;
+        rows.forEach((r, i) => {
+          if (r.continent !== last) {
+            last = r.continent;
+            out.push({ isGroup: true, isRow: false, continent: r.continent, count: rows.filter((x) => x.continent === r.continent).length + ' pays' });
+          }
+          out.push(Object.assign({}, r, { bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)' }));
+        });
+        return out;
+      })(this),
+      isoPanelOpen: this.state.isoPanelOpen !== false,
+      isoChevron: this.state.isoPanelOpen !== false ? '180deg' : '0deg',
+      isoPanelTitle: this.state.isoPanelOpen !== false ? 'Replier la note' : 'Déplier la note',
+      toggleIsoPanel: () => this.setState((st) => ({ isoPanelOpen: st.isoPanelOpen === false })),
+      isoMicChips: (function (self) {
+        const reg = (typeof window !== 'undefined' && window.MicRegistry) ? window.MicRegistry : null;
+        const own = (svc() ? svc().mics() : []);
+        const extra = self.state.micAdd || [];
+        // Périmètre applicatif : les places suivies, plus les codes ajoutés à la main.
+        const source = reg ? reg.all().filter((e) => own.indexOf(e.mic) >= 0 || extra.indexOf(e.mic) >= 0) : [];
+        return (source.length ? source : own.map((m) => ({ mic: m })))
+          .slice()
+          .sort((a, b) => a.mic.localeCompare(b.mic))
+          .map((e) => {
+            const p = placeOf(e.mic);
+            const parts = [e.marketName, e.city, e.countryCode].filter(Boolean);
+            return {
+              mic: e.mic,
+              flag: flagOf(e.countryCode) || (p ? p.flag : ''),
+              hint: parts.length ? parts.join(' · ') : (p ? p.place + ' · ' + p.country : e.mic),
+              removeLabel: 'Retirer ' + e.mic,
+              selected: (self.state.micSel || {})[e.mic] === true,
+              bg: (self.state.micSel || {})[e.mic] ? 'var(--field-brand)' : 'rgba(0,61,165,0.14)',
+              fg: (self.state.micSel || {})[e.mic] ? '#ffffff' : 'var(--ink-brand)',
+              border: (self.state.micSel || {})[e.mic] ? 'var(--field-brand)' : 'transparent',
+              onSelect: (ev) => {
+                if (ev) ev.stopPropagation();
+                self.setState((st) => {
+                  const sel = Object.assign({}, st.micSel);
+                  if (sel[e.mic]) delete sel[e.mic]; else sel[e.mic] = true;
+                  return { micSel: sel };
+                });
+              },
+              onRemove: (ev) => {
+                if (ev) ev.stopPropagation();
+                self.setState((st) => ({ micOff: Object.assign({}, st.micOff, { [e.mic]: true }) }));
+              }
+            };
+          })
+          .filter((m) => !(self.state.micOff || {})[m.mic]);
+      })(this),
+      micInput: this.state.micInput || '',
+      setMicInput: (e) => { const v = e.target.value; this.setState({ micInput: v }); },
+      micInputKey: (e) => {
+        if (e.key !== 'Enter' && e.key !== ',' && e.key !== 'Tab') return;
+        const raw = String(this.state.micInput || '').trim().toUpperCase().split(/[\s—-]/)[0];
+        if (!raw) return;
+        if (e.preventDefault) e.preventDefault();
+        const reg = (typeof window !== 'undefined' && window.MicRegistry) ? window.MicRegistry : null;
+        if (reg && !reg.getByMic(raw)) { this.setState({ micInput: '' }); return; }
+        this.setState((st) => {
+          const list = (st.micAdd || []).slice();
+          if (list.indexOf(raw) < 0) list.push(raw);
+          const off = Object.assign({}, st.micOff);
+          delete off[raw];
+          return { micAdd: list, micOff: off, micInput: '' };
+        });
+      },
+      micAddValue: '',
+      micAddOptions: (function (self) {
+        const reg = (typeof window !== 'undefined' && window.MicRegistry) ? window.MicRegistry : null;
+        if (!reg) return [{ value: '', label: '' }];
+        const off = self.state.micOff || {};
+        const shown = {};
+        const own = (svc() ? svc().mics() : []);
+        reg.all().forEach((e) => { if (own.indexOf(e.mic) >= 0 && !off[e.mic]) shown[e.mic] = true; });
+        const extra = self.state.micAdd || [];
+        extra.forEach((m) => { shown[m] = true; });
+        return [{ value: '', label: '' }].concat(
+          reg.all()
+            .filter((e) => !shown[e.mic])
+            .sort((a, b) => a.mic.localeCompare(b.mic))
+            .map((e) => ({
+              value: e.mic,
+              label: [flagOf(e.countryCode), e.mic, e.countryCode, e.city].filter(Boolean).join(' — ').replace('— ' + e.mic, ' ' + e.mic)
+            }))
+        );
+      })(this),
+      addMicCode: (e) => {
+        const mic = e.target.value;
+        if (!mic) return;
+        this.setState((st) => {
+          const list = (st.micAdd || []).slice();
+          if (list.indexOf(mic) < 0) list.push(mic);
+          const off = Object.assign({}, st.micOff);
+          delete off[mic];
+          return { micAdd: list, micOff: off };
+        });
+      },
+      micHasSel: Object.keys(this.state.micSel || {}).length > 0,
+      micSelNote: Object.keys(this.state.micSel || {}).length + ' code(s) sélectionné(s)',
+      clearMicSel: (ev) => { if (ev) ev.stopPropagation(); this.setState({ micSel: {} }); },
+      micSelCards: (function (self) {
+        const reg = (typeof window !== 'undefined' && window.MicRegistry) ? window.MicRegistry : null;
+        const sel = Object.keys(self.state.micSel || {}).filter((k) => self.state.micSel[k]);
+        return sel.sort().map((mic) => {
+          const e = reg ? reg.getByMic(mic) : null;
+          const p = placeOf(mic);
+          const seg = reg ? reg.getGroup(e ? e.operatingMic : mic) : [];
+          const fields = [
+            { label: 'Type', value: e ? (e.type === 'OPRT' ? 'MIC opérateur' : 'MIC de segment') : '—' },
+            { label: 'MIC opérateur', value: e ? e.operatingMic : '—' },
+            { label: 'Pays', value: e && e.countryCode ? e.countryCode : (p ? p.code : '—') },
+            { label: 'Ville', value: e && e.city ? e.city : (p ? p.place : '—') },
+            { label: 'Acronyme', value: (e && e.acronym) || '—' },
+            { label: 'Catégorie', value: (e && e.marketCategoryCode) || '—' },
+            { label: 'Segments du groupe', value: seg.length ? String(seg.length) : '—' }
+          ];
+          if (p) {
+            fields.push({ label: 'Devise de règlement', value: p.currency });
+            fields.push({ label: 'Fuseau', value: p.tz });
+            fields.push({ label: 'Séance', value: p.hours });
+            if (p.index) fields.push({ label: 'Indice de référence', value: p.index });
+            if (p.settlement) {
+              fields.push({ label: 'Cycle', value: p.settlement.cycle });
+              fields.push({ label: 'Dépositaire', value: p.settlement.csd });
+            }
+          }
+          const isOp = !e || e.type === 'OPRT';
+          return {
+            mic: mic,
+            flag: flagOf(e ? e.countryCode : (p ? p.code : '')) || (p ? p.flag : ''),
+            marketName: e ? e.marketName : (p ? p.place : mic),
+            typeLabel: isOp ? 'Opérateur' : 'Segment',
+            typeBg: isOp ? 'rgba(0,61,165,0.14)' : 'rgba(124,92,191,0.16)',
+            typeFg: isOp ? 'var(--ink-brand)' : 'var(--ink-alt)',
+            fields: fields
+          };
+        });
+      })(this),
+      micTouched: Object.keys(this.state.micOff || {}).length > 0 || (this.state.micAdd || []).length > 0 || Object.keys(this.state.micSel || {}).length > 0,
+      micOffCount: (function (self) {
+        const off = Object.keys(self.state.micOff || {}).length;
+        const add = (self.state.micAdd || []).length;
+        const sel = Object.keys(self.state.micSel || {}).length;
+        return [off ? off + ' retiré(s)' : '', add ? add + ' ajouté(s)' : '', sel ? sel + ' sélectionné(s)' : ''].filter(Boolean).join(' · ');
+      })(this),
+      resetMic: (ev) => { if (ev) ev.stopPropagation(); this.setState({ micOff: {}, micAdd: [], micSel: {} }); },
+      isoMicNote: (function (self) {
+        const reg = (typeof window !== 'undefined' && window.MicRegistry) ? window.MicRegistry : null;
+        if (!reg) return allPlaces().length + ' code(s) supporté(s)';
+        const own = svc() ? svc().mics() : [];
+        const add = (self.state.micAdd || []).filter((m) => own.indexOf(m) < 0);
+        const off = Object.keys(self.state.micOff || {}).length;
+        const n = own.length + add.length - off;
+        const pays = new Set((svc() ? svc().all() : []).map((p) => p.code)).size;
+        return n + ' code(s) dans le périmètre · ' + pays + ' pays — sur ' + reg.count + ' du registre ISO 10383';
+      })(this),
+      isoRules: [
+        { code: 'XOFF', label: 'Hors marché réglementé', hint: 'Transactions négociées de gré à gré, sans place de cotation' },
+        { code: 'XXXX', label: 'Place inconnue', hint: 'Valeur de repli quand la place n\'est pas renseignée à la saisie' }
+      ],
+      venuePanelOpen: !!this.state.venuePanelOpen,
+      venueChevron: this.state.venuePanelOpen ? '180deg' : '0deg',
+      venuePanelTitle: this.state.venuePanelOpen ? 'Replier le référentiel' : 'Déplier le référentiel',
+      toggleVenuePanel: (e) => {
+        if (e && e.target && (e.target.closest('input') || e.target.closest('select') || e.target.closest('button'))) return;
+        this.setState((st) => ({ venuePanelOpen: !st.venuePanelOpen }));
+      },
+      venueQuery: this.state.venueQuery || '',
+      setVenueQuery: (e) => { const v = e.target.value; this.setState({ venueQuery: v }); },
+      resetVenues: () => this.setState({ venueQuery: '', venueOff: {}, venueAdd: {} }),
+      venueNote: (function (self) {
+        const off = self.state.venueOff || {};
+        const add = self.state.venueAdd || {};
+        const codes = Array.from(new Set(allPlaces().map((p) => p.code)));
+        const total = codes.reduce((n, code) => {
+          const removed = off[code] || {};
+          const own = allPlaces().filter((p) => p.code === code).map((p) => p.mic);
+          const extra = (add[code] || []).filter((m) => own.indexOf(m) < 0);
+          return n + own.concat(extra).filter((m) => !removed[m]).length;
+        }, 0);
+        return codes.length + ' pays · ' + total + ' place(s) rattachée(s)';
+      })(this),
+
+      noMapping: allPlaces().filter((x) => {
+        const q = (this.state.mappingQuery || '').trim();
+        return !q || (x.mic + ' ' + x.place + ' ' + x.country + ' ' + x.code + ' ' + x.currency).toLowerCase().indexOf(q.toLowerCase()) >= 0;
+      }).length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

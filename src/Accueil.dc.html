@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="HomePage"] { --ink-warn: #8f3f06; --ink-ok-2: #0f766e; --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); container-type: inline-size; }
+    [data-component="HomePage"], [data-component="HomePage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="HomePage"] input, [data-component="HomePage"] select { font-family: inherit; }
+    @container (max-width: 980px) {
+      [data-home-split] { grid-template-columns: minmax(0, 1fr) !important; }
+      [data-home-kpi] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    }
+    [data-component="HomePage"] h1, [data-component="HomePage"] h2, [data-component="HomePage"] h3 { color: #002a6e; }
+    [data-component="HomePage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="HomePage"] input:focus, [data-component="HomePage"] select:focus, [data-component="HomePage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="HomePage"] input:focus-visible, [data-component="HomePage"] select:focus-visible, [data-component="HomePage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="HomePage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="HomePage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="HomePage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="HomePage"] button:active { filter: brightness(0.94); }
+    [data-component="HomePage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="HomePage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="HomePage"] h1,
+    [data-theme="dark"] [data-component="HomePage"] h2,
+    [data-theme="dark"] [data-component="HomePage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="HomePage"] input,
+    [data-theme="dark"] [data-component="HomePage"] select,
+    [data-theme="dark"] [data-component="HomePage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="HomePage"] { --ink-warn-2: #b45309; }
+    [data-theme="dark"] [data-component="HomePage"] { --ink-warn: #f0a868; --ink-ok-2: #4fd1c5; --ink-brand: #9db6d9; --ink-warn-2: #f3b782; }
+    [data-component="HomePage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="HomePage"] { --field-brand: #12325e; }
+    [data-component="HomePage"] { --ink-ok: #0b5f57; }
+    [data-theme="dark"] [data-component="HomePage"] { --ink-ok: #5fd6c4; }
+    [data-component="HomePage"] { --ink-brand-2: #003da5; }
+    [data-theme="dark"] [data-component="HomePage"] { --ink-brand-2: #8fb4ee; }
+    [data-component="HomePage"] { --band-ok: #f2faf9; --band-warn: #fdf6ef; }
+    [data-theme="dark"] [data-component="HomePage"] { --band-ok: #152a28; --band-warn: #2c1f14; }
+  </style>
+</helmet>
+
+<div data-component="HomePage" data-screen-label="Accueil" style="display:flex;flex-direction:column;height:100%;min-height:0;overflow-y:auto;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:20px 24px 16px;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="min-width:0">
+      <h1 style="font-size:20px;margin:0;line-height:1.2">Bonjour Fabrice</h1>
+      <p style="font-size:12px;margin:4px 0 0;color:var(--color-neutral-700)">{{ stamp }}</p>
+    </div>
+
+  </div>
+
+  <div data-home-kpi="" style="flex:none;display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:1px;background:var(--field-brand);border-bottom:1px solid var(--field-brand)">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="padding:14px 20px 16px;background:{{ k.bg }}">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:{{ k.labelColor }}">{{ k.label }}</div>
+        <div style="margin-top:6px;font-size:22px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums">{{ k.value }}</div>
+        <div style="margin-top:4px;font-size:12px;color:{{ k.noteColor }}">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex:none;display:flex;align-items:center;gap:0;overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <span style="flex:none;padding:9px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);white-space:nowrap">Principaux indices</span>
+    <sc-for list="{{ indices }}" as="i" hint-placeholder-count="6">
+      <span style="flex:none;display:flex;align-items:baseline;gap:8px;padding:9px 16px;border-left:1px solid var(--color-neutral-200);white-space:nowrap">
+        <span style="font-size:11px;font-weight:600">{{ i.name }}</span>
+        <span style="font-size:12px;font-variant-numeric:tabular-nums">{{ i.value }}</span>
+        <span style="font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ i.color }}">{{ i.change }}</span>
+      </span>
+    </sc-for>
+  </div>
+
+  <div data-home-split="" style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0, 1.55fr) minmax(300px, 1fr);gap:16px;padding:16px 24px 24px;align-items:start">
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8z"></path></svg>
+          <h2 style="margin:0;font-size:15px">Actualités des positions détenues</h2>
+          <span style="font-size:11px;color:var(--color-neutral-700)">Marché, assemblées générales, dividendes, opérations sur titres</span>
+          <span style="margin-left:auto;display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ newsTabs }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onClick }}" style="height:26px;padding:0 11px;border:0;border-left:{{ t.divider }};background:{{ t.bg }};color:{{ t.fg }};font-size:11px;font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.96)">{{ t.label }}</button>
+            </sc-for>
+          </span>
+        </div>
+        <sc-for list="{{ news }}" as="n" hint-placeholder-count="6">
+          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:none;width:52px;padding-top:2px;font-size:11px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ n.time }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+              <span style="font-size:13px;font-weight:600;line-height:1.35;text-wrap:pretty">{{ n.title }}</span>
+              <span style="font-size:12px;line-height:1.45;color:var(--color-neutral-700);text-wrap:pretty">{{ n.body }}</span>
+              <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:1px">
+                <span style="padding:1px 6px;border:1px solid var(--color-neutral-300);border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.03em">{{ n.ticker }}</span>
+                <span style="font-size:11px;color:var(--color-neutral-700)">{{ n.exposure }}</span>
+                <span style="font-size:11px;color:var(--color-neutral-600)">{{ n.source }}</span>
+              </span>
+            </span>
+            <span style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+              <span style="padding:2px 8px;border-radius:999px;background:{{ n.tagBg }};color:{{ n.tagFg }};font-size:10px;font-weight:700;white-space:nowrap">{{ n.tag }}</span>
+              <span style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ n.moveColor }}">{{ n.move }}</span>
+            </span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noNews }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0;padding:20px 16px;font-size:12px;color:var(--color-neutral-700)">Aucune actualité pour ce filtre.</p>
+        </sc-if>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="display:flex;align-items:center;gap:9px;min-width:0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
+            <h2 style="margin:0;font-size:15px">Principaux mouvements du jour</h2>
+          </span>
+          <span style="font-size:11px;color:var(--color-neutral-700)">{{ moversNote }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:560px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Ligne</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Poids</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Jour</th>
+                <th style="text-align:right;padding:8px 16px 8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Contribution</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ movers }}" as="m" hint-placeholder-count="6">
+                <tr>
+                  <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:1px">
+                      <span style="font-weight:600">{{ m.ticker }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-700)">{{ m.name }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ m.weight }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ m.color }}">{{ m.day }}</td>
+                  <td style="padding:9px 16px 9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:{{ m.color }}">{{ m.contrib }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="display:flex;align-items:center;gap:9px;min-width:0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <h2 style="margin:0;font-size:15px">À traiter</h2>
+          </span>
+          <span style="font-size:11px;color:var(--color-neutral-700)">{{ todoNote }}</span>
+        </div>
+        <sc-for list="{{ todos }}" as="t" hint-placeholder-count="4">
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--color-neutral-200);cursor:pointer">
+            <input type="checkbox" checked="{{ t.done }}" onChange="{{ t.onToggle }}" style="margin:2px 0 0;width:15px;height:15px;flex:none;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+            <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:12px;font-weight:600;text-decoration:{{ t.strike }};text-wrap:pretty">{{ t.label }}</span>
+              <span style="font-size:11px;color:{{ t.metaColor }}">{{ t.meta }}</span>
+            </span>
+          </label>
+        </sc-for>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-warn-2)"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+          <h2 style="margin:0;font-size:15px">Alertes de limites</h2>
+        </div>
+        <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="3">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:none;width:6px;height:6px;margin-top:6px;border-radius:999px;background:{{ a.color }}"></span>
+            <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:12px;font-weight:600">{{ a.title }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ a.detail }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M12 14v3l2 1"></path></svg>
+          <h2 style="margin:0;font-size:15px">Prochaines échéances</h2>
+        </div>
+        <sc-for list="{{ deadlines }}" as="d" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <span style="flex:none;width:58px;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ d.date }}</span>
+            <span style="flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.label }}</span>
+            <span style="flex:none;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ d.amount }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const NEWS = [
+  { time: '08:42', ticker: 'USLC', exposure: 'Poids 20,1 %', source: 'Reuters', impact: 'positive', move: '+1,4 %',
+    title: 'Résultats trimestriels supérieurs aux attentes dans la technologie américaine',
+    body: 'Les trois premières pondérations du sleeve US Large Cap publient des marges en hausse ; le consensus relève ses objectifs.' },
+  { time: '08:15', ticker: 'EMEQ', exposure: 'Poids 5,7 %', source: 'Bloomberg', impact: 'negative', move: '−0,9 %',
+    title: 'Tensions sur les devises émergentes après la décision de la banque centrale',
+    body: "Le sleeve EM subit la baisse du real et du rand ; couverture partielle en place sur 40 % de l'exposition." },
+  { time: '07:58', ticker: 'INFRA', exposure: 'Poids 2,5 %', source: 'Communiqué', impact: 'neutral', move: '—',
+    title: "Infrastructure Fund II convoque son assemblée générale le 19 septembre",
+    body: "Ordre du jour : prolongation de la période d'investissement et révision du règlement de gestion." },
+  { time: '07:30', ticker: 'IGCRD', exposure: 'Poids 9,1 %', source: 'S&P Global', impact: 'positive', move: '+0,2 %',
+    title: 'Relèvement de notation sur deux émetteurs du portefeuille obligataire',
+    body: "Passage de BBB à BBB+ ; l'écart de crédit moyen du sleeve se resserre de 6 points de base." },
+  { time: 'Hier', ticker: 'REIT', exposure: 'Poids 4,1 %', source: 'Les Échos', impact: 'negative', move: '−0,5 %',
+    title: 'Le marché immobilier coté reste sous pression en zone euro',
+    body: 'Les taux longs pèsent sur les valorisations ; la ligne reste sous sa cible de rendement annuelle.' },
+  { time: 'Hier', ticker: 'TSY10', exposure: 'Poids 12,1 %', source: 'Trésor US', impact: 'neutral', move: '+0,1 %',
+    title: 'Adjudication du 10 ans américain absorbée sans tension',
+    body: 'Demande solide des investisseurs étrangers ; la duration du portefeuille reste à 5,4 ans.' },
+  { time: '09:05', ticker: 'GLBEQ', exposure: 'Poids 20,1 %', source: 'Avis financier', impact: 'corporate', move: '2,10 €/part',
+    title: 'Dividende annuel détaché le 08/09, versement le 15/09',
+    body: 'Rendement de 2,4 % sur la ligne ; encaissement estimé à 198 400 € sur le compte espèces du compte.' },
+  { time: '08:55', ticker: 'USLC', exposure: 'Poids 20,1 %', source: 'Convocation', impact: 'corporate', move: '—',
+    title: 'Assemblée générale ordinaire le 24/09 — vote par procuration ouvert',
+    body: 'Résolutions : affectation du résultat, renouvellement du conseil, autorisation de rachat d\'actions. Réponse avant le 20/09.' },
+  { time: '08:30', ticker: 'IGCRD', exposure: 'Poids 9,1 %', source: 'Dépositaire', impact: 'corporate', move: '182 400 €',
+    title: 'Coupon semestriel payable le 01/09',
+    body: 'Deux souches concernées ; réinvestissement à instruire ou maintien en trésorerie selon le rééquilibrage en cours.' },
+  { time: 'Hier', ticker: 'EUEQ', exposure: 'Poids 8,5 %', source: 'Avis financier', impact: 'corporate', move: '3 pour 1',
+    title: 'Opération sur titre : division du nominal effective le 10/09',
+    body: 'Le nombre de parts sera multiplié par trois sans effet sur la valorisation de la ligne.' }
+];
+
+const MOVERS = [
+  { ticker: 'USLC', name: 'US Large Cap Core', weight: '20,1 %', day: 1.42, contrib: 0.29 },
+  { ticker: 'GLBEQ', name: 'Global Equity Index', weight: '20,1 %', day: 0.61, contrib: 0.12 },
+  { ticker: 'IGCRD', name: 'IG Corporate Bond', weight: '9,1 %', day: 0.18, contrib: 0.02 },
+  { ticker: 'REIT', name: 'Listed Real Estate', weight: '4,1 %', day: -0.52, contrib: -0.02 },
+  { ticker: 'EMEQ', name: 'EM Equity Sleeve', weight: '5,7 %', day: -0.88, contrib: -0.05 },
+  { ticker: 'HYLD', name: 'High Yield Sleeve', weight: '3,5 %', day: -0.24, contrib: -0.01 }
+];
+
+const ALERTS = [
+  { title: 'Actions : 57,3 % contre 55 % de cible', detail: 'Écart de 2,3 points, hors bande de tolérance de 2 points. Rééquilibrage à instruire.', level: 'high' },
+  { title: 'Trésorerie : 8,6 % contre 5 % de cible', detail: 'Excédent de liquidité depuis le remboursement du coupon TSY10.', level: 'mid' },
+  { title: 'Concentration émetteur : 4,1 %', detail: 'Sous la limite interne de 5 % ; surveillance maintenue sur la ligne USLC.', level: 'low' }
+];
+
+const DEADLINES = [
+  { date: '01/09', label: 'Coupon IG Corporate Bond', amount: '182 400 €' },
+  { date: '05/09', label: 'Reporting mensuel client BGM-004', amount: '—' },
+  { date: '12/09', label: 'Appel de fonds Private Equity', amount: '1 250 000 €' },
+  { date: '19/09', label: 'Assemblée générale Infrastructure Fund II', amount: '—' },
+  { date: '30/09', label: 'Clôture trimestrielle et valorisation', amount: '—' }
+];
+
+const TAGS = {
+  positive: { label: 'Favorable', bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
+  negative: { label: 'Défavorable', bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' },
+  neutral: { label: 'Neutre', bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)' },
+  corporate: { label: 'Vie du titre', bg: 'rgba(180,83,9,0.16)', fg: 'var(--ink-warn)' }
+};
+
+
+// Teinte des vignettes : vert marqué si la valeur est positive, rouge marqué sinon.
+const TONE_GREEN = 'var(--ink-ok)';
+const TONE_RED = 'var(--ink-warn-2)';
+function toneByColor(k) {
+  const c = String(k.color || k.valueColor || k.noteColor || '');
+  const green = c.indexOf('0f766e') >= 0 || c.indexOf('0b5f57') >= 0 || c.indexOf('15803d') >= 0;
+  const red = c.indexOf('b45309') >= 0 || c.indexOf('a4552c') >= 0 || c.indexOf('dc2626') >= 0;
+  if (!green && !red) return Object.assign({ bg: 'var(--surface)', labelColor: 'var(--color-neutral-700)' }, k);
+  const tint = green ? 'var(--band-ok)' : 'var(--band-warn)';
+  const ink = green ? 'var(--ink-ok)' : 'var(--ink-warn-2)';
+  return Object.assign({}, k, { bg: tint, labelColor: ink, color: ink, valueColor: ink });
+}
+
+class Component extends DCLogic {
+  state = {
+    newsFilter: 'all',
+    todos: [
+      { id: 't1', label: 'Valider les ordres de rééquilibrage actions', meta: 'À faire aujourd\'hui · 4 ordres', urgent: true, done: false },
+      { id: 't2', label: 'Revue KYC — Meridian Family', meta: 'Échéance 02/09', urgent: false, done: false },
+      { id: 't3', label: 'Confirmer l\'appel de fonds Private Equity', meta: 'Échéance 12/09', urgent: false, done: false },
+      { id: 't4', label: 'Signer le reporting mensuel BGM-004', meta: 'Terminé', urgent: false, done: true }
+    ]
+  };
+
+  pct(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(2).replace('.', ',') + ' %'; }
+  color(v) { return v > 0 ? 'var(--ink-ok-2)' : v < 0 ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)'; }
+
+  renderVals() {
+    const f = this.state.newsFilter;
+    const news = NEWS.filter((n) => f === 'all'
+      || (f === 'corporate' && n.impact === 'corporate')
+      || (f === 'market' && n.impact !== 'corporate'));
+    const now = new Date();
+    const stamp = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+      + ' · valorisation au ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    const openTodos = this.state.todos.filter((t) => !t.done).length;
+
+    const tab = (label, key) => ({
+      label,
+      divider: key === 'all' ? '0' : '1px solid rgba(0,61,165,0.30)',
+      bg: f === key ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+      hoverBg: f === key ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.16)',
+      fg: f === key ? '#ffffff' : 'var(--ink-brand)',
+      weight: f === key ? '700' : '400',
+      onClick: () => this.setState({ newsFilter: key })
+    });
+
+    return {
+      stamp: stamp.charAt(0).toUpperCase() + stamp.slice(1),
+      kpis: [
+        { label: 'Actifs sous gestion', value: '486,2 M€', note: '+8,4 M€ depuis la dernière valorisation', noteColor: 'var(--ink-ok-2)', color: 'var(--ink-ok-2)' },
+        { label: 'Performance du jour', value: '+0,35 %', note: 'Indice de référence +0,21 %', noteColor: 'var(--color-neutral-700)', color: 'var(--ink-ok-2)' },
+        { label: 'Depuis le 1er janvier', value: '+8,94 %', note: 'Indice de référence +7,20 %', noteColor: 'var(--color-neutral-700)', color: 'var(--ink-ok-2)' },
+        { label: 'Écarts d\'allocation', value: '2 lignes', note: 'Hors bande de tolérance', noteColor: 'var(--ink-warn-2)' }
+      ].map(toneByColor),
+      newsTabs: [tab('Toutes', 'all'), tab('Vie du titre', 'corporate'), tab('Marché', 'market')],
+      noNews: news.length === 0,
+      news: news.map((n) => ({
+        time: n.time, title: n.title, body: n.body, ticker: n.ticker, exposure: n.exposure,
+        source: '· ' + n.source,
+        tag: TAGS[n.impact].label, tagBg: TAGS[n.impact].bg, tagFg: TAGS[n.impact].fg,
+        move: n.move,
+        moveColor: n.impact === 'positive' ? 'var(--ink-ok-2)' : n.impact === 'negative' ? 'var(--ink-warn-2)' : n.impact === 'corporate' ? 'var(--ink-brand-2)' : 'var(--color-neutral-600)'
+      })),
+      indices: [
+        { name: 'CAC 40', value: '7 842,15', chg: 0.42 },
+        { name: 'Euro Stoxx 50', value: '4 986,70', chg: 0.31 },
+        { name: 'S&P 500', value: '5 614,08', chg: 0.58 },
+        { name: 'Nasdaq 100', value: '19 927,44', chg: 0.86 },
+        { name: 'MSCI World', value: '3 712,90', chg: 0.39 },
+        { name: 'MSCI EM', value: '1 108,26', chg: -0.74 },
+        { name: 'Bund 10 a.', value: '2,41 %', chg: -0.03 },
+        { name: 'UST 10 a.', value: '4,12 %', chg: 0.02 },
+        { name: 'EUR/USD', value: '1,0874', chg: -0.12 },
+        { name: 'Or', value: '2 418 $', chg: 0.21 }
+      ].map((i) => ({
+        name: i.name, value: i.value,
+        change: this.pct(i.chg),
+        color: this.color(i.chg)
+      })),
+      moversNote: 'Contribution à la performance du jour',
+      movers: MOVERS.map((m) => ({
+        ticker: m.ticker, name: m.name, weight: m.weight,
+        day: this.pct(m.day), contrib: this.pct(m.contrib), color: this.color(m.day)
+      })),
+      todoNote: openTodos + (openTodos > 1 ? ' points ouverts' : ' point ouvert'),
+      todos: this.state.todos.map((t) => ({
+        done: t.done, label: t.label, meta: t.meta,
+        strike: t.done ? 'line-through' : 'none',
+        metaColor: t.urgent && !t.done ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)',
+        onToggle: () => this.setState((s) => ({
+          todos: s.todos.map((x) => (x.id === t.id ? Object.assign({}, x, { done: !x.done }) : x))
+        }))
+      })),
+      alerts: ALERTS.map((a) => ({
+        title: a.title, detail: a.detail,
+        color: a.level === 'high' ? 'var(--ink-warn-2)' : a.level === 'mid' ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--color-neutral-500)'
+      })),
+      deadlines: DEADLINES
+    };
+  }
+}
+</script>
+</body>
+</html>

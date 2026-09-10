@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/foyer-design-system-d295d246-4e5c-4549-b575-41709b01b796/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/foyer-design-system-d295d246-4e5c-4549-b575-41709b01b796/preview/preview-base.css">
+  <link rel="stylesheet" href="_ds/foyer-design-system-d295d246-4e5c-4549-b575-41709b01b796/themes/brand-themes.css">
+  <script src="_ds/foyer-design-system-d295d246-4e5c-4549-b575-41709b01b796/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--fds-feather-grey-100); }
+    a { color: var(--fds-primary-500); text-decoration: none; }
+    a:hover { color: var(--fds-primary-700); text-decoration: underline; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--fds-feather-grey-300); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+  </style>
+</helmet>
+<div style="display:flex;flex-direction:column;height:100vh;min-height:640px;overflow:hidden;font-family:var(--fds-font-family-sans);color:var(--fds-feather-grey-800)">
+
+  <header ref="{{ bannerRef }}" style="flex:none;display:flex;align-items:center;gap:24px;height:60px;padding:0 20px;background:var(--fds-primary-500);color:#fff;position:relative;z-index:20">
+    <div style="display:flex;align-items:center;gap:16px;flex:none">
+      <button onClick="{{ toggle }}" matTooltip="Réduire ou déployer le menu" title="Réduire ou déployer le menu" aria-label="Réduire ou déployer le menu" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:0;border-radius:var(--fds-radius-full);background:transparent;color:#fff;cursor:pointer" style-hover="background:var(--fds-white-150)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <img src="assets/logo-foyer-horizontal-white.svg" alt="Foyer" style="height:22px;width:auto;display:block">
+      <span style="width:1px;height:24px;background:rgba(255,255,255,0.28)"></span>
+      <span style="font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);letter-spacing:0.01em;color:rgba(255,255,255,0.92)">Espace agent</span>
+    </div>
+
+    <div ref="{{ searchRef }}" style="flex:1;max-width:420px;display:flex;align-items:center;gap:10px;height:36px;padding:0 14px;border-radius:var(--fds-radius-full);background:var(--fds-white-150);border:1px solid rgba(255,255,255,0.22)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:0.85"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input placeholder="Rechercher un client, un contrat, un sinistre" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:#fff;font-family:inherit;font-size:var(--fds-fs-body-sm);outline:none">
+    </div>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex:none">
+      <button matTooltip="Aide" title="Aide" aria-label="Aide" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:0;border-radius:var(--fds-radius-full);background:transparent;color:#fff;cursor:pointer" style-hover="background:var(--fds-white-150)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.2a2.6 2.6 0 1 1 3.4 2.5c-.6.2-.9.7-.9 1.3v.4"></path><path d="M12 17h.01"></path></svg>
+      </button>
+      <button matTooltip="Notifications" title="Notifications" aria-label="Notifications" style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:0;border-radius:var(--fds-radius-full);background:transparent;color:#fff;cursor:pointer" style-hover="background:var(--fds-white-150)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.5 18h15z"></path><path d="M10 21h4"></path></svg>
+        <span style="position:absolute;top:6px;right:7px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--fds-danger-500);color:#fff;font-size:10px;font-weight:var(--fds-fw-semibold);line-height:16px;text-align:center;border:1.5px solid var(--fds-primary-500)">3</span>
+      </button>
+      <span style="width:1px;height:24px;background:rgba(255,255,255,0.28);margin:0 8px"></span>
+      <button style="display:flex;align-items:center;gap:10px;height:40px;padding:0 10px 0 4px;border:0;border-radius:var(--fds-radius-full);background:transparent;color:#fff;cursor:pointer;font-family:inherit" style-hover="background:var(--fds-white-150)">
+        <span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:#fff;color:var(--fds-primary-600);font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-semibold);flex:none">CW</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2">
+          <span style="font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium)">Claire Weber</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.72)">Agence Luxembourg-Gare</span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.8"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;min-height:0">
+
+    <aside ref="{{ navRef }}" onClick="{{ select }}" style="flex:none;width:264px;display:flex;flex-direction:column;background:#fff;border-right:1px solid var(--fds-feather-grey-300);overflow:hidden;transition:width 180ms var(--fds-ease-standard)">
+
+      <div style="flex:none;padding:16px 12px 12px">
+        <button matTooltip="Changer de portefeuille" title="Changer de portefeuille" style="display:flex;align-items:center;gap:12px;width:100%;height:52px;padding:0 12px;border:1px solid var(--fds-feather-grey-300);border-radius:var(--fds-radius-md);background:var(--fds-white);cursor:pointer;font-family:inherit;text-align:left;overflow:hidden;white-space:nowrap" style-hover="background:var(--fds-feather-grey-100)">
+          <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:var(--fds-radius-xs);background:var(--fds-primary-100);color:var(--fds-primary-700);font-size:10px;font-weight:var(--fds-fw-bold);letter-spacing:0.02em;flex:none">LG</span>
+          <span style="display:flex;flex-direction:column;min-width:0;flex:1">
+            <span style="font-size:11px;line-height:1.3;text-transform:uppercase;letter-spacing:var(--fds-letter-spacing-caps);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-600)">Portefeuille</span>
+            <span style="font-size:var(--fds-fs-body-sm);line-height:1.35;font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-900);overflow:hidden;text-overflow:ellipsis">Luxembourg-Gare</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--fds-feather-grey-500)"><path d="m8 9 4-4 4 4"></path><path d="m8 15 4 4 4-4"></path></svg>
+        </button>
+      </div>
+
+      <nav ref="{{ listRef }}" style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 12px 12px;display:flex;flex-direction:column;gap:2px">
+
+        <button data-item="1" data-active="1" matTooltip="Tableau de bord" title="Tableau de bord" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:var(--fds-primary-100);color:var(--fds-primary-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-semibold);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Tableau de bord</span>
+        </button>
+
+        <button data-item="2" matTooltip="Clients" title="Clients" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><circle cx="9.5" cy="8" r="3.5"></circle><path d="M3.5 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 5.2a3.5 3.5 0 0 1 0 5.6"></path><path d="M17.5 14.4A6 6 0 0 1 20.5 20"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Clients</span>
+        </button>
+
+        <button data-item="3" matTooltip="Contrats" title="Contrats" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><path d="M12 3.5 19 6v5.5c0 4-2.9 7.3-7 8.9-4.1-1.6-7-4.9-7-8.9V6z"></path><path d="m9 12 2 2 4-4"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Contrats</span>
+          <span style="flex:none;padding:0 8px;height:20px;line-height:20px;border-radius:999px;background:var(--fds-feather-grey-200);color:var(--fds-feather-grey-700);font-size:11px;font-weight:var(--fds-fw-semibold)">248</span>
+        </button>
+
+        <button data-item="4" matTooltip="Sinistres" title="Sinistres" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><path d="M12 4.5 21 19.5H3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Sinistres</span>
+          <span style="flex:none;padding:0 8px;height:20px;line-height:20px;border-radius:999px;background:var(--fds-warning-100);color:var(--fds-warning-800);font-size:11px;font-weight:var(--fds-fw-semibold)">7</span>
+        </button>
+
+        <button data-item="5" matTooltip="Devis" title="Devis" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><path d="M13.5 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8.5z"></path><path d="M13.5 3.5v5h5"></path><path d="M12 11.5v5"></path><path d="M9.5 14h5"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Devis</span>
+        </button>
+
+        <span style="flex:none;height:1px;background:var(--fds-feather-grey-200);margin:10px 4px"></span>
+
+        <button data-item="6" matTooltip="Documents" title="Documents" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><path d="M13.5 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8.5z"></path><path d="M13.5 3.5v5h5"></path><path d="M9 13h6"></path><path d="M9 16.5h4"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Documents</span>
+        </button>
+
+        <button data-item="7" matTooltip="Paiements" title="Paiements" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><rect x="3" y="5.5" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path><path d="M7 14.5h3"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Paiements</span>
+        </button>
+
+        <button data-item="8" matTooltip="Échéances" title="Échéances" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><rect x="3.5" y="5" width="17" height="15.5" rx="2"></rect><path d="M3.5 10h17"></path><path d="M8 3.5v3"></path><path d="M16 3.5v3"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Échéances</span>
+        </button>
+
+        <button data-item="9" matTooltip="Conseillers" title="Conseillers" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><path d="M4.5 18v-5.5a7.5 7.5 0 0 1 15 0V18"></path><path d="M4.5 14.5h1.5A1.5 1.5 0 0 1 7.5 16v1.5A1.5 1.5 0 0 1 6 19H4.5z"></path><path d="M19.5 14.5H18a1.5 1.5 0 0 0-1.5 1.5v1.5A1.5 1.5 0 0 0 18 19h1.5z"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Conseillers</span>
+        </button>
+      </nav>
+
+      <div style="flex:none;border-top:1px solid var(--fds-feather-grey-200);padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px">
+        <button data-item="10" matTooltip="Paramètres" title="Paramètres" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-700);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none;width:24px;height:24px"><circle cx="12" cy="12" r="3"></circle><path d="M12 3.5v2M12 18.5v2M4.9 7.8l1.7 1M17.4 15.2l1.7 1M4.9 16.2l1.7-1M17.4 8.8l1.7-1"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Paramètres</span>
+        </button>
+
+        <button onClick="{{ toggle }}" matTooltip="Réduire le menu" title="Réduire le menu" style="display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:var(--fds-radius-md);background:transparent;color:var(--fds-feather-grey-600);font-family:inherit;font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-medium);cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left" style-hover="background:var(--fds-feather-grey-100);color:var(--fds-feather-grey-900)">
+          <span ref="{{ chevronRef }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5 8.5 12l6.5 6.5"></path><path d="M19.5 5.5v13"></path></svg>
+          </span>
+          <span ref="{{ toggleLabelRef }}" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Réduire le menu</span>
+        </button>
+      </div>
+    </aside>
+
+    <main style="flex:1;min-width:0;overflow-y:auto;background:var(--fds-feather-grey-100)">
+      <div style="max-width:1120px;padding:32px 40px 48px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px">
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:var(--fds-letter-spacing-caps);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-600);margin-bottom:8px">Portefeuille Luxembourg-Gare</div>
+            <h1 style="font-size:var(--fds-fs-h1);line-height:var(--fds-lh-h1);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-900);margin:0">Tableau de bord</h1>
+            <p style="font-size:var(--fds-fs-body-sm);color:var(--fds-feather-grey-600);margin:8px 0 0">Situation au 25 août 2026, 08:40</p>
+          </div>
+          <button class="fds-btn fds-btn--contained">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5v13M5.5 12h13"></path></svg>
+            Nouveau devis
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:32px">
+          <div style="background:#fff;border:1px solid var(--fds-feather-grey-300);border-radius:var(--fds-radius-lg);padding:20px 24px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:var(--fds-letter-spacing-caps);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-600)">Contrats actifs</div>
+            <div style="font-size:var(--fds-fs-display-md);line-height:1.1;font-weight:var(--fds-fw-semibold);letter-spacing:var(--fds-letter-spacing-tight);color:var(--fds-feather-grey-900);margin-top:10px">248</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--fds-feather-grey-300);border-radius:var(--fds-radius-lg);padding:20px 24px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:var(--fds-letter-spacing-caps);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-600)">Sinistres en cours</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+              <span style="font-size:var(--fds-fs-display-md);line-height:1.1;font-weight:var(--fds-fw-semibold);letter-spacing:var(--fds-letter-spacing-tight);color:var(--fds-feather-grey-900)">7</span>
+              <span class="fds-badge fds-badge--warning">2 à relancer</span>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--fds-feather-grey-300);border-radius:var(--fds-radius-lg);padding:20px 24px">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:var(--fds-letter-spacing-caps);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-600)">Primes encaissées</div>
+            <div style="font-size:var(--fds-fs-display-md);line-height:1.1;font-weight:var(--fds-fw-semibold);letter-spacing:var(--fds-letter-spacing-tight);color:var(--fds-feather-grey-900);margin-top:10px">€ 184 620,00</div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid var(--fds-feather-grey-300);border-radius:var(--fds-radius-lg);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border-bottom:1px solid var(--fds-feather-grey-200)">
+            <h2 style="font-size:var(--fds-fs-h3);line-height:var(--fds-lh-h3);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-900);margin:0">Échéances des 30 prochains jours</h2>
+            <a href="#" style="font-size:var(--fds-fs-body-sm);font-weight:var(--fds-fw-semibold)">Tout afficher</a>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:0">
+            <div style="grid-column:1 / -1;display:grid;grid-template-columns:subgrid;padding:10px 24px;background:var(--fds-feather-grey-100);font-size:11px;text-transform:uppercase;letter-spacing:var(--fds-letter-spacing-caps);font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-600)">
+              <span>Client</span><span>Contrat</span><span style="text-align:right">Montant</span><span style="text-align:right;padding-left:24px">Échéance</span>
+            </div>
+            <div style="grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-items:center;padding:14px 24px;border-top:1px solid var(--fds-feather-grey-200);font-size:var(--fds-fs-body-sm)">
+              <span style="font-weight:var(--fds-fw-medium);color:var(--fds-feather-grey-900)">Marc Hoffmann</span>
+              <span style="color:var(--fds-feather-grey-600)">Habitation · FR-8421-0093</span>
+              <span style="text-align:right;font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-900)">€ 1 480,40</span>
+              <span style="text-align:right;padding-left:24px;color:var(--fds-feather-grey-700)">1 sept. 2026</span>
+            </div>
+            <div style="grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-items:center;padding:14px 24px;border-top:1px solid var(--fds-feather-grey-200);font-size:var(--fds-fs-body-sm)">
+              <span style="font-weight:var(--fds-fw-medium);color:var(--fds-feather-grey-900)">Sophie Reuter</span>
+              <span style="color:var(--fds-feather-grey-600)">Auto · FR-7710-4482</span>
+              <span style="text-align:right;font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-900)">€ 892,00</span>
+              <span style="text-align:right;padding-left:24px;color:var(--fds-feather-grey-700)">9 sept. 2026</span>
+            </div>
+            <div style="grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-items:center;padding:14px 24px;border-top:1px solid var(--fds-feather-grey-200);font-size:var(--fds-fs-body-sm)">
+              <span style="font-weight:var(--fds-fw-medium);color:var(--fds-feather-grey-900)">Jean-Paul Kremer</span>
+              <span style="color:var(--fds-feather-grey-600)">Vie · FR-3308-1176</span>
+              <span style="text-align:right;font-weight:var(--fds-fw-semibold);color:var(--fds-feather-grey-900)">€ 3 200,00</span>
+              <span style="text-align:right;padding-left:24px;color:var(--fds-feather-grey-700)">18 sept. 2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startCollapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Menu latéral&quot;},&quot;expandedWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:264,&quot;min&quot;:220,&quot;max&quot;:340,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Menu latéral&quot;},&quot;showSearch&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Bandeau&quot;}}">
+class Component extends DCLogic {
+  navRef = React.createRef();
+  listRef = React.createRef();
+  chevronRef = React.createRef();
+  toggleLabelRef = React.createRef();
+  bannerRef = React.createRef();
+  searchRef = React.createRef();
+
+  componentDidMount() {
+    this.collapsed = !!this.props.startCollapsed;
+    if (this.props.showSearch === false && this.searchRef.current) {
+      this.searchRef.current.style.display = 'none';
+    }
+    this.apply();
+  }
+
+  componentDidUpdate() { this.apply(); }
+
+  get expandedWidth() {
+    const w = Number(this.props.expandedWidth);
+    return Number.isFinite(w) && w > 0 ? w : 264;
+  }
+
+  apply() {
+    const nav = this.navRef.current;
+    if (!nav) return;
+    nav.style.width = (this.collapsed ? 72 : this.expandedWidth) + 'px';
+    if (this.chevronRef.current) {
+      this.chevronRef.current.style.transform = this.collapsed ? 'rotate(180deg)' : 'none';
+    }
+    if (this.toggleLabelRef.current) {
+      this.toggleLabelRef.current.textContent = this.collapsed ? 'Déployer le menu' : 'Réduire le menu';
+    }
+  }
+
+  renderVals() {
+    return {
+      navRef: this.navRef,
+      listRef: this.listRef,
+      chevronRef: this.chevronRef,
+      toggleLabelRef: this.toggleLabelRef,
+      bannerRef: this.bannerRef,
+      searchRef: this.searchRef,
+      toggle: () => { this.collapsed = !this.collapsed; this.apply(); },
+      select: (e) => {
+        const btn = e.target.closest('[data-item]');
+        if (!btn) return;
+        const root = this.navRef.current;
+        if (!root) return;
+        root.querySelectorAll('[data-item]').forEach((el) => {
+          el.style.background = 'transparent';
+          el.style.color = 'var(--fds-feather-grey-700)';
+          el.style.fontWeight = 'var(--fds-fw-medium)';
+          el.removeAttribute('data-active');
+        });
+        btn.style.background = 'var(--fds-primary-100)';
+        btn.style.color = 'var(--fds-primary-700)';
+        btn.style.fontWeight = 'var(--fds-fw-semibold)';
+        btn.setAttribute('data-active', '1');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

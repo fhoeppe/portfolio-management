@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    #dc-root, body { margin: 0; }
+    [data-component="CalendarPage"] { --ink-magenta: #a21caf; --ink-warn-2: #b45309; --ink-warn: #8f3f06; --ink-ok-2: #0f766e; --ink-brand-2: #003da5; --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); }
+    [data-component="CalendarPage"], [data-component="CalendarPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="CalendarPage"] input, [data-component="CalendarPage"] select, [data-component="CalendarPage"] textarea { font-family: inherit; }
+    [data-component="CalendarPage"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+    [data-component="CalendarPage"] ::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+    [data-component="CalendarPage"] h1, [data-component="CalendarPage"] h2, [data-component="CalendarPage"] h3 { color: #002a6e; }
+    [data-component="CalendarPage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="CalendarPage"] input:focus, [data-component="CalendarPage"] select:focus, [data-component="CalendarPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="CalendarPage"] input:focus-visible, [data-component="CalendarPage"] select:focus-visible, [data-component="CalendarPage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="CalendarPage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="CalendarPage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="CalendarPage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="CalendarPage"] button:active { filter: brightness(0.94); }
+    [data-component="CalendarPage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="CalendarPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="CalendarPage"] h1,
+    [data-theme="dark"] [data-component="CalendarPage"] h2,
+    [data-theme="dark"] [data-component="CalendarPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="CalendarPage"] input,
+    [data-theme="dark"] [data-component="CalendarPage"] select,
+    [data-theme="dark"] [data-component="CalendarPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="CalendarPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="CalendarPage"] { --field-brand: #12325e; }
+    [data-component="CalendarPage"] { --ink-6d28d9: #6d28d9; --ink-57534e: #57534e; }
+    [data-theme="dark"] [data-component="CalendarPage"] { --ink-6d28d9: #b47bff; --ink-57534e: #fffffb; }
+    [data-theme="dark"] [data-component="CalendarPage"] { --ink-magenta: #f0abfc; --ink-warn-2: #f3b782; --ink-warn: #f0a868; --ink-ok-2: #4fd1c5; --ink-brand-2: #8fb4ee; --ink-brand: #9db6d9; }
+  </style>
+</helmet>
+
+<div data-component="CalendarPage" data-screen-label="Calendrier" style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="min-width:0">
+      <h1 style="font-size:18px;margin:0;line-height:1.2">Calendrier</h1>
+      <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;margin-left:18px">
+      <button onClick="{{ goPrev }}" matTooltip="Période précédente" title="Période précédente" aria-label="Période précédente" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+      </button>
+      <button onClick="{{ goToday }}" style="height:28px;padding:0 12px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Aujourd'hui</button>
+      <button onClick="{{ goNext }}" matTooltip="Période suivante" title="Période suivante" aria-label="Période suivante" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </button>
+      <span style="margin-left:8px;font-size:14px;font-weight:600;white-space:nowrap">{{ periodLabel }}</span>
+    </div>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <span style="display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+        <sc-for list="{{ viewTabs }}" as="v" hint-placeholder-count="3">
+          <button onClick="{{ v.onClick }}" style="padding:0 14px;height:28px;border:0;border-left:{{ v.divider }};background:{{ v.bg }};color:{{ v.fg }};font-size:12px;font-weight:{{ v.weight }};white-space:nowrap;cursor:pointer">{{ v.label }}</button>
+        </sc-for>
+      </span>
+      <button onClick="{{ newItem }}" style="display:flex;align-items:center;gap:8px;height:28px;padding:0 12px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+        Nouvel élément
+      </button>
+    </div>
+  </div>
+
+  <div style="flex:none;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 20px;background:var(--surface);border-bottom:1px solid var(--color-neutral-200)">
+    <sc-for list="{{ legend }}" as="l" hint-placeholder-count="5">
+      <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-neutral-700)">
+        <span style="width:9px;height:9px;border-radius:2px;background:{{ l.color }}"></span>
+        {{ l.label }}
+      </span>
+    </sc-for>
+    <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ countLabel }}</span>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:auto;padding:16px 20px 24px">
+
+    <sc-if value="{{ isWeek }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:56px repeat({{ dayCount }}, minmax(0,1fr));border-bottom:1px solid var(--color-neutral-200)">
+          <div style="border-right:1px solid var(--color-neutral-200)"></div>
+          <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+            <button onClick="{{ d.onCreate }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 10px;border:0;border-right:1px solid var(--color-neutral-200);background:{{ d.headBg }};cursor:pointer;text-align:left" style-hover="background:rgba(0,61,165,0.07)">
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700)">{{ d.dow }}</span>
+              <span style="font-size:16px;font-weight:{{ d.numWeight }};color:{{ d.numColor }}">{{ d.dayNum }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:56px repeat({{ dayCount }}, minmax(0,1fr));border-bottom:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+          <div style="display:flex;align-items:center;padding:0 8px;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-600);border-right:1px solid var(--color-neutral-200)">Jour</div>
+          <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+            <div style="min-height:32px;display:flex;flex-direction:column;gap:3px;padding:5px 5px;border-right:1px solid var(--color-neutral-200)">
+              <sc-for list="{{ d.allDay }}" as="ev" hint-placeholder-count="1">
+                <button onClick="{{ ev.onOpen }}" style="display:flex;align-items:center;gap:6px;width:100%;padding:3px 6px;border:0;border-left:3px solid {{ ev.color }};border-radius:3px;background:{{ ev.tint }};color:var(--color-text);font-size:11px;text-align:left;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+                  <span style="text-decoration:{{ ev.strike }};overflow:hidden;text-overflow:ellipsis">{{ ev.title }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:56px repeat({{ dayCount }}, minmax(0,1fr))">
+          <div style="border-right:1px solid var(--color-neutral-200)">
+            <sc-for list="{{ hours }}" as="h" hint-placeholder-count="14">
+              <div style="height:48px;padding:2px 8px 0;text-align:right;font-size:10px;color:var(--color-neutral-600);border-bottom:1px solid var(--color-neutral-200)">{{ h.label }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+            <div onClick="{{ d.onGridClick }}" style="position:relative;border-right:1px solid var(--color-neutral-200);height:{{ gridHeight }};background-image:repeating-linear-gradient(to bottom, var(--color-neutral-200) 0 1px, transparent 1px 48px);background-position:0 47px;cursor:crosshair">
+              <div style="position:absolute;inset:0;background:{{ d.colBg }};pointer-events:none"></div>
+              <sc-for list="{{ d.timed }}" as="ev" hint-placeholder-count="2">
+                <button onClick="{{ ev.onOpen }}" style="position:absolute;left:3px;right:3px;top:{{ ev.top }};height:{{ ev.height }};display:flex;flex-direction:{{ ev.dir }};align-items:{{ ev.align }};gap:{{ ev.gap }};padding:{{ ev.pad }};border:0;border-left:3px solid {{ ev.color }};border-radius:3px;background:{{ ev.tint }};color:var(--color-text);font-size:11px;text-align:left;cursor:pointer;overflow:hidden">
+                  <sc-if value="{{ ev.compact }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex:none;font-size:10px;line-height:1.4;color:var(--color-neutral-700)">{{ ev.start }}</span>
+                  </sc-if>
+                  <span style="flex:1;min-width:0;font-weight:600;line-height:1.4;text-decoration:{{ ev.strike }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ev.title }}</span>
+                  <sc-if value="{{ ev.roomy }}" hint-placeholder-val="{{ true }}">
+                    <span style="flex:none;font-size:10px;line-height:1.3;color:var(--color-neutral-700)">{{ ev.timeLabel }}</span>
+                  </sc-if>
+                </button>
+              </sc-for>
+              <div style="position:absolute;left:0;right:0;top:{{ d.nowTop }};height:1px;background:var(--color-accent);display:{{ d.nowDisplay }};pointer-events:none"></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isMonth }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:repeat({{ dayCount }}, minmax(0,1fr));border-bottom:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+          <sc-for list="{{ dowNames }}" as="n" hint-placeholder-count="7">
+            <div style="padding:7px 10px;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-right:1px solid var(--color-neutral-200)">{{ n.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat({{ dayCount }}, minmax(0,1fr))">
+          <sc-for list="{{ monthCells }}" as="c" hint-placeholder-count="35">
+            <div onClick="{{ c.onCreate }}" style="min-height:104px;display:flex;flex-direction:column;gap:3px;padding:6px;border-right:1px solid var(--color-neutral-200);border-bottom:1px solid var(--color-neutral-200);background:{{ c.bg }};cursor:pointer">
+              <span style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;font-size:11px;font-weight:{{ c.numWeight }};background:{{ c.badgeBg }};color:{{ c.numColor }}">{{ c.dayNum }}</span>
+              <sc-for list="{{ c.chips }}" as="ev" hint-placeholder-count="2">
+                <button onClick="{{ ev.onOpen }}" style="display:flex;align-items:center;gap:5px;width:100%;padding:2px 5px;border:0;border-left:3px solid {{ ev.color }};border-radius:3px;background:{{ ev.tint }};color:var(--color-text);font-size:11px;text-align:left;cursor:pointer;overflow:hidden;white-space:nowrap">
+                  <span style="flex:none;font-size:10px;color:var(--color-neutral-700)">{{ ev.shortTime }}</span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;text-decoration:{{ ev.strike }}">{{ ev.title }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ c.hasMore }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ c.onExpand }}" style="align-self:flex-start;padding:0;border:0;background:transparent;color:var(--color-neutral-700);font-size:10px;font-weight:600;cursor:pointer">{{ c.moreLabel }}</button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isYear }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:12px">
+        <sc-for list="{{ yearMonths }}" as="m" hint-placeholder-count="12">
+          <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;padding:10px 12px 12px">
+            <button onClick="{{ m.onOpen }}" style="display:flex;align-items:baseline;gap:8px;width:100%;padding:0 0 8px;border:0;background:transparent;color:var(--color-text);font-size:12px;font-weight:600;text-align:left;cursor:pointer">
+              {{ m.name }}
+              <span style="font-size:10px;font-weight:400;color:var(--color-neutral-700)">{{ m.countLabel }}</span>
+            </button>
+            <div style="display:grid;grid-template-columns:repeat(7, minmax(0,1fr));gap:1px">
+              <sc-for list="{{ m.dowNames }}" as="n" hint-placeholder-count="7">
+                <span style="text-align:center;font-size:9px;color:var(--color-neutral-600)">{{ n.label }}</span>
+              </sc-for>
+              <sc-for list="{{ m.cells }}" as="c" hint-placeholder-count="42">
+                <button onClick="{{ c.onOpen }}" style="position:relative;height:22px;border:0;border-radius:3px;background:{{ c.bg }};color:{{ c.color }};font-size:10px;font-weight:{{ c.weight }};cursor:{{ c.cursor }}" style-hover="background:rgba(0,61,165,0.10)">
+                  {{ c.dayNum }}
+                  <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:{{ c.dotSize }};height:{{ c.dotSize }};border-radius:999px;background:{{ c.dotColor }}"></span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ dialogOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDialog }}" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(23,21,20,0.42);z-index:60">
+      <div onClick="{{ stop }}" style="width:520px;max-width:100%;max-height:100%;overflow:auto;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:8px;box-shadow:var(--shadow-lg)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--color-neutral-200)">
+          <h2 style="margin:0;font-size:15px">{{ dialogTitle }}</h2>
+          <button onClick="{{ closeDialog }}" matTooltip="Fermer" title="Fermer" aria-label="Fermer" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:var(--color-neutral-700);cursor:pointer" style-hover="background:rgba(0,61,165,0.10);color:var(--color-text)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px">
+          <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Intitulé
+            <input value="{{ draft.title }}" onChange="{{ setTitle }}" placeholder="Comité d'investissement" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+          </label>
+
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Type
+            <span style="display:inline-flex;border:1px solid rgba(0,61,165,0.35);border-radius:6px;overflow:hidden">
+              <sc-for list="{{ kindTabs }}" as="k" hint-placeholder-count="2">
+                <button onClick="{{ k.onClick }}" style="flex:1;height:32px;border:0;border-left:{{ k.divider }};background:{{ k.bg }};color:{{ k.fg }};font-size:12px;font-weight:{{ k.weight }};cursor:pointer">{{ k.label }}</button>
+              </sc-for>
+            </span>
+          </div>
+
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Catégorie
+            <select value="{{ draft.cat }}" onChange="{{ setCat }}" style="height:32px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+              <sc-for list="{{ catOptions }}" as="c" hint-placeholder-count="5">
+                <option value="{{ c.value }}">{{ c.label }}</option>
+              </sc-for>
+            </select>
+          </label>
+
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Date
+            <input type="date" value="{{ draft.date }}" onChange="{{ setDate }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+          </label>
+
+          <label style="display:flex;align-items:center;gap:8px;align-self:end;height:32px;font-size:12px;font-weight:400;color:var(--color-neutral-800);cursor:pointer">
+            <input type="checkbox" checked="{{ draft.allDay }}" onChange="{{ setAllDay }}" style="width:15px;height:15px;margin:0;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+            Toute la journée
+          </label>
+
+          <sc-if value="{{ showTimes }}" hint-placeholder-val="{{ true }}">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              Début
+              <input type="time" value="{{ draft.start }}" onChange="{{ setStart }}" step="900" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+            </label>
+          </sc-if>
+          <sc-if value="{{ showTimes }}" hint-placeholder-val="{{ true }}">
+            <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              Fin
+              <input type="time" value="{{ draft.end }}" onChange="{{ setEnd }}" step="900" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+            </label>
+          </sc-if>
+
+          <sc-if value="{{ isTask }}" hint-placeholder-val="{{ false }}">
+            <label style="grid-column:1 / -1;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:400;color:var(--color-neutral-800);cursor:pointer">
+              <input type="checkbox" checked="{{ draft.done }}" onChange="{{ setDone }}" style="width:15px;height:15px;margin:0;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+              Tâche terminée
+            </label>
+          </sc-if>
+
+          <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+            Note
+            <textarea value="{{ draft.notes }}" onChange="{{ setNotes }}" rows="3" placeholder="Ordre du jour, participants, référence dossier…" style="padding:8px 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;resize:vertical;outline:none"></textarea>
+          </label>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+          <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ removeItem }}" style="display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid var(--color-accent-300);border-radius:6px;background:transparent;color:var(--color-accent-700);font-size:12px;font-weight:600;cursor:pointer" style-hover="background:var(--color-accent-100)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Supprimer
+            </button>
+          </sc-if>
+          <button onClick="{{ closeDialog }}" style="margin-left:auto;height:30px;padding:0 14px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-neutral-800);font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(0,61,165,0.07);color:var(--color-text)">Annuler</button>
+          <button onClick="{{ saveItem }}" style="height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-size:12px;font-weight:600;cursor:pointer">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820},&quot;showWeekend&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Vue&quot;},&quot;dayStart&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:7,&quot;min&quot;:0,&quot;max&quot;:12,&quot;unit&quot;:&quot;h&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Vue&quot;},&quot;dayEnd&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:21,&quot;min&quot;:13,&quot;max&quot;:24,&quot;unit&quot;:&quot;h&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Vue&quot;}}">
+const CATS = {
+  client:   { label: 'Réunion client',           color: 'var(--ink-brand-2)' },
+  comite:   { label: "Comité d'investissement",  color: 'var(--ink-ok-2)' },
+  echeance: { label: 'Échéance',                 color: 'var(--ink-warn-2)' },
+  reporting:{ label: 'Reporting',                color: 'var(--ink-6d28d9)' },
+  interne:  { label: 'Interne',                  color: 'var(--ink-57534e)' },
+  indicateur:{ label: 'Indicateur économique',   color: 'var(--ink-magenta)' },
+  fiscal:   { label: 'Échéance fiscale',         color: 'var(--ink-warn)' }
+};
+
+const DOW = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const DOW1 = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+function iso(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function parse(s) { const p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+function addDays(d, n) { const c = new Date(d); c.setDate(c.getDate() + n); return c; }
+function mondayOf(d) { const c = new Date(d); const w = (c.getDay() + 6) % 7; c.setDate(c.getDate() - w); return c; }
+function toMin(t) { const p = (t || '09:00').split(':'); return (+p[0]) * 60 + (+p[1]); }
+function fromMin(m) { return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+
+let SEED_ID = 0;
+function seed() {
+  const base = new Date();
+  const mon = mondayOf(base);
+  const D = (n) => iso(addDays(mon, n));
+  const M = (day) => iso(new Date(base.getFullYear(), base.getMonth(), day));
+  const mk = (o) => Object.assign({ id: 'i' + (++SEED_ID), kind: 'event', allDay: false, done: false, notes: '' }, o);
+  return [
+    mk({ title: 'Comité d\'investissement', date: D(0), start: '09:00', end: '10:30', cat: 'comite', notes: 'Revue des comptes discrétionnaires.' }),
+    mk({ title: 'Revue compte — Cheval Blanc SCI', date: D(0), start: '14:00', end: '15:00', cat: 'client' }),
+    mk({ title: 'Valorisation mensuelle', date: D(1), start: '11:00', end: '12:00', cat: 'reporting' }),
+    mk({ title: 'Appel Ashfield — sleeve EM', date: D(1), start: '16:30', end: '17:00', cat: 'client' }),
+    mk({ kind: 'task', title: 'Valider les ordres de rééquilibrage', date: D(2), start: '08:30', end: '09:00', cat: 'interne' }),
+    mk({ title: 'Échéance coupon TSY10', date: D(2), allDay: true, cat: 'echeance' }),
+    mk({ title: 'Point hebdomadaire équipe', date: D(3), start: '09:30', end: '10:00', cat: 'interne' }),
+    mk({ title: 'Onboarding client — Meridian Family', date: D(3), start: '15:00', end: '16:30', cat: 'client', notes: 'Documents KYC à finaliser.' }),
+    mk({ kind: 'task', title: 'Envoyer le reporting trimestriel', date: D(4), start: '17:00', end: '17:30', cat: 'reporting', done: true }),
+    mk({ title: 'Revue de risque', date: D(4), start: '10:00', end: '11:30', cat: 'comite' }),
+    mk({ title: 'Clôture comptable', date: M(28), allDay: true, cat: 'echeance' }),
+    mk({ kind: 'task', title: 'Contrôle des limites de concentration', date: M(12), start: '09:00', end: '10:00', cat: 'interne' }),
+    mk({ title: 'Assemblée générale — Infrastructure Fund II', date: M(19), start: '14:00', end: '17:00', cat: 'echeance' }),
+
+    // Publications macroéconomiques d'ici la fin de l'année.
+    mk({ title: 'BCE — décision de taux', date: '2026-09-10', start: '14:15', end: '15:00', cat: 'indicateur', notes: 'Conseil des gouverneurs, conférence de presse à 14:45.' }),
+    mk({ title: 'Inflation zone euro — estimation rapide', date: '2026-09-16', start: '11:00', end: '11:15', cat: 'indicateur', notes: 'Eurostat, IPCH de septembre.' }),
+    mk({ title: 'Fed — décision de taux (FOMC)', date: '2026-09-16', start: '20:00', end: '20:45', cat: 'indicateur', notes: 'Communiqué et projections trimestrielles.' }),
+    mk({ title: 'Emploi américain — rapport mensuel', date: '2026-10-02', start: '14:30', end: '14:45', cat: 'indicateur', notes: 'Créations d\'emplois non agricoles et taux de chômage.' }),
+    mk({ title: 'PMI composite zone euro', date: '2026-10-05', start: '10:00', end: '10:15', cat: 'indicateur' }),
+    mk({ title: 'Inflation américaine — CPI', date: '2026-10-13', start: '14:30', end: '14:45', cat: 'indicateur', notes: 'Indice des prix à la consommation de septembre.' }),
+    mk({ title: 'BCE — décision de taux', date: '2026-10-29', start: '14:15', end: '15:00', cat: 'indicateur' }),
+    mk({ title: 'Fed — décision de taux (FOMC)', date: '2026-10-28', start: '20:00', end: '20:45', cat: 'indicateur' }),
+    mk({ title: 'PIB zone euro — première estimation', date: '2026-10-30', start: '11:00', end: '11:15', cat: 'indicateur', notes: 'Croissance du troisième trimestre.' }),
+    mk({ title: 'Emploi américain — rapport mensuel', date: '2026-11-06', start: '14:30', end: '14:45', cat: 'indicateur' }),
+    mk({ title: 'Inflation américaine — CPI', date: '2026-11-12', start: '14:30', end: '14:45', cat: 'indicateur' }),
+    mk({ title: 'Inflation zone euro — chiffre définitif', date: '2026-11-18', start: '11:00', end: '11:15', cat: 'indicateur' }),
+    mk({ title: 'PMI composite zone euro', date: '2026-11-23', start: '10:00', end: '10:15', cat: 'indicateur' }),
+    mk({ title: 'Fed — décision de taux (FOMC)', date: '2026-12-09', start: '20:00', end: '20:45', cat: 'indicateur', notes: 'Dernière réunion de l\'année, projections révisées.' }),
+    mk({ title: 'Emploi américain — rapport mensuel', date: '2026-12-04', start: '14:30', end: '14:45', cat: 'indicateur' }),
+    mk({ title: 'BCE — décision de taux', date: '2026-12-17', start: '14:15', end: '15:00', cat: 'indicateur', notes: 'Projections macroéconomiques de l\'Eurosystème.' }),
+    mk({ title: 'Inflation américaine — CPI', date: '2026-12-10', start: '14:30', end: '14:45', cat: 'indicateur' }),
+    mk({ title: 'PIB zone euro — estimation définitive', date: '2026-12-08', start: '11:00', end: '11:15', cat: 'indicateur' }),
+
+    // Échéances déclaratives et de paiement.
+    mk({ title: 'Retenue à la source — déclaration T3', date: '2026-10-15', allDay: true, cat: 'fiscal', notes: 'Reversement des retenues sur dividendes du troisième trimestre.' }),
+    mk({ kind: 'task', title: 'Acompte d\'impôt sur les sociétés — 4e échéance', date: '2026-12-15', allDay: true, cat: 'fiscal', notes: 'Solde de l\'exercice à verser avant le 15.' }),
+    mk({ title: 'Déclaration des revenus de capitaux mobiliers (IFU)', date: '2026-11-30', allDay: true, cat: 'fiscal', notes: 'Imprimé fiscal unique à transmettre aux titulaires.' }),
+    mk({ title: 'Retenue à la source — déclaration T4', date: '2027-01-15', allDay: true, cat: 'fiscal', notes: 'Quatrième trimestre : dépôt au plus tard le 15 janvier.' }),
+    mk({ kind: 'task', title: 'Attestation fiscale annuelle aux clients', date: '2026-12-31', allDay: true, cat: 'fiscal', notes: 'Récapitulatif des plus-values et revenus par compte.' }),
+    mk({ title: 'Déclaration de TVA — décembre', date: '2027-01-20', allDay: true, cat: 'fiscal' })
+  ];
+}
+
+class Component extends DCLogic {
+  state = {
+    view: 'week',
+    cursor: iso(new Date()),
+    items: seed(),
+    dialogOpen: false,
+    editingId: null,
+    expanded: null,
+    draft: null
+  };
+
+  cats() { return Object.keys(CATS); }
+  catOf(k) { return CATS[k] || CATS.interne; }
+  tint(k) { return this.catOf(k).color + '14'; }
+
+  startHour() { return Math.max(0, Math.min(12, this.props.dayStart ?? 7)); }
+  endHour() { return Math.max(this.startHour() + 4, Math.min(24, this.props.dayEnd ?? 21)); }
+  showWeekend() { return this.props.showWeekend ?? true; }
+
+  itemsOn(date) {
+    return this.state.items
+      .filter((i) => i.date === date)
+      .sort((a, b) => (a.allDay ? -1 : b.allDay ? 1 : toMin(a.start) - toMin(b.start)));
+  }
+
+  setView(v) { this.setState({ view: v }); }
+  move(dir) {
+    const c = parse(this.state.cursor);
+    const v = this.state.view;
+    if (v === 'week') c.setDate(c.getDate() + 7 * dir);
+    else if (v === 'month') c.setMonth(c.getMonth() + dir, 1);
+    else c.setFullYear(c.getFullYear() + dir, 0, 1);
+    this.setState({ cursor: iso(c) });
+  }
+
+  openNew(date, start) {
+    this.setState({
+      dialogOpen: true, editingId: null,
+      draft: {
+        kind: 'event', title: '', date: date || this.state.cursor,
+        start: start || '09:00', end: fromMin(toMin(start || '09:00') + 60),
+        allDay: false, cat: 'client', notes: '', done: false
+      }
+    });
+  }
+  openEdit(item) {
+    this.setState({ dialogOpen: true, editingId: item.id, draft: Object.assign({}, item) });
+  }
+  patch(p) { this.setState((s) => ({ draft: Object.assign({}, s.draft, p) })); }
+
+  save() {
+    const d = this.state.draft;
+    if (!d) return;
+    const clean = Object.assign({}, d, { title: (d.title || '').trim() || 'Sans intitulé' });
+    if (!clean.allDay && toMin(clean.end) <= toMin(clean.start)) clean.end = fromMin(toMin(clean.start) + 30);
+    this.setState((s) => ({
+      items: s.editingId
+        ? s.items.map((i) => (i.id === s.editingId ? Object.assign({}, i, clean, { id: i.id }) : i))
+        : s.items.concat([Object.assign({}, clean, { id: 'n' + Date.now() })]),
+      dialogOpen: false, editingId: null, draft: null
+    }));
+  }
+  remove() {
+    this.setState((s) => ({
+      items: s.items.filter((i) => i.id !== s.editingId),
+      dialogOpen: false, editingId: null, draft: null
+    }));
+  }
+
+  chip(item) {
+    const c = this.catOf(item.cat);
+    return {
+      title: (item.kind === 'task' ? '☐ ' : '') + item.title,
+      color: c.color,
+      tint: this.tint(item.cat),
+      strike: item.kind === 'task' && item.done ? 'line-through' : 'none',
+      shortTime: item.allDay ? 'jour' : item.start,
+      timeLabel: item.allDay ? 'Toute la journée' : item.start + ' – ' + item.end,
+      onOpen: (e) => { e.stopPropagation(); this.openEdit(item); }
+    };
+  }
+
+  renderVals() {
+    const view = this.state.view;
+    const cursor = parse(this.state.cursor);
+    const today = iso(new Date());
+    const dayCount = this.showWeekend() ? 7 : 5;
+    const sh = this.startHour(), eh = this.endHour();
+    const pxPerMin = 48 / 60;
+    const gridHeight = (eh - sh) * 48;
+
+    const hours = [];
+    for (let h = sh; h < eh; h++) hours.push({ label: String(h).padStart(2, '0') + ':00' });
+
+    const mon = mondayOf(cursor);
+    const weekDays = [];
+    for (let i = 0; i < dayCount; i++) {
+      const d = addDays(mon, i);
+      const key = iso(d);
+      const isToday = key === today;
+      const dayItems = this.itemsOn(key);
+      const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+      weekDays.push({
+        dow: DOW[i], dayNum: d.getDate(),
+        headBg: isToday ? 'var(--color-neutral-100)' : 'var(--surface)',
+        numWeight: isToday ? '700' : '500',
+        numColor: isToday ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--color-text)',
+        colBg: isToday ? 'rgba(0,61,165,0.035)' : 'transparent',
+        nowDisplay: isToday && nowMin >= sh * 60 && nowMin <= eh * 60 ? 'block' : 'none',
+        nowTop: Math.round((nowMin - sh * 60) * pxPerMin) + 'px',
+        allDay: dayItems.filter((i) => i.allDay).map((i) => this.chip(i)),
+        timed: dayItems.filter((i) => !i.allDay).map((i) => {
+          const top = Math.max(0, (toMin(i.start) - sh * 60) * pxPerMin);
+          const h = Math.max(22, (toMin(i.end) - toMin(i.start)) * pxPerMin - 2);
+          const compact = h < 34;
+          return Object.assign(this.chip(i), {
+            top: Math.round(top) + 'px', height: Math.round(h) + 'px',
+            compact, roomy: !compact, pad: compact ? '1px 6px' : '4px 6px',
+            dir: compact ? 'row' : 'column', align: compact ? 'center' : 'flex-start',
+            gap: compact ? '5px' : '1px', start: i.start
+          });
+        }),
+        onCreate: () => this.openNew(key, '09:00'),
+        onGridClick: (e) => {
+          const box = e.currentTarget.getBoundingClientRect();
+          const min = sh * 60 + Math.round(((e.clientY - box.top) / pxPerMin) / 30) * 30;
+          this.openNew(key, fromMin(Math.max(sh * 60, Math.min(eh * 60 - 30, min))));
+        }
+      });
+    }
+
+    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const gridStart = mondayOf(first);
+    const monthCells = [];
+    for (let w = 0; w < 6; w++) {
+      for (let i = 0; i < dayCount; i++) {
+        const d = addDays(gridStart, w * 7 + i);
+        const key = iso(d);
+        const other = d.getMonth() !== cursor.getMonth();
+        const list = this.itemsOn(key);
+        const limit = this.state.expanded === key ? list.length : 3;
+        monthCells.push({
+          dayNum: d.getDate(),
+          bg: other ? 'var(--color-neutral-100)' : 'var(--surface)',
+          badgeBg: key === today ? 'var(--ds-brand-fill, var(--field-brand))' : 'transparent',
+          numColor: key === today ? '#fff' : other ? 'var(--color-neutral-600)' : 'var(--color-text)',
+          numWeight: key === today ? '700' : '500',
+          chips: list.slice(0, limit).map((i) => this.chip(i)),
+          hasMore: list.length > limit,
+          moreLabel: '+ ' + (list.length - limit) + ' de plus',
+          onExpand: (e) => { e.stopPropagation(); this.setState({ expanded: key }); },
+          onCreate: () => this.openNew(key, '09:00')
+        });
+      }
+    }
+
+    const year = cursor.getFullYear();
+    const perMonth = {};
+    this.state.items.forEach((i) => {
+      const d = parse(i.date);
+      if (d.getFullYear() === year) perMonth[d.getMonth()] = (perMonth[d.getMonth()] || 0) + 1;
+    });
+    const yearMonths = MONTHS.map((name, mi) => {
+      const gs = mondayOf(new Date(year, mi, 1));
+      const cells = [];
+      for (let n = 0; n < 42; n++) {
+        const d = addDays(gs, n);
+        const key = iso(d);
+        const other = d.getMonth() !== mi;
+        const count = other ? 0 : this.itemsOn(key).length;
+        cells.push({
+          dayNum: other ? '' : d.getDate(),
+          bg: key === today && !other ? 'var(--color-neutral-200)' : 'transparent',
+          color: other ? 'transparent' : 'var(--color-neutral-800)',
+          weight: key === today ? '700' : '400',
+          cursor: other ? 'default' : 'pointer',
+          dotSize: count ? '4px' : '0px',
+          dotColor: count ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'transparent',
+          onOpen: () => { if (!other) this.setState({ view: 'week', cursor: key }); }
+        });
+      }
+      return {
+        name, cells,
+        dowNames: DOW1.map((l) => ({ label: l })),
+        countLabel: (perMonth[mi] || 0) + ' élém.',
+        onOpen: () => this.setState({ view: 'month', cursor: iso(new Date(year, mi, 1)) })
+      };
+    });
+
+    const wkEnd = addDays(mon, dayCount - 1);
+    const periodLabel = view === 'week'
+      ? mon.getDate() + (mon.getMonth() === wkEnd.getMonth() ? '' : ' ' + MONTHS[mon.getMonth()].toLowerCase()) + ' – ' + wkEnd.getDate() + ' ' + MONTHS[wkEnd.getMonth()].toLowerCase() + ' ' + wkEnd.getFullYear()
+      : view === 'month' ? MONTHS[cursor.getMonth()] + ' ' + year : String(year);
+
+    const draft = this.state.draft || { title: '', date: this.state.cursor, start: '09:00', end: '10:00', allDay: false, cat: 'client', notes: '', kind: 'event', done: false };
+    const scopeCount = view === 'year'
+      ? this.state.items.filter((i) => parse(i.date).getFullYear() === year).length
+      : view === 'month'
+        ? this.state.items.filter((i) => { const d = parse(i.date); return d.getFullYear() === year && d.getMonth() === cursor.getMonth(); }).length
+        : weekDays.reduce((s, d) => s + d.allDay.length + d.timed.length, 0);
+
+    const tab = (label, on, fn, first) => ({
+      label, onClick: fn,
+      divider: first ? '0' : '1px solid rgba(0,61,165,0.30)',
+      bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+      hoverBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.16)',
+      fg: on ? '#ffffff' : 'var(--ink-brand)',
+      weight: on ? '600' : '400'
+    });
+
+    return {
+      isWeek: view === 'week', isMonth: view === 'month', isYear: view === 'year',
+      dayCount, hours, gridHeight: gridHeight + 'px', weekDays, monthCells, yearMonths,
+      dowNames: DOW.slice(0, dayCount).map((l) => ({ label: l })),
+      periodLabel,
+      subtitle: 'Événements et tâches du compte — ' + (view === 'week' ? 'vue semaine' : view === 'month' ? 'vue mois' : 'vue année'),
+      countLabel: scopeCount + (scopeCount > 1 ? ' éléments' : ' élément') + ' sur la période',
+      legend: this.cats().map((k) => ({ label: CATS[k].label, color: CATS[k].color })),
+      viewTabs: [
+        tab('Semaine', view === 'week', () => this.setView('week'), true),
+        tab('Mois', view === 'month', () => this.setView('month')),
+        tab('Année', view === 'year', () => this.setView('year'))
+      ],
+      goPrev: () => this.move(-1),
+      goNext: () => this.move(1),
+      goToday: () => this.setState({ cursor: today }),
+      newItem: () => this.openNew(view === 'week' ? this.state.cursor : this.state.cursor, '09:00'),
+
+      dialogOpen: this.state.dialogOpen,
+      dialogTitle: this.state.editingId ? 'Modifier l\'élément' : 'Nouvel élément',
+      isEditing: !!this.state.editingId,
+      isTask: draft.kind === 'task',
+      showTimes: !draft.allDay,
+      draft,
+      kindTabs: [
+        tab('Événement', draft.kind === 'event', () => this.patch({ kind: 'event' }), true),
+        tab('Tâche', draft.kind === 'task', () => this.patch({ kind: 'task' }))
+      ],
+      catOptions: this.cats().map((k) => ({ value: k, label: CATS[k].label })),
+      setTitle: (e) => this.patch({ title: e.target.value }),
+      setDate: (e) => this.patch({ date: e.target.value }),
+      setStart: (e) => this.patch({ start: e.target.value }),
+      setEnd: (e) => this.patch({ end: e.target.value }),
+      setCat: (e) => this.patch({ cat: e.target.value }),
+      setNotes: (e) => this.patch({ notes: e.target.value }),
+      setAllDay: (e) => this.patch({ allDay: e.target.checked }),
+      setDone: (e) => this.patch({ done: e.target.checked }),
+      saveItem: () => this.save(),
+      removeItem: () => this.remove(),
+      closeDialog: () => this.setState({ dialogOpen: false, editingId: null, draft: null }),
+      stop: (e) => e.stopPropagation()
+    };
+  }
+}
+</script>
+</body>
+</html>

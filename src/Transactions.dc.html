@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+  <style>
+    [data-component="TxPage"] { --ink-magenta: #a21caf; --ink-info: #075985; --ink-warn-2: #b45309; --ink-warn: #8f3f06; --ink-ok-2: #0f766e; --surface: var(--theme-surface, #ffffff); container-type: inline-size; }
+    [data-component="TxPage"], [data-component="TxPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="TxPage"] input, [data-component="TxPage"] select, [data-component="TxPage"] textarea { font-family: inherit; }
+    [data-component="TxPage"] h1, [data-component="TxPage"] h2, [data-component="TxPage"] h3 { color: #002a6e; }
+    [data-component="TxPage"] svg:not(button svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="TxPage"] input:focus, [data-component="TxPage"] select:focus, [data-component="TxPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    @container (max-width: 1040px) {
+      [data-tx-kpi] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    }
+    [data-theme="dark"] [data-component="TxPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="TxPage"] h1,
+    [data-theme="dark"] [data-component="TxPage"] h2,
+    [data-theme="dark"] [data-component="TxPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="TxPage"] input,
+    [data-theme="dark"] [data-component="TxPage"] select,
+    [data-theme="dark"] [data-component="TxPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="TxPage"] { --ink-brand: #002a6e; --ink-ok: #0b5f57; --ink-code: #3730a3; }
+    [data-theme="dark"] [data-component="TxPage"] { --ink-magenta: #f0abfc; --ink-info: #7dd3fc; --ink-warn-2: #f3b782; --ink-warn: #f0a868; --ink-ok-2: #4fd1c5; --ink-brand: #9db6d9; --ink-ok: #5fd6c4; --ink-code: #a5b4fc; }
+    [data-component="TxPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="TxPage"] { --field-brand: #12325e; }
+    [data-component="TxPage"] { --ink-brand-2: #003da5; --field-code: #3730a3; }
+    [data-theme="dark"] [data-component="TxPage"] { --ink-brand-2: #8fb4ee; --field-code: #25215f; }
+    [data-component="TxPage"] { --band-ok: #f2faf9; --band-warn: #fdf6ef; }
+    [data-theme="dark"] [data-component="TxPage"] { --band-ok: #152a28; --band-warn: #2c1f14; }
+    [data-component="TxPage"] { --ink-e6ebf5: #e6ebf5; }
+    [data-theme="dark"] [data-component="TxPage"] { --ink-e6ebf5: #cbced3; }
+  </style>
+</helmet>
+
+<div data-component="TxPage" data-screen-label="Transactions" style="display:flex;flex-direction:column;height:100%;min-height:0;overflow-y:auto;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;padding:14px 20px 0;background:var(--surface)">
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div style="min-width:0">
+        <h1 style="font-size:18px;margin:0;line-height:1.2">Transactions</h1>
+        <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:2px;margin-top:12px;border-bottom:1px solid var(--field-brand)">
+      <sc-for list="{{ pageTabs }}" as="t" hint-placeholder-count="2">
+        <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;height:{{ t.height }};padding:{{ t.padding }};border:1px solid var(--ds-brand-fill, var(--field-brand));border-bottom:0;border-radius:6px 6px 0 0;background:{{ t.bg }};color:{{ t.fg }};font-family:inherit;font-size:{{ t.size }};font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.97)">
+          <sc-if value="{{ t.isRegister }}" hint-placeholder-val="{{ true }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><path d="M9 7h7"></path><path d="M9 11h5"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isNew }}" hint-placeholder-val="{{ false }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+          </sc-if>
+          {{ t.label }}
+          <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
+            <span style="padding:1px 6px;border-radius:999px;background:{{ t.badgeBg }};color:{{ t.badgeFg }};font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ t.badge }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div data-tx-kpi="" style="flex:none;display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:1px;background:var(--field-brand);border-bottom:1px solid var(--field-brand)">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="min-width:0;padding:13px 14px 15px;background:{{ k.bg }}">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:{{ k.labelColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.label }}</div>
+        <div style="margin-top:5px;font-size:20px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.value }}</div>
+        <div style="margin-top:3px;font-size:11px;color:var(--color-neutral-700)">{{ k.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ onRegister }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">Chaque ligne est une transaction — un fait survenu à une date. Une transaction porte une ou plusieurs opérations : les mouvements réels de titres ou d'espèces qui la composent.</p>
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--ds-brand-fill, var(--field-brand));color:#ffffff">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#ffffff">Registre des transactions</h2>
+        <span style="margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums">{{ listNote }}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand);white-space:nowrap">Réconciliation</span>
+        <sc-for list="{{ recoStats }}" as="r" hint-placeholder-count="5">
+          <span matTooltip="{{ r.hint }}" title="{{ r.hint }}" style="display:inline-flex;align-items:center;gap:7px;padding:3px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font-size:11px;font-weight:600;white-space:nowrap">
+            <span style="width:7px;height:7px;border-radius:999px;background:{{ r.fg }}"></span>
+            {{ r.label }}
+            <span style="font-variant-numeric:tabular-nums;font-weight:700">{{ r.value }}</span>
+          </span>
+        </sc-for>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);white-space:nowrap">{{ recoStamp }}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <span onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+          <span style="display:flex;align-items:center;gap:8px;width:230px;height:30px;padding:0 10px;border:1px solid {{ acBorder }};border-radius:6px;background:var(--surface)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="flex:none;color:var(--color-neutral-500)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input value="{{ query }}" onChange="{{ setQuery }}" onFocus="{{ acFocus }}" placeholder="Référence, titre, compte" autoComplete="off" role="combobox" aria-expanded="{{ acOpen }}" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:inherit;font-size:12px;outline:none" />
+            <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearQuery }}" matTooltip="Effacer la recherche" title="Effacer la recherche" style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--color-neutral-600);cursor:pointer" style-hover="background:rgba(0,0,0,0.08)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+              </button>
+            </sc-if>
+          </span>
+          <sc-if value="{{ acOpen }}" hint-placeholder-val="{{ false }}">
+            <span role="listbox" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};width:300px;max-height:{{ menuMax }};overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:200">
+              <sc-for list="{{ acGroups }}" as="g" hint-placeholder-count="3">
+                <span style="display:flex;flex-direction:column">
+                  <span style="padding:6px 8px 3px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand);background:rgba(0,61,165,0.08);border-radius:4px">{{ g.label }}</span>
+                  <sc-for list="{{ g.items }}" as="o" hint-placeholder-count="3">
+                    <button role="option" onClick="{{ o.onPick }}" style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:0;border-radius:4px;background:transparent;color:var(--color-text);font-family:inherit;font-size:12px;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis">{{ o.label }}</span>
+                      <span style="margin-left:auto;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                    </button>
+                  </sc-for>
+                </span>
+              </sc-for>
+              <sc-if value="{{ acEmpty }}" hint-placeholder-val="{{ false }}">
+                <span style="padding:8px;font-size:11px;color:var(--color-neutral-700)">Aucune correspondance</span>
+              </sc-if>
+            </span>
+          </sc-if>
+        </span>
+        <span style="flex:none;display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700);white-space:nowrap">Période</span>
+          <span data-mat-date-range-input="" style="display:flex;align-items:center;gap:5px;height:30px;padding:0 8px;border:1px solid {{ dateBorder }};border-radius:6px;background:var(--surface)">
+            <input data-mat-start-date="" type="date" value="{{ dateFrom }}" onChange="{{ setDateFrom }}" max="{{ dateMax }}" matTooltip="Date de début" title="Date de début" style="width:112px;height:100%;border:0;background:transparent;color:{{ dateInk }};font-family:inherit;font-size:12px;font-variant-numeric:tabular-nums;outline:none" />
+            <span aria-hidden="true" style="flex:none;width:8px;height:1px;background:var(--color-neutral-400)"></span>
+            <input data-mat-end-date="" type="date" value="{{ dateTo }}" onChange="{{ setDateTo }}" max="{{ dateMax }}" matTooltip="Date de fin" title="Date de fin" style="width:112px;height:100%;border:0;background:transparent;color:{{ dateInk }};font-family:inherit;font-size:12px;font-variant-numeric:tabular-nums;outline:none" />
+            <sc-if value="{{ hasDate }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearDate }}" matTooltip="Effacer la plage de dates" title="Effacer la plage de dates" style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--color-neutral-600);cursor:pointer" style-hover="background:rgba(0,0,0,0.08)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+              </button>
+            </sc-if>
+          </span>
+        </span>
+          <button onClick="{{ toggleOpCol }}" matTooltip="{{ opColTitle }}" title="{{ opColTitle }}" style="margin-left:auto;flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:1px solid {{ opColBorder }};border-radius:6px;background:{{ opColBg }};color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+          <sc-if value="{{ opShown }}" hint-placeholder-val="{{ false }}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="M15 3v18"></path></svg>
+          </sc-if>
+          <sc-if value="{{ opHidden }}" hint-placeholder-val="{{ true }}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3h18v18H3z"></path><path d="M9 3v18"></path><path d="m4 20 16-16"></path></svg>
+          </sc-if>
+        </button>
+        <button onClick="{{ openStructFromSelection }}" matTooltip="{{ structBtnTitle }}" title="{{ structBtnTitle }}" disabled="{{ structBtnOff }}" style="flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:1px solid {{ structBorder }};border-radius:6px;background:{{ structBg }};color:var(--ink-brand);opacity:{{ structOpacity }};cursor:{{ structCursor }}" style-hover="background:{{ structHoverBg }}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+          <button onClick="{{ resetView }}" matTooltip="Effacer la recherche et les filtres" title="Effacer la recherche et les filtres" style="flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.12)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 2v6h6"></path><path d="M3.5 8a9 9 0 1 0 2.1-3.4L3 8"></path></svg>
+          </button>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:{{ tableMinWidth }};border-collapse:collapse;font-size:13px;table-layout:fixed;background:var(--surface)">
+          <thead>
+            <tr mat-header-row="" class="mat-header-row" data-mat-header-row-def="date,link,ref,op,kind,nature,type,account,security,amount,settle,state,reco,edit" style="background:var(--surface);height:32px">
+              <th data-mat-text-column="date" data-mat-column-def="date" data-mat-column="date" style="width:70px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Date</th>
+                <th data-mat-column-def="link" data-mat-column="link" style="width:26px;padding:0;border-bottom:1px solid rgba(0,0,0,0.12)"></th>
+              <th data-mat-text-column="ref" data-mat-column-def="ref" data-mat-column="ref" style="width:98px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Référence</th>
+              <th data-mat-column-def="op" data-mat-column="op" style="display:{{ opDisplay }};width:146px;text-align:left;padding:0 12px 0 40px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Opération</th>
+              <th data-mat-column-def="kind" data-mat-column="kind" style="width:104px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Objet</th>
+              <th data-mat-column-def="nature" data-mat-column="nature" style="width:112px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Nature</th>
+              <th data-mat-column-def="type" data-mat-column="type" style="width:100px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Type</th>
+              <th data-mat-text-column="account" data-mat-column-def="account" data-mat-column="account" style="width:210px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Compte</th>
+              <th data-mat-text-column="security" data-mat-column-def="security" data-mat-column="security" style="min-width:220px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Titre ou poche</th>
+              <th data-mat-column-def="amount" data-mat-column="amount" style="width:126px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Coût net</th>
+              <th data-mat-text-column="settle" data-mat-column-def="settle" data-mat-column="settle" style="width:96px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Règlement</th>
+              <th data-mat-column-def="state" data-mat-column="state" style="width:104px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">État</th>
+              <th data-mat-column-def="reco" data-mat-column="reco" style="width:140px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Réconciliation</th>
+              <th data-mat-column-def="edit" data-mat-column="edit" style="width:72px;text-align:center;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)"></th>
+            </tr>
+            <tr class="mat-filter-row" style="background:rgba(0,0,0,0.03)">
+              <th data-mat-column="date" style="padding:4px 8px 4px 0;border-bottom:1px solid rgba(0,0,0,0.12)"></th>
+              <th data-mat-column="link" style="padding:0;border-bottom:1px solid rgba(0,0,0,0.12)"></th>
+              <th data-mat-column="ref" style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+                  <input data-mat-autocomplete-trigger="" value="{{ refFilter }}" onChange="{{ setRefFilter }}" onFocus="{{ refFocus }}" placeholder="Tous" autoComplete="off" style="width:100%;height:26px;padding:0 9px;border:1px solid {{ refBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;font-weight:400;outline:none" />
+                  <sc-if value="{{ refMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <span role="listbox" data-mat-autocomplete="" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};min-width:150px;max-height:240px;overflow-y:auto;display:flex;flex-direction:column;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:400">
+                      <sc-for list="{{ refOptions }}" as="o" hint-placeholder-count="4">
+                        <button role="option" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:8px;padding:5px 9px;border:0;border-radius:4px;background:{{ o.bg }};color:var(--color-text);font-family:inherit;font-size:12px;font-weight:{{ o.weight }};font-variant-numeric:tabular-nums;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">{{ o.label }}</button>
+                      </sc-for>
+                      <sc-if value="{{ refNoOption }}" hint-placeholder-val="{{ false }}">
+                        <span style="padding:6px 9px;font-size:11px;color:var(--color-neutral-700)">Aucune correspondance</span>
+                      </sc-if>
+                    </span>
+                  </sc-if>
+                </span>
+              </th>
+              <th style="display:{{ opDisplay }};padding:4px 8px 4px 40px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <input value="{{ opNoFilter }}" onChange="{{ setOpNoFilter }}" placeholder="Tous" autoComplete="off" style="width:100%;height:26px;padding:0 9px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;font-weight:400;outline:none" />
+              </th>
+              <th data-mat-column="kind" style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span data-mat-form-field="" onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+                  <button data-mat-select="" aria-multiselectable="true" onClick="{{ toggleKindMenu }}" matTooltip="Filtrer par objet" title="Filtrer par objet" style="display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 5px 0 7px;border:1px solid {{ kindBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+                    <span data-mat-select-trigger="" style="flex:1;min-width:0;display:flex;align-items:center;overflow:hidden">
+                      <sc-if value="{{ kindPick.badge }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:inline-flex;align-items:center;max-width:100%;padding:1px 7px;border-radius:4px;background:{{ kindPick.bg }};color:{{ kindPick.fg }};font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kindPick.label }}</span>
+                      </sc-if>
+                      <sc-if value="{{ kindPick.plain }}" hint-placeholder-val="{{ true }}">
+                        <span style="font-size:12px;color:var(--color-neutral-700)">{{ kindPick.label }}</span>
+                      </sc-if>
+                    </span>
+                    <span style="display:inline-flex;flex:none;transform:rotate({{ kindRotate }})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m6 9 6 6 6-6"></path></svg></span>
+                  </button>
+                  <sc-if value="{{ kindMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <span role="listbox" data-mat-select-panel="" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};min-width:180px;max-height:{{ menuMax }};overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:200">
+                      <sc-for list="{{ kindOptions }}" as="o" hint-placeholder-count="3">
+                        <button role="option" data-mat-option="" aria-selected="{{ o.on }}" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:0;border-radius:4px;background:{{ o.rowBg }};color:var(--color-text);font-family:inherit;font-size:12px;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                          <sc-if value="{{ o.badge }}" hint-placeholder-val="{{ true }}">
+                            <span style="display:inline-flex;align-items:center;padding:1px 7px;border-radius:4px;background:{{ o.bg }};color:{{ o.fg }};font-size:11px;font-weight:600">{{ o.label }}</span>
+                          </sc-if>
+                          <sc-if value="{{ o.plain }}" hint-placeholder-val="{{ false }}">
+                            <span style="color:var(--color-neutral-700)">{{ o.label }}</span>
+                          </sc-if>
+                          <span style="margin-left:auto;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                        </button>
+                      </sc-for>
+                    </span>
+                  </sc-if>
+                </span>
+              </th>
+              <th data-mat-column="nature" style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span data-mat-form-field="" onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+                  <button data-mat-select="" aria-multiselectable="true" onClick="{{ toggleNatMenu }}" matTooltip="Filtrer par nature — sélection multiple" title="Filtrer par nature — sélection multiple" style="display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 5px 0 8px;border:1px solid {{ natBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+                    <span data-mat-select-trigger="" style="flex:1;min-width:0;display:flex;align-items:center;gap:5px;overflow:hidden">
+                      <sc-if value="{{ natSummary.badge }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:inline-flex;align-items:center;max-width:100%;padding:1px 7px;border-radius:4px;background:{{ natSummary.bg }};color:{{ natSummary.fg }};font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ natSummary.label }}</span>
+                      </sc-if>
+                      <sc-if value="{{ natSummary.plain }}" hint-placeholder-val="{{ true }}">
+                        <span style="font-size:12px;color:{{ natSummary.color }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ natSummary.label }}</span>
+                      </sc-if>
+                      <sc-if value="{{ natSummary.hasMore }}" hint-placeholder-val="{{ false }}">
+                        <span data-mat-additional-selection="" style="flex:none;font-size:11px;color:var(--color-neutral-600);white-space:nowrap">{{ natSummary.more }}</span>
+                      </sc-if>
+                    </span>
+                    <span style="display:inline-flex;flex:none;transform:rotate({{ natRotate }})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m6 9 6 6 6-6"></path></svg></span>
+                  </button>
+                  <sc-if value="{{ natMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <span role="listbox" aria-multiselectable="true" data-mat-select-panel="" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};min-width:240px;max-height:{{ menuMax }};overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:200">
+                      <button onClick="{{ natToggleAll }}" aria-checked="{{ natAllOn }}" matTooltip="Tout sélectionner ou tout désélectionner" title="Tout sélectionner ou tout désélectionner" style="display:flex;align-items:center;gap:9px;padding:5px 8px;border:0;border-bottom:1px solid var(--color-neutral-200);border-radius:4px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:11px;font-weight:600;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                        <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ natAllBorder }};border-radius:3px;background:{{ natAllBg }}">
+                          <sc-if value="{{ natAllOn }}" hint-placeholder-val="{{ false }}">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                          </sc-if>
+                        </span>
+                        {{ natAllLabel }}
+                      </button>
+                      <sc-for list="{{ natOptions }}" as="o" hint-placeholder-count="5">
+                        <button role="option" data-mat-option="" aria-selected="{{ o.on }}" onClick="{{ o.onToggle }}" style="display:flex;align-items:center;gap:9px;padding:5px 8px;border:0;border-radius:4px;background:{{ o.rowBg }};color:var(--color-text);font-family:inherit;font-size:12px;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                          <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ o.boxBorder }};border-radius:3px;background:{{ o.boxBg }}">
+                            <sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                            </sc-if>
+                          </span>
+                          <span style="display:inline-flex;align-items:center;padding:1px 7px;border-radius:4px;background:{{ o.bg }};color:{{ o.fg }};font-size:11px;font-weight:600">{{ o.label }}</span>
+                          <span style="margin-left:auto;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                        </button>
+                      </sc-for>
+                    </span>
+                  </sc-if>
+                </span>
+              </th>
+              <th data-mat-column="type" style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span data-mat-form-field="" onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+                  <button data-mat-select="" aria-multiselectable="true" onClick="{{ toggleTypeMenu }}" matTooltip="Filtrer par type — sélection multiple" title="Filtrer par type — sélection multiple" style="display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 5px 0 8px;border:1px solid {{ typeBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+                    <span data-mat-select-trigger="" style="flex:1;min-width:0;display:flex;align-items:baseline;gap:5px;text-align:left;overflow:hidden">
+                      <span style="min-width:0;font-size:12px;color:{{ typeSummary.color }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ typeSummary.label }}</span>
+                      <sc-if value="{{ typeSummary.hasMore }}" hint-placeholder-val="{{ false }}">
+                        <span data-mat-additional-selection="" style="flex:none;font-size:11px;color:var(--color-neutral-600);white-space:nowrap">{{ typeSummary.more }}</span>
+                      </sc-if>
+                    </span>
+                    <span style="display:inline-flex;flex:none;transform:rotate({{ typeRotate }})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m6 9 6 6 6-6"></path></svg></span>
+                  </button>
+                  <sc-if value="{{ typeMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <span role="listbox" aria-multiselectable="true" data-mat-select-panel="" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};min-width:220px;max-height:{{ menuMax }};overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:200">
+                      <button onClick="{{ typeToggleAll }}" aria-checked="{{ typeAllOn }}" matTooltip="Tout sélectionner ou tout désélectionner" title="Tout sélectionner ou tout désélectionner" style="display:flex;align-items:center;gap:9px;padding:5px 8px;border:0;border-bottom:1px solid var(--color-neutral-200);border-radius:4px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:11px;font-weight:600;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                        <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ typeAllBorder }};border-radius:3px;background:{{ typeAllBg }}">
+                          <sc-if value="{{ typeAllOn }}" hint-placeholder-val="{{ false }}">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                          </sc-if>
+                        </span>
+                        {{ typeAllLabel }}
+                      </button>
+                      <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="4">
+                        <button role="option" data-mat-option="" aria-selected="{{ o.on }}" onClick="{{ o.onToggle }}" style="display:flex;align-items:center;gap:9px;padding:5px 8px;border:0;border-radius:4px;background:{{ o.rowBg }};color:var(--color-text);font-family:inherit;font-size:12px;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                          <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ o.boxBorder }};border-radius:3px;background:{{ o.boxBg }}">
+                            <sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                            </sc-if>
+                          </span>
+                          <span style="display:inline-flex;align-items:center;padding:1px 7px;border-radius:4px;background:rgba(67,56,202,0.16);color:var(--ink-code);font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700">{{ o.label }}</span>
+                          <span style="margin-left:auto;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                        </button>
+                      </sc-for>
+                    </span>
+                  </sc-if>
+                </span>
+              </th>
+              <th style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span data-mat-form-field="" onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+                  <button data-mat-select="" aria-multiselectable="true" onClick="{{ toggleAccMenu }}" matTooltip="Filtrer par compte — sélection multiple" title="Filtrer par compte — sélection multiple" style="display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 5px 0 8px;border:1px solid {{ accBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+                    <span style="flex:1;min-width:0;text-align:left;font-size:12px;color:{{ accSummary.color }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ accSummary.label }}</span>
+                    <span style="display:inline-flex;flex:none;transform:rotate({{ accRotate }})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m6 9 6 6 6-6"></path></svg></span>
+                  </button>
+                  <sc-if value="{{ accMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <span role="listbox" aria-multiselectable="true" data-mat-select-panel="" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};min-width:280px;max-height:{{ menuMax }};overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:200">
+                      <button onClick="{{ accToggleAll }}" aria-checked="{{ accAllOn }}" matTooltip="Tout sélectionner ou tout désélectionner" title="Tout sélectionner ou tout désélectionner" style="display:flex;align-items:center;gap:9px;padding:5px 8px;border:0;border-bottom:1px solid var(--color-neutral-200);border-radius:4px;background:transparent;color:var(--color-neutral-800);font-family:inherit;font-size:11px;font-weight:600;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                        <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ accAllBorder }};border-radius:3px;background:{{ accAllBg }}">
+                          <sc-if value="{{ accAllOn }}" hint-placeholder-val="{{ false }}">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                          </sc-if>
+                        </span>
+                        {{ accAllLabel }}
+                      </button>
+                      <sc-for list="{{ accOptions }}" as="o" hint-placeholder-count="4">
+                        <button role="option" data-mat-option="" aria-selected="{{ o.on }}" onClick="{{ o.onToggle }}" style="display:flex;align-items:center;gap:9px;padding:5px 8px;border:0;border-radius:4px;background:{{ o.rowBg }};color:var(--color-text);font-family:inherit;font-size:12px;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                          <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ o.boxBorder }};border-radius:3px;background:{{ o.boxBg }}">
+                            <sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                            </sc-if>
+                          </span>
+                          <span style="min-width:0;overflow:hidden;text-overflow:ellipsis">{{ o.label }}</span>
+                          <span style="margin-left:auto;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                        </button>
+                      </sc-for>
+                    </span>
+                  </sc-if>
+                </span>
+              </th>
+              <th data-mat-column="security" style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span data-mat-form-field="" onMouseDown="{{ comboGuard }}" style="position:relative;display:flex">
+                  <button data-mat-select="" aria-multiselectable="true" aria-expanded="{{ secMenuOpen }}" onClick="{{ toggleSecMenu }}" matTooltip="Filtrer par titre ou poche — sélection multiple" title="Filtrer par titre ou poche — sélection multiple" style="display:flex;align-items:center;gap:6px;width:100%;height:26px;padding:0 5px 0 8px;border:1px solid {{ secBorder }};border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;cursor:pointer" style-hover="background:rgba(0,61,165,0.07)">
+                    <span data-mat-select-trigger="" style="flex:1;min-width:0;display:flex;align-items:baseline;gap:5px;text-align:left;overflow:hidden">
+                      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:{{ secTrigger.color }}">{{ secTrigger.first }}</span>
+                      <sc-if value="{{ secTrigger.hasMore }}" hint-placeholder-val="{{ false }}">
+                        <span data-mat-additional-selection="" style="flex:none;font-size:11px;color:var(--color-neutral-600);white-space:nowrap">{{ secTrigger.more }}</span>
+                      </sc-if>
+                    </span>
+                    <span style="display:inline-flex;flex:none;transform:rotate({{ secRotate }})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ds-brand-fill, var(--ink-brand-2))"><path d="m6 9 6 6 6-6"></path></svg></span>
+                  </button>
+                  <sc-if value="{{ secMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <span role="listbox" aria-multiselectable="true" data-mat-select-panel="" style="position:fixed;top:{{ menuTop }};left:{{ menuLeft }};min-width:260px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;padding:4px;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;box-shadow:var(--shadow-lg);z-index:400">
+                      <button onClick="{{ secToggleAll }}" aria-checked="{{ secAllOn }}" matTooltip="Tout sélectionner ou tout désélectionner" title="Tout sélectionner ou tout désélectionner" style="display:flex;align-items:center;gap:9px;padding:6px 9px;border:0;border-bottom:1px solid var(--color-neutral-200);border-radius:4px 4px 0 0;background:rgba(0,61,165,0.06);color:var(--ink-brand);font-family:inherit;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.12)">
+                        <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ secAllBorder }};border-radius:3px;background:{{ secAllBox }}">
+                          <sc-if value="{{ secAllOn }}" hint-placeholder-val="{{ false }}">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                          </sc-if>
+                        </span>
+                        {{ secAllLabel }}
+                      </button>
+                      <sc-for list="{{ secOptions }}" as="o" hint-placeholder-count="4">
+                        <button role="option" data-mat-option="" aria-selected="{{ o.on }}" onClick="{{ o.onToggle }}" style="display:flex;align-items:center;gap:9px;padding:6px 9px;border:0;border-radius:4px;background:{{ o.bg }};color:var(--color-text);font-family:inherit;font-size:12px;font-weight:{{ o.weight }};white-space:nowrap;text-align:left;cursor:pointer" style-hover="background:rgba(0,61,165,0.09)">
+                          <span data-mat-checkbox="" style="flex:none;display:flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid {{ o.boxBorder }};border-radius:3px;background:{{ o.boxBg }}">
+                            <sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+                            </sc-if>
+                          </span>
+                          <span style="min-width:0;overflow:hidden;text-overflow:ellipsis">{{ o.label }}</span>
+                          <span style="margin-left:auto;font-size:10px;color:var(--color-neutral-600);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                        </button>
+                      </sc-for>
+                    </span>
+                  </sc-if>
+                </span>
+              </th>
+              <th style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)"></th>
+              <th data-mat-column="settle" style="padding:4px 8px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <span style="display:flex;align-items:center;gap:4px;height:26px;padding:0 6px;border:1px solid {{ settleBorder }};border-radius:6px;background:var(--surface)">
+                  <input mat-input="" data-mat-datepicker="settlePicker" type="date" value="{{ settleFilter }}" onChange="{{ setSettleFilter }}" matTooltip="Filtrer par date de règlement" title="Filtrer par date de règlement" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:{{ settleInk }};font-family:inherit;font-size:11px;font-variant-numeric:tabular-nums;outline:none" />
+                  <sc-if value="{{ hasSettle }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ clearSettle }}" matTooltip="Effacer la date de règlement" title="Effacer la date de règlement" style="flex:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--color-neutral-600);cursor:pointer" style-hover="background:rgba(0,0,0,0.08)">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                    </button>
+                  </sc-if>
+                </span>
+              </th>
+              <th style="padding:4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <select value="{{ stateFilter }}" onChange="{{ setStateFilter }}" style="width:100%;height:26px;padding:0 6px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;font-weight:400;outline:none">
+                  <option value="all">Tous</option>
+                  <option value="pending">En suspens</option>
+                  <option value="settled">Réglé</option>
+                </select>
+              </th>
+              <th style="padding:4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                <select value="{{ recoFilter }}" onChange="{{ setRecoFilter }}" style="width:100%;height:26px;padding:0 6px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-family:inherit;font-size:12px;font-weight:400;outline:none">
+                  <option value="all">Toutes</option>
+                  <sc-for list="{{ recoOptions }}" as="o" hint-placeholder-count="5">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </th>
+              <th style="padding:4px 16px 4px 12px;border-bottom:1px solid rgba(0,0,0,0.12)"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+              <sc-if value="{{ r.isMonth }}" hint-placeholder-val="{{ false }}">
+                <tr onClick="{{ r.monthToggle }}" matTooltip="{{ r.monthToggleTitle }}" title="{{ r.monthToggleTitle }}" style="height:{{ r.height }};background:rgba(0,61,165,0.10);cursor:pointer" style-hover="background:rgba(0,61,165,0.16)">
+                  <td colSpan="{{ detailSpan }}" style="padding:0 16px;border-top:1px solid rgba(0,61,165,0.28);border-bottom:1px solid rgba(0,61,165,0.28)">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <span style="display:inline-flex;flex:none;transform:rotate({{ r.monthChevron }})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand)"><path d="m6 9 6 6 6-6"></path></svg>
+                      </span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand)"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand)">{{ r.monthLabel }}</span>
+                      <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ r.monthCount }}</span>
+                    </span>
+                  </td>
+                </tr>
+                <sc-if value="{{ r.monthOpen }}" hint-placeholder-val="{{ false }}">
+                  <tr style="background:rgba(0,61,165,0.05)">
+                    <td colSpan="{{ detailSpan }}" style="padding:10px 16px 12px 40px;border-bottom:1px solid rgba(0,61,165,0.28)">
+                      <span style="display:flex;flex-direction:column;gap:8px">
+                        <span style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+                          <sc-for list="{{ r.monthStats }}" as="st" hint-placeholder-count="5">
+                            <span style="display:flex;flex-direction:column;gap:1px;min-width:0">
+                              <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700);white-space:nowrap">{{ st.label }}</span>
+                              <span style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ st.color }};white-space:nowrap">{{ st.value }}</span>
+                            </span>
+                          </sc-for>
+                        </span>
+                        <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                          <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">Natures</span>
+                          <sc-for list="{{ r.monthNatures }}" as="n" hint-placeholder-count="3">
+                            <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:4px;background:{{ n.bg }};color:{{ n.fg }};font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">
+                              {{ n.label }}
+                              <span style="opacity:0.75;font-variant-numeric:tabular-nums">{{ n.count }}</span>
+                            </span>
+                          </sc-for>
+                        </span>
+                      </span>
+                    </td>
+                  </tr>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ r.isTx }}" hint-placeholder-val="{{ true }}">
+                <tr mat-row="" class="mat-row" data-mat-row-def="date,link,ref,op,kind,nature,type,account,security,amount,settle,state,reco,edit" onClick="{{ r.onSelect }}" matTooltip="{{ r.rowTitle }}" title="{{ r.rowTitle }}" style="height:{{ r.height }};background:{{ r.bg }};cursor:pointer" style-hover="filter:brightness(0.985)">
+                  <td data-mat-column="date" style="padding:0 8px 0 12px;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;white-space:nowrap;color:{{ r.ink }}">{{ r.date }}</td>
+                  <td data-mat-column="link" style="padding:0;border-bottom:1px solid rgba(0,0,0,0.12);text-align:center">
+                    <sc-if value="{{ r.manyLegs }}" hint-placeholder-val="{{ false }}">
+                      <span matTooltip="{{ r.legsTitle }}" title="{{ r.legsTitle }}" style="display:inline-flex;align-items:center;justify-content:center;color:var(--ink-brand)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 0 1 0 10h-2"></path><path d="M8 12h8"></path></svg>
+                      </span>
+                    </sc-if>
+                  </td>
+                  <td data-mat-column="ref" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;font-weight:{{ r.weight }};color:{{ r.ink }}">{{ r.ref }}</td>
+                  <td data-mat-column="op" style="display:{{ opDisplay }};padding:0 12px 0 40px;border-bottom:1px solid rgba(0,0,0,0.12);font-family:'Courier New', Courier, monospace;font-size:11px;font-variant-numeric:tabular-nums;color:{{ r.ink }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.opNo }}</td>
+                  <td data-mat-column="kind" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                    <sc-if value="{{ r.kind }}" hint-placeholder-val="{{ true }}">
+                      <span matTooltip="{{ r.kindHint }}" title="{{ r.kindHint }}" style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:4px;background:{{ r.kindBg }};color:{{ r.kindFg }};font-size:11px;font-weight:600;white-space:nowrap">
+                        <sc-if value="{{ r.isSecurity }}" hint-placeholder-val="{{ true }}">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                        </sc-if>
+                        <sc-if value="{{ r.isCash }}" hint-placeholder-val="{{ false }}">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>
+                        </sc-if>
+                        {{ r.kind }}
+                      </span>
+                    </sc-if>
+                  </td>
+                  <td data-mat-column="nature" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                    <sc-if value="{{ r.showNature }}" hint-placeholder-val="{{ true }}">
+                      <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:{{ r.natureBg }};color:{{ r.natureFg }};font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">{{ r.nature }}</span>
+                    </sc-if>
+                  </td>
+                  <td data-mat-column="type" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                    <sc-if value="{{ r.op }}" hint-placeholder-val="{{ true }}">
+                      <span matTooltip="{{ r.opHint }}" title="{{ r.opHint }}" style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:rgba(67,56,202,0.16);color:var(--ink-code);font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;white-space:nowrap">{{ r.op }}</span>
+                    </sc-if>
+                  </td>
+                  <td data-mat-column="account" matTooltip="{{ r.account }}" title="{{ r.account }}" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.account }}</td>
+                  <td data-mat-column="security" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.security }}</td>
+                  <td data-mat-column="amount" style="padding:0 12px;text-align:right;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.amountColor }}">{{ r.amount }}</td>
+                  <td data-mat-column="settle" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--color-neutral-800)">{{ r.settle }}</td>
+                  <td data-mat-column="state" style="padding:0 16px 0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                    <span matTooltip="{{ r.stateHint }}" title="{{ r.stateHint }}" style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ r.stateBg }};color:{{ r.stateFg }};font-size:11px;font-weight:600;white-space:nowrap">
+                      <span style="width:6px;height:6px;border-radius:999px;background:{{ r.stateFg }}"></span>
+                      {{ r.state }}
+                    </span>
+                  </td>
+                <td data-mat-column="reco" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                  <span matTooltip="{{ r.recoHint }}" title="{{ r.recoHint }}" style="display:{{ r.recoShow }};align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ r.recoBg }};color:{{ r.recoFg }};font-size:11px;font-weight:600;white-space:nowrap">
+                    <span style="width:6px;height:6px;border-radius:999px;background:{{ r.recoFg }}"></span>
+                    {{ r.reco }}
+                  </span>
+                </td>
+                <td data-mat-column="edit" style="padding:0 16px 0 12px;text-align:center;border-bottom:1px solid rgba(0,0,0,0.12)">
+                  <span style="display:inline-flex;align-items:center;gap:6px">
+                  <button onClick="{{ r.onStruct }}" matTooltip="Structure de la transaction" title="Structure de la transaction" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--ink-code);cursor:pointer" style-hover="background:rgba(67,56,202,0.12)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 3h3a2 2 0 0 1 2 2v3"></path><path d="M21 16v3a2 2 0 0 1-2 2h-3"></path></svg>
+                  </button>
+                  <button onClick="{{ r.onEdit }}" disabled="{{ r.editDisabled }}" matTooltip="{{ r.editTitle }}" title="{{ r.editTitle }}" style="display:inline-flex;align-items:center;justify-content:center;opacity:{{ r.editOpacity }};cursor:{{ r.editCursor }};width:26px;height:26px;padding:0;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--ink-brand);cursor:pointer" style-hover="background:rgba(0,61,165,0.10)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                  </button>
+                  </span>
+                </td>
+                </tr>
+              </sc-if>
+                <sc-if value="{{ r.isDetail }}" hint-placeholder-val="{{ false }}">
+                  <tr style="background:rgba(0,61,165,0.10)">
+                    <td colSpan="{{ detailSpan }}" style="padding:0;border-bottom:1px solid rgba(0,0,0,0.12);max-width:0">
+                      <div style="width:100%;max-width:100%;margin:0 0 8px;border:1px solid rgba(0,61,165,0.30);border-radius:6px;overflow:hidden;background:var(--surface)">
+                      <div style="display:flex;flex-direction:column;gap:6px;padding:11px 14px;background:rgba(0,61,165,0.14);border-bottom:1px solid rgba(0,61,165,0.30)">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:20px">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 6h18"></path><path d="M7 12h14"></path><path d="M11 18h10"></path></svg>
+                        <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-brand);white-space:nowrap">Opérations de {{ r.detailRef }}</span>
+                        <span style="padding:1px 7px;border-radius:999px;background:var(--field-brand);color:#ffffff;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ r.detailCount }}</span>
+                        <span aria-hidden="true" style="flex:none;width:1px;height:14px;background:rgba(0,61,165,0.30)"></span>
+                        <span style="font-size:11px;color:var(--color-neutral-700);white-space:nowrap">{{ r.detailNature }}</span>
+                        <span aria-hidden="true" style="flex:none;width:1px;height:14px;background:rgba(0,61,165,0.30)"></span>
+                        <span matTooltip="{{ r.detailRecoHint }}" title="{{ r.detailRecoHint }}" style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ r.detailRecoBg }};color:{{ r.detailRecoFg }};font-size:11px;font-weight:600;white-space:nowrap">
+                          <span style="width:6px;height:6px;border-radius:999px;background:{{ r.detailRecoFg }}"></span>
+                          {{ r.detailReco }}
+                        </span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:18px">
+                        <span matTooltip="{{ r.detailStampHint }}" title="{{ r.detailStampHint }}" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--color-neutral-800);font-variant-numeric:tabular-nums;white-space:nowrap">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand)"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                          {{ r.detailStamp }}
+                        </span>
+                        <span aria-hidden="true" style="flex:none;width:1px;height:14px;background:rgba(0,61,165,0.30)"></span>
+                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--color-neutral-800);white-space:nowrap">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--ink-brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                          {{ r.detailOwner }}
+                        </span>
+                        <span aria-hidden="true" style="flex:none;width:1px;height:14px;background:rgba(0,61,165,0.30)"></span>
+                        <span matTooltip="{{ r.detailComment }}" title="{{ r.detailComment }}" style="min-width:0;flex:1;font-size:11px;font-style:italic;color:var(--color-neutral-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.detailComment }}</span>
+                        <span aria-hidden="true" style="flex:none;width:1px;height:14px;background:rgba(0,61,165,0.30)"></span>
+                        <span style="flex:none;font-size:11px;font-weight:600;color:var(--ink-brand);font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.detailTotal }}</span>
+                        </div>
+                      </div>
+                      <div style="width:100%;max-width:100%;overflow-x:auto">
+                      <table mat-table="" class="mat-table" style="width:100%;max-width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;background:transparent">
+                        <thead>
+                          <tr mat-header-row="" class="mat-header-row" data-mat-header-row-def="opNo,seq,date,type,account,security,qty,price,fees,taxes,gross,net" style="height:30px">
+                            <th data-mat-text-column="opNo" data-mat-column-def="opNo" data-mat-column="opNo" style="width:88px;text-align:left;padding:0 7px 0 0;font-size:11px;font-weight:600;color:var(--ink-brand)">Opération</th>
+                            <th data-mat-text-column="seq" data-mat-column-def="seq" data-mat-column="seq" style="width:38px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Séq.</th>
+                            <th data-mat-text-column="date" data-mat-column-def="date" data-mat-column="date" style="width:60px;text-align:left;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Date</th>
+                            <th data-mat-column-def="type" data-mat-column="type" style="width:74px;text-align:left;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Type</th>
+                            <th data-mat-text-column="account" data-mat-column-def="account" data-mat-column="account" style="width:22%;min-width:130px;text-align:left;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Compte</th>
+                            <th data-mat-text-column="security" data-mat-column-def="security" data-mat-column="security" style="width:26%;min-width:150px;text-align:left;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Titre</th>
+                            <th data-mat-column-def="qty" data-mat-column="qty" style="width:70px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Qté</th>
+                            <th data-mat-column-def="price" data-mat-column="price" style="width:70px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Prix</th>
+                            <th data-mat-column-def="fees" data-mat-column="fees" style="width:60px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Frais</th>
+                            <th data-mat-column-def="taxes" data-mat-column="taxes" style="width:60px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Taxes</th>
+                            <th data-mat-column-def="gross" data-mat-column="gross" style="width:92px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Brut</th>
+                            <th data-mat-column-def="net" data-mat-column="net" style="width:92px;text-align:right;padding:0 7px;font-size:11px;font-weight:600;color:var(--ink-brand)">Net</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <sc-for list="{{ r.legRows }}" as="l" hint-placeholder-count="2">
+                            <tr mat-row="" class="mat-row" data-mat-row-def="opNo,seq,date,type,account,security,qty,price,fees,taxes,gross,net" style="height:34px;background:{{ l.bg }}">
+                              <td data-mat-column="opNo" style="padding:0 7px 0 0;border-top:1px solid rgba(0,0,0,0.10);font-family:'Courier New', Courier, monospace;font-size:11px;font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ l.opNo }}</td>
+                              <td data-mat-column="seq" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;font-weight:600">{{ l.seq }}</td>
+                              <td data-mat-column="date" style="padding:0 7px;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--color-neutral-800)">{{ l.date }}</td>
+                              <td data-mat-column="type" style="padding:0 7px;border-top:1px solid rgba(0,0,0,0.10)">
+                                <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:rgba(67,56,202,0.16);color:var(--ink-code);font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;white-space:nowrap">{{ l.type }}</span>
+                              </td>
+                              <td data-mat-column="account" style="padding:0 7px;border-top:1px solid rgba(0,0,0,0.10);color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.account }}</td>
+                              <td data-mat-column="security" style="padding:0 7px;border-top:1px solid rgba(0,0,0,0.10);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.security }}</td>
+                              <td data-mat-column="qty" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums">{{ l.qty }}</td>
+                              <td data-mat-column="price" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ l.price }}</td>
+                              <td data-mat-column="fees" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ l.fees }}</td>
+                              <td data-mat-column="taxes" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ l.taxes }}</td>
+                              <td data-mat-column="gross" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;color:var(--color-neutral-800)">{{ l.amount }}</td>
+                              <td data-mat-column="net" style="padding:0 7px;text-align:right;border-top:1px solid rgba(0,0,0,0.10);font-variant-numeric:tabular-nums;font-weight:600;color:{{ l.color }}">{{ l.net }}</td>
+                            </tr>
+                          </sc-for>
+                        </tbody>
+                      </table>
+                      </div>
+                      </div>
+                    </td>
+                  </tr>
+                </sc-if>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;padding:20px 16px;font-size:12px;color:var(--color-neutral-700)">Aucune transaction ne correspond aux critères.</p>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onPending2 }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Suspens de règlement</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">En suspens à D ⟺ date ≤ D &lt; date de règlement</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:820px;border-collapse:collapse;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr mat-header-row="" class="mat-header-row" data-mat-header-row-def="code,label,amount,count" style="background:var(--surface);height:32px">
+              <th data-mat-column-def="code" data-mat-column="code" style="width:120px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Compte PCG</th>
+              <th style="text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Intitulé</th>
+              <th style="width:150px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Montant</th>
+              <th style="width:96px;text-align:right;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Lignes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ suspense }}" as="s" hint-placeholder-count="2">
+              <tr mat-row="" class="mat-row" data-mat-row-def="code,label,amount,count" style="height:38px;background:{{ s.bg }}">
+                <td style="padding:0 16px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                  <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:{{ s.tagBg }};color:{{ s.tagFg }};font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;white-space:nowrap">{{ s.code }}</span>
+                </td>
+                <td style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);color:var(--color-neutral-800);text-wrap:pretty">{{ s.label }}</td>
+                <td style="padding:0 12px;text-align:right;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;font-weight:600;color:{{ s.color }}">{{ s.amount }}</td>
+                <td style="padding:0 16px 0 12px;text-align:right;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ s.count }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.04)">
+        <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">Solde projeté = solde réglé + à recevoir − à régler (512 + 465 − 464). Le suspens ne se stocke pas : il se déduit du couple de dates de l'opération.</span>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+        <h2 style="margin:0;font-size:14px">Opérations négociées, non réglées</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ pendingNote }}</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table mat-table="" class="mat-table" style="width:100%;min-width:900px;border-collapse:collapse;font-size:13px;background:var(--surface)">
+          <thead>
+            <tr mat-header-row="" class="mat-header-row" data-mat-header-row-def="date,settle,type,security,amount,left" style="background:var(--surface);height:32px">
+              <th data-mat-text-column="date" data-mat-column-def="date" data-mat-column="date" style="width:92px;text-align:left;padding:0 16px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Négocié</th>
+              <th style="width:92px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Règlement</th>
+              <th style="width:120px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Type</th>
+              <th style="text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Référence / Titre</th>
+              <th style="width:138px;text-align:right;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Montant</th>
+              <th style="width:110px;text-align:left;padding:0 16px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Reste</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ pendingRows }}" as="p" hint-placeholder-count="4">
+              <tr mat-row="" class="mat-row" data-mat-row-def="date,settle,type,security,amount,left" style="height:38px;background:{{ p.bg }}">
+                <td style="padding:0 16px;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums">{{ p.date }}</td>
+                <td style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums">{{ p.settle }}</td>
+                <td style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                  <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:{{ p.typeBg }};color:{{ p.typeFg }};font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;white-space:nowrap">{{ p.type }}</span>
+                </td>
+                <td style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.security }}</td>
+                <td style="padding:0 12px;text-align:right;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;font-weight:600;color:{{ p.color }}">{{ p.amount }}</td>
+                <td style="padding:0 16px 0 12px;border-bottom:1px solid rgba(0,0,0,0.12);font-weight:600;color:{{ p.leftColor }};white-space:nowrap">{{ p.left }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;padding:20px 16px;font-size:12px;color:var(--color-neutral-700)">Aucune opération en suspens : tout est dénoué.</p>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onNew }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:none;display:flex;flex-direction:column;gap:16px;padding:16px 20px 24px">
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">Choisissez la nature du fait puis le type d'opération qu'il produit — le nombre de jambes à saisir dépend de ce choix, comme détaillé ci-dessous.</p>
+    <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--ds-brand-fill, var(--field-brand));color:#ffffff">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#ffffff">Nouvelle transaction</h2>
+        <span style="margin-left:auto;font-size:12px">{{ formNature }}</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700)">Nature du fait</span>
+       
+
+        <span mat-button-toggle-group="" name="formNature" matTooltip="Nature du fait" title="Nature du fait" style="display:inline-flex;flex-wrap:wrap;border:1px solid rgba(0,0,0,0.12);border-radius:4px;overflow:hidden;background:var(--surface)">
+            <sc-for list="{{ natureChoices }}" as="c" hint-placeholder-count="5">
+              <button mat-button-toggle="" aria-pressed="{{ c.on }}" onClick="{{ c.onClick }}" style="display:flex;align-items:center;height:32px;padding:0 12px;border:0;border-left:{{ c.divider }};background:{{ c.bg }};color:{{ c.fg }};font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;white-space:nowrap;cursor:pointer" style-hover="background:{{ c.hoverBg }}">{{ c.label }}</button>
+            </sc-for>
+          </span>
+          <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ natureDesc }}</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:600;color:var(--color-neutral-700)">Type d'opération</span>
+          <span mat-button-toggle-group="" name="formType" matTooltip="Type d'opération" title="Type d'opération" style="display:inline-flex;flex-wrap:wrap;border:1px solid rgba(0,0,0,0.12);border-radius:4px;overflow:hidden;background:var(--surface)">
+            <sc-for list="{{ typeChoices }}" as="c" hint-placeholder-count="4">
+              <button mat-button-toggle="" aria-pressed="{{ c.on }}" onClick="{{ c.onClick }}" style="display:flex;align-items:center;height:32px;padding:0 12px;border:0;border-left:{{ c.divider }};background:{{ c.bg }};color:{{ c.fg }};font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;letter-spacing:0.03em;white-space:nowrap;cursor:pointer" style-hover="background:{{ c.hoverBg }}">{{ c.label }}</button>
+            </sc-for>
+          </span>
+          <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ typeDesc }}</span>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1px solid rgba(0,61,165,0.28);border-left:3px solid var(--ds-brand-fill, var(--field-brand));border-radius:4px;background:rgba(0,61,165,0.06)">
+          <span style="min-width:0;display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12px;font-weight:600;color:var(--ink-brand)">{{ legHint }}</span>
+            <span style="font-size:11px;color:var(--color-neutral-800);text-wrap:pretty">{{ legWhy }}</span>
+          </span>
+        </div>
+
+        <div style="border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">Définition de l'ordre</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:14px 12px;align-items:start;padding:14px">
+          <sc-for list="{{ formFields }}" as="f" hint-placeholder-count="10">
+            <label style="grid-column:{{ f.span }};max-width:{{ f.maxWidth }};display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              <span data-mat-label="">{{ f.label }}</span>
+              <sc-if value="{{ f.isDate }}" hint-placeholder-val="{{ false }}">
+                <span data-mat-form-field="" style="display:flex;flex-direction:column;gap:2px">
+                  <span style="position:relative;display:flex;align-items:center">
+                    <input mat-input="" data-mat-datepicker="" type="date" value="{{ f.value }}" onChange="{{ f.onChange }}" max="{{ f.max }}" style="width:100%;height:32px;padding:0 30px 0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;outline:none" />
+                    <span data-mat-datepicker-toggle="" aria-hidden="true" style="position:absolute;right:8px;display:flex;align-items:center;pointer-events:none;color:var(--color-neutral-600)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+                    </span>
+                  </span>
+                  <span data-mat-hint="" style="font-size:10px;color:var(--color-neutral-600)">JJ/MM/AAAA</span>
+                </span>
+              </sc-if>
+              <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+                <span data-mat-form-field="" style="display:flex">
+                  <select data-mat-select="" value="{{ f.value }}" onChange="{{ f.onChange }}" matTooltip="{{ f.hint }}" title="{{ f.hint }}" style="width:100%;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                    <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="4">
+                      <option data-mat-option="" value="{{ o.value }}" disabled="{{ o.disabled }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </span>
+                <sc-if value="{{ f.sub }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px;font-weight:400;color:var(--color-neutral-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.sub }}</span>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ f.isReadOnly }}" hint-placeholder-val="{{ false }}">
+                <span style="display:flex;align-items:center;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--color-neutral-100);color:var(--color-text);font-size:13px;font-variant-numeric:tabular-nums">{{ f.value }}</span>
+              </sc-if>
+              <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+                <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </sc-if>
+            </label>
+          </sc-for>
+        </div>
+        </div>
+
+        <sc-if value="{{ hasPanel2 }}" hint-placeholder-val="{{ true }}">
+        <div style="border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,61,165,0.06)">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">Exécution</span>
+            <sc-for list="{{ execFields }}" as="f" hint-placeholder-count="1">
+              <sc-if value="{{ f.isExecToggle }}" hint-placeholder-val="{{ true }}">
+                <span data-mat-form-field="" style="display:flex;align-items:center;gap:6px">
+                  <select data-mat-select="" value="{{ f.value }}" onChange="{{ f.onChange }}" style="height:34px;padding:0 14px;min-width:150px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                    <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="2">
+                      <option data-mat-option="" value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </span>
+              </sc-if>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:14px;align-items:start;padding:14px">
+          <sc-for list="{{ formFields2 }}" as="f" hint-placeholder-count="3">
+            <label style="grid-column:{{ f.span }};max-width:{{ f.maxWidth }};display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+              <span data-mat-label="">{{ f.label }}</span>
+              <sc-if value="{{ f.isDate }}" hint-placeholder-val="{{ false }}">
+                <span data-mat-form-field="" style="display:flex;flex-direction:column;gap:2px">
+                  <span style="position:relative;display:flex;align-items:center">
+                    <input mat-input="" data-mat-datepicker="" type="date" value="{{ f.value }}" onChange="{{ f.onChange }}" max="{{ f.max }}" style="width:100%;height:32px;padding:0 30px 0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;outline:none" />
+                    <span data-mat-datepicker-toggle="" aria-hidden="true" style="position:absolute;right:8px;display:flex;align-items:center;pointer-events:none;color:var(--color-neutral-600)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+                    </span>
+                  </span>
+                  <span data-mat-hint="" style="font-size:10px;color:var(--color-neutral-600)">JJ/MM/AAAA</span>
+                </span>
+              </sc-if>
+              <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+                <span data-mat-form-field="" style="display:flex">
+                  <select data-mat-select="" value="{{ f.value }}" onChange="{{ f.onChange }}" style="width:100%;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none">
+                    <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="4">
+                      <option data-mat-option="" value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </span>
+              </sc-if>
+              <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+                <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+              </sc-if>
+            </label>
+          </sc-for>
+        </div>
+          <div style="padding:14px 14px 14px 14px;margin-top:0;display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ execRows }}" as="r" hint-placeholder-count="1">
+              <span style="display:grid;grid-template-columns:repeat(4, minmax(0,1fr)) 30px 34px;gap:14px;align-items:start">
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  <span data-mat-label="">Date d'exécution</span>
+                  <input mat-input="" data-mat-datepicker="" type="date" value="{{ r.date }}" onChange="{{ r.setDate }}" max="{{ r.dateMax }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-variant-numeric:tabular-nums;outline:none" />
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  <span data-mat-label="">Quantité exécutée</span>
+                  <input value="{{ r.qty }}" onChange="{{ r.setQty }}" placeholder="20" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  <span data-mat-label="">Prix d'exécution</span>
+                  <sc-if value="{{ r.priceReadOnly }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:flex;align-items:center;height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--color-neutral-100);color:var(--color-text);font-size:13px">{{ r.price }}</span>
+                  </sc-if>
+                  <sc-if value="{{ r.priceEditable }}" hint-placeholder-val="{{ true }}">
+                    <input value="{{ r.price }}" onChange="{{ r.setPrice }}" placeholder="150,00" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-weight:400;outline:none" />
+                  </sc-if>
+                </label>
+                <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:600;color:var(--color-neutral-700)">
+                  <span data-mat-label="">Date de règlement</span>
+                  <input mat-input="" data-mat-datepicker="" type="date" value="{{ r.settle }}" onChange="{{ r.setSettle }}" style="height:32px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:13px;font-variant-numeric:tabular-nums;outline:none" />
+                </label>
+                <sc-if value="{{ r.canRemove }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ r.remove }}" title="Retirer cette exécution" style="align-self:end;display:flex;align-items:center;justify-content:center;width:30px;height:32px;padding:0;border:1px solid var(--color-accent-300);border-radius:999px;background:var(--surface);color:var(--color-accent-700);cursor:pointer" style-hover="background:var(--color-accent-100)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12h14"></path></svg>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ r.isLast }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ r.onAdd }}" disabled="{{ r.addDisabled }}" title="{{ r.addTitle }}" style="align-self:end;display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;border-radius:999px;background:transparent;color:{{ r.addColor }};cursor:{{ r.addCursor }}" style-hover="background:{{ r.addHoverBg }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 4H20V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V4Z"></path><path d="M10 14L14 14M14 14L14 10M14 14L10 10"></path></svg>
+                  </button>
+                </sc-if>
+              </span>
+            </sc-for>
+          </div>
+                      </div>
+          </sc-if>
+
+        <div style="border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--color-neutral-200);background:rgba(0,61,165,0.06)">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-brand)">Jambes engendrées</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ legsCount }}</span>
+          </div>
+          <sc-if value="{{ noLegs }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0;padding:14px;font-size:12px;color:var(--color-neutral-700);text-wrap:pretty">Ce fait n'engendre aucune opération : les montants vivent dans les champs de la transaction.</p>
+          </sc-if>
+          <sc-if value="{{ hasLegs }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x:auto">
+              <table mat-table="" class="mat-table" style="width:100%;min-width:640px;border-collapse:collapse;font-size:13px;table-layout:fixed;background:var(--surface)">
+                <thead>
+                  <tr mat-header-row="" class="mat-header-row" data-mat-header-row-def="seq,type,detail,amount" style="background:var(--surface);height:32px">
+                    <th data-mat-text-column="seq" data-mat-column-def="seq" data-mat-column="seq" style="width:56px;text-align:center;padding:0 8px 0 14px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">N°</th>
+                    <th data-mat-column-def="type" data-mat-column="type" style="width:110px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Type</th>
+                    <th data-mat-text-column="detail" data-mat-column-def="detail" data-mat-column="detail" style="min-width:260px;text-align:left;padding:0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Détail</th>
+                    <th data-mat-column-def="amount" data-mat-column="amount" style="width:130px;text-align:right;padding:0 14px 0 12px;font-size:12px;font-weight:500;color:var(--color-neutral-700);border-bottom:1px solid rgba(0,0,0,0.12)">Coût net</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ formLegs }}" as="l" hint-placeholder-count="1">
+                    <tr mat-row="" class="mat-row" data-mat-row-def="seq,type,detail,amount" style="height:38px;background:{{ l.bg }}">
+                      <td data-mat-column="seq" style="padding:0 8px 0 14px;text-align:center;border-bottom:1px solid rgba(0,0,0,0.12)">
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:rgba(0,61,165,0.14);color:var(--ink-brand);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums">{{ l.seq }}</span>
+                      </td>
+                      <td data-mat-column="type" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12)">
+                        <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;background:rgba(67,56,202,0.16);color:var(--ink-code);font-family:'Courier New', Courier, monospace;font-size:11px;font-weight:700;white-space:nowrap">{{ l.type }}</span>
+                      </td>
+                      <td data-mat-column="detail" style="padding:0 12px;border-bottom:1px solid rgba(0,0,0,0.12);color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.detail }}</td>
+                      <td data-mat-column="amount" style="padding:0 14px 0 12px;text-align:right;border-bottom:1px solid rgba(0,0,0,0.12);font-variant-numeric:tabular-nums;font-weight:600;color:{{ l.color }}">{{ l.amount }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:4px;border-top:1px solid var(--color-neutral-200)">
+          <button onClick="{{ resetForm }}" matTooltip="Annuler la saisie" title="Annuler la saisie" style="display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid var(--color-accent-300);border-radius:6px;background:rgba(197,48,48,0.10);color:var(--color-accent-700);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer" style-hover="background:rgba(197,48,48,0.16)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            Annuler
+          </button>
+          <button onClick="{{ submitForm }}" style="display:flex;align-items:center;gap:7px;height:30px;padding:0 14px;border:0;border-radius:6px;background:var(--ds-brand-fill, var(--field-brand));color:#fff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer" style-hover="background:var(--field-brand)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+            Enregistrer la transaction
+          </button>
+          <span style="margin-left:auto;font-size:11px;font-weight:600;color:var(--ink-ok)">{{ formStatus }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+  <sc-if value="{{ structOpen }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="SidePanel" title="{{ structTitle }}" subtitle="Structure de la transaction — Annexe STRUCT" accent="var(--ink-code)" icon="M8 3H5a2 2 0 0 0-2 2v3::M3 16v3a2 2 0 0 0 2 2h3::M16 3h3a2 2 0 0 1 2 2v3::M21 16v3a2 2 0 0 1-2 2h-3" open-pct="{{ 42 }}" max-pct="{{ 70 }}" on-close="{{ closeStruct }}" footer="{{ true }}" cancel-label="OK" cancel-kind="ok" note="En-tête et opérations numérotées" hint-size="100%,100%">
+      <pre style="margin:0;padding:14px 16px;border:1px solid var(--field-code);border-left:3px solid var(--field-code);border-radius:4px;background:#0e1420;color:var(--ink-e6ebf5);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:400;line-height:1.6;overflow-x:auto">{{ structJson }}</pre>
+
+      <span style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-code)">Réconciliation</span>
+        <span matTooltip="{{ recoHintSel }}" title="{{ recoHintSel }}" style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ recoBgSel }};color:{{ recoFgSel }};font-size:11px;font-weight:600;white-space:nowrap">
+          <span style="width:6px;height:6px;border-radius:999px;background:{{ recoFgSel }}"></span>
+          {{ recoLabelSel }}
+        </span>
+      </span>
+      <pre style="margin:0;padding:14px 16px;border:1px solid var(--field-code);border-left:3px solid var(--field-code);border-radius:4px;background:#0e1420;color:var(--ink-e6ebf5);font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:400;line-height:1.6;overflow-x:auto">{{ recoJson }}</pre>
+      <p style="margin:0;font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">L'en-tête ne porte aucune donnée chiffrée : quantité, prix, frais et taxe appartiennent à l'opération, seule à savoir quelle ligne elle touche. La séquence fixe l'ordre de rejeu.</p>
+    </dc-import>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:880}}">
+// Table de correspondance Nature → Types couverts (Annexes, entrée NATURE).
+const NATURES = {
+  TRADE:        { label: 'TRADE', bg: 'rgba(15,118,110,0.16)', fg: 'var(--ink-ok)', types: ['BUY', 'SELL'], desc: 'Achat ou vente décidé par le détenteur.' },
+  TRANSFER:     { label: 'TRANSFER', bg: 'rgba(2,132,199,0.16)', fg: 'var(--ink-info)', types: ['TOUT', 'TIN', 'CASH'], desc: 'Déplacement entre deux comptes suivis ; le patrimoine total ne change pas.' },
+  CORPORATE:    { label: 'CORPORATE', bg: 'rgba(180,83,9,0.16)', fg: 'var(--ink-warn)', types: ['SPLIT', 'SPINOFF', 'MERGER', 'DIV', 'DIVOPT', 'BUYOPT'], desc: 'Subi, décidé par l\'émetteur et non par le détenteur.' },
+  CASHFLOW:     { label: 'CASHFLOW', bg: 'rgba(162,28,175,0.16)', fg: 'var(--ink-magenta)', types: ['DEPOSIT', 'WITHDRAW', 'FEE', 'INTEREST', 'LENDING', 'REFUND'], desc: 'Espèces sans contrepartie en titres.' }
+};
+
+// Les 15 titres de l'univers des titres négociables (page Titres), avec leur MIC.
+const TRADABLE_SECURITIES = [
+  { ticker: 'AI', label: 'AI — Air Liquide', mic: 'XPAR', place: 'Euronext Paris' },
+  { ticker: 'MC', label: 'MC — LVMH', mic: 'XPAR', place: 'Euronext Paris' },
+  { ticker: 'OR', label: 'OR — L\'Oréal', mic: 'XPAR', place: 'Euronext Paris' },
+  { ticker: 'GLBEQ', label: 'GLBEQ — Global Equity Index', mic: 'XLUX', place: 'Bourse de Luxembourg' },
+  { ticker: 'USLC', label: 'USLC — US Large Cap Core', mic: 'XDUB', place: 'Euronext Dublin' },
+  { ticker: 'IGCRD', label: 'IGCRD — IG Corporate Bond', mic: 'XLON', place: 'London Stock Exchange' },
+  { ticker: 'EMEQ', label: 'EMEQ — EM Equity Sleeve', mic: 'XLUX', place: 'Bourse de Luxembourg' },
+  { ticker: 'INFRA', label: 'INFRA — Infrastructure Fund II', mic: 'OTC', place: 'Hors marché' },
+  { ticker: 'PRVE', label: 'PRVE — Private Equity Co-invest', mic: 'OTC', place: 'Hors marché' },
+  { ticker: 'HYBND', label: 'HYBND — High Yield Bond Fund', mic: 'XDUB', place: 'Euronext Dublin' },
+  { ticker: 'CRYPT', label: 'CRYPT — Digital Asset Tracker', mic: 'XETR', place: 'Xetra Francfort' },
+  { ticker: 'SMLCP', label: 'SMLCP — Euro Small Cap Growth', mic: 'XLUX', place: 'Bourse de Luxembourg' },
+  { ticker: 'TSY10', label: 'TSY10 — Treasury 7–10 ans ETF', mic: 'XNYS', place: 'New York Stock Exchange' },
+  { ticker: 'CAC40', label: 'CAC40 — Indice CAC 40', mic: 'XPAR', place: 'Euronext Paris' },
+  { ticker: 'SX5E', label: 'SX5E — Indice EURO STOXX 50', mic: 'XEUR', place: 'Eurex' }
+];
+const MIC_SHORT = {
+  XPAR: 'Paris', XLUX: 'Luxembourg', XDUB: 'Dublin', XLON: 'Londres',
+  OTC: 'Hors marché', XETR: 'Francfort', XNYS: 'New York', XEUR: 'Eurex'
+};
+// Code MIC seul dans la liste ; la place se lit dans l'infobulle du champ.
+const MIC_PLACES = Array.from(new Set(TRADABLE_SECURITIES.map((s) => s.mic)))
+  .map((mic) => ({ value: mic, label: mic }))
+  .concat([{ value: 'XXXX', label: 'XXXX' }]);
+const MIC_HINT = Array.from(new Set(TRADABLE_SECURITIES.map((s) => s.mic)))
+  .map((mic) => mic + ' ' + (MIC_SHORT[mic] || '')).join(' · ')
+  + ' · XXXX place inconnue — tous les titres restent proposés';
+
+// Libellé court dans la liste (la piste ne tient pas le nom complet) ;
+// la valeur reste le nom complet, rappelé en infobulle du champ.
+const ACCOUNTS_LIST = [
+  { value: 'Degiro — CTO Degiro', label: 'Degiro — CTO', code: 'DG-CTO-4521' },
+  { value: 'Bourse Direct — PEA', label: 'Bourse Direct — PEA', code: 'BD-PEA-1187' },
+  { value: 'Trade Republic — CTO Trade Republic', label: 'Trade Republic — CTO', code: 'TR-CTO-0932' }
+];
+
+const PANEL2_KEYS = ['fill', 'execDate', 'execQty', 'execPrice', 'settle', 'ratio', 'amount'];
+const PANEL2_BODY_KEYS = ['execDate', 'execQty', 'execPrice', 'settle', 'ratio', 'amount'];
+
+// Code seul dans la liste ; le sens complet vit dans l'infobulle du champ.
+const TIF = [
+  { value: 'DAY', label: 'DAY' },
+  { value: 'GTC', label: 'GTC' },
+  { value: 'GTD', label: 'GTD' },
+  { value: 'IOC', label: 'IOC' },
+  { value: 'FOK', label: 'FOK' },
+  { value: 'AON', label: 'AON' },
+  { value: 'OPG', label: 'OPG' },
+  { value: 'MOC', label: 'MOC' }
+];
+
+const LIMIT_STRATEGIES = ['LMT', 'STPLMT', 'LOO', 'LOC', 'PEG'];
+
+const ORDER_STRATEGY = [
+  { value: 'MKT', label: 'MKT' },
+  { value: 'LMT', label: 'LMT' },
+  { value: 'STP', label: 'STP' },
+  { value: 'STPLMT', label: 'STP LMT' },
+  { value: 'TS', label: 'TS' },
+  { value: 'MOO', label: 'MOO' },
+  { value: 'MOC', label: 'MOC' },
+  { value: 'LOO', label: 'LOO' },
+  { value: 'LOC', label: 'LOC' },
+  { value: 'PEG', label: 'PEG' },
+  { value: 'ICE', label: 'ICE' },
+  { value: 'TWAP', label: 'TWAP' },
+  { value: 'VWAP', label: 'VWAP' }
+];
+const STRAT_NAME = {
+  MKT: 'Au marché', LMT: 'À cours limité', STP: 'Stop', STPLMT: 'Stop limité',
+  TS: 'Stop suiveur', MOO: 'Au marché à l\'ouverture', MOC: 'Au marché à la clôture',
+  LOO: 'Limité à l\'ouverture', LOC: 'Limité à la clôture', PEG: 'Attaché à une référence',
+  ICE: 'Iceberg', TWAP: 'Découpage dans le temps', VWAP: 'Découpage sur le volume'
+};
+
+const STRAT_HINT = 'MKT au marché · LMT à cours limité · STP stop · STP LMT stop limité · '
+  + 'TS stop suiveur · MOO/MOC au marché à l\'ouverture ou à la clôture · '
+  + 'LOO/LOC limité à l\'ouverture ou à la clôture · PEG attaché à une référence · '
+  + 'ICE iceberg · TWAP/VWAP découpage automatique dans le temps ou sur le volume';
+
+const TIF_HINT = 'DAY jusqu\'à la clôture · GTC jusqu\'à annulation · GTD jusqu\'à une date · '
+  + 'IOC immédiat ou annulé · FOK tout ou rien immédiat · AON tout ou rien · '
+  + 'OPG à l\'ouverture · MOC à la clôture';
+
+const FILL_STATUS = [
+  { value: 'full', label: 'Totale' },
+  { value: 'partial', label: 'Partielle' }
+];
+
+const LEG_RULES = {
+  BUY:      { legs: 1, hint: 'Une opération, ou une par exécution partielle', why: "Le décaissement se déduit de quantité × prix + frais. Un ordre à cours limité dénoué en plusieurs exécutions, parfois sur plusieurs jours, produit autant d'opérations BUY que d'exécutions." },
+  SELL:     { legs: 1, hint: 'Une opération, ou une par exécution partielle', why: "L'encaissement se déduit de quantité × prix − frais. Même règle qu'à l'achat : chaque exécution partielle d'un ordre à cours limité est une opération SELL distincte." },
+  BUYOPT:   { legs: 1, hint: 'Une opération, ou une par exécution partielle', why: 'Comptabilisée comme un achat : une souscription dénouée en plusieurs exécutions produit autant d\'opérations BUYOPT.' },
+  TOUT:     { legs: 2, hint: 'Deux opérations si la contrepartie est suivie', why: "Départ et arrivée portent la même quantité et le même prix — un coût de base, jamais un cours." },
+  CASH:     { legs: 2, hint: 'Deux opérations', why: 'Débit à la source, crédit à l\'arrivée : deux poches distinctes d\'espèces — à ne pas confondre avec TOUT/TIN, qui déplacent des titres.' },
+  DIV:      { legs: 0, hint: 'Aucune opération', why: 'Le dividende en numéraire vit dans les champs de la transaction : le net se déduit de brut − retenue.' },
+  DIVOPT:   { legs: 2, hint: 'Une ou deux opérations', why: "Une jambe si la parité tombe juste ; deux dès qu'un rompu est réglé en espèces." },
+  SPLIT:    { legs: 1, hint: 'Une opération par compte', why: 'La parité fait tout : autant d\'opérations que de comptes portant le titre.' },
+  DEPOSIT:  { legs: 1, hint: 'Une opération', why: 'Une seule poche touchée.' },
+  FEE:      { legs: 1, hint: 'Une opération', why: 'À distinguer des frais portés par une opération sur titres.' },
+  INTEREST: { legs: 1, hint: 'Une opération', why: 'Produit d\'intérêts crédité sur la poche espèces.' },
+  TIN:      { legs: 1, hint: 'Une opération, en pendant d\'un TOUT', why: 'Réception d\'un transfert sortant : même quantité, même coût de base que la jambe TOUT.' },
+  SPINOFF:  { legs: 1, hint: 'Une ou deux opérations', why: 'Une jambe pour la ligne mère ; une seconde si la ligne créée entre sur un autre compte ou reste hors univers.' },
+  MERGER:   { legs: 1, hint: 'Une ou deux opérations', why: 'Une jambe suffit quand la ligne reçue reste sur le même compte ; deux si une soulte en espèces est réglée.' },
+  WITHDRAW: { legs: 1, hint: 'Une opération', why: 'Retrait d\'espèces débité sur la poche source.' },
+  LENDING:  { legs: 1, hint: 'Une ou deux opérations', why: 'La commission seule, ou deux jambes si le prêt est suivi côté titres.' },
+  REFUND:   { legs: 1, hint: 'Une opération', why: 'Remboursement d\'espèces crédité sur la poche destinataire.' }
+};
+
+// Code de l'opération : le type quand la transaction n'en porte qu'un.
+// Numéro unique d'opération, rattaché à la transaction.
+// Numéros d'opération des jambes : une transaction à plusieurs jambes
+// porte autant de numéros que d'opérations.
+const LEG_OPNO = {
+  TXN000039: ['OPE000114', 'OPE000115'],
+  TXN000038: ['OPE000112', 'OPE000113'],
+  TXN000036: ['OPE000108', 'OPE000109'],
+  TXN000035: ['OPE000105', 'OPE000106']
+};
+
+const TX_OPNO = {
+  TXN000041: 'OPE000117', TXN000040: 'OPE000116', TXN000039: 'OPE000114', TXN000038: 'OPE000112',
+  TXN000037: 'OPE000110', TXN000036: 'OPE000108', TXN000035: 'OPE000105', TXN000034: 'OPE000103',
+  TXN000033: 'OPE000101', TXN000032: 'OPE000098', TXN000031: 'OPE000095'
+};
+
+const TX_OP = {
+  TXN000041: 'BUY', TXN000040: 'SELL', TXN000039: 'TOUT', TXN000038: 'DIVOPT',
+  TXN000037: 'DIV', TXN000036: 'CASH', TXN000035: 'SPLIT', TXN000034: 'DEPOSIT',
+  TXN000033: 'FEE', TXN000032: 'BUYOPT', TXN000031: 'INTEREST'
+};
+
+// Identifiants attendus par la structure de l'Annexe : compte → numéro de plateforme, titre → ISIN.
+const PLATFORM_ID = {
+  'Degiro — CTO Degiro': 1,
+  'Bourse Direct — PEA': 2,
+  'Bourse Direct — PEA Bourse Direct': 2,
+  'Trade Republic — CTO Trade Republic': 3
+};
+const ISIN_BY_TICKER = {
+  AAPL: 'US0378331005', MC: 'FR0000121014', AI: 'FR0000120073', OR: 'FR0000120321',
+  ASML: 'NL0010273215', MSFT: 'US5949181045', GLBEQ: 'LU1234567890',
+  USLC: 'IE00B1234567', EUEQ: 'LU0000000001', REIT: 'LU5678901234'
+};
+
+// État de réconciliation : rapprochement du registre interne avec le relevé du broker.
+const RECO_STATE = {
+  matched:  { label: 'Rapprochée', bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok)', hint: 'Montant, quantité et date concordent avec le relevé du broker' },
+  pending:  { label: 'En attente', bg: 'rgba(0,61,165,0.14)', fg: 'var(--ink-brand)', hint: 'Relevé du broker non encore reçu pour cette période' },
+  gap:      { label: 'Écart', bg: 'rgba(143,63,6,0.16)', fg: 'var(--ink-warn)', hint: 'Divergence de montant, de quantité ou de frais avec le relevé' },
+  unmatched:{ label: 'Sans contrepartie', bg: 'rgba(162,28,175,0.14)', fg: 'var(--ink-magenta)', hint: 'Aucune ligne correspondante dans le relevé du broker' },
+  manual:   { label: 'Forcée', bg: 'rgba(0,0,0,0.10)', fg: 'var(--color-neutral-700)', hint: 'Rapprochement validé manuellement malgré un écart résiduel' }
+};
+
+// Ce que dit le relevé du broker, face au registre interne.
+// Lignes du relevé du broker, une par opération rapprochée.
+const RECO_OP = {
+  TXN000039: [
+    { line: 'TRF-88412-OUT', gross: 3529.6, fee: 4.5, tax: 0 },
+    { line: 'TRF-88412-IN', gross: 3529.6, fee: 0, tax: 0 }
+  ],
+  TXN000038: [
+    { line: 'DIV-77120-T', gross: 168.2, fee: 0, tax: 0 },
+    { line: 'DIV-77120-C', gross: 26, fee: 0, tax: 0 }
+  ],
+  TXN000037: [{ line: 'DIV-44012', gross: 154, fee: 0, tax: 0 }],
+  TXN000036: [
+    { line: 'CSH-10233-D', gross: 1500, fee: 1.2, tax: 0 },
+    { line: 'CSH-10233-C', gross: 1500, fee: 0, tax: 0 }
+  ],
+  TXN000035: [
+    { line: 'SPL-00891-A', gross: 0, fee: 0, tax: 0 },
+    { line: 'SPL-00891-B', gross: 0, fee: 0, tax: 0 }
+  ],
+  TXN000034: [{ line: 'CSH-10190', gross: 5000, fee: 0, tax: 0 }],
+  TXN000033: [{ line: 'FEE-00512', gross: 46.8, fee: 0, tax: 0 }],
+  TXN000031: [{ line: 'INT-00077', gross: 12.4, fee: 0, tax: 0 }]
+};
+
+const RECO_DETAIL = {
+  TXN000039: { statement: 'DG-2026-08-STMT', line: 'TRF-88412', gross: 3529.6, fee: 4.5, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' },
+  TXN000038: { statement: 'DG-2026-08-STMT', line: 'DIV-77120', gross: 168.2, fee: 0, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' },
+  TXN000037: { statement: 'BD-2026-08-STMT', line: 'DIV-44012', gross: 154, fee: 0, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' },
+  TXN000036: { statement: 'BD-2026-08-STMT', line: 'CSH-10233', gross: 1500, fee: 1.2, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' },
+  TXN000035: { statement: 'DG-2026-08-STMT', line: 'SPL-00891', gross: 0, fee: 0, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' },
+  TXN000034: { statement: 'DG-2026-08-STMT', line: 'CSH-10190', gross: 5000, fee: 0, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' },
+  TXN000033: { statement: 'BD-2026-08-STMT', line: 'FEE-00512', gross: 46.8, fee: 0, tax: 0, at: '2026-08-31T09:40:00Z', by: 'A. Meyer' },
+  TXN000031: { statement: 'DG-2026-08-STMT', line: 'INT-00077', gross: 12.4, fee: 0, tax: 0, at: '2026-08-31T07:15:00Z', by: 'Rapprochement automatique' }
+};
+
+const RECO = {
+  TXN000041: 'pending', TXN000040: 'pending', TXN000039: 'matched',
+  TXN000038: 'gap', TXN000037: 'matched', TXN000036: 'matched',
+  TXN000035: 'matched', TXN000034: 'matched', TXN000033: 'manual',
+  TXN000032: 'unmatched', TXN000031: 'matched'
+};
+
+const TX = [
+  { ref: 'TXN000041', nature: 'TRADE', date: '2026-09-03', owner: 'Fabrice HOËPPE', time: '09:41', modified: '2026-09-03', comment: "Renforcement de la ligne technologique", legs: 1, account: 'Degiro — CTO Degiro', security: 'AAPL — Apple Inc.', qty: 20, price: 150, fees: 12, taxes: 1.8, amount: 3000, sense: 'debit', settle: '2026-09-07' },
+  { ref: 'TXN000040', nature: 'TRADE', date: '2026-09-02', owner: 'Fabrice HOËPPE', time: '15:12', modified: '2026-09-04', comment: "Allègement partiel avant détachement", legs: 1, account: 'Bourse Direct — PEA', security: 'MC — LVMH', qty: 10, price: 152.3, fees: 2.5, taxes: 0.46, amount: 1523, sense: 'credit', settle: '2026-09-08' },
+  { ref: 'TXN000039', nature: 'TRANSFER', date: '2026-08-28', owner: 'Fabrice HOËPPE', time: '14:35', modified: '2026-08-30', comment: "Consolidation des comptes", legs: 2, account: 'Degiro — CTO Degiro', security: 'AAPL — Apple Inc.', amount: 0, sense: 'none', settle: '2026-09-10' },
+  { ref: 'TXN000038', nature: 'CORPORATE', date: '2026-08-26', owner: 'Fabrice HOËPPE', time: '08:20', modified: '2026-08-26', comment: "Dividende optionnel — option titres retenue", legs: 2, account: 'Degiro — CTO Degiro', security: 'AI — Air Liquide', amount: 26, sense: 'credit', settle: '2026-08-26' },
+  { ref: 'TXN000037', nature: 'CORPORATE', date: '2026-08-20', owner: 'Fabrice HOËPPE', time: '07:00', modified: '2026-08-20', comment: "Détachement du coupon annuel", legs: 1, account: 'Bourse Direct — PEA', security: 'OR — L\'Oréal', amount: 154, sense: 'credit', settle: '2026-08-26' },
+  { ref: 'TXN000036', nature: 'TRANSFER', date: '2026-08-18', owner: 'Fabrice HOËPPE', time: '11:05', modified: '2026-08-18', comment: "Approvisionnement du PEA", legs: 2, account: 'Degiro — CTO Degiro', security: 'Espèces EUR', amount: 1500, sense: 'none', settle: '2026-08-18' },
+  { ref: 'TXN000035', nature: 'CORPORATE', date: '2026-08-14', owner: 'Fabrice HOËPPE', time: '07:10', modified: '2026-08-14', comment: "Division du nominal 3 pour 1", legs: 2, account: 'Degiro — CTO Degiro', security: 'EUEQ — Europe ex-UK Equity', amount: 0, sense: 'none', settle: '2026-08-14' },
+  { ref: 'TXN000034', nature: 'CASHFLOW', date: '2026-08-12', owner: 'Fabrice HOËPPE', time: '10:30', modified: '2026-08-12', comment: "Versement mensuel", legs: 1, account: 'Degiro — CTO Degiro', security: 'Espèces EUR', amount: 5000, sense: 'credit', settle: '2026-08-12' },
+  { ref: 'TXN000033', nature: 'CASHFLOW', date: '2026-08-10', owner: 'Fabrice HOËPPE', time: '23:59', modified: '2026-08-10', comment: "Droits de garde du trimestre", legs: 1, account: 'Bourse Direct — PEA', security: 'Droits de garde', amount: 48.6, sense: 'debit', settle: '2026-08-10' },
+  { ref: 'TXN000032', nature: 'CORPORATE', date: '2026-08-06', owner: 'Fabrice HOËPPE', time: '16:45', modified: '2026-08-07', comment: "Souscription à l'augmentation de capital", legs: 1, account: 'Degiro — CTO Degiro', security: 'USLC — US Large Cap Core', qty: 300, price: 38.5, fees: 4, taxes: 0.6, amount: 11550, sense: 'debit', settle: '2026-09-09' },
+  { ref: 'TXN000031', nature: 'CASHFLOW', date: '2026-08-04', owner: 'Fabrice HOËPPE', time: '23:59', modified: '2026-08-04', comment: "Intérêts créditeurs du mois", legs: 1, account: 'Degiro — CTO Degiro', security: 'Espèces EUR', amount: 12.4, sense: 'credit', settle: '2026-08-04' }
+];
+
+// Détail des jambes, déroulé au clic sur une transaction qui en porte plusieurs.
+// Prix unitaire des jambes, quand la jambe en porte un.
+const LEGS = {
+  'TXN000039': [
+    { type: 'TOUT', account: 'Degiro — CTO Degiro', security: 'AAPL — Apple Inc.', qty: 40, price: 88.24, fees: 4.5, taxes: 0, amount: 3529.6, sense: 'none', settle: '2026-08-28' },
+    { type: 'TIN', account: 'Trade Republic — CTO Trade Republic', security: 'AAPL — Apple Inc.', qty: 40, price: 88.24, fees: 0, taxes: 0, amount: 3529.6, sense: 'none', settle: '2026-09-10' }
+  ],
+  'TXN000038': [
+    { type: 'DIVOPT', account: 'Degiro — CTO Degiro', security: 'AI — Air Liquide', qty: 4, price: 41.6, amount: 166.4, sense: 'none', settle: '2026-08-26' },
+    { type: 'DIVOPT', account: 'Degiro — CTO Degiro', security: 'Espèces EUR — soulte', fees: 0, taxes: 3.9, amount: 26, sense: 'credit', settle: '2026-08-26' }
+  ],
+  'TXN000036': [
+    { type: 'CASH', account: 'Degiro — CTO Degiro', security: 'Espèces EUR', fees: 1.2, taxes: 0, amount: 1500, sense: 'debit', settle: '2026-08-18' },
+    { type: 'CASH', account: 'Bourse Direct — PEA', security: 'Espèces EUR', amount: 1500, sense: 'credit', settle: '2026-08-18' }
+  ],
+  'TXN000035': [
+    { type: 'SPLIT', account: 'Degiro — CTO Degiro', security: 'EUEQ — Europe ex-UK Equity', qty: 61000, amount: 0, sense: 'none', settle: '2026-08-14' },
+    { type: 'SPLIT', account: 'Trade Republic — CTO Trade Republic', security: 'EUEQ — Europe ex-UK Equity', qty: 12000, amount: 0, sense: 'none', settle: '2026-08-14' }
+  ]
+};
+
+// Objet de la transaction : titre ou trésorerie, déduit de la poche touchée.
+const CASH_HINTS = ['espèces', 'droits de garde', 'intérêts', 'frais', 'soulte'];
+function kindOf(security) {
+  const t = String(security || '').toLowerCase();
+  return CASH_HINTS.some((h) => t.indexOf(h) >= 0) ? 'cash' : 'security';
+}
+
+const TODAY = (function () {
+  const d = new Date();
+  const p = function (n) { return String(n).padStart(2, '0'); };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+})();
+
+function eur(v, d) {
+  return v.toLocaleString('fr-FR', { minimumFractionDigits: d === undefined ? 2 : d, maximumFractionDigits: d === undefined ? 2 : d }) + ' €';
+}
+function fmt(iso) { const p = String(iso).split('-'); return p[2] + '/' + p[1]; }
+
+function toneByColor(k) {
+  const c = String(k.color || '');
+  const green = c.indexOf('0f766e') >= 0 || c.indexOf('0b5f57') >= 0;
+  const red = c.indexOf('b45309') >= 0;
+  if (!green && !red) return Object.assign({ bg: 'var(--surface)', labelColor: 'var(--color-neutral-700)' }, k);
+  return Object.assign({}, k, {
+    bg: green ? 'var(--band-ok)' : 'var(--band-warn)',
+    labelColor: green ? 'var(--ink-ok)' : 'var(--ink-warn-2)',
+    color: green ? 'var(--ink-ok)' : 'var(--ink-warn-2)'
+  });
+}
+
+class Component extends DCLogic {
+  state = {
+    role: 'admin',
+    tab: 'register', query: '', dateFrom: '', dateTo: '', settleOn: '', natPickSet: {}, cols: {}, stateFilter: 'all', selected: null, open: {}, showOp: false,
+    kindMenuOpen: false, natMenuOpen: false, kindFilter: 'all',
+    typeMenuOpen: false, accMenuOpen: false, secMenuOpen: false, typePick: {}, accPick: {}, secPick: {}, acOpen: false,
+    formNature: 'TRADE', formType: 'BUY', formStatus: '',
+    form: { date: TODAY, settle: '2026-09-08', account: 'Degiro — CTO Degiro', security: 'AAPL — Apple Inc.', qty: '20', price: '150,00', fees: '12,00', taxes: '1,80', amount: '', ratio: '3', tif: 'DAY', mic: '', fill: 'full', strategy: 'MKT' }
+  };
+
+  openMenu(patch, e) {
+    if (e) e.stopPropagation();
+    const el = e && (e.currentTarget || (e.getBoundingClientRect ? e : null));
+    if (el && el.getBoundingClientRect) this.menuAnchor = el;
+    this.measureMenu();
+    this.setState(patch);
+  }
+
+  // Le panneau reste ancré à son champ : la géométrie est relue à chaque
+  // défilement ou redimensionnement tant qu'un menu est ouvert.
+  measureMenu() {
+    const el = this.menuAnchor;
+    if (!el || !el.getBoundingClientRect || !el.isConnected) return;
+    const r = el.getBoundingClientRect();
+    const vh = window.innerHeight || 800;
+    const below = vh - r.bottom - 12;
+    const above = r.top - 12;
+    const placeBelow = below >= 180 || below >= above;
+    const max = Math.max(120, Math.min(300, placeBelow ? below : above));
+    const vw = window.innerWidth || 1000;
+    const w = Math.max(r.width, 230);
+    this.menuGeo = {
+      // Près du bord droit, le panneau s'aligne sur la fin du champ.
+      left: Math.round(Math.max(8, r.left + w + 8 > vw ? Math.min(r.right - w, vw - w - 8) : r.left)),
+      top: Math.round(placeBelow ? r.bottom + 4 : r.top - max - 4),
+      max: Math.round(max)
+    };
+  }
+
+  menuIsOpen() {
+    const st = this.state;
+    return !!(st.acOpen || st.kindMenuOpen || st.natMenuOpen || st.typeMenuOpen
+      || st.accMenuOpen || st.secMenuOpen || st.menu);
+  }
+
+  componentDidMount() {
+    this.menuFollow = () => {
+      if (!this.menuIsOpen()) return;
+      this.measureMenu();
+      this.forceUpdate();
+      if (this.menuRaf) cancelAnimationFrame(this.menuRaf);
+      this.menuRaf = requestAnimationFrame(() => { this.measureMenu(); this.forceUpdate(); });
+    };
+    window.addEventListener('scroll', this.menuFollow, true);
+    window.addEventListener('resize', this.menuFollow);
+  }
+
+  componentWillUnmount() {
+    if (this.menuFollow) {
+      window.removeEventListener('scroll', this.menuFollow, true);
+      window.removeEventListener('resize', this.menuFollow);
+      if (this.menuRaf) cancelAnimationFrame(this.menuRaf);
+    }
+  }
+
+  patch(p) { this.setState((st) => ({ form: Object.assign({}, st.form, p) })); }
+
+  renderVals() {
+    const isAdmin = (this.state.role || 'user') === 'admin';
+    const tab = this.state.tab;
+    const q = this.state.query.trim().toLowerCase();
+    const natKeys = Object.keys(this.state.natPickSet || {}).filter((k) => this.state.natPickSet[k]);
+    const cf = this.state.cols || {};
+    const sf = this.state.stateFilter || 'all';
+    const hit = (v, k) => !k || String(v || '').toLowerCase().indexOf(String(k).toLowerCase()) >= 0;
+    const isPending = (t) => t.date <= TODAY && String(t.settle) > TODAY;
+    const kf = this.state.kindFilter || 'all';
+    const rf = this.state.recoFilter || 'all';
+    const dFrom = this.state.dateFrom || '';
+    const dTo = this.state.dateTo || '';
+    const sOn = this.state.settleOn || '';
+    const typeKeys = Object.keys(this.state.typePick || {}).filter((k) => this.state.typePick[k]);
+    const accKeys = Object.keys(this.state.accPick || {}).filter((k) => this.state.accPick[k]);
+    const secKeys = Object.keys(this.state.secPick || {}).filter((k) => this.state.secPick[k]);
+    // Une transaction multi-jambes touche plusieurs comptes : le filtre doit voir chacun.
+    const accOf = (t) => {
+      const ls = LEGS[t.ref];
+      const out = ls && ls.length ? ls.map((l) => l.account).filter(Boolean) : [];
+      if (out.indexOf(t.account) < 0) out.push(t.account);
+      return Array.from(new Set(out));
+    };
+    const secOf = (t) => {
+      const ls = LEGS[t.ref];
+      const out = ls && ls.length ? ls.map((l) => l.security).filter(Boolean) : [];
+      if (out.indexOf(t.security) < 0) out.push(t.security);
+      return Array.from(new Set(out));
+    };
+    const ACCOUNTS = Array.from(new Set([].concat.apply([], TX.map(accOf)))).sort((a, b) => a.localeCompare(b, 'fr'));
+    const SECURITIES = Array.from(new Set([].concat.apply([], TX.map(secOf)))).sort((a, b) => a.localeCompare(b, 'fr'));
+
+    const list = TX.filter((t) => {
+      if (natKeys.length && natKeys.indexOf(t.nature) < 0) return false;
+      if (kf !== 'all' && kindOf(t.security) !== kf) return false;
+      if (!hit(t.ref, cf.ref)) return false;
+      if (!hit(TX_OP[t.ref], cf.op)) return false;
+      if (cf.opNo) {
+        const pool = [TX_OPNO[t.ref]].concat(LEG_OPNO[t.ref] || []);
+        if (!pool.some((x) => hit(x, cf.opNo))) return false;
+      }
+      if (rf !== 'all' && (RECO[t.ref] || 'pending') !== rf) return false;
+      if (dFrom && t.date < dFrom) return false;
+      if (dTo && t.date > dTo) return false;
+      if (sOn && t.settle !== sOn) return false;
+      if (typeKeys.length && typeKeys.indexOf(TX_OP[t.ref]) < 0) return false;
+      if (accKeys.length && !accOf(t).some((a) => accKeys.indexOf(a) >= 0)) return false;
+      if (secKeys.length && !secOf(t).some((x) => secKeys.indexOf(x) >= 0)) return false;
+      if (sf !== 'all' && (sf === 'pending' ? !isPending(t) : isPending(t))) return false;
+      if (!q) return true;
+      return (t.ref + ' ' + t.nature + ' ' + t.account + ' ' + t.security).toLowerCase().indexOf(q) >= 0;
+    });
+
+    const pending = TX.filter(isPending);
+    const toPay = pending.filter((t) => t.sense === 'debit').reduce((n, t) => n + t.amount, 0);
+    const toGet = pending.filter((t) => t.sense === 'credit').reduce((n, t) => n + t.amount, 0);
+
+    const nature = this.state.formNature;
+    const allowed = NATURES[nature].types;
+    const ft = allowed.indexOf(this.state.formType) >= 0 ? this.state.formType : allowed[0];
+    const rule = LEG_RULES[ft] || LEG_RULES.BUY;
+    const f = this.state.form;
+    const parse = (x) => Number(String(x || '0').replace(/\s/g, '').replace(',', '.')) || 0;
+    const qty = parse(f.qty), price = parse(f.price), fees = parse(f.fees), taxes = parse(f.taxes), amount = parse(f.amount);
+    const charges = fees + taxes;
+    const cash = ft === 'SELL' ? qty * price - charges : qty * price + charges;
+    const isSecurity = ['BUY', 'SELL', 'BUYOPT', 'TOUT', 'DIVOPT', 'SPLIT'].indexOf(ft) >= 0;
+
+    const fields = isSecurity
+      ? (function () {
+          // Ordre demandé : date, titre, quantité, prix, frais, taxes, coût brut, coût net, type d'ordre, compte.
+          if (['BUY', 'SELL', 'BUYOPT'].indexOf(ft) >= 0) {
+            // Chaque champ est épinglé sur sa piste : les listes larges (compte, place, titre)
+            // occupent deux colonnes, les montants courts une seule.
+            return [
+              { key: 'date', label: 'Date', span: '1 / 2', isDate: true },
+              { key: 'account', label: 'Compte', span: '2 / 4', hint: 'Compte concerné par le trade — Degiro CTO, Bourse Direct PEA, Trade Republic CTO', select: [{ value: '', label: 'Aucun' }].concat(ACCOUNTS_LIST) },
+              { key: 'mic', label: 'Place (MIC)', span: '4 / 5', hint: MIC_HINT, select: [{ value: '', label: 'Aucune' }].concat(MIC_PLACES) },
+              { key: 'security', label: 'Titre', span: '5 / 7', hint: 'Titre négociable — le libellé complet reste la valeur enregistrée', select: [{ value: '', label: 'Aucun' }].concat(
+                TRADABLE_SECURITIES.filter((s) => !f.mic || f.mic === 'XXXX' || s.mic === f.mic).map((s) => ({ value: s.label, label: s.ticker }))
+              ) },
+              { key: 'qty', label: 'Quantité', span: '1 / 2', ph: '20' },
+              { key: 'price', label: 'Prix unitaire', span: '2 / 3', ph: '150,00' },
+              { key: 'fees', label: 'Frais de courtage', span: '3 / 4', ph: '12,00' },
+              { key: 'taxes', label: 'Taxes et impôts', span: '4 / 5', ph: '1,80' },
+              { key: 'strategy', label: 'Stratégie', span: '5 / 6', select: ORDER_STRATEGY, hint: STRAT_HINT },
+              { key: 'tif', label: 'Validité', span: '6 / 7', select: TIF, hint: TIF_HINT },
+              { key: 'gross', label: 'Coût brut', span: '1 / 2', readOnly: true },
+              { key: 'net', label: 'Coût net', span: '2 / 3', readOnly: true },
+              { key: 'fill', label: 'Exécution', span: 'auto', select: FILL_STATUS },
+              { key: 'execDate', label: "Date d'exécution", span: 'auto', isDate: true },
+              { key: 'execQty', label: 'Quantité exécutée', span: 'auto', ph: '20' },
+              { key: 'execPrice', label: "Prix d'exécution", span: 'auto', ph: '150,00' },
+              { key: 'settle', label: 'Date de règlement', span: 'auto', isDate: true }
+            ];
+          }
+          const base = [
+            { key: 'date', label: ft === 'SPLIT' ? 'Date d\'annonce' : 'Date de négociation', span: 'auto', isDate: true },
+            { key: 'settle', label: ft === 'SPLIT' ? 'Date d\'effet' : 'Date de règlement', span: 'auto', isDate: true },
+            { key: 'account', label: 'Compte', span: 'span 2', ph: 'Broker — nom du compte' },
+            { key: 'security', label: 'Titre', span: 'span 2', ph: 'Ticker — nom' },
+            { key: 'qty', label: 'Quantité', span: 'auto', ph: '20' }
+          ];
+          if (ft === 'SPLIT') {
+            // Une division ne déplace aucune espèce : la parité fait tout.
+            base.push({ key: 'ratio', label: 'Parité (pour 1)', span: 'auto', ph: '3' });
+            return base;
+          }
+          base.push({ key: 'price', label: ft === 'TOUT' ? 'Coût de base unitaire' : 'Prix unitaire', span: 'auto', ph: '150,00' });
+          base.push({ key: 'fees', label: 'Frais de courtage', span: 'auto', ph: '12,00' });
+          base.push({ key: 'taxes', label: 'Taxes et impôts', span: 'auto', ph: '1,80' });
+          if (ft === 'DIVOPT') {
+            // La soulte ne se déduit d'aucun autre champ : elle se saisit.
+            base.push({ key: 'amount', label: 'Soulte en espèces', span: 'auto', ph: '26,00' });
+          }
+          return base;
+        })()
+      : [
+          { key: 'date', label: 'Date', span: 'auto', isDate: true },
+          { key: 'settle', label: 'Date de valeur', span: 'auto', isDate: true },
+          { key: 'account', label: 'Compte', span: 'span 2', ph: 'Broker — nom du compte' },
+          { key: 'security', label: 'Poche ou libellé', span: 'span 2', ph: 'Espèces EUR' },
+          { key: 'amount', label: 'Montant', span: 'auto', ph: '1 500,00' },
+          { key: 'fees', label: 'Frais de courtage', span: 'auto', ph: '0,00' },
+          { key: 'taxes', label: 'Taxes et impôts', span: 'auto', ph: '0,00' }
+        ];
+
+    const ratio = parse(f.ratio) || 0;
+    const legs = [];
+    if (rule.legs === 0) {
+      // Le fait vit dans les champs de la transaction : aucune jambe.
+    } else if (ft === 'SPLIT') {
+      legs.push({
+        seq: '1', type: 'SPLIT',
+        detail: f.security + ' · ' + f.account + ' · ' + qty + ' → ' + (ratio ? qty * ratio : qty) + ' titres, parité ' + (ratio || '—') + ' pour 1',
+        amount: '—', color: 'var(--color-neutral-600)'
+      });
+    } else if (ft === 'TOUT') {
+      legs.push({
+        seq: '1', type: 'TOUT',
+        detail: f.security + ' · ' + f.account + ' · ' + qty + ' × ' + price.toFixed(2).replace('.', ',') + ' (coût de base)',
+        amount: eur(qty * price), color: 'var(--color-neutral-600)'
+      });
+      legs.push({ seq: '2', type: 'TIN', detail: 'Compte destinataire · même quantité, même coût de base', amount: eur(qty * price), color: 'var(--color-neutral-600)' });
+      if (fees) legs.push({ seq: String(legs.length + 1), type: 'FEE', detail: 'Frais de courtage portés par le compte source', amount: eur(fees), color: 'var(--color-text)' });
+      if (taxes) legs.push({ seq: String(legs.length + 1), type: 'TAX', detail: 'Taxes et impôts sur le transfert', amount: eur(taxes), color: 'var(--color-text)' });
+    } else if (isSecurity) {
+      legs.push({
+        seq: '1', type: ft,
+        detail: f.security + ' · ' + f.account + ' · ' + qty + ' × ' + price.toFixed(2).replace('.', ',')
+          + (charges ? ' · frais ' + fees.toFixed(2).replace('.', ',') + ' + taxes ' + taxes.toFixed(2).replace('.', ',') : ''),
+        amount: eur(cash), color: ft === 'SELL' ? 'var(--ink-ok)' : 'var(--color-text)'
+      });
+      if (ft === 'DIVOPT' && amount) legs.push({ seq: '2', type: 'DIVOPT', detail: 'Soulte en espèces pour la fraction non convertible', amount: eur(amount), color: 'var(--ink-ok)' });
+    } else {
+      legs.push({ seq: '1', type: ft, detail: f.security + ' · ' + f.account, amount: eur(amount), color: ft === 'FEE' ? 'var(--color-text)' : 'var(--ink-ok)' });
+      if (ft === 'CASH') legs.push({ seq: '2', type: 'CASH', detail: 'Compte destinataire · crédit de même montant', amount: eur(amount), color: 'var(--ink-ok)' });
+      // Les charges d'un mouvement d'espèces ne se déduisent pas du montant : jambes propres.
+      if (fees) legs.push({ seq: String(legs.length + 1), type: 'FEE', detail: 'Frais de courtage sur le mouvement', amount: eur(fees), color: 'var(--color-text)' });
+      if (taxes) legs.push({ seq: String(legs.length + 1), type: 'TAX', detail: 'Taxes et impôts sur le mouvement', amount: eur(taxes), color: 'var(--color-text)' });
+    }
+
+    return {
+      subtitle: TX.length + ' transactions · ' + pending.length + ' en suspens · journal au ' + fmt(TODAY) + '/2026',
+
+      pageTabs: [
+        { key: 'new', label: 'Nouvelle transaction', badge: String(legs.length) },
+        { key: 'register', label: 'Registre', badge: String(TX.length) },
+        { key: 'pending', label: 'Suspens de règlement', badge: String(pending.length) }
+      ].map((t) => {
+        const on = tab === t.key;
+        return {
+          label: t.label, badge: t.badge, hasBadge: !!t.badge,
+          isRegister: t.key === 'register', isNew: t.key === 'new', isTrade: t.key === 'trade', isPending2: t.key === 'pending',
+          height: on ? '40px' : '32px',
+          padding: on ? '0 20px' : '0 14px',
+          size: on ? '14px' : '12px',
+          bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          weight: on ? '700' : '400',
+          badgeBg: on ? 'rgba(255,255,255,0.24)' : 'rgba(0,61,165,0.16)',
+          badgeFg: on ? '#ffffff' : 'var(--ink-brand)',
+          onClick: () => this.setState({ tab: t.key })
+        };
+      }),
+      onRegister: tab === 'register', onNew: tab === 'new', onPending2: tab === 'pending',
+
+      suspense: [
+        { code: '464', label: 'Dettes sur acquisitions de valeurs mobilières de placement', amount: eur(toPay), count: String(pending.filter((t) => t.sense === 'debit').length), color: toPay ? 'var(--ink-warn-2)' : 'var(--color-neutral-600)', tagBg: 'rgba(180,83,9,0.16)', tagFg: 'var(--ink-warn)', bg: 'var(--surface)' },
+        { code: '465', label: 'Créances sur cessions de valeurs mobilières de placement', amount: eur(toGet), count: String(pending.filter((t) => t.sense === 'credit').length), color: toGet ? 'var(--ink-ok-2)' : 'var(--color-neutral-600)', tagBg: 'rgba(15,118,110,0.16)', tagFg: 'var(--ink-ok)', bg: 'rgba(0,0,0,0.025)' }
+      ],
+      pendingNote: pending.length + ' opération(s) négociée(s), non réglée(s)',
+      noPending: pending.length === 0,
+      pendingRows: pending.map((t, i) => ({
+        date: fmt(t.date), settle: fmt(t.settle),
+        type: t.legs > 1 ? t.legs + ' jambes' : (LEGS[t.ref] && LEGS[t.ref][0] ? LEGS[t.ref][0].type : t.nature),
+        typeBg: 'rgba(67,56,202,0.16)', typeFg: 'var(--ink-code)',
+        security: t.legs > 1 ? t.ref : t.security,
+        amount: eur(t.amount), color: t.sense === 'credit' ? 'var(--ink-ok)' : 'var(--color-text)',
+        left: (function () { const d = Math.round((new Date(t.settle) - new Date(TODAY)) / 86400000); return d <= 0 ? "Aujourd'hui" : 'Dans ' + d + ' j'; })(),
+        leftColor: 'var(--ink-warn-2)',
+        bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'
+      })),
+
+      kpis: [
+        { label: 'Transactions', value: String(TX.length), note: TX.reduce((n, t) => n + t.legs, 0) + ' jambes au total', color: 'var(--color-text)' },
+        { label: 'En suspens', value: String(pending.length), note: 'Négociées, non réglées', color: pending.length ? 'var(--ink-warn-2)' : 'var(--ink-ok-2)' },
+        { label: 'À régler', value: eur(toPay, 0), note: 'Compte 464', color: toPay ? 'var(--ink-warn-2)' : 'var(--ink-ok-2)' },
+        { label: 'À recevoir', value: eur(toGet, 0), note: 'Compte 465', color: toGet ? 'var(--ink-ok-2)' : 'var(--color-text)' }
+      ].map(toneByColor),
+
+      query: this.state.query,
+      hasQuery: !!q,
+      clearQuery: (e) => { if (e) e.stopPropagation(); this.setState({ query: '', acOpen: false }); },
+      setQuery: (e) => { const v = e.target.value; this.openMenu({ query: v, acOpen: true }, e); },
+      acFocus: (e) => this.openMenu({ acOpen: true, kindMenuOpen: false, natMenuOpen: false, typeMenuOpen: false, accMenuOpen: false, secMenuOpen: false }, e),
+      acBorder: this.state.acOpen ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      acOpen: this.state.acOpen,
+      acEmpty: (function () {
+        if (!q) return false;
+        const pool = TX.map((x) => x.ref + ' ' + x.security + ' ' + x.account).join(' ').toLowerCase();
+        return pool.indexOf(q) < 0;
+      })(),
+      acGroups: (function (self) {
+        const groups = [
+          { label: 'Référence', values: TX.map((x) => x.ref) },
+          { label: 'Titre ou poche', values: [].concat.apply([], TX.map(secOf)) },
+          { label: 'Compte', values: [].concat.apply([], TX.map(accOf)) }
+        ];
+        return groups.map((g) => {
+          const counts = {};
+          g.values.forEach((v) => { if (v) counts[v] = (counts[v] || 0) + 1; });
+          const items = Object.keys(counts)
+            .filter((v) => !q || v.toLowerCase().indexOf(q) >= 0)
+            .sort((a, b) => a.localeCompare(b, 'fr'))
+            .slice(0, 8)
+            .map((v) => ({
+              label: v, count: String(counts[v]),
+              onPick: (e) => { if (e) e.stopPropagation(); self.setState({ query: v, acOpen: false }); }
+            }));
+          return { label: g.label, items: items };
+        }).filter((g) => g.items.length);
+      })(this),
+      refMenuOpen: this.state.menu === 'ref',
+      refBorder: this.state.menu === 'ref' ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      refFocus: (e) => { if (e && e.currentTarget) this.openMenu('ref', e.currentTarget); },
+      refOptions: (function (self, q) {
+        return TX.map((x) => x.ref)
+          .filter((r) => !q || r.toLowerCase().indexOf(q) >= 0)
+          .map((r) => ({
+            label: r,
+            bg: r === (cf.ref || '') ? 'rgba(0,61,165,0.12)' : 'transparent',
+            weight: r === (cf.ref || '') ? '600' : '400',
+            onSelect: () => self.setState((st) => ({ cols: Object.assign({}, st.cols, { ref: r }), menu: null }))
+          }));
+      })(this, String(cf.ref || '').trim().toLowerCase()),
+      refNoOption: TX.filter((x) => {
+        const q = String(cf.ref || '').trim().toLowerCase();
+        return !q || x.ref.toLowerCase().indexOf(q) >= 0;
+      }).length === 0,
+      refFilter: cf.ref || '',
+      setRefFilter: (e) => { const v = e.target.value; if (e.currentTarget) this.openMenu('ref', e.currentTarget); this.setState((st) => ({ cols: Object.assign({}, st.cols, { ref: v }) })); },
+      kindMenuOpen: this.state.kindMenuOpen,
+      kindRotate: this.state.kindMenuOpen ? '180deg' : '0deg',
+      kindBorder: this.state.kindMenuOpen ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      toggleKindMenu: (e) => this.openMenu((st) => ({ kindMenuOpen: !st.kindMenuOpen, natMenuOpen: false }), e),
+      kindPick: (function (k) {
+        if (k === 'security') return { label: 'Titre', badge: true, plain: false, bg: 'rgba(0,61,165,0.12)', fg: 'var(--ink-brand)' };
+        if (k === 'cash') return { label: 'Trésorerie', badge: true, plain: false, bg: 'rgba(162,28,175,0.14)', fg: 'var(--ink-magenta)' };
+        return { label: 'Tous', badge: false, plain: true, bg: 'transparent', fg: 'var(--color-neutral-700)' };
+      })(kf),
+      kindOptions: [
+        { key: 'all', label: 'Tous', badge: false, plain: true, bg: 'transparent', fg: 'var(--color-neutral-700)' },
+        { key: 'security', label: 'Titre', badge: true, plain: false, bg: 'rgba(0,61,165,0.12)', fg: 'var(--ink-brand)' },
+        { key: 'cash', label: 'Trésorerie', badge: true, plain: false, bg: 'rgba(162,28,175,0.14)', fg: 'var(--ink-magenta)' }
+      ].map((o) => ({
+        label: o.label, badge: o.badge, plain: o.plain, bg: o.bg, fg: o.fg,
+        on: kf === o.key,
+        rowBg: kf === o.key ? 'rgba(0,61,165,0.10)' : 'transparent',
+        count: String(o.key === 'all' ? TX.length : TX.filter((x) => kindOf(x.security) === o.key).length),
+        onSelect: (e) => { if (e) e.stopPropagation(); this.setState({ kindFilter: o.key, kindMenuOpen: false }); }
+      })),
+      natMenuOpen: this.state.natMenuOpen,
+      natRotate: this.state.natMenuOpen ? '180deg' : '0deg',
+      natBorder: this.state.natMenuOpen ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      toggleNatMenu: (e) => this.openMenu((st) => ({ natMenuOpen: !st.natMenuOpen, kindMenuOpen: false }), e),
+      natSummary: natKeys.length === 0
+        ? { label: 'Toutes', badge: false, plain: true, color: 'var(--color-neutral-700)', bg: 'transparent', fg: 'var(--color-neutral-700)', hasMore: false, more: '' }
+        : {
+            label: NATURES[natKeys[0]].label, badge: true, plain: false, color: 'var(--ink-brand)',
+            bg: NATURES[natKeys[0]].bg, fg: NATURES[natKeys[0]].fg,
+            hasMore: natKeys.length > 1,
+            more: '(+' + (natKeys.length - 1) + (natKeys.length === 2 ? ' autre)' : ' autres)')
+          },
+      natAllOn: Object.keys(NATURES).every((k) => !!(this.state.natPickSet || {})[k]),
+      natAllBorder: Object.keys(NATURES).every((k) => !!(this.state.natPickSet || {})[k]) ? 'var(--ink-brand-2)' : 'var(--color-neutral-400)',
+      natAllBg: Object.keys(NATURES).every((k) => !!(this.state.natPickSet || {})[k]) ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--surface)',
+      natAllLabel: Object.keys(NATURES).every((k) => !!(this.state.natPickSet || {})[k]) ? 'Tout désélectionner' : 'Tout sélectionner',
+      natToggleAll: (e) => {
+        if (e) e.stopPropagation();
+        const keys = Object.keys(NATURES);
+        const full = keys.every((k) => !!(this.state.natPickSet || {})[k]);
+        if (full) { this.setState({ natPickSet: {} }); return; }
+        const all = {};
+        keys.forEach((k) => { all[k] = true; });
+        this.setState({ natPickSet: all });
+      },
+      natOptions: Object.keys(NATURES).map((k) => {
+        const on = !!(this.state.natPickSet || {})[k];
+        return {
+          label: NATURES[k].label, bg: NATURES[k].bg, fg: NATURES[k].fg,
+          on: on,
+          rowBg: on ? 'rgba(0,61,165,0.10)' : 'transparent',
+          boxBorder: on ? 'var(--field-brand)' : 'var(--color-neutral-400)',
+          boxBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'var(--surface)',
+          count: String(TX.filter((x) => x.nature === k).length),
+          onToggle: (e) => {
+            if (e) e.stopPropagation();
+            this.setState((st) => {
+              const next = Object.assign({}, st.natPickSet);
+              if (next[k]) delete next[k]; else next[k] = true;
+              return { natPickSet: next };
+            });
+          }
+        };
+      }),
+      typeMenuOpen: this.state.typeMenuOpen,
+      typeRotate: this.state.typeMenuOpen ? '180deg' : '0deg',
+      typeBorder: this.state.typeMenuOpen ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      toggleTypeMenu: (e) => this.openMenu((st) => ({ typeMenuOpen: !st.typeMenuOpen, accMenuOpen: false, secMenuOpen: false, kindMenuOpen: false, natMenuOpen: false }), e),
+      typeSummary: typeKeys.length === 0
+        ? { label: 'Tous', color: 'var(--color-neutral-700)', hasMore: false, more: '' }
+        : {
+            label: typeKeys[0], color: 'var(--ink-brand)',
+            hasMore: typeKeys.length > 1,
+            more: '(+' + (typeKeys.length - 1) + (typeKeys.length === 2 ? ' autre)' : ' autres)')
+          },
+      typeAllOn: Object.keys(LEG_RULES).length > 0 && Object.keys(LEG_RULES).every((k) => !!(this.state.typePick || {})[k]),
+      typeAllBorder: Object.keys(LEG_RULES).every((k) => !!(this.state.typePick || {})[k]) ? 'var(--ink-brand-2)' : 'var(--color-neutral-400)',
+      typeAllBg: Object.keys(LEG_RULES).every((k) => !!(this.state.typePick || {})[k]) ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--surface)',
+      typeAllLabel: Object.keys(LEG_RULES).every((k) => !!(this.state.typePick || {})[k]) ? 'Tout désélectionner' : 'Tout sélectionner',
+      typeToggleAll: (e) => {
+        if (e) e.stopPropagation();
+        const keys = Object.keys(LEG_RULES);
+        const full = keys.every((k) => !!(this.state.typePick || {})[k]);
+        if (full) { this.setState({ typePick: {} }); return; }
+        const all = {};
+        keys.forEach((k) => { all[k] = true; });
+        this.setState({ typePick: all });
+      },
+      typeOptions: Object.keys(LEG_RULES).map((k) => {
+        const on = !!(this.state.typePick || {})[k];
+        return {
+          label: k, on: on,
+          rowBg: on ? 'rgba(0,61,165,0.10)' : 'transparent',
+          boxBorder: on ? 'var(--field-brand)' : 'var(--color-neutral-400)',
+          boxBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'var(--surface)',
+          count: String(TX.filter((x) => TX_OP[x.ref] === k).length),
+          onToggle: (e) => {
+            if (e) e.stopPropagation();
+            this.setState((st) => {
+              const next = Object.assign({}, st.typePick);
+              if (next[k]) delete next[k]; else next[k] = true;
+              return { typePick: next };
+            });
+          }
+        };
+      }),
+
+      accMenuOpen: this.state.accMenuOpen,
+      accRotate: this.state.accMenuOpen ? '180deg' : '0deg',
+      accBorder: this.state.accMenuOpen ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      toggleAccMenu: (e) => this.openMenu((st) => ({ accMenuOpen: !st.accMenuOpen, typeMenuOpen: false, secMenuOpen: false, kindMenuOpen: false, natMenuOpen: false }), e),
+      accSummary: accKeys.length === 0
+        ? { label: 'Tous', color: 'var(--color-neutral-700)' }
+        : { label: accKeys.join(', '), color: 'var(--ink-brand)' },
+      accAllOn: ACCOUNTS.length > 0 && ACCOUNTS.every((k) => !!(this.state.accPick || {})[k]),
+      accAllBorder: ACCOUNTS.every((k) => !!(this.state.accPick || {})[k]) ? 'var(--ink-brand-2)' : 'var(--color-neutral-400)',
+      accAllBg: ACCOUNTS.every((k) => !!(this.state.accPick || {})[k]) ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--surface)',
+      accAllLabel: ACCOUNTS.every((k) => !!(this.state.accPick || {})[k]) ? 'Tout désélectionner' : 'Tout sélectionner',
+      accToggleAll: (e) => {
+        if (e) e.stopPropagation();
+        const keys = ACCOUNTS;
+        const full = keys.every((k) => !!(this.state.accPick || {})[k]);
+        if (full) { this.setState({ accPick: {} }); return; }
+        const all = {};
+        keys.forEach((k) => { all[k] = true; });
+        this.setState({ accPick: all });
+      },
+      accOptions: ACCOUNTS.map((a) => {
+        const on = !!(this.state.accPick || {})[a];
+        return {
+          label: a, on: on,
+          rowBg: on ? 'rgba(0,61,165,0.10)' : 'transparent',
+          boxBorder: on ? 'var(--field-brand)' : 'var(--color-neutral-400)',
+          boxBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'var(--surface)',
+          count: String(TX.filter((t) => accOf(t).indexOf(a) >= 0).length),
+          onToggle: (e) => {
+            if (e) e.stopPropagation();
+            this.setState((st) => {
+              const next = Object.assign({}, st.accPick);
+              if (next[a]) delete next[a]; else next[a] = true;
+              return { accPick: next };
+            });
+          }
+        };
+      }),
+
+      secMenuOpen: this.state.secMenuOpen,
+      secRotate: this.state.secMenuOpen ? '180deg' : '0deg',
+      secBorder: this.state.secMenuOpen ? 'var(--field-brand)' : 'var(--color-neutral-300)',
+      toggleSecMenu: (e) => this.openMenu((st) => ({ secMenuOpen: !st.secMenuOpen, typeMenuOpen: false, accMenuOpen: false, kindMenuOpen: false, natMenuOpen: false }), e),
+      secTrigger: secKeys.length === 0
+        ? { first: 'Tous', color: 'var(--color-neutral-700)', hasMore: false, more: '' }
+        : {
+            first: secKeys[0],
+            color: 'var(--ink-brand)',
+            hasMore: secKeys.length > 1,
+            more: '(+' + (secKeys.length - 1) + (secKeys.length === 2 ? ' autre)' : ' autres)')
+          },
+      secAllOn: SECURITIES.length > 0 && SECURITIES.every((k) => !!(this.state.secPick || {})[k]),
+      secAllBorder: SECURITIES.every((k) => !!(this.state.secPick || {})[k]) ? 'var(--ink-brand-2)' : 'var(--color-neutral-400)',
+      secAllLabel: SECURITIES.every((k) => !!(this.state.secPick || {})[k]) ? 'Tout désélectionner' : 'Tout sélectionner',
+      secToggleAll: (e) => {
+        if (e) e.stopPropagation();
+        const keys = SECURITIES;
+        const full = keys.every((k) => !!(this.state.secPick || {})[k]);
+        if (full) { this.setState({ secPick: {} }); return; }
+        const all = {};
+        keys.forEach((k) => { all[k] = true; });
+        this.setState({ secPick: all });
+      },
+      secOptions: SECURITIES.map((x) => {
+        const on = !!(this.state.secPick || {})[x];
+        return {
+          label: x, on: on,
+          rowBg: on ? 'rgba(0,61,165,0.10)' : 'transparent',
+          boxBorder: on ? 'var(--field-brand)' : 'var(--color-neutral-400)',
+          boxBg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'var(--surface)',
+          count: String(TX.filter((t) => secOf(t).indexOf(x) >= 0).length),
+          onToggle: (e) => {
+            if (e) e.stopPropagation();
+            this.setState((st) => {
+              const next = Object.assign({}, st.secPick);
+              if (next[x]) delete next[x]; else next[x] = true;
+              return { secPick: next };
+            });
+          }
+        };
+      }),
+
+      settleFilter: sOn,
+      hasSettle: !!sOn,
+      settleInk: sOn ? 'var(--ink-brand)' : 'var(--color-neutral-700)',
+      settleBorder: sOn ? 'rgba(0,61,165,0.45)' : 'var(--color-neutral-300)',
+      setSettleFilter: (e) => { const v = e.target.value; this.setState({ settleOn: v }); },
+      clearSettle: (e) => { if (e) e.stopPropagation(); this.setState({ settleOn: '' }); },
+      dateFrom: dFrom,
+      dateTo: dTo,
+      dateMax: TODAY,
+      hasDate: !!(dFrom || dTo),
+      dateInk: (dFrom || dTo) ? 'var(--ink-brand)' : 'var(--color-neutral-700)',
+      dateBorder: (dFrom || dTo) ? 'rgba(0,61,165,0.45)' : 'var(--color-neutral-300)',
+      setDateFrom: (e) => { const v = e.target.value; this.setState({ dateFrom: v }); },
+      setDateTo: (e) => { const v = e.target.value; this.setState({ dateTo: v }); },
+      clearDate: (e) => { if (e) e.stopPropagation(); this.setState({ dateFrom: '', dateTo: '' }); },
+      menuTop: ((this.menuGeo || {}).top || 0) + 'px',
+      menuLeft: ((this.menuGeo || {}).left || 0) + 'px',
+      menuMax: ((this.menuGeo || {}).max || 260) + 'px',
+      opDisplay: this.state.showOp ? 'table-cell' : 'none',
+      // La colonne masquée disparaît de la structure : la rangée de détail suit.
+      detailSpan: this.state.showOp ? 14 : 13,
+      opColBg: this.state.showOp ? 'rgba(0,61,165,0.16)' : 'var(--surface)',
+      opColBorder: this.state.showOp ? 'rgba(0,61,165,0.45)' : 'var(--color-neutral-300)',
+      opShown: this.state.showOp,
+      opHidden: !this.state.showOp,
+      opColTitle: this.state.showOp
+        ? "Masquer la colonne Opération — numéro unique de chaque opération"
+        : "Afficher la colonne Opération — numéro unique de chaque opération",
+      structOpen: !!this.state.structRef,
+      closeStruct: () => this.setState({ structRef: null }),
+      structTitle: this.state.structRef || '',
+      recoLabelSel: RECO_STATE[RECO[this.state.structRef] || 'pending'].label,
+      recoBgSel: RECO_STATE[RECO[this.state.structRef] || 'pending'].bg,
+      recoFgSel: RECO_STATE[RECO[this.state.structRef] || 'pending'].fg,
+      recoHintSel: RECO_STATE[RECO[this.state.structRef] || 'pending'].hint,
+      recoJson: (function (ref) {
+        if (!ref) return '';
+        const t = TX.find(function (x) { return x.ref === ref; });
+        if (!t) return '';
+        const st = RECO[ref] || 'pending';
+        const d = RECO_DETAIL[ref] || null;
+        const own = LEGS[ref] || [];
+        // Le registre stocke amount / fees / taxes ; une seule jambe suffit pour un transfert
+        // (les deux jambes portent le même montant, il ne se compte qu'une fois).
+        const r2 = function (v) { return Math.round(v * 100) / 100; };
+        // Rapprochement par opération : la jambe est l'unité que le relevé du broker décrit.
+        const base = Number(ref.replace(/[^0-9]/g, '')) || 0;
+        const opRows = (own.length ? own : [{ type: t.op || 'OP', amount: t.amount, fees: t.fees, taxes: t.taxes }]).map(function (l, k) {
+          const li = own.length ? (RECO_OP[ref] || [])[k] : (RECO_OP[ref] || [])[0];
+          const iG = Math.round((Number(l.amount) || 0) * 100) / 100;
+          const iF = Math.round((Number(l.fees) || 0) * 100) / 100;
+          const iT = Math.round((Number(l.taxes) || 0) * 100) / 100;
+          const dOp = li ? Math.round(((li.gross - iG) + (li.fee - iF) + (li.tax - iT)) * 100) / 100 : null;
+          const stOp = !li ? (st === 'pending' ? 'pending' : 'unmatched')
+            : dOp === 0 ? 'matched'
+            : (st === 'manual' ? 'manual' : 'gap');
+          return { id: base + k, sequence: k + 1, type: l.type, line: li ? li.line : null, internal: { gross: iG, fee: iF, tax: iT }, statement: li ? { gross: li.gross, fee: li.fee, tax: li.tax } : null, delta: dOp, status: stOp };
+        });
+        const q = function (v) { return v === null || v === undefined || v === '' ? 'null' : JSON.stringify(String(v)); };
+        const gross = r2(opRows.reduce(function (a, o) { return a + o.internal.gross; }, 0));
+        const fee = r2(opRows.reduce(function (a, o) { return a + o.internal.fee; }, 0));
+        const tax = r2(opRows.reduce(function (a, o) { return a + o.internal.tax; }, 0));
+        const matchedOps = opRows.filter(function (o) { return o.statement; });
+        const sGross = matchedOps.length ? r2(matchedOps.reduce(function (a, o) { return a + o.statement.gross; }, 0)) : null;
+        const sFee = matchedOps.length ? r2(matchedOps.reduce(function (a, o) { return a + o.statement.fee; }, 0)) : null;
+        const sTax = matchedOps.length ? r2(matchedOps.reduce(function (a, o) { return a + o.statement.tax; }, 0)) : null;
+        const delta = matchedOps.length ? r2(opRows.reduce(function (a, o) { return a + (o.delta === null ? 0 : o.delta); }, 0)) : null;
+        return '{\n'
+          + '  "transactionId": ' + (Number(ref.replace(/[^0-9]/g, '')) || 0) + ',\n'
+          + '  "transactionRef": ' + q(ref) + ',\n'
+          + '  "status": ' + q(st) + ',\n'
+          + '  "statement": ' + (d ? q(d.statement) : 'null') + ',\n'
+          + '  "statementLine": ' + (d ? q(d.line) : 'null') + ',\n'
+          + '  "reconciledAt": ' + (d ? q(d.at) : 'null') + ',\n'
+          + '  "reconciledBy": ' + (d ? q(d.by) : 'null') + ',\n'
+          + '  "internal": { "gross": ' + gross + ', "fee": ' + fee + ', "tax": ' + tax + ' },\n'
+          + '  "statementAmounts": ' + (matchedOps.length ? '{ "gross": ' + sGross + ', "fee": ' + sFee + ', "tax": ' + sTax + ' }' : 'null') + ',\n'
+          + '  "delta": ' + (delta === null ? 'null' : delta) + ',\n'
+          + '  "operations": [\n'
+          + opRows.map(function (o) {
+              return '    {\n'
+                + '      "operationId": ' + o.id + ',\n'
+                + '      "sequence": ' + o.sequence + ',\n'
+                + '      "type": ' + q(o.type) + ',\n'
+                + '      "status": ' + q(o.status) + ',\n'
+                + '      "statementLine": ' + (o.line ? q(o.line) : 'null') + ',\n'
+                + '      "internal": { "gross": ' + o.internal.gross + ', "fee": ' + o.internal.fee + ', "tax": ' + o.internal.tax + ' },\n'
+                + '      "statementAmounts": ' + (o.statement ? '{ "gross": ' + o.statement.gross + ', "fee": ' + o.statement.fee + ', "tax": ' + o.statement.tax + ' }' : 'null') + ',\n'
+                + '      "delta": ' + (o.delta === null ? 'null' : o.delta) + '\n'
+                + '    }';
+            }).join(',\n') + '\n'
+          + '  ]\n'
+          + '}';
+      })(this.state.structRef),
+      structJson: (function (self, ref) {
+        if (!ref) return '';
+        const t = TX.find((x) => x.ref === ref);
+        if (!t) return '';
+        const legs = LEGS[ref] || [];
+        const q = (v) => JSON.stringify(v === undefined || v === null ? null : v);
+        const num = (v) => (v === undefined || v === null || v === '' ? 'null' : String(v));
+        const toPf = function (l, i) {
+          if (!legs.length || ['TOUT', 'TRANSFER'].indexOf(l.type) < 0) return null;
+          const nx = legs[i + 1];
+          return nx ? (PLATFORM_ID[nx.account] || null) : null;
+        };
+        const ops = (legs.length ? legs : [{
+          seq: 1, date: t.date, type: TX_OP[t.ref] || '', account: t.account,
+          security: t.security, qty: t.qty, price: t.price, fee: t.fees, tax: t.taxes, settle: t.settle
+        }]).map((l, i) => {
+          const lines = [
+            '      "id": ' + ((Number(t.ref.replace(/[^0-9]/g, '')) || 0) + i) + ',',
+            '      "sequence": ' + (l.seq || i + 1) + ',',
+            '      "date": ' + q(l.date || t.date) + ',',
+            '      "type": ' + q(l.type || TX_OP[t.ref] || '') + ',',
+            '      "platform": ' + num(PLATFORM_ID[l.account || t.account] || null) + ',',
+            '      "isin": ' + q(ISIN_BY_TICKER[(l.security || t.security || '').split(' — ')[0]] || null) + ',',
+            '      "quantity": ' + num(l.qty),
+            '      "price": ' + num(l.price),
+            '      "fee": ' + num(l.fee !== undefined ? l.fee : l.fees),
+            '      "tax": ' + num(l.tax !== undefined ? l.tax : l.taxes),
+            '      "toPlatform": ' + num(toPf(l, i))
+          ];
+          // virgules de séparation sur les clés numériques
+          return '    {\n' + lines.map(function (x, k) {
+            return /:\s(null|[-0-9])/.test(x) && !/,$/.test(x) && k < lines.length - 1 ? x + ',' : x;
+          }).join('\n') + '\n    }';
+        }).join(',\n');
+        return '{\n'
+          + '  "id": ' + (Number(t.ref.replace(/[^0-9]/g, '')) || 0) + ',\n'
+          + '  "owner": ' + q(t.owner || 'Fabrice HOEPPE') + ',\n'
+          + '  "nature": ' + q(t.nature) + ',\n'
+          + '  "date": ' + q(t.date) + ',\n'
+          + '  "time": ' + q(t.time || null) + ',\n'
+          + '  "lastModified": ' + q(t.modified || t.date) + ',\n'
+          + '  "comment": ' + q(t.comment || '') + ',\n'
+          + '  "operations": [\n' + ops + '\n  ]\n}';
+      })(this, this.state.structRef),
+      toggleOpCol: () => this.setState((st) => ({ showOp: !st.showOp })),
+      structBtnTitle: this.state.selected
+        ? 'Structure de la transaction ' + this.state.selected
+        : 'Sélectionnez une transaction pour voir sa structure',
+      recoStats: (function () {
+        const total = TX.length;
+        const by = {};
+        TX.forEach(function (t) { const k = RECO[t.ref] || 'pending'; by[k] = (by[k] || 0) + 1; });
+        const matched = by.matched || 0;
+        const rate = Math.round((matched / total) * 100);
+        return [
+          { key: 'rate', label: 'Taux', value: rate + ' %', bg: rate >= 80 ? 'rgba(15,118,110,0.14)' : 'rgba(143,63,6,0.16)', fg: rate >= 80 ? 'var(--ink-ok)' : 'var(--ink-warn)', hint: 'Part des transactions rapprochées sur le total du registre' }
+        ].concat(['matched', 'pending', 'gap', 'unmatched', 'manual'].filter(function (k) { return by[k]; }).map(function (k) {
+          return { key: k, label: RECO_STATE[k].label, value: String(by[k]), bg: RECO_STATE[k].bg, fg: RECO_STATE[k].fg, hint: RECO_STATE[k].hint };
+        }));
+      })(),
+      recoStamp: (function () {
+        const ats = Object.keys(RECO_DETAIL).map(function (k) { return RECO_DETAIL[k].at; }).filter(Boolean).sort();
+        if (!ats.length) return 'Aucun rapprochement enregistré';
+        const d = new Date(ats[ats.length - 1]);
+        const p = function (n) { return String(n).padStart(2, '0'); };
+        return 'Dernier rapprochement le ' + p(d.getUTCDate()) + '/' + p(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear()
+          + ' à ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes());
+      })(),
+      recoFilter: this.state.recoFilter || 'all',
+      setRecoFilter: (e) => { const v = e.target.value; this.setState({ recoFilter: v }); },
+      recoOptions: Object.keys(RECO_STATE).map((k) => ({ value: k, label: RECO_STATE[k].label })),
+      structBtnOff: !this.state.selected,
+      structBorder: this.state.structRef ? 'rgba(0,61,165,0.45)' : 'var(--color-neutral-300)',
+      structBg: this.state.structRef ? 'rgba(0,61,165,0.16)' : 'var(--surface)',
+      structOpacity: this.state.selected ? '1' : '0.45',
+      structCursor: this.state.selected ? 'pointer' : 'not-allowed',
+      structHoverBg: this.state.selected ? 'rgba(0,61,165,0.16)' : 'var(--surface)',
+      openStructFromSelection: () => {
+        if (!this.state.selected) return;
+        this.setState({ structRef: this.state.selected });
+      },
+      tableMinWidth: (this.state.showOp ? 1650 : 1510) + 'px',
+      opNoFilter: cf.opNo || '',
+      setOpNoFilter: (e) => { const v = e.target.value; this.setState((st) => ({ cols: Object.assign({}, st.cols, { opNo: v }) })); },
+      opFilter: cf.op || '',
+      setOpFilter: (e) => { const v = e.target.value; this.setState((st) => ({ cols: Object.assign({}, st.cols, { op: v }) })); },
+      stateFilter: sf,
+      setStateFilter: (e) => this.setState({ stateFilter: e.target.value }),
+      resetView: () => this.setState({ query: '', acOpen: false, recoFilter: 'all', dateFrom: '', dateTo: '', settleOn: '', natPickSet: {}, kindFilter: 'all', typePick: {}, accPick: {}, secPick: {}, cols: {}, stateFilter: 'all', open: {}, kindMenuOpen: false, natMenuOpen: false, typeMenuOpen: false, accMenuOpen: false, secMenuOpen: false }),
+
+      listNote: list.length + ' / ' + TX.length + ' transactions',
+      noRows: list.length === 0,
+      rows: (function (self) {
+        const out = [];
+        const MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+        let lastMonth = null;
+        list.forEach((t, i) => {
+          const ym = String(t.date).slice(0, 7);
+          if (ym !== lastMonth) {
+            lastMonth = ym;
+            const mi = Number(ym.slice(5, 7)) - 1;
+            const inMonth = list.filter((x) => String(x.date).slice(0, 7) === ym).length;
+            const mRows = list.filter((x) => String(x.date).slice(0, 7) === ym);
+            const mOpen = !!(self.state.openMonths || {})[ym];
+            const mLegs = mRows.reduce((n, x) => n + (x.legs || 1), 0);
+            const mNet = mRows.reduce((n, x) => n + (x.sense === 'credit' ? (x.amount || 0) : -(x.amount || 0)), 0);
+            const mFees = mRows.reduce((n, x) => {
+              const ls = LEGS[x.ref];
+              if (ls && ls.length) return n + ls.reduce((m, l) => m + (l.fees || 0) + (l.taxes || 0), 0);
+              return n + (x.fees || 0) + (x.taxes || 0);
+            }, 0);
+            const mPend = mRows.filter((x) => isPending(x)).length;
+            const mGap = mRows.filter((x) => (RECO[x.ref] || 'pending') === 'gap').length;
+            const byNat = {};
+            mRows.forEach((x) => { byNat[x.nature] = (byNat[x.nature] || 0) + 1; });
+            out.push({
+              isTx: false, isDetail: false, isMonth: true, legRows: [],
+              height: '38px',
+              monthLabel: (MONTHS[mi] || '') + ' ' + ym.slice(0, 4),
+              monthCount: inMonth + (inMonth > 1 ? ' transactions' : ' transaction'),
+              monthOpen: mOpen,
+              monthChevron: mOpen ? '180deg' : '0deg',
+              monthToggleTitle: mOpen ? 'Replier la synthèse du mois' : 'Déplier la synthèse du mois',
+              monthToggle: (e) => {
+                if (e) e.stopPropagation();
+                self.setState((st) => ({ openMonths: Object.assign({}, st.openMonths, { [ym]: !(st.openMonths || {})[ym] }) }));
+              },
+              monthStats: [
+                { label: 'Opérations', value: String(mLegs) },
+                { label: 'Flux net', value: (mNet >= 0 ? '+' : '−') + eur(Math.abs(mNet)), color: mNet >= 0 ? 'var(--ink-ok)' : 'var(--color-text)' },
+                { label: 'Frais et taxes', value: eur(mFees) },
+                { label: 'En suspens', value: String(mPend), color: mPend ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)' },
+                { label: 'Écarts de réconciliation', value: String(mGap), color: mGap ? 'var(--ink-warn-2)' : 'var(--ink-ok)' }
+              ],
+              monthNatures: Object.keys(byNat).sort().map((k) => ({
+                label: k, count: String(byNat[k]),
+                bg: (NATURES[k] || {}).bg || 'var(--color-neutral-200)',
+                fg: (NATURES[k] || {}).fg || 'var(--color-neutral-800)'
+              }))
+            });
+          }
+          const p = isPending(t);
+          const on = t.ref === self.state.selected;
+          const many = t.legs > 1;
+          const open = !!(self.state.open || {})[t.ref];
+          const k = kindOf(t.security);
+          out.push({
+            isTx: true, isDetail: false, legRows: [],
+            recoShow: 'inline-flex',
+            reco: RECO_STATE[RECO[t.ref] || 'pending'].label,
+            recoBg: RECO_STATE[RECO[t.ref] || 'pending'].bg,
+            recoFg: RECO_STATE[RECO[t.ref] || 'pending'].fg,
+            recoHint: RECO_STATE[RECO[t.ref] || 'pending'].hint,
+            date: fmt(t.date), ref: t.ref,
+            op: TX_OP[t.ref] || '',
+            opNo: (function () {
+              const l = LEG_OPNO[t.ref];
+              if (!l) return TX_OPNO[t.ref] || '';
+              return l[0] + ' … ' + l[l.length - 1];
+            })(),
+            opHint: (LEG_RULES[TX_OP[t.ref]] || {}).why || '',
+            kind: k === 'cash' ? 'Trésorerie' : 'Titre',
+            kindHint: k === 'cash' ? 'Mouvement d\'espèces : la poche touchée est un compte de liquidité' : 'Opération sur titre : la poche touchée est une ligne de portefeuille',
+            kindBg: k === 'cash' ? 'rgba(162,28,175,0.14)' : 'rgba(0,61,165,0.12)',
+            kindFg: k === 'cash' ? 'var(--ink-magenta)' : 'var(--ink-brand)',
+            isSecurity: k === 'security', isCash: k === 'cash',
+            showNature: true,
+            nature: NATURES[t.nature].label, natureBg: NATURES[t.nature].bg, natureFg: NATURES[t.nature].fg,
+            legs: String(t.legs),
+            legsTitle: t.legs + ' jambes',
+            manyLegs: many,
+            expandable: true,
+            chevron: open ? '180deg' : '0deg',
+            rowTitle: open ? 'Replier le détail' : 'Dérouler le détail',
+            account: (function () {
+              const ls = LEGS[t.ref];
+              if (!ls || !ls.length) return t.account;
+              const seen = {};
+              return ls.map((l) => l.account).filter((x) => x && (seen[x] ? false : (seen[x] = true))).join(', ');
+            })(),
+            security: t.security,
+            amount: t.amount ? eur(t.amount) : '—',
+            amountColor: t.amount ? (t.sense === 'credit' ? 'var(--ink-ok)' : 'var(--color-text)') : 'var(--color-neutral-600)',
+            settle: fmt(t.settle),
+            state: p ? 'En suspens' : 'Réglé',
+            stateHint: p ? 'Négociée, pas encore réglée : comptes 464 ou 465' : 'Dénouée : espèces et titres livrés',
+            stateBg: p ? 'rgba(180,83,9,0.12)' : 'rgba(15,118,110,0.14)',
+            stateFg: p ? 'var(--ink-warn-2)' : 'var(--ink-ok-2)',
+            bg: open ? 'rgba(0,61,165,0.34)' : (i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)'),
+            height: '38px', ink: 'var(--color-text)', weight: '600',
+            onSelect: () => self.setState((st) => {
+              const wasOpen = !!(st.open || {})[t.ref];
+              return {
+                selected: wasOpen ? null : t.ref,
+                open: Object.assign({}, st.open, { [t.ref]: !wasOpen })
+              };
+            }),
+            onToggle: (e) => {
+              if (e) e.stopPropagation();
+              self.setState((st) => {
+                const wasOpen = !!(st.open || {})[t.ref];
+                return {
+                  selected: wasOpen ? null : t.ref,
+                  open: Object.assign({}, st.open, { [t.ref]: !wasOpen })
+                };
+              });
+            },
+            onStruct: (e) => { if (e) e.stopPropagation(); self.setState({ selected: t.ref, structRef: t.ref }); },
+            editDisabled: !isAdmin,
+            editTitle: isAdmin ? 'Modifier la transaction' : "Réservé au rôle administrateur",
+            editOpacity: isAdmin ? '1' : '0.4',
+            editCursor: isAdmin ? 'pointer' : 'not-allowed',
+            onEdit: (e) => {
+              if (e) e.stopPropagation();
+              if (!isAdmin) return;
+              self.setState({ selected: t.ref, editRef: t.ref });
+            }
+          });
+          if (open) {
+            const legSource = (LEGS[t.ref] && LEGS[t.ref].length)
+              ? LEGS[t.ref]
+              : [{ type: TX_OP[t.ref], account: t.account, security: t.security, settle: t.settle,
+                   amount: t.amount, sense: t.sense, qty: t.qty, price: t.price, fees: t.fees, taxes: t.taxes }];
+            out.push({
+              isTx: false, isDetail: true, recoShow: 'none',
+              detailRef: t.ref,
+              detailCount: legSource.length + (legSource.length > 1 ? ' jambes' : ' jambe'),
+              detailNature: NATURES[t.nature] ? NATURES[t.nature].label : t.nature,
+              detailStamp: (function () {
+                const d = String(t.date).split('-').reverse().join('/');
+                return t.time ? d + ' à ' + t.time : d;
+              })(),
+              detailStampHint: (function () {
+                const d = String(t.date).split('-').reverse().join('/');
+                const c = t.time ? 'Créée le ' + d + ' à ' + t.time : 'Créée le ' + d;
+                return t.modified ? c + ' · dernière modification le ' + String(t.modified).split('-').reverse().join('/') : c;
+              })(),
+              detailReco: RECO_STATE[RECO[t.ref] || 'pending'].label,
+              detailRecoBg: RECO_STATE[RECO[t.ref] || 'pending'].bg,
+              detailRecoFg: RECO_STATE[RECO[t.ref] || 'pending'].fg,
+              detailRecoHint: RECO_STATE[RECO[t.ref] || 'pending'].hint,
+              detailOwner: t.owner || '—',
+              detailComment: t.comment || '',
+              detailTotal: (function () {
+                const g = legSource.reduce(function (a, l) { return a + (Number(l.amount) || 0); }, 0);
+                return g ? 'Total ' + g.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : '';
+              })(), reco: '', recoBg: 'transparent', recoFg: 'transparent', recoHint: '',
+              legRows: legSource.map((l, k) => ({
+                opNo: (LEG_OPNO[t.ref] || [])[k] || TX_OPNO[t.ref] || '',
+                seq: String(k + 1),
+                date: fmt(l.settle),
+                type: l.type,
+                account: l.account,
+                security: l.security,
+                qty: l.qty ? l.qty.toLocaleString('fr-FR') : '—',
+                price: typeof l.price === 'number' ? l.price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—',
+                fees: l.fees ? l.fees.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—',
+                taxes: l.taxes ? l.taxes.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—',
+                amount: l.amount ? eur(l.amount) : '—',
+                net: (function () {
+                  const charges = (l.fees || 0) + (l.taxes || 0);
+                  if (!l.amount) return charges ? eur(charges) : '—';
+                  // Un encaissement supporte les charges, un décaissement les ajoute.
+                  return eur(l.sense === 'credit' ? l.amount - charges : l.amount + charges);
+                })(),
+                color: l.amount ? (l.sense === 'credit' ? 'var(--ink-ok)' : 'var(--color-text)') : 'var(--color-neutral-600)',
+                bg: k % 2 ? 'rgba(255,255,255,0.55)' : 'var(--surface)'
+              }))
+            });
+          }
+        });
+        return out;
+      })(this),
+
+      formNature: 'Nature ' + nature,
+      // Couleurs reprises du référentiel (NATURES) — le fait et son type gardent
+      // le même code couleur que dans le registre et les annexes.
+      natureChoices: Object.keys(NATURES).map((k, i) => {
+        const on = nature === k;
+        return {
+          label: NATURES[k].label, on: on,
+          divider: i === 0 ? '0' : '1px solid rgba(0,0,0,0.12)',
+          bg: on ? NATURES[k].fg : NATURES[k].bg,
+          hoverBg: on ? NATURES[k].fg : 'rgba(0,0,0,0.06)',
+          fg: on ? '#ffffff' : NATURES[k].fg,
+          onClick: () => this.setState({ formNature: k, formType: NATURES[k].types[0], formStatus: '' })
+        };
+      }),
+      natureDesc: NATURES[nature].desc,
+      // Les codes de type suivent le standard indigo des codes (Annexes, registre, jambes) —
+      // distinct de la couleur de la nature, qui est propre au fait.
+      typeChoices: allowed.map((k, i) => {
+        const on = ft === k;
+        return {
+          label: k, on: on,
+          divider: i === 0 ? '0' : '1px solid rgba(0,0,0,0.12)',
+          bg: on ? 'var(--field-code)' : 'rgba(67,56,202,0.16)',
+          hoverBg: on ? 'var(--field-code)' : 'rgba(67,56,202,0.24)',
+          fg: on ? '#ffffff' : 'var(--ink-code)',
+          onClick: () => this.setState({ formType: k, formStatus: '' })
+        };
+      }),
+      legHint: rule.hint,
+      legWhy: rule.why,
+      typeDesc: rule.why,
+      formFields: fields.filter((x) => PANEL2_KEYS.indexOf(x.key) < 0).map((x) => {
+        const maxW = x.key === 'fees' ? '150px' : 'none';
+        if (x.key === 'gross') return { label: x.label, span: x.span, maxWidth: maxW, isReadOnly: true, isInput: false, isSelect: false, value: (qty * price).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' };
+        if (x.key === 'net') return { label: x.label, span: x.span, maxWidth: maxW, isReadOnly: true, isInput: false, isSelect: false, value: cash.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' };
+        if (x.select) return {
+          label: x.label, span: x.span, maxWidth: maxW, hint: x.hint || x.label, isSelect: true, isInput: false, isReadOnly: false,
+          sub: x.key === 'mic'
+            ? (f.mic === 'XXXX' ? 'Place inconnue' : (MIC_SHORT[f.mic] || (f.mic ? f.mic : 'Toutes places')))
+            : x.key === 'account'
+              ? ((ACCOUNTS_LIST.find((a) => a.value === f.account) || {}).code || 'Aucun compte')
+              : x.key === 'strategy'
+                ? (STRAT_NAME[f.strategy] || 'Aucune stratégie')
+                : '',
+          value: f[x.key] || x.select[0].value,
+          options: x.key === 'strategy'
+            ? x.select.map((o) => ({ value: o.value, label: o.label, disabled: ['MKT', 'LMT'].indexOf(o.value) < 0 }))
+            : x.select,
+          onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); }
+        };
+        if (x.isDate) return { label: x.label, span: x.span, maxWidth: maxW, isDate: true, isInput: false, isSelect: false, isReadOnly: false, max: x.key === 'settle' ? '' : TODAY, value: f[x.key] || '', onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); } };
+        return { label: x.label, span: x.span, maxWidth: maxW, isInput: true, isSelect: false, isReadOnly: false, placeholder: x.ph, value: f[x.key] || '', onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); } };
+      }),
+      execRows: (() => {
+        const doAddExecRow = () => this.setState((st) => {
+          const oq = parse(st.form.qty) || 0;
+          const rows2 = (st.form.execRows && st.form.execRows.length) ? st.form.execRows.slice() : [];
+          const tot2 = rows2.reduce((n, r2) => n + (Number(String(r2.qty || '0').replace(',', '.')) || 0), 0);
+          if (rows2.length && oq && tot2 >= oq) return {};
+          rows2.push({ date: TODAY, qty: '', price: '', settle: st.form.settle || '' });
+          return { form: Object.assign({}, st.form, { execRows: rows2 }) };
+        });
+        const orderQty = parse(f.qty) || 0;
+        const isLmt = f.strategy === 'LMT';
+        const stored = (f.execRows && f.execRows.length) ? f.execRows : [{ date: f.execDate || TODAY, qty: f.execQty || '', price: isLmt ? f.price : (f.execPrice || ''), settle: f.settle || '' }];
+        const total = stored.reduce((n, r2) => n + (Number(String(r2.qty || '0').replace(',', '.')) || 0), 0);
+        const canAdd = !orderQty || total < orderQty;
+        return stored.map((r, i) => {
+          const setRow = (patchRow) => this.setState((st) => {
+            const cur = (st.form.execRows && st.form.execRows.length) ? st.form.execRows.slice() : stored.slice();
+            cur[i] = Object.assign({}, cur[i], patchRow);
+            return { form: Object.assign({}, st.form, { execRows: cur }) };
+          });
+          return {
+            idx: i,
+            date: r.date || TODAY,
+            qty: r.qty || '',
+            price: isLmt ? f.price : (r.price || ''),
+            priceReadOnly: isLmt,
+            priceEditable: !isLmt,
+            settle: r.settle || f.settle || '',
+            dateMax: TODAY,
+            canRemove: stored.length > 1,
+            setDate: (e) => setRow({ date: e.target.value }),
+            setQty: (e) => {
+              const raw = Number(String(e.target.value || '0').replace(',', '.')) || 0;
+              const others = stored.reduce((n, x2, k2) => n + (k2 === i ? 0 : (Number(String(x2.qty || '0').replace(',', '.')) || 0)), 0);
+              const capped = orderQty ? Math.max(0, Math.min(raw, orderQty - others)) : raw;
+              setRow({ qty: String(capped) });
+            },
+            setPrice: (e) => setRow({ price: e.target.value }),
+            setSettle: (e) => setRow({ settle: e.target.value }),
+            isLast: i === stored.length - 1,
+            addDisabled: !canAdd,
+            addTitle: canAdd ? "Ajouter l'exécution suivante" : "Quantité déjà totalement exécutée",
+            addBorder: canAdd ? 'var(--ds-brand-fill, var(--field-brand))' : 'var(--color-neutral-300)',
+            addColor: canAdd ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'var(--color-neutral-400)',
+            addCursor: canAdd ? 'pointer' : 'not-allowed',
+            addHoverBg: canAdd ? 'rgba(0,61,165,0.08)' : 'transparent',
+            onAdd: canAdd ? doAddExecRow : () => {},
+            remove: () => this.setState((st) => ({ form: Object.assign({}, st.form, {
+              execRows: ((st.form.execRows && st.form.execRows.length) ? st.form.execRows : stored).filter((x2, k2) => k2 !== i)
+            }) }))
+          };
+        });
+      })(),
+      execTotal: (() => {
+        const rows = (f.execRows && f.execRows.length) ? f.execRows : [];
+        return rows.reduce((n, r) => n + (Number(String(r.qty || '0').replace(',', '.')) || 0), 0);
+      })(),
+      execOrderQty: parse(f.qty) || 0,
+      isPartialExec: f.fill === 'partial',
+      canAddExecRow: (() => {
+        if (f.fill !== 'partial') return false;
+        const orderQty = parse(f.qty) || 0;
+        const rows = (f.execRows && f.execRows.length) ? f.execRows : [];
+        const total = rows.reduce((n, r) => n + (Number(String(r.qty || '0').replace(',', '.')) || 0), 0);
+        return !orderQty || total < orderQty;
+      })(),
+      addExecRow: () => this.setState((st) => {
+        const orderQty = parse(st.form.qty) || 0;
+        const rows = (st.form.execRows && st.form.execRows.length) ? st.form.execRows.slice() : [];
+        const total = rows.reduce((n, r) => n + (Number(String(r.qty || '0').replace(',', '.')) || 0), 0);
+        if (rows.length && orderQty && total >= orderQty) return {};
+        rows.push({ date: TODAY, qty: '', price: '', settle: st.form.settle || '' });
+        return { form: Object.assign({}, st.form, { execRows: rows }) };
+      }),
+      formFields2: fields.filter((x) => PANEL2_BODY_KEYS.indexOf(x.key) >= 0).map((x) => {
+        const maxW2 = 'none';
+        if (x.key === 'execDate' || x.key === 'execQty' || x.key === 'execPrice' || x.key === 'settle') {
+          // Ces quatre champs sont désormais rendus par la liste des exécutions (execRows).
+          return null;
+        }
+        if (x.select) return { label: x.label, span: x.span, maxWidth: maxW2, isSelect: true, isInput: false, isReadOnly: false, value: f[x.key] || x.select[0].value, options: x.select, onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); } };
+        if (x.isDate) {
+          const dv = f[x.key] || '';
+          return { label: x.label, span: x.span, maxWidth: maxW2, isDate: true, isInput: false, isSelect: false, isReadOnly: false, max: '', value: dv, onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); } };
+        }
+        if (x.key === 'execQty') {
+          return { label: x.label, span: x.span, maxWidth: maxW2, isInput: true, isSelect: false, isReadOnly: false, placeholder: x.ph, value: f.execQty || f.qty || '', onChange: (e) => { const v = e.target.value; this.patch({ execQty: v }); } };
+        }
+        if (x.key === 'execPrice') {
+          // À cours limité (LMT), l'exécution se fait au prix fixé : figé, non modifiable.
+          const isLmt = f.strategy === 'LMT';
+          if (isLmt) return { label: x.label, span: x.span, maxWidth: maxW2, isReadOnly: true, isInput: false, isSelect: false, value: f.price || '—' };
+          const isLimit = LIMIT_STRATEGIES.indexOf(f.strategy) >= 0;
+          const dv = f.execPrice || (isLimit ? f.price : '') || '';
+          return { label: x.label, span: x.span, maxWidth: maxW2, isInput: true, isSelect: false, isReadOnly: false, placeholder: isLimit ? f.price : x.ph, value: dv, onChange: (e) => { const v = e.target.value; this.patch({ execPrice: v }); } };
+        }
+        return { label: x.label, span: x.span, maxWidth: maxW2, isInput: true, isSelect: false, isReadOnly: false, placeholder: x.ph, value: f[x.key] || '', onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); } };
+      }).filter(Boolean),
+      execFields: fields.filter((x) => x.key === 'fill').map((x) => ({
+        isExecToggle: true,
+        value: f[x.key] || x.select[0].value,
+        options: x.select,
+        onChange: (e) => { const v = e.target.value; this.patch({ [x.key]: v }); }
+      })),
+      hasPanel2: fields.some((x) => PANEL2_KEYS.indexOf(x.key) >= 0),
+      legsCount: legs.length === 0 ? 'Aucune jambe — le fait vit dans les champs de la transaction'
+        : legs.length + (legs.length > 1 ? ' jambes' : ' jambe'),
+      noLegs: legs.length === 0,
+      hasLegs: legs.length > 0,
+      formLegs: legs.map((l, i) => Object.assign({}, l, { bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)' })),
+      resetForm: () => this.setState({
+        formStatus: 'Saisie annulée.',
+        form: { date: TODAY, settle: '', account: '', security: '', qty: '', price: '', fees: '', taxes: '', amount: '', ratio: '' }
+      }),
+      submitForm: () => this.setState({
+        formStatus: nature + ' / ' + ft + ' enregistrée — '
+          + (legs.length === 0 ? 'aucune jambe' : legs.length + (legs.length > 1 ? ' jambes portées' : ' jambe portée')) + ' au registre.'
+      }),
+      formStatus: this.state.formStatus
+    };
+  }
+}
+</script>
+</body>
+</html>

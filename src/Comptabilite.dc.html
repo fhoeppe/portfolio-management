@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <style>
+    [data-component="AcctPage"] { --ink-warn-2: #b45309; --ink-ok-2: #0f766e; --ink-brand-2: #003da5; --ink-brand: #002a6e; --surface: var(--theme-surface, #ffffff); container-type: inline-size; }
+    [data-component="AcctPage"], [data-component="AcctPage"] * { font-family: Aptos, "Aptos Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; box-sizing: border-box; }
+    [data-component="AcctPage"] input, [data-component="AcctPage"] select { font-family: inherit; }
+    @container (max-width: 980px) {
+      [data-acct-split] { grid-template-columns: minmax(0, 1fr) !important; }
+    }
+    [data-component="AcctPage"] h1, [data-component="AcctPage"] h2, [data-component="AcctPage"] h3 { color: #002a6e; }
+    [data-component="AcctPage"] svg:not(button svg):not(a svg):not([style*="color"]) { color: var(--ink-brand); }
+    [data-component="AcctPage"] input:focus, [data-component="AcctPage"] select:focus, [data-component="AcctPage"] textarea:focus { outline: none; border-color: #003da5; box-shadow: 0 0 0 1px rgba(0,61,165,0.34), 0 0 0 3px rgba(0,61,165,0.10); }
+    [data-component="AcctPage"] input:focus-visible, [data-component="AcctPage"] select:focus-visible, [data-component="AcctPage"] textarea:focus-visible { outline: none; }
+    /* mat-button : boutons Angular Material — libellé en capitales, transition et halo de focus */
+    [data-component="AcctPage"] button { font-family: inherit; letter-spacing: 0.03em; transition: background-color 180ms cubic-bezier(0.4,0,0.2,1), box-shadow 180ms cubic-bezier(0.4,0,0.2,1), color 140ms ease, filter 140ms ease; }
+    [data-component="AcctPage"] button:not([aria-label]):not([title=""]) { text-transform: none; }
+    [data-component="AcctPage"] button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0,61,165,0.28); }
+    [data-component="AcctPage"] button:active { filter: brightness(0.94); }
+    [data-component="AcctPage"] button[disabled] { opacity: 0.42; cursor: not-allowed; filter: none; }
+    [data-theme="dark"] [data-component="AcctPage"] {
+      --theme-surface: #1d1b1a;
+      --color-text: #f3f2f2;
+      --color-neutral-100: #141313; --color-neutral-200: #262423; --color-neutral-300: #35322f;
+      --color-neutral-400: #4a4643; --color-neutral-500: #605d5d; --color-neutral-600: #8a8582;
+      --color-neutral-700: #b5b0ad; --color-neutral-800: #d8d4d1; --color-neutral-900: #f3f2f2;
+      --ds-brand-fill: #1e4f9c;
+    }
+    [data-theme="dark"] [data-component="AcctPage"] h1,
+    [data-theme="dark"] [data-component="AcctPage"] h2,
+    [data-theme="dark"] [data-component="AcctPage"] h3 { color: #9db6d9; }
+    [data-theme="dark"] [data-component="AcctPage"] input,
+    [data-theme="dark"] [data-component="AcctPage"] select,
+    [data-theme="dark"] [data-component="AcctPage"] textarea { background: #262423; color: #f3f2f2; border-color: #4a4643; }
+    [data-component="AcctPage"] { --field-brand: #002a6e; }
+    [data-theme="dark"] [data-component="AcctPage"] { --field-brand: #12325e; }
+    [data-theme="dark"] [data-component="AcctPage"] { --ink-warn-2: #f3b782; --ink-ok-2: #4fd1c5; --ink-brand-2: #8fb4ee; --ink-brand: #9db6d9; }
+  </style>
+</helmet>
+
+<div data-component="AcctPage" data-screen-label="Comptabilité" style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--surface);color:var(--color-text)">
+
+  <div style="flex:none;padding:14px 20px 0;background:var(--surface);border-bottom:1px solid var(--field-brand)">
+    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="min-width:0">
+        <h1 style="font-size:18px;margin:0;line-height:1.2">Comptabilité</h1>
+        <p style="font-size:11px;margin:3px 0 0;color:var(--color-neutral-700)">{{ subtitle }}</p>
+      </div>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+        <select value="{{ period }}" onChange="{{ setPeriod }}" style="height:28px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:12px;outline:none">
+          <sc-for list="{{ periodOptions }}" as="o" hint-placeholder-count="4">
+            <option value="{{ o.value }}">{{ o.label }}</option>
+          </sc-for>
+        </select>
+        <span style="display:inline-flex;align-items:center;gap:7px;padding:3px 10px;border-radius:999px;background:{{ closeBg }};color:{{ closeFg }};font-size:11px;font-weight:700;white-space:nowrap">
+          <span style="width:6px;height:6px;border-radius:999px;background:{{ closeFg }}"></span>
+          {{ closeState }}
+        </span>
+      </span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:2px;margin-top:12px">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;height:{{ t.height }};padding:{{ t.padding }};border:1px solid {{ t.borderColor }};border-bottom:0;border-radius:6px 6px 0 0;background:{{ t.bg }};color:{{ t.fg }};font-size:{{ t.size }};font-weight:{{ t.weight }};white-space:nowrap;cursor:pointer" style-hover="filter:brightness(0.97)">
+          <sc-if value="{{ t.isJournal }}" hint-placeholder-val="{{ true }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isBalance }}" hint-placeholder-val="{{ false }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 3v18"></path><path d="M5 7h14"></path><path d="M5 7 2 14h6z"></path><path d="M19 7l-3 7h6z"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isResult }}" hint-placeholder-val="{{ false }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+          </sc-if>
+          <sc-if value="{{ t.isClose }}" hint-placeholder-val="{{ false }}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          </sc-if>
+          {{ t.label }}
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px 24px;display:flex;flex-direction:column;gap:16px">
+
+    <sc-if value="{{ isJournal }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <span style="display:flex;align-items:center;gap:8px;width:220px;height:28px;padding:0 10px;border:1px solid var(--color-neutral-300);border-radius:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="flex:none;color:var(--color-neutral-500)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input value="{{ query }}" onChange="{{ setQuery }}" placeholder="Pièce, compte, libellé" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:inherit;font-size:12px;outline:none" />
+          </span>
+          <select value="{{ journalFilter }}" onChange="{{ setJournalFilter }}" style="height:28px;padding:0 8px;border:1px solid var(--color-neutral-300);border-radius:6px;background:var(--surface);color:var(--color-text);font-size:12px;outline:none">
+            <option value="all">Tous les journaux</option>
+            <sc-for list="{{ journalOptions }}" as="o" hint-placeholder-count="4">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ journalNote }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:780px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Pièce</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Date</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Journal</th>
+                <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Libellé</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Débit</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Crédit</th>
+                <th style="padding:8px 16px 8px 12px;border-bottom:1px solid var(--color-neutral-200)"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ entries }}" as="e" hint-placeholder-count="6">
+                <tr onClick="{{ e.onToggle }}" style="cursor:pointer;background:{{ e.bg }}">
+                  <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200);font-weight:600;font-variant-numeric:tabular-nums">{{ e.ref }}</td>
+                  <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700);font-variant-numeric:tabular-nums;white-space:nowrap">{{ e.date }}</td>
+                  <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200);color:var(--color-neutral-700)">{{ e.journal }}</td>
+                  <td style="padding:9px 12px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;flex-direction:column;gap:1px">
+                      <span>{{ e.label }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-700)">{{ e.origin }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums">{{ e.debit }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums">{{ e.credit }}</td>
+                  <td style="padding:9px 16px 9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:{{ e.stateBg }};color:{{ e.stateFg }};font-size:11px;font-weight:600;white-space:nowrap">{{ e.state }}</span>
+                  </td>
+                </tr>
+                <sc-if value="{{ e.open }}" hint-placeholder-val="{{ false }}">
+                  <tr>
+                    <td colSpan="7" style="padding:0;border-bottom:1px solid var(--color-neutral-200);background:var(--color-neutral-100)">
+                      <sc-for list="{{ e.lines }}" as="l" hint-placeholder-count="2">
+                        <span style="display:flex;align-items:center;gap:12px;padding:7px 16px 7px 32px;border-top:1px solid var(--color-neutral-200)">
+                          <span style="flex:none;width:74px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums">{{ l.account }}</span>
+                          <span style="flex:1;min-width:0;font-size:11px;color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.name }}</span>
+                          <span style="flex:none;width:110px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums">{{ l.debit }}</span>
+                          <span style="flex:none;width:110px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums">{{ l.credit }}</span>
+                        </span>
+                      </sc-for>
+                    </td>
+                  </tr>
+                </sc-if>
+              </sc-for>
+            </tbody>
+            <tfoot>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <td colSpan="4" style="padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-neutral-700)">Total période</td>
+                <td style="padding:9px 12px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ totalDebit }}</td>
+                <td style="padding:9px 12px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ totalCredit }}</td>
+                <td style="padding:9px 16px 9px 12px;text-align:right;font-size:11px;font-weight:700;color:{{ balanceColor }}">{{ balanceLabel }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isBalance }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <h2 style="margin:0;font-size:15px">Balance générale</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ balanceNote }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;min-width:700px;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:rgba(0,61,165,0.14)">
+                <th style="text-align:left;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Compte</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Débit</th>
+                <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Crédit</th>
+                <th style="text-align:right;padding:8px 16px 8px 12px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--color-neutral-700);border-bottom:1px solid var(--color-neutral-200)">Solde</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ balanceRows }}" as="b" hint-placeholder-count="8">
+                <tr>
+                  <td style="padding:9px 16px;border-bottom:1px solid var(--color-neutral-200)">
+                    <span style="display:flex;align-items:baseline;gap:10px">
+                      <span style="flex:none;font-weight:700;font-variant-numeric:tabular-nums">{{ b.account }}</span>
+                      <span style="min-width:0;color:var(--color-neutral-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.name }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ b.debit }}</td>
+                  <td style="padding:9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;color:var(--color-neutral-700)">{{ b.credit }}</td>
+                  <td style="padding:9px 16px 9px 12px;text-align:right;border-bottom:1px solid var(--color-neutral-200);font-variant-numeric:tabular-nums;font-weight:600">{{ b.balance }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:none;background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+          <h2 style="margin:0;font-size:15px">Compte de résultat du compte</h2>
+          <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ resultNote }}</span>
+        </div>
+        <sc-for list="{{ resultRows }}" as="r" hint-placeholder-count="8">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--color-neutral-200);background:{{ r.rowBg }}">
+            <span style="flex:1;min-width:0;font-size:{{ r.size }};font-weight:{{ r.weight }};padding-left:{{ r.indent }}">{{ r.label }}</span>
+            <span style="flex:none;width:130px;text-align:right;font-size:{{ r.size }};font-weight:{{ r.weight }};font-variant-numeric:tabular-nums;color:{{ r.color }}">{{ r.amount }}</span>
+            <span style="flex:none;width:74px;text-align:right;font-size:11px;color:var(--color-neutral-700);font-variant-numeric:tabular-nums">{{ r.share }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isClose }}" hint-placeholder-val="{{ false }}">
+      <div data-acct-split="" style="display:grid;grid-template-columns:minmax(0, 1.4fr) minmax(280px, 1fr);gap:16px;align-items:start">
+        <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <h2 style="margin:0;font-size:15px">Travaux de clôture</h2>
+            <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-700)">{{ closeProgress }}</span>
+          </div>
+          <sc-for list="{{ closeTasks }}" as="t" hint-placeholder-count="6">
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200);cursor:pointer">
+              <input type="checkbox" checked="{{ t.done }}" onChange="{{ t.onToggle }}" style="margin:2px 0 0;width:15px;height:15px;flex:none;accent-color:var(--ds-brand-fill, var(--ink-brand-2))" />
+              <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:12px;font-weight:600;text-decoration:{{ t.strike }}">{{ t.label }}</span>
+                <span style="font-size:11px;color:{{ t.metaColor }}">{{ t.meta }}</span>
+              </span>
+            </label>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--color-neutral-100)">
+            <span style="font-size:11px;color:var(--color-neutral-700)">{{ closeHint }}</span>
+            <button onClick="{{ closePeriod }}" disabled="{{ closeDisabled }}" style="margin-left:auto;height:30px;padding:0 14px;border:0;border-radius:6px;background:{{ closeBtnBg }};color:#fff;font-size:12px;font-weight:600;cursor:{{ closeBtnCursor }};opacity:{{ closeBtnOpacity }}">Clôturer la période</button>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--color-neutral-300);border-radius:6px;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--color-neutral-200)">
+            <h2 style="margin:0;font-size:15px">Contrôles automatiques</h2>
+          </div>
+          <sc-for list="{{ checks }}" as="c" hint-placeholder-count="5">
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--color-neutral-200)">
+              <span style="flex:none;width:6px;height:6px;margin-top:6px;border-radius:999px;background:{{ c.color }}"></span>
+              <span style="min-width:0;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:12px;font-weight:600">{{ c.label }}</span>
+                <span style="font-size:11px;color:var(--color-neutral-700);text-wrap:pretty">{{ c.detail }}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820}}">
+const JOURNALS = [
+  { value: 'TIT', label: 'TIT — Opérations titres' },
+  { value: 'BQ', label: 'BQ — Banque' },
+  { value: 'OD', label: 'OD — Opérations diverses' },
+  { value: 'FR', label: 'FR — Frais et commissions' }
+];
+
+const PERIODS = [
+  { value: '2026-08', label: 'Août 2026' },
+  { value: '2026-07', label: 'Juillet 2026' },
+  { value: '2026-06', label: 'Juin 2026' },
+  { value: '2026-T2', label: 'Trimestre 2 2026' }
+];
+
+const ENTRIES = [
+  { ref: '2026-08-4471', date: '30/08', journal: 'TIT', label: 'Achat IGCRD 250 000 nominal', origin: 'ORD-2026-0836 · règlement J+2', state: 'Validée',
+    lines: [
+      { account: '3020', name: 'Titres obligataires — portefeuille', debit: 247625, credit: 0 },
+      { account: '6270', name: 'Frais de transaction', debit: 210, credit: 0 },
+      { account: '5120', name: 'Banque — compte courant EUR', debit: 0, credit: 247835 }
+    ] },
+  { ref: '2026-08-4470', date: '30/08', journal: 'TIT', label: 'Vente EMEQ 5 000 parts', origin: 'ORD-2026-0839', state: 'Validée',
+    lines: [
+      { account: '5120', name: 'Banque — compte courant EUR', debit: 112504, credit: 0 },
+      { account: '3010', name: 'Titres de participation — actions', debit: 0, credit: 108500 },
+      { account: '7620', name: 'Plus-value de cession', debit: 0, credit: 4004 }
+    ] },
+  { ref: '2026-08-4469', date: '29/08', journal: 'BQ', label: 'Transfert de titres reçu', origin: 'TRF-2026-0113', state: 'Validée',
+    lines: [
+      { account: '3010', name: 'Titres de participation — actions', debit: 265860, credit: 0 },
+      { account: '4670', name: 'Compte de liaison dépositaire', debit: 0, credit: 265860 }
+    ] },
+  { ref: '2026-08-4468', date: '28/08', journal: 'FR', label: 'Droits de garde août', origin: 'Facture dépositaire 8842', state: 'À valider',
+    lines: [
+      { account: '6220', name: 'Droits de garde', debit: 14380, credit: 0 },
+      { account: '4010', name: 'Fournisseurs — dépositaire', debit: 0, credit: 14380 }
+    ] },
+  { ref: '2026-08-4467', date: '26/08', journal: 'OD', label: 'Provision coupon couru IGCRD', origin: 'Calcul automatique', state: 'Validée',
+    lines: [
+      { account: '3088', name: 'Intérêts courus non échus', debit: 31200, credit: 0 },
+      { account: '7610', name: 'Produits d\'intérêts', debit: 0, credit: 31200 }
+    ] },
+  { ref: '2026-08-4466', date: '25/08', journal: 'FR', label: 'Commission de gestion T3 — provision', origin: 'Barème compte BGM-004', state: 'À valider',
+    lines: [
+      { account: '6210', name: 'Commissions de gestion', debit: 96200, credit: 0 },
+      { account: '4680', name: 'Charges à payer', debit: 0, credit: 96200 }
+    ] },
+  { ref: '2026-08-4465', date: '22/08', journal: 'BQ', label: 'Encaissement dividende REIT', origin: 'DIV-2026-0198', state: 'Validée',
+    lines: [
+      { account: '5120', name: 'Banque — compte courant EUR', debit: 41820, credit: 0 },
+      { account: '7630', name: 'Revenus de participations', debit: 0, credit: 49200 },
+      { account: '4487', name: 'Retenue à la source récupérable', debit: 7380, credit: 0 }
+    ] }
+];
+
+const RESULT = [
+  { label: 'Produits financiers', total: true },
+  { label: 'Revenus de participations', amount: 214600, indent: true },
+  { label: "Produits d'intérêts", amount: 186300, indent: true },
+  { label: 'Plus-values nettes de cession', amount: 412800, indent: true },
+  { label: 'Total des produits', amount: 813700, subtotal: true },
+  { label: 'Charges', total: true },
+  { label: 'Commissions de gestion', amount: -96200, indent: true },
+  { label: 'Droits de garde', amount: -14380, indent: true },
+  { label: 'Frais de transaction', amount: -8940, indent: true },
+  { label: 'Retenues à la source non récupérables', amount: -12400, indent: true },
+  { label: 'Total des charges', amount: -131920, subtotal: true },
+  { label: 'Résultat de la période', amount: 681780, result: true }
+];
+
+const CHECKS = [
+  { label: 'Équilibre débit / crédit', detail: 'Journal équilibré sur la période, écart nul.', level: 'ok' },
+  { label: 'Rapprochement bancaire', detail: '5 comptes rapprochés, 1 écart de 420 € en suspens sur le compte collatéral.', level: 'warn' },
+  { label: 'Rapprochement dépositaire', detail: 'Positions internes conformes aux positions dépositaire.', level: 'ok' },
+  { label: 'Provisions de charges', detail: 'Commission T3 et droits de garde encore à valider.', level: 'warn' },
+  { label: 'Écritures antidatées', detail: 'Aucune écriture postérieure à la date de clôture.', level: 'ok' }
+];
+
+function num(v) {
+  return Math.abs(v).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+class Component extends DCLogic {
+  state = {
+    tab: 'journal', period: '2026-08', journalFilter: 'all', query: '', openRef: null,
+    tasks: [
+      { id: 'c1', label: 'Valider les écritures en attente', meta: '2 écritures à valider', done: false, blocking: true },
+      { id: 'c2', label: 'Rapprocher les comptes bancaires', meta: 'Écart de 420 € sur le compte collatéral', done: false, blocking: true },
+      { id: 'c3', label: 'Comptabiliser les coupons courus', meta: 'Fait le 26/08', done: true, blocking: false },
+      { id: 'c4', label: 'Valoriser le portefeuille à la date de clôture', meta: 'Fait le 31/08', done: true, blocking: false },
+      { id: 'c5', label: 'Contrôler les provisions de frais', meta: 'Commission T3 à confirmer', done: false, blocking: false },
+      { id: 'c6', label: 'Éditer la liasse de clôture', meta: 'À produire après validation', done: false, blocking: false }
+    ],
+    closed: false
+  };
+
+  renderVals() {
+    const tab = this.state.tab;
+    const q = this.state.query.trim().toLowerCase();
+    const jf = this.state.journalFilter;
+    const entries = ENTRIES.filter((e) => {
+      if (jf !== 'all' && e.journal !== jf) return false;
+      if (!q) return true;
+      const hay = (e.ref + ' ' + e.label + ' ' + e.origin + ' ' + e.lines.map((l) => l.account + ' ' + l.name).join(' ')).toLowerCase();
+      return hay.indexOf(q) >= 0;
+    });
+
+    const sum = (fn) => ENTRIES.reduce((n, e) => n + e.lines.reduce((m, l) => m + fn(l), 0), 0);
+    const totalDebit = sum((l) => l.debit);
+    const totalCredit = sum((l) => l.credit);
+
+    const accounts = {};
+    ENTRIES.forEach((e) => e.lines.forEach((l) => {
+      if (!accounts[l.account]) accounts[l.account] = { account: l.account, name: l.name, debit: 0, credit: 0 };
+      accounts[l.account].debit += l.debit;
+      accounts[l.account].credit += l.credit;
+    }));
+
+    const pending = ENTRIES.filter((e) => e.state === 'À valider').length;
+    const tasksDone = this.state.tasks.filter((t) => t.done).length;
+    const blocking = this.state.tasks.filter((t) => t.blocking && !t.done).length;
+    const canClose = blocking === 0 && !this.state.closed;
+
+    const tabDef = [
+      { key: 'journal', label: 'Journal des écritures' },
+      { key: 'balance', label: 'Balance' },
+      { key: 'result', label: 'Compte de résultat' },
+      { key: 'close', label: 'Clôture' }
+    ];
+
+    const ST = {
+      'Validée': { bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
+      'À valider': { bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' }
+    };
+
+    const periodLabel = (PERIODS.find((p) => p.value === this.state.period) || PERIODS[0]).label;
+    const produits = 813700;
+
+    return {
+      subtitle: periodLabel + ' · compte BGM-004 · ' + ENTRIES.length + ' écritures, ' + pending + ' à valider',
+      period: this.state.period,
+      periodOptions: PERIODS,
+      setPeriod: (e) => this.setState({ period: e.target.value }),
+      closeState: this.state.closed ? 'Période clôturée' : blocking ? 'Clôture bloquée' : 'Clôture ouverte',
+      closeBg: this.state.closed ? 'rgba(15,118,110,0.12)' : blocking ? 'rgba(180,83,9,0.12)' : 'rgba(0,61,165,0.10)',
+      closeFg: this.state.closed ? 'var(--ink-ok-2)' : blocking ? 'var(--ink-warn-2)' : 'var(--ink-brand-2)',
+
+      tabs: tabDef.map((t) => {
+        const on = tab === t.key;
+        return {
+          label: t.label,
+          isJournal: t.key === 'journal', isBalance: t.key === 'balance',
+          isResult: t.key === 'result', isClose: t.key === 'close',
+          height: on ? '40px' : '32px',
+          padding: on ? '0 18px' : '0 13px',
+          size: on ? '14px' : '12px',
+          bg: on ? 'var(--ds-brand-fill, var(--field-brand))' : 'rgba(0,61,165,0.08)',
+          fg: on ? '#ffffff' : 'var(--ink-brand)',
+          borderColor: 'var(--ds-brand-fill, var(--field-brand))',
+          weight: on ? '700' : '400',
+          onClick: () => this.setState({ tab: t.key })
+        };
+      }),
+      isJournal: tab === 'journal', isBalance: tab === 'balance',
+      isResult: tab === 'result', isClose: tab === 'close',
+
+      query: this.state.query,
+      setQuery: (e) => this.setState({ query: e.target.value }),
+      journalFilter: jf,
+      setJournalFilter: (e) => this.setState({ journalFilter: e.target.value }),
+      journalOptions: JOURNALS,
+      journalNote: entries.length + ' / ' + ENTRIES.length + ' écritures affichées',
+      entries: entries.map((e) => {
+        const d = e.lines.reduce((n, l) => n + l.debit, 0);
+        const c = e.lines.reduce((n, l) => n + l.credit, 0);
+        const open = this.state.openRef === e.ref;
+        return {
+          ref: e.ref, date: e.date, journal: e.journal, label: e.label, origin: e.origin,
+          debit: num(d) + ' €', credit: num(c) + ' €',
+          state: e.state, stateBg: (ST[e.state] || ST['Validée']).bg, stateFg: (ST[e.state] || ST['Validée']).fg,
+          bg: open ? 'var(--color-neutral-100)' : 'var(--surface)',
+          open,
+          lines: e.lines.map((l) => ({
+            account: l.account, name: l.name,
+            debit: l.debit ? num(l.debit) + ' €' : '—',
+            credit: l.credit ? num(l.credit) + ' €' : '—'
+          })),
+          onToggle: () => this.setState((s) => ({ openRef: s.openRef === e.ref ? null : e.ref }))
+        };
+      }),
+      totalDebit: num(totalDebit) + ' €',
+      totalCredit: num(totalCredit) + ' €',
+      balanceLabel: totalDebit === totalCredit ? 'Équilibré' : 'Écart de ' + num(totalDebit - totalCredit) + ' €',
+      balanceColor: totalDebit === totalCredit ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)',
+
+      balanceNote: Object.keys(accounts).length + ' comptes mouvementés sur ' + periodLabel.toLowerCase(),
+      balanceRows: Object.keys(accounts).sort().map((k) => {
+        const a = accounts[k];
+        const bal = a.debit - a.credit;
+        return {
+          account: a.account, name: a.name,
+          debit: a.debit ? num(a.debit) + ' €' : '—',
+          credit: a.credit ? num(a.credit) + ' €' : '—',
+          balance: (bal < 0 ? '−' : '') + num(bal) + ' €'
+        };
+      }),
+
+      resultNote: periodLabel + ' · cumul depuis le 1er janvier',
+      resultRows: RESULT.map((r) => ({
+        label: r.label,
+        amount: r.amount === undefined ? '' : (r.amount < 0 ? '−' : '') + num(r.amount) + ' €',
+        share: r.amount === undefined || r.total ? '' : Math.round(Math.abs(r.amount) / produits * 100) + ' %',
+        indent: r.indent ? '14px' : '0',
+        size: r.result ? '14px' : '12px',
+        weight: r.total || r.subtotal || r.result ? '700' : '400',
+        color: r.amount === undefined ? 'var(--color-text)' : r.amount < 0 ? 'var(--ink-warn-2)' : r.result || r.subtotal ? 'var(--ink-ok-2)' : 'var(--color-text)',
+        rowBg: r.result ? 'var(--color-neutral-100)' : r.total ? 'var(--color-neutral-100)' : 'var(--surface)'
+      })),
+
+      closeProgress: tasksDone + ' / ' + this.state.tasks.length + ' travaux terminés',
+      closeTasks: this.state.tasks.map((t) => ({
+        done: t.done, label: t.label, meta: t.meta,
+        strike: t.done ? 'line-through' : 'none',
+        metaColor: t.blocking && !t.done ? 'var(--ink-warn-2)' : 'var(--color-neutral-700)',
+        onToggle: () => this.setState((s) => ({
+          tasks: s.tasks.map((x) => (x.id === t.id ? Object.assign({}, x, { done: !x.done }) : x))
+        }))
+      })),
+      closeHint: this.state.closed
+        ? 'Période clôturée — les écritures sont verrouillées.'
+        : blocking
+          ? blocking + (blocking > 1 ? ' travaux bloquants restants' : ' travail bloquant restant')
+          : 'Tous les contrôles bloquants sont levés.',
+      closeDisabled: !canClose,
+      closeBtnBg: canClose ? 'var(--ds-brand-fill, var(--field-brand))' : 'var(--color-neutral-500)',
+      closeBtnCursor: canClose ? 'pointer' : 'not-allowed',
+      closeBtnOpacity: canClose ? '1' : '0.55',
+      closePeriod: () => { if (canClose) this.setState({ closed: true }); },
+
+      checks: CHECKS.map((c) => ({
+        label: c.label, detail: c.detail,
+        color: c.level === 'ok' ? 'var(--ink-ok-2)' : c.level === 'warn' ? 'var(--ink-warn-2)' : 'var(--color-neutral-500)'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/styles.css">
+  <script src="_ds/modernist-a8ba1f5f-22ba-47e9-afbf-11d23530863e/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    a:hover { color: var(--color-accent-700); }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-neutral-400); }
+  </style>
+</helmet>
+<div style="display:flex;flex-direction:column;height:100vh;min-height:640px;overflow:hidden;background:var(--color-bg);color:var(--color-text)">
+
+  <header style="flex:none;display:flex;align-items:stretch;height:64px;border-bottom:2px solid var(--color-divider);background:var(--color-bg);position:relative;z-index:20">
+    <button onClick="{{ toggle }}" matTooltip="Réduire ou déployer le menu" title="Réduire ou déployer le menu" aria-label="Réduire ou déployer le menu" style="flex:none;display:flex;align-items:center;justify-content:center;width:64px;border:0;border-right:2px solid var(--color-divider);background:transparent;color:var(--color-text);cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+    </button>
+
+    <div style="flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-right:2px solid var(--color-divider)">
+      <span style="width:20px;height:20px;background:var(--color-accent);flex:none"></span>
+      <span style="font-family:var(--font-heading);font-weight:800;font-size:19px;letter-spacing:-0.015em;line-height:1">ATELIER</span>
+      <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent);padding-top:2px">Console</span>
+    </div>
+
+    <div ref="{{ searchRef }}" style="flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:0 24px;border-right:2px solid var(--color-divider)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;opacity:0.55"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg>
+      <input placeholder="Rechercher un dossier, un client, une facture" style="flex:1;min-width:0;height:100%;border:0;background:transparent;color:inherit;font-family:inherit;font-size:14px;outline:none">
+      <span style="flex:none;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;border:1px solid var(--color-divider);padding:2px 7px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">⌘K</span>
+    </div>
+
+    <div style="flex:none;display:flex;align-items:stretch">
+      <button matTooltip="Notifications" title="Notifications" aria-label="Notifications" style="position:relative;display:flex;align-items:center;justify-content:center;width:56px;border:0;border-right:2px solid var(--color-divider);background:transparent;color:var(--color-text);cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.5 18h15z"></path><path d="M10 21h4"></path></svg>
+        <span style="position:absolute;top:16px;right:14px;width:8px;height:8px;background:var(--color-accent)"></span>
+      </button>
+      <button style="display:flex;align-items:center;gap:12px;padding:0 20px;border:0;background:transparent;color:inherit;font-family:inherit;cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+        <span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--color-text);color:var(--color-bg);font-family:var(--font-heading);font-weight:800;font-size:12px;flex:none">CW</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.25">
+          <span style="font-size:13px;font-weight:600">Claire Weber</span>
+          <span style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Administratrice</span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="opacity:0.55"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;min-height:0">
+
+    <aside ref="{{ navRef }}" onClick="{{ select }}" style="flex:none;width:280px;display:flex;flex-direction:column;background:var(--color-surface);border-right:2px solid var(--color-divider);overflow:hidden;transition:width 180ms cubic-bezier(0.2,0.6,0.2,1)">
+
+      <button matTooltip="Changer d'espace de travail" title="Changer d'espace de travail" style="flex:none;display:flex;align-items:center;gap:16px;width:100%;height:72px;padding:0 24px;border:0;border-bottom:2px solid var(--color-divider);background:transparent;color:inherit;font-family:inherit;cursor:pointer;text-align:left;overflow:hidden;white-space:nowrap" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+        <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;background:var(--color-accent);color:var(--color-bg);font-family:var(--font-heading);font-weight:800;font-size:11px;flex:none">LG</span>
+        <span style="display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.3">
+          <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Espace</span>
+          <span style="font-family:var(--font-heading);font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis">Luxembourg-Gare</span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;opacity:0.55"><path d="m8 9 4-4 4 4"></path><path d="m8 15 4 4 4-4"></path></svg>
+      </button>
+
+      <nav style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column">
+
+        <button data-item="1" data-active="1" matTooltip="Tableau de bord" title="Tableau de bord" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid var(--color-accent);background:color-mix(in srgb, var(--color-text) 7%, transparent);color:var(--color-accent-700);font-family:var(--font-heading);font-weight:800;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Tableau de bord</span>
+        </button>
+
+        <button data-item="2" matTooltip="Dossiers" title="Dossiers" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><path d="M3 6h6l2 3h10v10H3z"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Dossiers</span>
+          <span style="flex:none;font-family:var(--font-body);font-size:11px;letter-spacing:0.02em;background:var(--color-neutral-200);color:var(--color-neutral-800);padding:2px 8px">248</span>
+        </button>
+
+        <button data-item="3" matTooltip="Clients" title="Clients" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><circle cx="9.5" cy="8" r="3.5"></circle><path d="M3.5 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 5.2a3.5 3.5 0 0 1 0 5.6"></path><path d="M17.5 14.4A6 6 0 0 1 20.5 20"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Clients</span>
+        </button>
+
+        <button data-item="4" matTooltip="Demandes" title="Demandes" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><path d="M12 4 21 20H3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Demandes</span>
+          <span style="flex:none;font-family:var(--font-body);font-size:11px;letter-spacing:0.02em;background:var(--color-accent-200);color:var(--color-accent-800);padding:2px 8px">7</span>
+        </button>
+
+        <button data-item="5" matTooltip="Devis" title="Devis" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><path d="M14 3H5v18h14V8z"></path><path d="M14 3v5h5"></path><path d="M12 11v6"></path><path d="M9 14h6"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Devis</span>
+        </button>
+
+        <span style="flex:none;height:2px;background:var(--color-divider);margin:12px 0"></span>
+
+        <button data-item="6" matTooltip="Documents" title="Documents" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><path d="M14 3H5v18h14V8z"></path><path d="M14 3v5h5"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Documents</span>
+        </button>
+
+        <button data-item="7" matTooltip="Facturation" title="Facturation" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><rect x="3" y="5" width="18" height="14"></rect><path d="M3 10h18"></path><path d="M7 14h4"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Facturation</span>
+        </button>
+
+        <button data-item="8" matTooltip="Échéances" title="Échéances" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><rect x="3" y="5" width="18" height="16"></rect><path d="M3 10h18"></path><path d="M8 3v4"></path><path d="M16 3v4"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Échéances</span>
+        </button>
+
+        <button data-item="9" matTooltip="Rapports" title="Rapports" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left;flex:none" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Rapports</span>
+        </button>
+      </nav>
+
+      <div style="flex:none;border-top:2px solid var(--color-divider);display:flex;flex-direction:column">
+        <button data-item="10" matTooltip="Paramètres" title="Paramètres" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-left:3px solid transparent;background:transparent;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:none;width:24px;height:24px"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M5 7.5l2.5 1.5M16.5 15l2.5 1.5M5 16.5 7.5 15M16.5 9 19 7.5"></path></svg>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Paramètres</span>
+        </button>
+
+        <button onClick="{{ toggle }}" matTooltip="Réduire le menu" title="Réduire le menu" style="display:flex;align-items:center;gap:16px;width:100%;height:48px;padding:0 24px;border:0;border-top:1px solid var(--color-divider);border-left:3px solid transparent;background:transparent;color:color-mix(in srgb, var(--color-text) 60%, transparent);font-family:var(--font-heading);font-weight:600;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;overflow:hidden;white-space:nowrap;text-align:left" style-hover="background:color-mix(in srgb, var(--color-text) 7%, transparent);color:var(--color-text)">
+          <span ref="{{ chevronRef }}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M15 5l-7 7 7 7"></path><path d="M19.5 5v14"></path></svg>
+          </span>
+          <span ref="{{ toggleLabelRef }}" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">Réduire</span>
+        </button>
+      </div>
+    </aside>
+
+    <main style="flex:1;min-width:0;overflow-y:auto">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:32px 32px 24px;border-bottom:2px solid var(--color-divider)">
+        <div>
+          <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent);margin-bottom:10px">Espace Luxembourg-Gare</div>
+          <h1 style="font-size:42px;margin:0">Tableau de bord</h1>
+          <p style="font-size:14px;margin:8px 0 0;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Situation au 25 août 2026, 08:40</p>
+        </div>
+        <button class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M12 5v14M5 12h14"></path></svg>
+          Nouveau dossier
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border-bottom:2px solid var(--color-divider)">
+        <div style="padding:24px 32px">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Dossiers actifs</div>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:40px;line-height:1.1;letter-spacing:-0.015em;margin-top:10px">248</div>
+        </div>
+        <div style="padding:24px 32px;border-left:2px solid var(--color-divider)">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Demandes ouvertes</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+            <span style="font-family:var(--font-heading);font-weight:800;font-size:40px;line-height:1.1;letter-spacing:-0.015em">7</span>
+            <span class="tag tag-accent">2 à relancer</span>
+          </div>
+        </div>
+        <div style="padding:24px 32px;border-left:2px solid var(--color-divider)">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Encaissé ce mois</div>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:40px;line-height:1.1;letter-spacing:-0.015em;margin-top:10px">184 620 €</div>
+        </div>
+        <div style="padding:24px 32px;border-left:2px solid var(--color-divider)">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent)">Délai moyen</div>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:40px;line-height:1.1;letter-spacing:-0.015em;margin-top:10px">4,2 j</div>
+        </div>
+      </div>
+
+      <div style="padding:32px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:16px">
+          <h3 style="margin:0">Échéances des 30 prochains jours</h3>
+          <a href="#" style="font-size:13px">Tout afficher</a>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th>Client</th><th>Dossier</th><th style="text-align:right">Montant</th><th style="text-align:right">Échéance</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600">Marc Hoffmann</td>
+              <td style="color:color-mix(in srgb, var(--color-text) 60%, transparent)">Habitation · 8421-0093</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">1 480,40 €</td>
+              <td style="text-align:right;color:color-mix(in srgb, var(--color-text) 60%, transparent)">1 sept. 2026</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">Sophie Reuter</td>
+              <td style="color:color-mix(in srgb, var(--color-text) 60%, transparent)">Auto · 7710-4482</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">892,00 €</td>
+              <td style="text-align:right;color:color-mix(in srgb, var(--color-text) 60%, transparent)">9 sept. 2026</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">Jean-Paul Kremer</td>
+              <td style="color:color-mix(in srgb, var(--color-text) 60%, transparent)">Épargne · 3308-1176</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">3 200,00 €</td>
+              <td style="text-align:right;color:color-mix(in srgb, var(--color-text) 60%, transparent)">18 sept. 2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startCollapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Menu latéral&quot;},&quot;expandedWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:280,&quot;min&quot;:220,&quot;max&quot;:340,&quot;step&quot;:4,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Menu latéral&quot;},&quot;showSearch&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Bandeau&quot;}}">
+class Component extends DCLogic {
+  navRef = React.createRef();
+  chevronRef = React.createRef();
+  toggleLabelRef = React.createRef();
+  searchRef = React.createRef();
+
+  componentDidMount() {
+    this.collapsed = !!this.props.startCollapsed;
+    this.apply();
+  }
+
+  componentDidUpdate() { this.apply(); }
+
+  get expandedWidth() {
+    const w = Number(this.props.expandedWidth);
+    return Number.isFinite(w) && w > 0 ? w : 280;
+  }
+
+  apply() {
+    if (this.searchRef.current) {
+      this.searchRef.current.style.display = this.props.showSearch === false ? 'none' : 'flex';
+    }
+    const nav = this.navRef.current;
+    if (!nav) return;
+    nav.style.width = (this.collapsed ? 72 : this.expandedWidth) + 'px';
+    if (this.chevronRef.current) {
+      this.chevronRef.current.style.transform = this.collapsed ? 'rotate(180deg)' : 'none';
+    }
+    if (this.toggleLabelRef.current) {
+      this.toggleLabelRef.current.textContent = this.collapsed ? 'Déployer' : 'Réduire';
+    }
+  }
+
+  renderVals() {
+    return {
+      navRef: this.navRef,
+      chevronRef: this.chevronRef,
+      toggleLabelRef: this.toggleLabelRef,
+      searchRef: this.searchRef,
+      toggle: () => { this.collapsed = !this.collapsed; this.apply(); },
+      select: (e) => {
+        const btn = e.target.closest('[data-item]');
+        const root = this.navRef.current;
+        if (!btn || !root) return;
+        root.querySelectorAll('[data-item]').forEach((el) => {
+          el.style.background = 'transparent';
+          el.style.color = 'var(--color-text)';
+          el.style.fontWeight = '600';
+          el.style.borderLeftColor = 'transparent';
+          el.removeAttribute('data-active');
+        });
+        btn.style.background = 'color-mix(in srgb, var(--color-text) 7%, transparent)';
+        btn.style.color = 'var(--color-accent-700)';
+        btn.style.fontWeight = '800';
+        btn.style.borderLeftColor = 'var(--color-accent)';
+        btn.setAttribute('data-active', '1');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

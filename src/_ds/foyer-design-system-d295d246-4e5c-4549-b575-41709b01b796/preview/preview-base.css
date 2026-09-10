@@ -1,0 +1,20 @@
+/* Preview card base — a neutral canvas to showcase DS tokens on. */
+@import url('../colors_and_type.css');
+
+html, body { margin: 0; padding: 0; background: #f5f6f8; }
+body {
+  font-family: var(--fds-font-family-sans);
+  color: var(--fds-feather-grey-800);
+  padding: 56px 56px 64px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.pv-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 40px; gap: 24px; flex-wrap: wrap; }
+.pv-title { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; color: var(--fds-feather-grey-900); margin: 0; }
+.pv-kicker { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fds-primary-500); margin: 0 0 8px 0; }
+.pv-sub { font-size: 15px; color: var(--fds-feather-grey-700); margin: 4px 0 0; max-width: 640px; }
+.pv-section { margin-top: 48px; }
+.pv-section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fds-feather-grey-600); margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 1px solid var(--fds-feather-grey-300); }
+.pv-footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--fds-feather-grey-300); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--fds-feather-grey-600); }
+.pv-footer img { height: 24px; }
+.pv-mono { font-family: var(--fds-font-family-mono); font-size: 12px; color: var(--fds-feather-grey-600); }
