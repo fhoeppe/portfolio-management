@@ -1,0 +1,251 @@
+/* Monte dans le cdk-overlay-container, hors de l'arbre de la coque : les jetons de la page n'y
+   sont pas hérités et sont reportés ici, comme pour les autres boîtes de dialogue. */
+:host {
+  display: block;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-brand: #002a6e;
+  --ink-brand-2: #003da5;
+  /* Couleur de la nature « tâche » (voir KIND_DEFS) : sans elle, la `var()` resterait non
+     résolue et emporterait toute la déclaration qui la porte. */
+  --ink-violet: #6d28d9;
+  --field-brand: #002a6e;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #35322f;
+  --color-accent-100: #fdeceb;
+  --color-accent-300: #f3b8b3;
+  --color-accent-700: #a4231a;
+}
+
+:host,
+:host * {
+  box-sizing: border-box;
+}
+
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --ink-brand-2: #8fb4ee;
+  --ink-violet: #c4b5fd;
+  --field-brand: #12325e;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-400: #4a4643;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #a8a3a0;
+  --color-neutral-800: #d8d5d2;
+}
+
+.ci-dialog {
+  width: 520px;
+  max-width: 100%;
+}
+
+/* Le liseré haut prend la couleur de la nature éditée : c'est ce qui dit d'un coup d'œil si
+   l'on saisit un événement ou une tâche, avant même de lire le titre. */
+.ci-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-top: 3px solid var(--ink-brand-2);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ci-kind-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.ci-head-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ci-head-hint {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ci-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.ci-close {
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-icon-size: 14px;
+  flex: none;
+  border-radius: 6px;
+  color: var(--color-neutral-700);
+}
+
+.ci-close:hover {
+  background: rgba(0, 61, 165, 0.10);
+  color: var(--color-text);
+}
+
+.ci-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 18px;
+}
+
+.ci-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.ci-field-wide {
+  grid-column: 1 / -1;
+}
+
+/* La case « toute la journée » s'aligne sur le bas des champs voisins plutôt que sur leur
+   haut : elle répond à la date qu'elle accompagne. */
+.ci-checkbox-inline {
+  align-self: end;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.ci-checkbox {
+  --mat-checkbox-label-text-size: 12px;
+  --mat-checkbox-state-layer-size: 24px;
+}
+
+.ci-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  outline: none;
+}
+
+.ci-input:focus,
+.ci-textarea:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.34), 0 0 0 3px rgba(0, 61, 165, 0.10);
+}
+
+.ci-textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  resize: vertical;
+  outline: none;
+}
+
+.ci-select {
+  --pm-sel-h: 32px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 10px;
+  width: 100%;
+}
+
+/* Pastille de couleur devant chaque catégorie : c'est elle qu'on retrouve sur les éléments du
+   calendrier, le libellé seul ne suffirait pas à faire le lien. */
+.ci-cat-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ci-cat-swatch {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.ci-seg {
+  --mat-button-toggle-height: 32px;
+  --mat-button-toggle-label-text-size: 12px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.30);
+  display: flex;
+  border: 1px solid rgba(0, 61, 165, 0.35) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ci-seg ::ng-deep .mat-button-toggle {
+  flex: 1;
+}
+
+.ci-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.ci-btn {
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  --mat-button-outlined-icon-spacing: 7px;
+  flex: none;
+}
+
+.ci-btn-danger {
+  --mat-button-outlined-label-text-color: var(--color-accent-700);
+  --mat-button-outlined-outline-color: var(--color-accent-300);
+}
+
+.ci-btn-danger:hover {
+  background: var(--color-accent-100);
+}
+
+.ci-btn-push {
+  margin-left: auto;
+}
+
+.ci-btn-save {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  flex: none;
+}

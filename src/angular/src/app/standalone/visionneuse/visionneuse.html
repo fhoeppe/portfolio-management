@@ -1,0 +1,38 @@
+<div class="vw-page">
+  <header class="vw-head">
+    <mat-icon svgIcon="file-text" style="font-size:16px" class="vw-head-icon"></mat-icon>
+    <span class="vw-name">{{ name() }}</span>
+    <span class="vw-meta">{{ meta }}</span>
+  </header>
+
+  <div class="vw-stage" [style.cursor]="view.cursor"
+    (pointerdown)="view.onPointerDown($event)" (pointermove)="view.onPointerMove($event)"
+    (pointerup)="view.onPointerUp()" (pointercancel)="view.onPointerUp()"
+    (wheel)="view.onWheel($event)">
+    <app-doc-page class="vw-sheet" [style.transform]="view.transform"
+      [kicker]="kicker" [title]="sheetTitle" [footer]="footer" [lines]="lines"></app-doc-page>
+  </div>
+
+  <footer class="vw-foot">
+    <button type="button" matIconButton class="vw-btn" matTooltip="Page précédente" (click)="prevPage()">
+      <mat-icon svgIcon="chevron-left" style="font-size:13px"></mat-icon>
+    </button>
+    <span class="vw-page-label">{{ pageLabel }}</span>
+    <button type="button" matIconButton class="vw-btn" matTooltip="Page suivante" (click)="nextPage()">
+      <mat-icon svgIcon="chevron-right" style="font-size:13px"></mat-icon>
+    </button>
+
+    <span class="vw-sep" aria-hidden="true"></span>
+
+    <button type="button" matIconButton class="vw-btn" matTooltip="Réduire" (click)="view.zoomOut()">
+      <mat-icon svgIcon="minus" style="font-size:13px"></mat-icon>
+    </button>
+    <span class="vw-zoom-label">{{ view.zoomLabel }}</span>
+    <button type="button" matIconButton class="vw-btn" matTooltip="Agrandir" (click)="view.zoomIn()">
+      <mat-icon svgIcon="plus" style="font-size:13px"></mat-icon>
+    </button>
+    <button type="button" matButton="outlined" class="vw-fit" (click)="view.reset()">Ajuster</button>
+
+    <span class="vw-hint">Molette pour zoomer · glisser pour déplacer</span>
+  </footer>
+</div>

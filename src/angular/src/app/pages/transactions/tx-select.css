@@ -1,0 +1,60 @@
+/* Seules les cotes propres à Transactions : l'habillage du déclencheur et du panneau est
+   partagé par les quatre sélecteurs de l'app et vit dans styles.scss (.pm-sel-*).
+
+   Posées sur `:host` et non sur `.tx-sel` : le composant sert à la fois la ligne de filtres du
+   registre et le formulaire de saisie, qui n'ont pas la même taille de texte. Sur l'hôte, une
+   règle de la page ciblant `app-tx-select` (spécificité 0,1,1) l'emporte sur ce `:host`
+   (0,1,0) et peut donc régler le cas particulier ; sur un descendant, la déclaration du
+   composant gagnerait toujours et la page n'aurait aucune prise. */
+:host {
+  --pm-sel-h: 30px;
+  --pm-sel-pad: 0 5px 0 8px;
+  /* 11px comme tout le reste de la page (onglets, vignettes et titre exceptés). */
+  --pm-sel-fs: 11px;
+}
+
+/* Pastille des options colorées (État) : mêmes cotes et même encre renforcée que celles des
+   filtres à sélection multiple, pour que les deux listes se lisent de la même façon. Valeurs
+   littérales : le panneau vit dans le cdk-overlay-container, où les jetons de la page ne sont
+   pas définis — une var() y retomberait sur les couleurs Material. */
+.tx-sel-item-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 11px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 13px;
+  white-space: nowrap;
+
+  --ink-brand-2: #002259;
+  --ink-magenta: #5c0f6a;
+  --ink-ok: #05342f;
+  --ink-ok-2: #084a45;
+  --ink-warn: #522503;
+  --ink-warn-2: #703205;
+  --ink-info: #032e42;
+  --ink-code: #1c1759;
+}
+
+/* Icône de tête d'option. `.mdc-list-item__primary-text`, où Material projette le contenu de
+   l'option, n'est pas un conteneur flexible : sans cette règle l'icône et le libellé se posent
+   sur la ligne de base du texte, l'icône dépassant vers le bas. La règle vise le texte projeté
+   et non l'option, dont le gabarit place aussi la coche de sélection. */
+.tx-sel-item-with-icon ::ng-deep .mdc-list-item__primary-text {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* 13px : l'icône reste sous la hauteur de capitale du libellé de 11px une fois son cadre
+   retiré, et ne fait donc pas grossir la ligne. `--mat-icon-size` n'existe pas : mat-icon se
+   dimensionne par font-size, et ses width/height suivent. */
+.tx-sel-item-icon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+  line-height: 13px;
+  color: var(--color-neutral-600, #7a746f);
+}

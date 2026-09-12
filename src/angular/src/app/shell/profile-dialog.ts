@@ -1,4 +1,5 @@
 import { Component, HostBinding, inject } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -14,7 +15,7 @@ import { ThemeService } from './theme.service';
  */
 @Component({
   selector: 'app-profile-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatTooltipModule],
+  imports: [MatIconModule, MatDialogModule, MatButtonModule, MatTooltipModule],
   templateUrl: './profile-dialog.html',
   styleUrl: './profile-dialog.css',
 })

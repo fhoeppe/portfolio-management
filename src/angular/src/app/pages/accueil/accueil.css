@@ -1,0 +1,538 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--color-text);
+  container-type: inline-size;
+  /* --ink-brand/--ink-brand-2/--ink-warn-2/--field-* viennent déjà de la coque par héritage
+     de variables CSS ; --ink-ok n'y est pas déclaré (voir tableau-de-bord.css), donc ce
+     composant le porte lui-même, comme le prescrit le README. */
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+}
+
+h1,
+h2 {
+  color: var(--ink-brand);
+}
+
+.pm-brand-icon {
+  color: var(--ink-brand-2);
+}
+
+.pm-warn-icon {
+  color: var(--ink-warn-2);
+}
+
+/* En-tête de page */
+
+.pm-page-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px 24px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.pm-page-title h1 {
+  font-size: 20px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pm-page-title p {
+  font-size: 12px;
+  margin: 4px 0 0;
+  color: var(--color-neutral-700);
+}
+
+/* Bandeau KPI — fond et libellé restent unis pour les 4 vignettes (voir le commentaire
+   d'accueil.ts) ; seule la note change de couleur, par vignette. */
+
+.pm-kpi-band {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.pm-kpi {
+  padding: 14px 20px 16px;
+  background: var(--surface);
+}
+
+.pm-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.pm-kpi-value {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-kpi-note {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+/* Bandeau d'indices */
+
+.pm-index-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  background: var(--surface);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.pm-index-caption {
+  flex: none;
+  padding: 9px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.pm-index-item {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 16px;
+  border-left: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.pm-index-name {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pm-index-value {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-index-change {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Disposition en deux colonnes */
+
+.pm-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 16px;
+  padding: 16px 24px 24px;
+  align-items: start;
+}
+
+@container (max-width: 980px) {
+  .pm-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pm-kpi-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pm-col-main,
+.pm-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.pm-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-card-head-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.pm-card-head-left h2,
+.pm-news-head h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.pm-card-sub {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pm-empty {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* Actualités */
+
+.pm-news-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-news-toggle {
+  margin-left: auto;
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-shape: 6px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--field-brand);
+  --mat-button-toggle-selected-state-text-color: #fff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.3);
+}
+
+.pm-news-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-news-row:last-child {
+  border-bottom: 0;
+}
+
+.pm-news-time {
+  flex: none;
+  width: 52px;
+  padding-top: 2px;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-news-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pm-news-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.pm-news-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.pm-news-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 1px;
+}
+
+.pm-news-ticker {
+  padding: 1px 6px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.pm-news-exposure {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pm-news-source {
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+
+.pm-news-side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.pm-news-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pm-news-move {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tableau des mouvements */
+
+.pm-table-scroll {
+  overflow-x: auto;
+}
+
+.pm-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+/* `thead`/`tbody` appartiennent au gabarit de MatTable, hors encapsulation de ce composant :
+   les sélecteurs qui les traversaient ne s'appliquent plus. On vise les lignes elles-mêmes,
+   rendues depuis ce gabarit-ci. */
+.pm-table tr.mat-mdc-header-row {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.pm-table th {
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-table th.pm-num,
+.pm-table td.pm-num {
+  text-align: right;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.pm-table th:last-child,
+.pm-table td:last-child {
+  padding-right: 16px;
+}
+
+.pm-table th:first-child,
+.pm-table td:first-child {
+  padding-left: 16px;
+}
+
+.pm-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-table tr.mat-mdc-row:last-child td {
+  border-bottom: 0;
+}
+
+.pm-muted {
+  color: var(--color-neutral-700);
+}
+
+.pm-mover-name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pm-mover-ticker {
+  font-weight: 600;
+}
+
+.pm-mover-full {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* À traiter */
+
+.pm-todo-row {
+  display: block;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  cursor: pointer;
+  --mdc-checkbox-state-layer-size: 22px;
+  --mat-checkbox-touch-target-display: none;
+  --mdc-checkbox-selected-icon-color: var(--ink-brand-2);
+  --mdc-checkbox-selected-hover-icon-color: var(--ink-brand-2);
+  --mdc-checkbox-selected-focus-icon-color: var(--ink-brand-2);
+}
+
+.pm-todo-row:last-child {
+  border-bottom: 0;
+}
+
+.pm-todo-row ::ng-deep .mdc-form-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  font: inherit;
+}
+
+.pm-todo-row ::ng-deep .mdc-checkbox {
+  flex: none;
+  padding: 0;
+  margin-top: 1px;
+}
+
+.pm-todo-row ::ng-deep label {
+  min-width: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pm-todo-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pm-todo-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+.pm-todo-done {
+  text-decoration: line-through;
+}
+
+.pm-todo-meta {
+  font-size: 11px;
+}
+
+/* Alertes */
+
+.pm-alert-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-alert-row:last-child {
+  border-bottom: 0;
+}
+
+.pm-alert-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+}
+
+.pm-alert-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pm-alert-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pm-alert-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+/* Échéances */
+
+.pm-deadline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-deadline-row:last-child {
+  border-bottom: 0;
+}
+
+.pm-deadline-date {
+  flex: none;
+  width: 58px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800);
+}
+
+.pm-deadline-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-deadline-amount {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}

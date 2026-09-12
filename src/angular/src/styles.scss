@@ -19,6 +19,55 @@ html {
   );
 }
 
+/* mat-icon (bascule vers le registre SVG de Material — voir icon-registry.service.ts) :
+   Material fige `.mat-icon` à 24×24px (`mat-icon-inline` n'aide pas non plus, il hérite la
+   taille d'un ancêtre plutôt que de suivre `font-size`) — poser `[style.font-size.px]` sur
+   chaque usage, comme le fait toute l'app pour reproduire les tailles du prototype
+   (12/13/14/16/18/20/21/24/26/32/34px), n'a donc aucun effet sans cette règle : elle fait
+   suivre `width`/`height` au `font-size` en `em`, une seule fois pour tous les usages. */
+.mat-icon {
+  // !important : Material réinjecte sa propre règle .mat-icon{width:24px;height:24px} au
+  // runtime (styles de composant, ajoutés après cette feuille globale) — à spécificité CSS
+  // égale, la règle la plus tardive l'emporterait sinon et annulerait le `1em` ci-dessous.
+  width: 1em !important;
+  height: 1em !important;
+  font-size: 24px;
+}
+
+/* Le <svg> injecté par le registre doit remplir la boîte du <mat-icon> ci-dessus, sinon il
+   garde sa taille propre et se fait rogner par l'`overflow:hidden` de Material dès qu'une
+   icône est demandée plus petite que lui (12/13/14px dans la barre de contexte, le bandeau et
+   les tableaux).
+   !important, pour la même raison qu'au-dessus : `matIconButton` dimensionne lui-même son
+   <svg> enfant (`--mat-icon-button-icon-size`, 16px posé par app-shell.css) via une règle de
+   spécificité égale à celle-ci, mais injectée au runtime donc plus tardive — elle gagnerait
+   sinon. La taille de chaque icône vient désormais uniquement du `font-size` de son
+   <mat-icon>, ce qui rend `--mat-icon-button-icon-size` sans effet sur le tracé. */
+.mat-icon svg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Jetons de survol/rayon partagés par tous les "menus" de l'app (nav latérale, menu compte,
+   lignes de filtre à sélection multiple de Titres/Transactions…) — avant cette consolidation,
+   chacun réglait sa propre teinte bleue indépendamment (0.18 pour la nav, 0.09 pour les filtres…)
+   et son propre rayon (6px vs 4px). Posés sur :root/[data-theme='dark'] du <body> plutôt que sur
+   la coque : la valeur traverse alors normalement la frontière du cdk-overlay-container (les
+   panneaux de menu y sont montés, hors de l'arbre DOM d'app-shell — voir project_cdk_overlay_
+   dark_mode_body_mirror), sans avoir besoin des contournements par-composant (::ng-deep,
+   redéclaration au même niveau, !important) documentés dans project_matmenu_panel_ancestor_
+   selector_trap pour les jetons scopés à app-shell.css. */
+:root {
+  --menu-item-hover-bg: rgba(0, 61, 165, 0.18);
+  --menu-item-hover-ink: #002a6e;
+  --menu-item-radius: 6px;
+}
+[data-theme='dark'] {
+  --menu-item-hover-bg: rgba(120, 165, 235, 0.22);
+  --menu-item-hover-ink: #e8e6e4;
+}
+
 body {
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
@@ -37,6 +86,52 @@ body {
   height: 100%;
 }
 
+/* Rayons calqués sur les prototypes .dc.html plutôt que sur les valeurs M3 par défaut :
+   - mat-dialog : les boîtes flottantes des prototypes (Comptes, Calendrier, aperçu d'indice
+     de Titres) tournent toutes à border-radius:8px, contre 28px pour le jeton M3 par défaut
+     (--mat-sys-corner-extra-large). Les panneaux latéraux (.pm-side-panel-overlay) écrasent
+     déjà ce rayon à 0 dans leur propre règle, qui reste prioritaire.
+   - mat-menu / mat-autocomplete : les 45 panneaux `role="listbox"` des prototypes (filtres
+     à sélection unique/multiple) tournent tous à 6px, contre 4px pour le jeton M3 par défaut
+     (--mat-sys-corner-extra-small). */
+:root {
+  --mat-dialog-container-shape: 8px;
+  --mat-menu-container-shape: 6px;
+  --mat-autocomplete-container-shape: 6px;
+}
+
+/* mat-menu / mat-autocomplete en clair : --mat-menu-container-color et
+   --mat-autocomplete-background-color retombent par défaut sur --mat-sys-surface-container,
+   un gris M3 légèrement teinté — les prototypes .dc.html posent toujours `background:var(--surface)`
+   (blanc pur en clair, #1d1b1a en sombre) sur ces panneaux `role="listbox"`. Le pendant sombre
+   existe déjà plus bas ([data-theme='dark'] .mat-mdc-menu-panel / .mat-mdc-autocomplete-panel) ;
+   ceci pose juste le blanc en clair, sans condition de thème (le sombre le réécrit ensuite). */
+.mat-mdc-menu-panel {
+  --mat-menu-container-color: #ffffff;
+}
+.mat-mdc-autocomplete-panel {
+  --mat-autocomplete-background-color: #ffffff;
+}
+
+/* Taille de texte des items de menu, alignée sur le reste de l'application. Le jeton vaut
+   pour tous les `mat-menu-item` : menu du compte, menus contextuels, listes de choix. */
+.mat-mdc-menu-panel {
+  --mat-menu-item-label-text-size: 11px;
+}
+
+/* mat-menu : même défaut statique que la couleur ci-dessus — `mat.theme()` pose Roboto comme
+   typographie M3 (voir @include mat.theme en haut de ce fichier), et .mat-mdc-menu-item-text
+   peint son texte via --mat-menu-item-label-text-font (jamais réécrit ailleurs), pas via une
+   police héritée de la coque (Aptos, posée sur :host d'app-shell — hors d'atteinte du panneau,
+   même famille de problème que le fond ci-dessus). Constaté sur le menu compte : items rendus
+   en Arial/Roboto au lieu d'Aptos, alors que le reste de l'app est en Aptos. `font-family` sur
+   .mat-mdc-menu-panel lui-même couvre aussi les lignes custom (tx-msel-row, ti-msel-row…) qui
+   posent `font-family: inherit`. */
+.mat-mdc-menu-panel {
+  --mat-menu-item-label-text-font: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+}
+
 /* Masquage des montants — voir shell/mask-amount.directive.ts et shell/masking.service.ts. */
 .pm-masked-amount {
   filter: blur(5px);
@@ -53,3 +148,782 @@ body {
   --mat-button-toggle-text-color: var(--ink-brand, #9db6d9);
 }
 
+/* mat-checkbox : même défaut statique clair que mat-button-toggle-group ci-dessus — son
+   libellé se peint via --mat-checkbox-label-text-color, qui retombe sur --mat-sys-on-surface
+   (calculé pour une surface claire, donc quasi invisible sur le fond sombre de l'app).
+   --color-text existe déjà sur la coque et suit le thème correctement ; le composant n'a
+   qu'à s'y raccorder. */
+mat-checkbox {
+  --mat-checkbox-label-text-color: var(--color-text, #1d1b1a);
+}
+
+/* mat-menu : même défaut statique clair que les deux règles précédentes, mais le panneau
+   (`.mat-mdc-menu-panel`) est monté dans le `cdk-overlay-container`, hors de l'arbre DOM
+   d'app-shell — un descendant de [data-theme='dark'] sur la coque comme les deux règles
+   ci-dessus ne le matcherait jamais. C'est le seul cas de cette page où l'on s'appuie sur le
+   [data-theme] répliqué sur <body> par ThemeService plutôt que sur celui de la coque (voir
+   theme.service.ts). */
+[data-theme='dark'] .mat-mdc-menu-panel {
+  --mat-menu-container-color: #262423;
+  --mat-menu-item-label-text-color: #f3f2f2;
+  --mat-menu-item-icon-color: #f3f2f2;
+  --mat-menu-item-hover-state-layer-color: rgba(255, 255, 255, 0.08);
+  /* mat-checkbox utilisé à l'intérieur d'un panneau de menu (filtres à sélection multiple de
+     Transactions) : mêmes jetons statiques clairs que la règle mat-checkbox globale ci-dessus,
+     à réécrire ici pour la même raison (panneau hors d'atteinte du [data-theme] de la coque). */
+  --mat-checkbox-label-text-color: #f3f2f2;
+  --mat-checkbox-unselected-icon-color: #b5b0ad;
+  --mat-checkbox-disabled-label-color: #8a8582;
+
+  /* Lignes de filtre à sélection multiple (tx-msel-row, ti-msel-row…) : ces `<button>` custom
+     n'utilisent pas mat-menu-item (voir tx-multiselect.ts) et peignent leur texte directement
+     via les jetons --color-* de l'app plutôt que via les jetons Material ci-dessus. Ces jetons
+     ne sont normalement définis que sur app-shell (voir app-shell.css) ; ce panneau, hors de son
+     arbre DOM, ne les voit jamais — même valeurs, redéclarées ici. */
+  --color-text: #f3f2f2;
+  --ink-brand: #9db6d9;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #a8a3a0;
+  --color-neutral-800: #d8d5d2;
+  --mat-divider-color: #35322f;
+}
+
+/* Menu compte (app-shell.html, class="pm-account-menu" posée sur <mat-menu>) : cette classe
+   est transmise par MatMenu à .mat-mdc-menu-panel via panelClass, un classList.add() fait en
+   TypeScript à l'ouverture — le panneau n'est jamais un nœud du template d'app-shell.html, donc
+   il ne porte pas l'attribut _ngcontent de la coque et une règle `.pm-account-menu {}` écrite
+   dans app-shell.css (même via ::ng-deep) ne le touche jamais. Doit vivre ici, en global,
+   comme .pm-side-panel-overlay/.pm-compact-dialog-overlay ci-dessus. */
+.pm-account-menu {
+  width: 300px;
+}
+
+/* Couleur du texte des items (--ink-brand) en sombre : app-shell.css pose
+   var(--ink-brand, #002a6e) directement sur .pm-account-menu-item (le bouton, pas le panneau) —
+   une surcharge posée plus haut sur .pm-account-menu (le panneau) est aussitôt réécrasée par
+   cette déclaration du bouton en la traversant, puisque --ink-brand lui-même n'est jamais
+   défini dans l'overlay et retombe donc toujours sur son #002a6e clair, quel que soit le thème.
+   Il faut réécrire directement sur .pm-account-menu-item, au même niveau que la déclaration
+   d'origine, pour gagner la cascade. */
+[data-theme='dark'] .pm-account-menu-item {
+  /* !important : même spécificité que la règle de app-shell.css (attribut = classe), donc
+     sans ceci l'ordre de chargement des feuilles de styles décide — et perd parfois. */
+  --mat-menu-item-label-text-color: #9db6d9 !important;
+  --mat-menu-item-icon-color: #9db6d9 !important;
+}
+
+/* « Se déconnecter » porte les deux classes : la règle ci-dessus, en !important, écrase sinon
+   le rouge que .pm-account-menu-logout pose sur son pictogramme — son libellé, lui, reste rouge
+   dans les deux thèmes. */
+[data-theme='dark'] .pm-account-menu-logout {
+  --mat-menu-item-icon-color: #c53030 !important;
+}
+
+/* Même chose pour le libellé LANGUE et la pastille FR/EN sélectionnée : --ink-brand/
+   --field-brand posés par app-shell.css sur .pm-account-menu-lang-label/.pm-lang-toggle
+   retombent toujours sur leur valeur de secours claire dans l'overlay — réécriture au même
+   niveau, avec !important pour la même raison de spécificité égale qu'au-dessus. */
+[data-theme='dark'] .pm-account-menu-lang-label {
+  color: #9db6d9 !important;
+}
+[data-theme='dark'] .pm-lang-toggle {
+  --mat-button-toggle-text-color: #9db6d9 !important;
+  /* #12325e (--field-brand sombre) est trop proche du fond du panneau pour lire comme « actif » ;
+     #1e4f9c est le --ds-brand-fill sombre du design system (posé par les prototypes comme accent
+     bleu plus vif sur fond sombre — jamais reporté dans le port), plus lisible ici. */
+  --mat-button-toggle-selected-state-background-color: #1e4f9c !important;
+}
+/* mat-autocomplete (recherche principale et filtre Référence de Transactions) : même défaut
+   statique clair, même relais par <body> que la règle mat-menu ci-dessus. */
+[data-theme='dark'] .mat-mdc-autocomplete-panel {
+  --mat-autocomplete-background-color: #262423;
+}
+[data-theme='dark'] .mat-mdc-autocomplete-panel .mat-mdc-option {
+  --mat-option-label-text-color: #f3f2f2;
+  --mat-option-hover-state-layer-color: rgba(255, 255, 255, 0.08);
+  --mat-option-focus-state-layer-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ===========================================================================
+   Sélecteurs (mat-select) — recette partagée
+   ===========================================================================
+   Les quatre sélecteurs de l'app (tx-select, ti-select, ac-select, ops-select) portaient
+   chacun une copie quasi identique du même habillage, ne différant que par la hauteur, la
+   taille de police et le padding du déclencheur. Cette recette est donc écrite une fois ici et
+   paramétrée par les trois jetons --pm-sel-* que chaque composant redéfinit sur son hôte.
+
+   Global plutôt que dans une feuille de composant pour deux raisons : le panneau d'options
+   (`.mat-mdc-select-panel`) est monté dans le `cdk-overlay-container`, hors de tout arbre de
+   composant — une règle scopée ne l'atteindrait jamais (même contrainte que mat-menu et
+   mat-datepicker ci-dessus) — et le déclencheur partage désormais sa mise en forme entre
+   quatre composants de trois pages différentes. */
+
+.pm-sel {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.pm-sel-trigger {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: var(--pm-sel-h, 32px);
+  padding: var(--pm-sel-pad, 0 6px 0 10px);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+
+  /* mat-select hérite sa typographie du thème M3 (Roboto, interlettrage propre) : on la
+     ramène à celle du reste des champs de l'app, comme le faisaient les `!important` des
+     anciens déclencheurs matButton. */
+  --mat-select-trigger-text-font: inherit;
+  --mat-select-trigger-text-size: var(--pm-sel-fs, 13px);
+  --mat-select-trigger-text-weight: 400;
+  --mat-select-trigger-text-tracking: normal;
+  --mat-select-trigger-text-line-height: normal;
+  --mat-select-enabled-trigger-text-color: var(--color-text);
+  --mat-select-disabled-trigger-text-color: var(--color-neutral-600);
+  --mat-select-placeholder-text-color: var(--color-neutral-700);
+  --mat-select-enabled-arrow-color: var(--ink-brand-2);
+  --mat-select-focused-arrow-color: var(--ink-brand-2);
+  --mat-select-disabled-arrow-color: var(--color-neutral-600);
+  /* Hors mat-form-field, le décalage vertical que Material applique à la flèche pour
+     l'aligner sur la ligne de saisie n'a plus de sens et la fait sortir du cadre. */
+  --mat-select-arrow-transform: none;
+}
+
+.pm-sel-trigger .mat-mdc-select-trigger {
+  height: 100%;
+}
+
+.pm-sel-trigger:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.pm-sel-disabled .pm-sel-trigger {
+  background: var(--color-neutral-100);
+  cursor: not-allowed;
+}
+
+/* Chevron à la place du triangle plein de Material. La flèche de mat-select est un <svg>
+   inline codé en dur dans son template (`<path d="M7 10l5 5 5-5z"/>`), sans point d'extension :
+   on le masque et on redessine le chevron des maquettes en CSS pure sur le conteneur, qui
+   garde ainsi la couleur, l'alignement et les états gérés par Material. */
+.pm-sel-trigger .mat-mdc-select-arrow svg {
+  display: none;
+}
+
+.pm-sel-trigger .mat-mdc-select-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm-sel-trigger .mat-mdc-select-arrow::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+/* `.mat-mdc-select-panel-open` est posée par Material sur l'hôte du select tant que le panneau
+   est ouvert — c'est elle qui remplace le `trigger.menuOpen` des anciens déclencheurs MatMenu. */
+.pm-sel-trigger.mat-mdc-select-panel-open .mat-mdc-select-arrow::after {
+  margin-top: 2px;
+  transform: rotate(-135deg);
+}
+
+/* Panneau d'options. Material le dimensionne pour la densité par défaut (48px par option) ;
+   les maquettes de cette app sont nettement plus compactes, comme l'étaient les mat-menu-item
+   qu'il remplace. */
+/* Largeur : `panelWidth` vaut `'auto'` par défaut, ce qui signifie « la largeur du
+   déclencheur » — et non « la largeur du contenu ». Les déclencheurs de cette app sont des
+   champs de filtre étroits, dans lesquels les libellés se coupaient sur deux lignes. Les
+   composants passent donc `[panelWidth]="null"` (overlay sans largeur imposée) et la largeur
+   est décidée ici par le contenu, bornée pour ne pas déborder de l'écran. */
+/* Fond blanc comme tous les panneaux flottants de l'app : le jeton M3 par défaut est un gris
+   légèrement teinté (voir la même correction pour mat-menu, mat-autocomplete et le calendrier). */
+.pm-sel-panel {
+  --mat-select-panel-background-color: #ffffff;
+  width: max-content;
+  min-width: 150px;
+  max-width: 420px;
+
+}
+
+/* Les jetons --mat-option-* se posent sur l'option elle-même, pas sur le panneau : le thème M3
+   les déclare directement sur `.mat-mdc-option`, et une déclaration portée par l'élément bat
+   toujours celle héritée d'un ancêtre, quelle que soit sa spécificité (même piège que
+   --ink-brand sur .pm-account-menu-item plus haut). */
+/* Coche de l'option retenue, moitié de sa taille d'origine. Sa géométrie n'a aucun jeton :
+   Material la calcule en dur (boîte de 18px, trait de 2px, rotation à −45°, décalage vertical
+   dérivé des deux). Une mise à l'échelle la réduit d'un seul tenant, trait compris, là où
+   retoucher width/height laisserait le trait à sa grosseur et décalerait le dessin.
+   0.667 = 12 / 18 : la coche occupe 12px là où Material lui en donne 18. */
+/* Panneau large, pour les listes dont les libellés portent place, ticker et raison sociale —
+   le sélecteur de titre d'un ordre. La borne haute est relevée avec la borne basse, sans quoi
+   `max-width` écraserait le `min-width` et la coupure reviendrait. */
+.pm-sel-panel-wide {
+  min-width: 340px;
+  max-width: 560px;
+}
+
+.pm-sel-panel .mat-pseudo-checkbox-minimal {
+  transform: scale(0.667);
+  transform-origin: center;
+}
+
+.pm-sel-panel .mat-mdc-option {
+  min-height: 24px;
+
+  --mat-option-label-text-font: inherit;
+  --mat-option-label-text-size: 11px;
+  --mat-option-selected-state-label-text-color: var(--ink-brand-2);
+  /* Material distingue « sélectionnée » de « active » (l'option sous le curseur clavier, qui
+     est justement la sélection courante à l'ouverture) : la règle du fond sélectionné s'exclut
+     explicitement des états actif/focus/survol, si bien que la teinte réellement visible à
+     l'ouverture vient de la seconde. Les trois sont donc alignées sur le bleu de l'app, sans
+     quoi la ligne mise en avant reste au gris neutre du thème M3. */
+  --mat-option-selected-state-layer-color: rgba(0, 61, 165, 0.12);
+  --mat-option-focus-state-layer-color: rgba(0, 61, 165, 0.12);
+  --mat-option-hover-state-layer-color: rgba(0, 61, 165, 0.07);
+}
+
+/* En-tête de groupe (mat-optgroup) : Titres et Comptes regroupent leurs options (indice,
+   devise, pays…). Le libellé par défaut reprend la typographie M3 ; on remet la capitale
+   filetée des maquettes, reprise telle quelle des anciens `.ti-sel-group-label`. */
+.pm-sel-panel .mat-mdc-optgroup-label {
+  min-height: 26px;
+  padding: 6px 16px 2px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+/* Bandeau de continent dans la liste des indices de référence : chaque région y forme une
+   section, et l'étiquette d'`optgroup` seule ne la détachait pas des indices qu'elle coiffe.
+   Posé après la règle générique ci-dessus et non avant : les deux ont la même spécificité
+   (0,2,0), c'est donc l'ordre du fichier qui tranche.
+   Couleurs littérales et non `var(--ink-warn)` : le panneau est monté dans le
+   cdk-overlay-container, où les jetons de la page ne sont pas définis — une var() non résolue
+   y invaliderait la déclaration entière. Pendant sombre plus bas. */
+.pm-sel-panel-banded .mat-mdc-optgroup-label {
+  min-height: 22px;
+  padding: 4px 16px;
+  background: rgba(180, 83, 9, 0.14);
+  color: #8f3f06;
+}
+
+/* Material indente les options d'un groupe ; les maquettes ne le font pas, l'en-tête suffit. */
+.pm-sel-panel .mat-mdc-optgroup .mat-mdc-option {
+  padding-left: 16px;
+}
+
+/* Certaines options de Comptes tiennent sur deux lignes (libellé + sous-libellé de place) :
+   `min-height` ne les bride pas — `.mat-mdc-option` est un conteneur flexible de hauteur
+   automatique — mais le libellé Material tronque son texte sur une seule ligne, ce qu'il faut
+   relâcher pour que la seconde ligne apparaisse. Ici et non dans `ac-select.css` :
+   `.ac-sel-panel` désigne le panneau, créé par Material au moment de l'ouverture et donc
+   dépourvu de l'attribut `_ngcontent` du composant — une règle scopée qui l'exige comme
+   ancêtre ne matcherait jamais (contrairement aux règles visant les `mat-option` elles-mêmes,
+   qui sont bien déclarées dans le template d'`ac-select`). */
+.ac-sel-panel .mat-mdc-option .mdc-list-item__primary-text {
+  overflow: visible;
+  white-space: normal;
+}
+
+.ac-sel-panel .mat-mdc-option {
+  padding-block: 5px;
+}
+
+/* Même frontière d'overlay que mat-menu / mat-datepicker : le panneau ne voit ni le
+   [data-theme] de la coque ni ses jetons --color-*, d'où le relais par <body>. */
+[data-theme='dark'] .pm-sel-panel {
+  --mat-select-panel-background-color: #262423;
+  --color-neutral-600: #8a8582;
+}
+
+[data-theme='dark'] .pm-sel-panel-banded .mat-mdc-optgroup-label {
+  background: rgba(240, 168, 104, 0.16);
+  color: #f0a868;
+}
+
+/* Sur l'option et non sur le panneau, pour la raison expliquée plus haut. */
+[data-theme='dark'] .pm-sel-panel .mat-mdc-option {
+  --mat-option-label-text-color: #f3f2f2;
+  --mat-option-hover-state-layer-color: rgba(255, 255, 255, 0.08);
+  --mat-option-focus-state-layer-color: rgba(255, 255, 255, 0.08);
+  --mat-option-selected-state-label-text-color: #9db6d9;
+  --mat-option-selected-state-layer-color: rgba(157, 182, 217, 0.16);
+}
+
+/* Natures d'instruction (Trésorerie) : les quatre options sont espacées de 8px, chacune
+   portant une icône que des lignes jointives rendaient illisibles.
+   8px et non 4px de chaque côté : les marges verticales de deux options voisines fusionnent,
+   si bien que `4px` en donnerait 4 entre elles et non 8.
+   Dans styles.scss et non dans la feuille de la page : le panneau vit dans le
+   cdk-overlay-container, hors de l'arbre du composant. */
+.tr-kind-panel .mat-mdc-option {
+  margin-block: 8px;
+}
+
+/* Déroulé d'un panneau flottant : il s'ouvre de haut en bas, comme un store, au lieu de
+   grandir d'un bloc depuis son centre.
+   Material anime `opacity` et `scale(0.8)` (keyframes `_mat-menu-enter`) ; la mise à l'échelle
+   déforme le contenu pendant les 140 ms de l'animation, ce qui se remarque sur un panneau qui
+   porte un en-tête, des libellés et un séparateur. Un `clip-path` révèle le panneau sans
+   toucher à ce qu'il contient : le texte ne bouge pas, il apparaît.
+   Sélecteur à trois classes (0,3,0) : la règle de Material, injectée à l'exécution, gagnerait
+   à spécificité égale. Réservé au menu du compte, les autres menus gardant l'animation
+   d'origine. */
+@keyframes pm-panel-unfold {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+@keyframes pm-panel-fold {
+  from {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+/* Déroulé d'un bloc replié dans la page — détail d'un compte, corps d'un panneau. Même
+   mouvement que les panneaux flottants, mais posé sur du contenu inséré par `@if` : l'animation
+   se joue donc à l'insertion, sans marqueur de Material à contourner.
+   `clip-path` et non `height` : la hauteur du bloc dépend de son contenu et n'est pas connue
+   d'avance ; l'animer forcerait un recalcul de mise en page à chaque image. */
+@keyframes pm-block-unfold {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.pm-unfold-block {
+  animation: pm-block-unfold 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Repli, pose par `animate.leave` : Angular retient le noeud le temps de l'animation avant de
+   le retirer, ce que `@if` seul ne permet pas. Un peu plus court que le deroule — une
+   fermeture qui s'attarde donne l'impression que l'interface resiste. */
+@keyframes pm-block-fold {
+  from {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+.pm-fold-block {
+  animation: pm-block-fold 220ms cubic-bezier(0.4, 0, 1, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-unfold-block,
+  .pm-fold-block {
+    animation: none;
+  }
+}
+
+/* Classe d'adhésion : un panneau qui la porte se déroule au lieu de l'animation d'origine.
+   Chaque famille de panneau déclare la sienne sur un sélecteur différent — `.mat-mdc-menu-panel`
+   pour les menus, `.mat-select-panel-animations-enabled` pour les listes, son équivalent pour
+   l'autocomplétion — et toutes sont injectées à l'exécution : il faut donc les surcharger une
+   par une, à une spécificité supérieure, et non par une règle générique.
+   Ces animations se jouent à la création du panneau ; `.mat-menu-panel-animating` et consorts
+   ne sont que des marqueurs posés pendant qu'elles tournent, sans déclaration propre — s'y
+   accrocher laisse l'animation d'origine reprendre la main et fige le panneau sur sa première
+   image, invisible.
+   Pas de `fill-mode` sur l'ouverture : rien ne doit persister une fois le déroulé terminé. */
+.mat-mdc-menu-panel.pm-unfold,
+.mat-select-panel-animations-enabled.pm-unfold,
+.mat-autocomplete-panel-animations-enabled.pm-unfold {
+  animation: pm-panel-unfold 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform-origin: top center;
+}
+
+.mat-mdc-menu-panel.pm-unfold.mat-menu-panel-exit-animation,
+.mat-select-panel-animations-enabled.pm-unfold.mat-select-panel-exit {
+  animation: pm-panel-fold 140ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* Le déroulé est une décoration : qui a demandé moins de mouvement ne doit pas le subir. */
+@media (prefers-reduced-motion: reduce) {
+  .pm-unfold,
+  .pm-unfold.mat-menu-panel-exit-animation,
+  .pm-unfold.mat-select-panel-exit {
+    animation: none;
+  }
+}
+
+/* Fond de la feuille du bas (Opérations, « Initier un événement »). Le conteneur de
+   MatBottomSheet est peint sur le gris M3 (--mat-sys-surface-container), si bien qu'un cadre
+   gris encerclait le contenu blanc de la feuille. Mêmes valeurs littérales que les autres
+   panneaux flottants : le conteneur vit dans le cdk-overlay-container, où les jetons de la
+   page ne sont pas définis, et le mode sombre passe par le [data-theme] que ThemeService
+   recopie sur <body>. */
+.mat-bottom-sheet-container {
+  --mat-bottom-sheet-container-background-color: #ffffff;
+  --mat-bottom-sheet-container-text-color: #1d1b1a;
+}
+
+[data-theme='dark'] .mat-bottom-sheet-container {
+  --mat-bottom-sheet-container-background-color: #1d1b1a;
+  --mat-bottom-sheet-container-text-color: #f3f2f2;
+}
+
+/* Fond du calendrier en clair : le jeton M3 par défaut est un gris légèrement teinté
+   (--mat-sys-surface-container), là où tous les panneaux flottants de cette app sont blancs
+   (voir la même correction pour mat-menu et mat-autocomplete plus haut). */
+.mat-datepicker-content {
+  --mat-datepicker-calendar-container-background-color: #ffffff;
+}
+
+/* mat-datepicker : le calendrier (`.mat-datepicker-content`) est lui aussi monté dans le
+   `cdk-overlay-container`, même relais par <body> que mat-menu et mat-autocomplete ci-dessus.
+   Sans ceci il reste un panneau blanc du thème M3 statique en plein milieu d'une interface
+   sombre — lisible (texte foncé sur fond clair), mais franchement discordant. Mêmes teintes
+   que le panneau de menu sombre (#262423 / #f3f2f2) pour rester cohérent avec les autres
+   surfaces flottantes. */
+[data-theme='dark'] .mat-datepicker-content {
+  --mat-datepicker-calendar-container-background-color: #262423;
+  --mat-datepicker-calendar-container-text-color: #f3f2f2;
+  --mat-datepicker-calendar-date-text-color: #f3f2f2;
+  --mat-datepicker-calendar-body-label-text-color: #a8a3a0;
+  --mat-datepicker-calendar-header-text-color: #a8a3a0;
+  --mat-datepicker-calendar-header-divider-color: #35322f;
+  --mat-datepicker-calendar-period-button-text-color: #f3f2f2;
+  --mat-datepicker-calendar-period-button-icon-color: #f3f2f2;
+  --mat-datepicker-calendar-navigation-button-icon-color: #f3f2f2;
+  --mat-datepicker-calendar-date-disabled-state-text-color: #6b6663;
+  --mat-datepicker-calendar-date-hover-state-background-color: rgba(255, 255, 255, 0.08);
+  --mat-datepicker-calendar-date-focus-state-background-color: rgba(255, 255, 255, 0.12);
+  /* Le bleu clair du thème sombre de l'app (--ink-brand), pas le violet M3 par défaut. */
+  --mat-datepicker-calendar-date-selected-state-background-color: #1e4f9c;
+  --mat-datepicker-calendar-date-selected-state-text-color: #f3f2f2;
+  --mat-datepicker-calendar-date-today-outline-color: #9db6d9;
+}
+
+/* ===========================================================================
+   Barres d'onglets (mat-tab-nav-bar) — recette partagée
+   ===========================================================================
+   Les onglets de cette app sont des pastilles (l'onglet actif grandit et se remplit), et leur
+   contenu n'est pas collé à la barre : il en est séparé par du chrome commun à tous les onglets
+   (bandeau KPI de Positions, cartouches de Transactions, note d'intention…). `<mat-tab-group>`
+   ne convient donc pas — il possède le contenu et l'enferme dans ses `<mat-tab>`, ce qui
+   obligerait à dupliquer ce chrome dans chaque onglet. `mat-tab-nav-bar` ne gère que l'en-tête
+   et laisse le contenu là où il est : c'est ce qu'il faut ici. On y gagne le `role="tablist"`
+   /`role="tab"` avec `aria-selected`, la navigation aux flèches, la gestion du focus et la
+   pagination automatique quand la barre déborde — tout ce que les `<button>` nus n'avaient pas.
+
+   Chaque page garde ses propres classes de pastille : ce bloc ne fait que neutraliser
+   l'habillage Material par défaut (onglet de 48px, libellé en majuscules, opacité réduite,
+   trait de soulignement) qui, sinon, écraserait le dessin des maquettes. */
+
+.pm-tabnav {
+  /* .mat-mdc-tab-header impose une hauteur minimale et masque les débordements, ce qui
+     tronquerait la pastille active (plus haute que les autres). */
+  min-height: 0;
+  overflow: visible;
+}
+
+/* mat-tab-nav-bar intercale trois conteneurs entre la barre et les liens
+   (.mat-mdc-tab-link-container > .mat-mdc-tab-list > .mat-mdc-tab-links). Les règles de mise en
+   page que chaque page écrit sur sa barre (display:flex, gap, align-items) ne toucheraient donc
+   plus ses onglets, devenus des petits-enfants. Plutôt que de réécrire ces règles page par page
+   sur une classe Material, on fait redescendre la mise en forme de la barre à travers les trois
+   niveaux par `inherit` — la page continue de décrire sa barre comme avant, et la structure
+   interne de Material (mesurée par sa pagination) reste intacte. */
+.pm-tabnav .mat-mdc-tab-link-container,
+.pm-tabnav .mat-mdc-tab-list,
+.pm-tabnav .mat-mdc-tab-links {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: inherit;
+  gap: inherit;
+  overflow: visible;
+}
+
+.pm-tabnav .mat-mdc-tab-link {
+  /* Tout l'habillage du `.mdc-tab` par défaut : 48px de haut, 24px de padding, largeur
+     minimale, texte estompé, typographie M3. La pastille de la page reprend la main.
+     L'étirement des onglets sur toute la largeur, lui, se coupe par l'API (`[mat-stretch-tabs]`)
+     et non ici : sa règle Material est plus spécifique que ce bloc. */
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  opacity: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Material enveloppe le contenu projeté de chaque lien dans deux <span>
+   (.mdc-tab__content > .mdc-tab__text-label). Sans ceci, le `display:flex`/`gap` que la page
+   pose sur sa pastille ne s'applique qu'à cette enveloppe unique : pictogramme et libellé se
+   retrouvent collés, et la couleur du texte repasse au jeton M3 au lieu de celle de la page.
+   Même technique que pour les conteneurs de la barre : on fait suivre la mise en forme. */
+.pm-tabnav .mat-mdc-tab-link .mdc-tab__content,
+.pm-tabnav .mat-mdc-tab-link .mdc-tab__text-label {
+  display: flex;
+  align-items: center;
+  justify-content: inherit;
+  gap: inherit;
+  font: inherit;
+  /* !important : Material peint le libellé selon l'état du lien avec des règles de spécificité
+     (0,3,0) — `.mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label`, plus ses variantes
+     :hover et :focus — soit exactement celle de ce sélecteur. À égalité, c'est l'ordre de
+     chargement qui tranche, et les styles de composant Material sont injectés au runtime, donc
+     après cette feuille : sans `!important`, l'onglet actif reprenait son jeton M3
+     (--mat-sys-on-surface, quasi noir) au lieu d'hériter le blanc de sa pastille, et son
+     libellé devenait illisible sur le fond bleu marine. L'état inactif, lui, passe par une
+     règle (0,2,0) que ce sélecteur battait déjà — d'où un défaut visible sur le seul onglet
+     sélectionné. */
+  color: inherit !important;
+}
+
+/* Le trait de soulignement Material ferait doublon avec la pastille, qui dit déjà quel onglet
+   est actif — et se poserait de travers sous des onglets de hauteurs différentes. */
+.pm-tabnav .mdc-tab-indicator {
+  display: none;
+}
+
+/* L'ondulation déborderait du rayon de la pastille, la pastille étant portée par le lien
+   lui-même et non par un fond interne.
+   `.mdc-tab__ripple` doit être masqué et pas seulement rendu transparent : contrairement aux
+   deux autres, c'est un enfant *statique* du lien, donc un élément de plus dans son flux
+   flexible — le `gap` que la page pose entre pictogramme et libellé s'appliquait aussi entre
+   lui et le contenu, élargissant chaque onglet de 8px par rapport à la maquette. */
+.pm-tabnav .mdc-tab__ripple,
+.pm-tabnav .mat-mdc-tab-ripple,
+.pm-tabnav .mat-ripple {
+  display: none;
+}
+
+/* ===========================================================================
+   Colonnes redimensionnables (directive ColResize, app/ui/col-resize.ts)
+   ===========================================================================
+   Global et non dans une feuille de composant : la poignée est un élément créé en TypeScript
+   par la directive, donc dépourvu de l'attribut `_ngcontent` du composant hôte — une règle
+   scopée ne l'atteindrait jamais (voir project_matmenu_panel_ancestor_selector_trap). */
+
+.pm-col-resizable {
+  position: relative;
+}
+
+.pm-col-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 100%;
+  cursor: col-resize;
+  /* Discrète au repos : un filet n'apparaît qu'au survol de la zone de préhension. */
+  opacity: 0;
+  transition: opacity 120ms ease;
+  touch-action: none;
+  user-select: none;
+}
+
+.pm-col-resize::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  right: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ink-brand, #002a6e);
+}
+
+.pm-col-resizable:hover .pm-col-resize,
+.pm-col-resize:hover {
+  opacity: 0.55;
+}
+
+.pm-col-resize:hover {
+  opacity: 1;
+}
+
+/* Pendant le glissement, le pointeur sort de la poignée : le curseur et la neutralisation de
+   la sélection doivent valoir pour toute la page, d'où la classe posée sur <body>. */
+body.pm-col-resizing,
+body.pm-col-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+/* Panneaux des filtres à sélection multiple (tx-multiselect, ti-multiselect). Global : le
+   panneau `.mat-mdc-menu-panel` est monté dans le cdk-overlay-container, hors de l'arbre du
+   composant, qu'aucune règle scopée n'atteint (voir project_matmenu_panel_ancestor_selector_trap).
+   Largeur minimale pour que la pastille et son décompte ne se serrent pas l'un contre l'autre. */
+.mat-mdc-menu-panel:has(.tx-msel-row) {
+  min-width: 240px;
+}
+
+/* Pendant sombre des pastilles et des cases de ces panneaux (voir tx-multiselect.css pour le
+   mode clair et la raison de ce partage). */
+/* `body[...]` et non `[...]` seul : à spécificité égale (0,2,0) la règle du composant, injectée
+   au runtime donc plus tardive, l'emporterait. Le sélecteur d'élément fait la différence. */
+body[data-theme='dark'] .tx-msel-item-badge,
+body[data-theme='dark'] .tx-msel-trigger-badge {
+  --ink-brand-2: #b3cdf7;
+  --ink-magenta: #f7c6ff;
+  --ink-ok: #86e6d7;
+  --ink-ok-2: #6fdccf;
+  --ink-warn: #f7bf8a;
+  --ink-warn-2: #f9d0a8;
+  --ink-info: #a5e3fd;
+  --ink-code: #c3ccff;
+}
+
+/* Filet de séparation sous « Tout sélectionner » et couleur de son libellé, pour les deux
+   composants de filtre à sélection multiple (voir tx-multiselect.css / ti-multiselect.css). */
+body[data-theme='dark'] .tx-msel-all,
+body[data-theme='dark'] .ti-msel-all {
+  border-bottom-color: #35322f;
+  color: #d8d5d2;
+}
+
+body[data-theme='dark'] .tx-msel-row {
+  --mat-checkbox-unselected-icon-color: #5a5652;
+  --mat-checkbox-unselected-hover-icon-color: #9db6d9;
+  --mat-checkbox-unselected-focus-icon-color: #9db6d9;
+}
+
+/* Panneau latéral (SidePanel) : MatDialog positionné plein cadre à droite (voir
+   Positions.openHistory()). Le chrome visuel (fond, ombre, bord) vit dans side-panel.css ;
+   ici on retire seulement le padding/rayon/ombre par défaut de la boîte Material elle-même,
+   qui sinon doublerait ceux du composant. */
+.pm-side-panel-overlay .mat-mdc-dialog-container {
+  padding: 0;
+}
+.pm-side-panel-overlay .mdc-dialog__surface {
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: visible;
+}
+
+/* Mon profil / Préférences (ProfileDialog, AccountPreferencesDialog) : leur source
+   Navigation Sobre.dc.html les dessine à border-radius:6px, contre 8px pour les autres
+   boîtes flottantes de l'app (voir --mat-dialog-container-shape ci-dessus) — un jeton
+   global ne peut pas distinguer les deux, d'où ce panelClass dédié. */
+.pm-compact-dialog-overlay .mdc-dialog__surface {
+  border-radius: 6px;
+}
+
+
+/* ---------------------------------------------------------------------------------------
+   MatTable, variante « table native » (<table mat-table>). Les écrans de l'app portent leur
+   propre mise en forme sur table/thead/tr/th/td ; le thème M3 de Material, lui, impose des
+   valeurs de liste Material (lignes de 52/56 px, padding 16 px, police et couleur de corps,
+   bordure basse, fond opaque, `background: inherit` sur les cellules). Sans neutralisation,
+   ces valeurs s'appliquent partout où l'écran ne déclare pas explicitement la propriété, et
+   le rendu dérive.
+
+   Spécificité choisie à dessein : les règles des composants passent par l'encapsulation
+   Angular (`.x[_ngcontent] td[_ngcontent]` ≈ 0-3-1), donc elles gagnent toujours contre les
+   0-1-1 / 0-2-2 ci-dessous ; Material, lui, reste à 0-1-0 / 0-2-0 et perd. Aucune règle
+   d'écran n'est donc écrasée : on ne fait que restaurer le comportement natif par défaut. */
+table.mat-mdc-table {
+  /* `min-width: 100%` de Material empêcherait les tableaux à défilement horizontal de se
+     réduire à leur largeur propre dans leur conteneur `overflow-x`. */
+  min-width: 0;
+  background-color: transparent;
+}
+/* Le `tbody` que crée MatTable porte `.mdc-data-table__content`, à qui le thème impose la
+   police de corps M3 — que les cellules héritent ensuite. */
+table.mat-mdc-table > thead,
+table.mat-mdc-table > tbody,
+table.mat-mdc-table > tfoot {
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+tr.mat-mdc-header-row,
+tr.mat-mdc-row,
+tr.mat-mdc-footer-row {
+  height: auto;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+th.mat-mdc-header-cell,
+td.mat-mdc-cell,
+td.mat-mdc-footer-cell {
+  /* Valeurs du user-agent pour une cellule de tableau, que Material remplace. */
+  padding: 1px;
+  /* Material passe les cellules en `border-box` : une hauteur posée sur un `th` y engloberait
+     la demi-bordure que le modèle `border-collapse` lui attribue, et la ligne perdrait un
+     demi-pixel. */
+  box-sizing: content-box;
+  border-bottom: none;
+  text-align: revert;
+  letter-spacing: inherit;
+  line-height: inherit;
+  /* `revert` et non `inherit` : le gras des `th` vient de la feuille du navigateur, que
+     Material écrase par `font-weight: inherit`. `revert` le rétablit, sans rien imposer aux
+     `td` (le navigateur ne déclare rien pour eux, la valeur héritée reste). */
+  font-weight: revert;
+  overflow: visible;
+  text-overflow: clip;
+  background: transparent;
+}
+/* `background: inherit` des cellules d'en-tête est posé à 0-2-0 par Material : il ferait
+   repeindre à la cellule le fond (souvent semi-transparent) de sa ligne, donc l'assombrirait
+   deux fois. Les en-têtes collants qui ont besoin d'un fond opaque le posent eux-mêmes. */
+table.mat-mdc-table th.mat-mdc-header-cell {
+  background: transparent;
+}
+
+/* Info-bulle sur plusieurs lignes, à poser en `matTooltipClass`. Material réduit son contenu à
+   une seule ligne : les `\n` du message n'apparaissent qu'avec `pre-line`. La règle est ici et
+   non dans une feuille de composant — l'info-bulle est montée dans le `cdk-overlay-container`,
+   hors de l'arbre de la page, où aucune règle encapsulée ne l'atteint. */
+.pm-tooltip-multiline .mdc-tooltip__surface {
+  max-width: 280px;
+  white-space: pre-line;
+  text-align: left;
+  line-height: 1.45;
+}

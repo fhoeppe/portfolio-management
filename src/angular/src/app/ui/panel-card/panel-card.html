@@ -1,20 +1,22 @@
-<div class="pm-card">
-  <div class="pm-card-header" [class.pm-card-header-open]="open()">
-    <button type="button" class="pm-card-toggle" [attr.aria-label]="open() ? 'Replier' : 'Développer'" (click)="toggle()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.pm-card-chev-closed]="!open()">
-        <path d="m6 9 6 6 6-6"></path>
-      </svg>
-    </button>
+<mat-expansion-panel class="pm-card" [expanded]="open()" (expandedChange)="open.set($event)" hideToggle>
+  <mat-expansion-panel-header class="pm-card-header" [class.pm-card-header-open]="open()">
+    <!-- `hideToggle` + chevron maison : l'indicateur de Material se place à droite du bandeau,
+         le prototype le veut à gauche, avant l'icône et le titre. -->
+    <span class="pm-card-toggle" [attr.aria-label]="open() ? 'Replier' : 'Développer'">
+      <mat-icon svgIcon="chevron-down" style="font-size:18px" [class.pm-card-chev-closed]="!open()"></mat-icon>
+    </span>
     @if (icon(); as ic) {
-      <span class="pm-card-icon"><app-icon [shapes]="ic" [size]="32" [strokeWidth]="1.6" /></span>
+      <span class="pm-card-icon"><mat-icon [svgIcon]="ic" [style.font-size.px]="32"></mat-icon></span>
     }
-    <h2 class="pm-card-title" (click)="toggle()">{{ title() }}</h2>
+    <h2 class="pm-card-title">{{ title() }}</h2>
     @if (note()) {
       <span class="pm-card-note">{{ note() }}</span>
     }
-    <ng-content select="[card-actions]" />
-  </div>
-  @if (open()) {
-    <ng-content />
-  }
-</div>
+    <!-- Tout clic dans le bandeau replie le panneau : les commandes projetées ici doivent
+         retenir le leur, sinon actionner un bouton refermerait la carte. -->
+    <span class="pm-card-actions" (click)="$event.stopPropagation()">
+      <ng-content select="[card-actions]" />
+    </span>
+  </mat-expansion-panel-header>
+  <ng-content />
+</mat-expansion-panel>

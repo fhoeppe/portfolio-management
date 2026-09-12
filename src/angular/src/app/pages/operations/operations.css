@@ -1,0 +1,486 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--color-text);
+  container-type: inline-size;
+  /* --ink-brand/--ink-brand-2/--ink-warn/--ink-warn-2/--field-brand/--field-warn viennent déjà
+     de la coque (voir positions.css) ; le reste est propre à cet écran. */
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --ink-info: #075985;
+  --ink-magenta: #a21caf;
+  --ink-code: #3730a3;
+  --field-ok: #0b5f57;
+  --field-info: #075985;
+  --field-magenta: #a21caf;
+  --band-brand: #c2d6f2;
+  --band-info: #bde0f4;
+  --band-warn: #f2d6b4;
+  --band-magenta: #ecc6f2;
+  --ink-4338ca: #4338ca;
+  --ink-6b5d3f: #6b5d3f;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --ink-info: #7dd3fc;
+  --ink-magenta: #f0abfc;
+  --ink-code: #a5b4fc;
+  --field-ok: #0d443f;
+  --field-info: #0a3b52;
+  --field-magenta: #5f1a68;
+  --band-brand: #2f4262;
+  --band-info: #234a61;
+  --band-warn: #573d24;
+  --band-magenta: #552c58;
+  --ink-4338ca: #978dff;
+  --ink-6b5d3f: #ffffd3;
+}
+
+h1, h2 {
+  color: var(--ink-brand);
+}
+
+.pm-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.pm-head-row {
+  flex: none;
+  padding: 14px 20px 0;
+}
+
+.pm-h1 {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pm-subtitle {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+.pm-tabs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 12px 20px 0;
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.pm-add-btn {
+  --mat-icon-button-icon-size: 16px;
+  --mat-icon-button-state-layer-size: 40px;
+  --mat-icon-button-icon-color: #ffffff;
+  border-radius: 6px 6px 0 0 !important;
+  background: var(--ds-brand-fill, var(--field-brand));
+}
+
+.pm-tabs-gap {
+  flex: none;
+  width: 20px;
+}
+
+.pm-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pm-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.pm-page-tab-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Aperçu : bandeau d'accordéon à ouverture unique -------------------------------------- */
+.pm-accordion {
+  flex: none;
+  margin: 16px 20px 0;
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-300);
+  background: var(--surface);
+}
+
+.pm-acc-band-first {
+  border-radius: 8px 8px 0 0;
+}
+
+.pm-acc-band-last {
+  border-radius: 0 0 8px 8px;
+}
+
+.pm-acc-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+
+.pm-acc-head:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.pm-acc-chevron {
+  display: inline-flex;
+  flex: none;
+  margin-left: auto;
+  transition: transform 160ms ease;
+}
+
+.pm-acc-chevron-open {
+  transform: rotate(180deg);
+}
+
+.pm-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 14px 14px;
+}
+
+@container (max-width: 1040px) {
+  .pm-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pm-kpi-card {
+  min-width: 0;
+  padding: 13px 14px 15px;
+  border: 1px solid;
+  border-radius: 6px;
+}
+
+.pm-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pm-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pm-preview-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+.pm-preview-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-preview-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.pm-preview-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pm-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pm-preview-side {
+  flex: none;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.pm-preview-sec {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-preview-amount {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-preview-badge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* -- Onglets Ordres/Transferts/Corporate/Cashflow ---------------------------------------- */
+.pm-tab-body {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+.pm-table-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pm-table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.pm-toolbar-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.pm-state-toggle {
+  --mat-button-toggle-height: 28px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: var(--surface);
+  --mat-button-toggle-text-color: var(--color-neutral-800);
+  --mat-button-toggle-selected-state-background-color: rgba(0, 61, 165, 0.14);
+  --mat-button-toggle-selected-state-text-color: var(--ink-brand);
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pm-reset-btn {
+  --mat-icon-button-icon-size: 14px;
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-color: var(--color-neutral-600);
+  margin-left: auto;
+}
+
+.pm-table-scroll {
+  overflow-x: auto;
+}
+
+.pm-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+  background: var(--surface);
+}
+
+.pm-table-wide {
+  min-width: 1060px;
+}
+
+.pm-table th {
+  height: 32px;
+  text-align: left;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.pm-table th:first-child {
+  padding-left: 16px;
+}
+
+.pm-table td {
+  height: 38px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.pm-table td:first-child {
+  padding-left: 16px;
+}
+
+.pm-col-date { width: 96px; }
+.pm-col-side { width: 70px; }
+.pm-col-num { width: 90px; text-align: right; }
+.pm-col-num-sm { width: 80px; text-align: right; }
+.pm-col-price { width: 110px; text-align: right; }
+.pm-col-tif { width: 80px; }
+.pm-col-state { width: 150px; }
+.pm-col-ref { width: 100px; }
+.pm-col-amount { width: 130px; text-align: right; }
+.pm-col-type { width: 90px; }
+.pm-col-type-lg { width: 110px; }
+.pm-col-sec { width: 216px; }
+.pm-col-deadline { width: 110px; }
+
+.pm-td-nowrap {
+  white-space: nowrap;
+}
+
+.pm-td-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pm-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-td-bold {
+  font-weight: 700;
+}
+
+.pm-td-tif {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pm-state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pm-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.pm-empty {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+.pm-upcoming {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+/* Même neutralisation que les autres accordéons de l'app (panel-card, FAQ du guide, annexes) :
+   le panneau Material apporte ombrage, coins arrondis, surface et hauteur de bandeau fixe, qui
+   écraseraient les bandes teintées du prototype. */
+.pm-acc-band.mat-expansion-panel {
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+}
+
+.pm-acc-head.mat-expansion-panel-header {
+  height: 38px;
+  /* `.pm-acc-head` pose `width: 100%` pour l'ancien <button> ; sur l'en-tête de Material, qui
+     n'est pas en `border-box`, ce 100% s'ajoutait aux 14px de rembourrage de chaque côté —
+     mesuré, la bande débordait de 28px et le chevron sortait du cadre à droite. */
+  box-sizing: border-box;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* Chaque bande porte sa propre teinte (`style="background:var(--band-*)"`) : le voile de survol
+   de Material la recouvrirait. */
+.pm-acc-head.mat-expansion-panel-header:hover,
+.pm-acc-head.mat-expansion-panel-header:focus {
+  background: inherit;
+}
+
+.pm-acc-band ::ng-deep .mat-content {
+  overflow: visible;
+}
+
+.pm-acc-band ::ng-deep .mat-expansion-panel-body {
+  padding: 0;
+}
+
+/* La barre d'onglets est un <nav mat-tab-nav-bar> imbriqué dans .pm-tabs-row, et non la rangée
+   elle-même : celle-ci porte aussi le bouton « + » et son espaceur, qui ne sont pas des onglets
+   et n'ont donc rien à faire dans le `role="tablist"` que Material pose sur la barre. Le nav
+   reprend ici la mise en page que .pm-tabs-row appliquait auparavant à ses onglets. */
+.pm-tabs-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}

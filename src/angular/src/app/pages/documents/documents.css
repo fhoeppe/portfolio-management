@@ -1,0 +1,1164 @@
+/* Le prototype pose `box-sizing: border-box` sur tout le sous-arbre, et déclare ses propres
+   encres : la coque n'expose ni --ink-ok-2 ni --ink-warn-2, et une `var()` non résolue invalide
+   la déclaration qui la porte. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-ok-2: #0f766e;
+  --ink-warn-2: #b45309;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok-2: #4fd1c5;
+  --ink-warn-2: #f3b782;
+}
+
+/* ===========================================================================
+   En-tête et onglets
+   =========================================================================== */
+
+.dc-head {
+  flex: none;
+  padding: 14px 20px 0;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.dc-head-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dc-head-titles {
+  min-width: 0;
+}
+
+.dc-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--ink-brand);
+}
+
+.dc-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-head-stat {
+  margin-left: auto;
+  padding-top: 4px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-tabs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 12px;
+}
+
+.dc-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-brand-fill, var(--field-brand));
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dc-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.dc-page-tab-active {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Compteur des documents en attente : il change de teinte sur l'onglet actif, dont le fond est
+   plein, pour rester lisible. */
+.dc-tab-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.dc-page-tab-active .dc-tab-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.dc-body {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 20px 24px;
+}
+
+/* ===========================================================================
+   Cartes et barre d'outils
+   =========================================================================== */
+
+.dc-card {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.dc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-toolbar-push {
+  margin-left: auto;
+}
+
+.dc-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 240px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  color: var(--color-neutral-500);
+}
+
+.dc-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+/* `flex: none` et largeur fixe : `mat-select` est un element de bloc, il occupait toute la
+   ligne et repoussait le bouton d'ajout au rang suivant. */
+.dc-filter {
+  --pm-sel-h: 28px;
+  --pm-sel-fs: 12px;
+  --pm-sel-pad: 0 8px;
+  flex: none;
+  width: 200px;
+}
+
+/* ===========================================================================
+   Boutons
+   =========================================================================== */
+
+.dc-primary-btn {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-icon-spacing: 8px;
+  flex: none;
+}
+
+.dc-row-btn {
+  --mat-button-outlined-container-height: 26px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 11px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  --mat-button-outlined-icon-spacing: 6px;
+  flex: none;
+}
+
+.dc-row-btn:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.dc-btn-danger {
+  --mat-button-outlined-label-text-color: var(--color-accent-700);
+  --mat-button-outlined-outline-color: var(--color-accent-300);
+}
+
+.dc-icon-btn {
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-icon-size: 12px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-700);
+}
+
+.dc-icon-btn-danger:hover {
+  background: var(--color-accent-100);
+  color: var(--color-accent-700);
+}
+
+.dc-mini-btn {
+  --mat-icon-button-state-layer-size: 22px;
+  --mat-icon-button-icon-size: 11px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Tableaux
+   =========================================================================== */
+
+.dc-table-scroll {
+  overflow-x: auto;
+}
+
+.dc-table {
+  width: 100%;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.dc-table-library {
+  min-width: 800px;
+}
+
+.dc-table-versions {
+  min-width: 560px;
+}
+
+.dc-header-row {
+  height: 30px;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.dc-th`, qui ne pèse que 0-2-0 une fois encapsulé. Seul
+   le fond est remonté — toute la règle passerait sinon devant `.dc-th:first-of-type`. */
+.dc-th.dc-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.dc-th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.dc-th:first-of-type,
+.dc-td:first-of-type {
+  padding-left: 16px;
+}
+
+.dc-row {
+  height: 44px;
+}
+
+.dc-td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.dc-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.dc-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-td-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dc-col-folder { width: 130px; }
+.dc-col-version { width: 150px; }
+.dc-col-state { width: 130px; }
+.dc-col-actions { width: 290px; }
+
+.dc-doc {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+/* Extension du fichier en pastille : trois ou quatre lettres, à l'endroit où une icône de type
+   serait moins précise (un PDF et un XLSX se distinguent d'un coup d'œil). */
+.dc-ext {
+  flex: none;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--color-neutral-200);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.dc-doc-ids {
+  min-width: 0;
+}
+
+.dc-doc-name {
+  display: block;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-doc-meta {
+  display: block;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-version {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dc-version-tag {
+  padding: 1px 6px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-version-meta {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-current-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+.dc-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dc-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.dc-empty {
+  margin: 0;
+  padding: 22px 16px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Assistant : fil des étapes
+   =========================================================================== */
+
+.dc-stepper {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-step {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dc-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dc-step-btn:disabled {
+  cursor: not-allowed;
+}
+
+.dc-step-badge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dc-step-texts {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dc-step-title {
+  display: block;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-step-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-step-line {
+  flex: 1 1 24px;
+  min-width: 24px;
+  height: 1px;
+  margin: 0 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.dc-step-body {
+  padding: 18px;
+}
+
+.dc-step-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.dc-step-status {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-step-prev {
+  margin-left: auto;
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+}
+
+/* Sous 900px le fil passe à la ligne et perd ses traits de liaison, qui n'ont plus de sens
+   entre deux rangs. */
+@media (max-width: 1100px) {
+  .dc-stepper {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+
+  .dc-step {
+    flex: 0 0 auto;
+  }
+
+  .dc-step-line,
+  .dc-step-hint {
+    display: none;
+  }
+}
+
+/* ===========================================================================
+   Champs
+   =========================================================================== */
+
+.dc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dc-grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.dc-field-wide {
+  grid-column: 1 / -1;
+}
+
+.dc-field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dc-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.dc-field-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+}
+
+.dc-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  outline: none;
+}
+
+.dc-input-date {
+  width: 160px;
+}
+
+.dc-input:focus,
+.dc-textarea:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.34), 0 0 0 3px rgba(0, 61, 165, 0.10);
+}
+
+.dc-textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  resize: vertical;
+  outline: none;
+}
+
+.dc-textarea-ro {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800, var(--color-text));
+  font-size: 12px;
+}
+
+.dc-select {
+  --pm-sel-h: 32px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 10px;
+  width: 100%;
+}
+
+.dc-checkbox {
+  --mat-checkbox-label-text-size: 12px;
+  --mat-checkbox-label-text-weight: 600;
+  --mat-checkbox-state-layer-size: 24px;
+}
+
+/* ===========================================================================
+   Étape 1 : dépôt et aperçu
+   =========================================================================== */
+
+.dc-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 18px;
+  border: 1px dashed var(--color-neutral-400);
+  border-radius: 6px;
+  background: var(--color-neutral-100);
+}
+
+.dc-dropzone-icon {
+  flex: none;
+  color: var(--color-neutral-600);
+}
+
+.dc-dropzone-texts {
+  min-width: 0;
+}
+
+.dc-dropzone-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dc-dropzone-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-dropzone-btn {
+  margin-left: auto;
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+}
+
+.dc-manual-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .dc-manual-grid,
+  .dc-grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dc-preview {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-100);
+  overflow: hidden;
+}
+
+.dc-preview-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.dc-preview-icon {
+  flex: none;
+  color: var(--color-neutral-600);
+}
+
+.dc-preview-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-preview-page,
+.dc-preview-zoom {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-preview-zoom {
+  width: 46px;
+  text-align: center;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+/* `touch-action: none` : sans cela le navigateur s'approprie le geste pour faire défiler la
+   page et le glisser de l'aperçu ne reçoit plus rien sur écran tactile. */
+.dc-preview-stage {
+  position: relative;
+  height: 360px;
+  overflow: hidden;
+  background: var(--color-neutral-200);
+  touch-action: none;
+}
+
+.dc-preview-sheet {
+  --dp-height: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 260px;
+  transform-origin: center center;
+}
+
+.dc-preview-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-neutral-300);
+  background: var(--surface);
+}
+
+.dc-preview-fit {
+  margin-left: auto;
+}
+
+.dc-version-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+}
+
+/* ===========================================================================
+   Étapes 2 et 3 : OCR et analyse
+   =========================================================================== */
+
+.dc-run-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-100);
+}
+
+.dc-run-dot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+}
+
+.dc-run-texts {
+  min-width: 0;
+}
+
+.dc-run-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dc-run-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-run-btn {
+  margin-left: auto;
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+}
+
+.dc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dc-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-stat-label {
+  flex: none;
+  width: 150px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.dc-stat-value {
+  min-width: 0;
+  font-size: 12px;
+}
+
+.dc-ia-list {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dc-ia-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-ia-row:last-child {
+  border-bottom: 0;
+}
+
+.dc-ia-label {
+  flex: none;
+  width: 150px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.dc-ia-value {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-ia-conf {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.dc-apply-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ===========================================================================
+   Étape 6 : récapitulatif
+   =========================================================================== */
+
+.dc-check-intro {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+.dc-recap {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dc-recap-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-recap-row:last-child {
+  border-bottom: 0;
+}
+
+.dc-recap-label {
+  flex: none;
+  width: 190px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.dc-recap-value {
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===========================================================================
+   Revue
+   =========================================================================== */
+
+.dc-review-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(360px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .dc-review-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dc-review-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dc-queue-head {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.dc-queue-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dc-queue-item:hover {
+  background: rgba(0, 61, 165, 0.07) !important;
+}
+
+.dc-queue-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.dc-queue-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-queue-version {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.dc-queue-meta {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-review-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-review-titles {
+  min-width: 0;
+}
+
+.dc-review-name {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.dc-review-meta {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-review-fields {
+  padding: 16px 18px;
+}
+
+.dc-review-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.dc-review-validate {
+  margin-left: auto;
+}
+
+.dc-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-section-title {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-brand);
+}
+
+.dc-section-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.dc-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .dc-meta-grid,
+  .dc-stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dc-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dc-meta-label {
+  flex: none;
+  width: 150px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.dc-meta-value {
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-compare {
+  margin: 0;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+  font-size: 11px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+/* ===========================================================================
+   Ajustements du bandeau de mode et de l'apercu
+   =========================================================================== */
+
+/* Le groupe s'aligne sur son contenu : `mat-button-toggle-group` est un element de bloc et
+   s'etirait sur toute la largeur de l'etape. */
+.dc-mode-group {
+  --mat-button-toggle-height: 30px;
+  --mat-button-toggle-label-text-size: 12px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.30);
+  align-self: flex-start;
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* « 100 % » passait a la ligne : la valeur et son signe tiennent sur une seule. */
+.dc-preview-zoom {
+  white-space: nowrap;
+}

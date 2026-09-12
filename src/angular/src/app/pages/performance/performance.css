@@ -1,0 +1,1149 @@
+/**
+ * Jetons locaux portés du bloc `[data-component="PerfPage"]` de la source. `--ink-brand`,
+ * `--ink-brand-2`, `--ink-warn-2` et `--field-brand` viennent déjà de la coque (app-shell.css) ;
+ * seuls manquent ceux-ci, propres à l'écran — même découpage que reconciliation.css.
+ */
+:host {
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --ink-warn: #8f3f06;
+  --ink-alt: #5b3ea8;
+  display: block;
+  /* `body` fixe sa couleur sur le jeton M3 statique `--mat-sys-on-surface` (styles.scss),
+     insensible au `[data-theme]` de l'appli — voir la même recette dans titres.css. */
+  color: var(--color-text);
+  container-type: inline-size;
+}
+
+/* Reporté du prototype, qui le posait sur `[data-component="PerfPage"] *`. Indispensable ici :
+   les tableaux sont en `table-layout: fixed` avec des largeurs de colonne au pixel, et sans
+   `border-box` chaque colonne gagnait ses 24px de remplissage — la première, en `auto`, se
+   retrouvait écrasée d'autant. */
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --ink-warn: #f0a868;
+  --ink-alt: #c4b5fd;
+}
+
+.pf-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------------ En-tête */
+
+.pf-head {
+  flex: none;
+  padding: 14px 20px 0;
+  background: var(--surface);
+}
+
+.pf-head-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pf-titles {
+  min-width: 0;
+}
+
+.pf-titles h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.pf-titles p {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pf-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pf-scope {
+  --pm-sel-h: 30px;
+  --pm-sel-pad: 0 8px;
+  --pm-sel-fs: 12px;
+  min-width: 230px;
+}
+
+/* Sélecteur de période : le groupe `role="radio"` de la source. Mêmes teintes que le sélecteur
+   de période du Tableau de bord (bleu du bandeau), déjà aligné sur l'en-tête. */
+.pf-period {
+  --mat-button-toggle-height: 30px;
+  --mat-button-toggle-label-text-size: 12px;
+  --mat-button-toggle-label-text-font: inherit;
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-background-color: var(--surface);
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-selected-state-background-color: var(--field-brand);
+  --mat-button-toggle-shape: 4px;
+}
+
+.pf-period .mat-button-toggle-label-content {
+  padding: 0 11px;
+  line-height: 30px;
+}
+
+.pf-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 12px;
+  border-bottom: 1px solid var(--ink-brand);
+}
+
+.pf-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--ink-brand-2);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pf-tab:hover {
+  filter: brightness(0.97);
+}
+
+/* ------------------------------------------------------------------ Cartouches */
+
+.pf-kpi-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--ink-brand);
+  border-bottom: 1px solid var(--ink-brand);
+}
+
+.pf-kpi {
+  min-width: 0;
+  padding: 13px 14px 15px;
+}
+
+.pf-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+/* ------------------------------------------------------------------ Corps et cartes */
+
+.pf-body {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+.pf-intro {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.pf-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pf-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.pf-card-head h2 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-brand);
+}
+
+/* En-tête pleine teinte des cartes maîtresses (graphique cumulé, fréquence, composition). */
+.pf-card-head-dark {
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 0;
+  background: var(--field-brand);
+  color: #ffffff;
+}
+
+.pf-card-head-dark h2 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.pf-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-card-head-dark .pf-card-note {
+  font-size: 12px;
+  color: inherit;
+}
+
+/* Quand l'en-tête porte déjà un groupe poussé à droite, la note le suit sans marge auto. */
+.pf-card-head mat-button-toggle-group + .pf-card-note {
+  margin-left: 0;
+}
+
+.pf-card-head .pf-freq {
+  margin-left: auto;
+}
+
+/* Fréquence d'observation : le groupe vit dans le bandeau bleu plein, donc tout en blanc
+   translucide — le jeu de jetons clairs par défaut de Material y serait illisible. */
+.pf-freq {
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-label-text-font: inherit;
+  --mat-button-toggle-text-color: #ffffff;
+  --mat-button-toggle-background-color: transparent;
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-selected-state-background-color: rgba(255, 255, 255, 0.3);
+  --mat-button-toggle-divider-color: rgba(255, 255, 255, 0.35);
+  --mat-button-toggle-shape: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.pf-freq .mat-button-toggle-label-content,
+.pf-sort .mat-button-toggle-label-content {
+  padding: 0 10px;
+  line-height: 26px;
+}
+
+.pf-freq .mat-button-toggle-checked .mat-button-toggle-label-content {
+  font-weight: 700;
+}
+
+/* Tri du tableau des lignes : même gabarit compact, mais sur fond clair. */
+.pf-sort {
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-label-text-font: inherit;
+  --mat-button-toggle-text-color: var(--color-neutral-800);
+  --mat-button-toggle-background-color: transparent;
+  --mat-button-toggle-selected-state-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: rgba(0, 61, 165, 0.14);
+  --mat-button-toggle-shape: 4px;
+}
+
+.pf-sort .mat-button-toggle-checked .mat-button-toggle-label-content {
+  font-weight: 600;
+}
+
+.pf-card-text {
+  margin: 0;
+  padding: 11px 16px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.pf-card-text-flat {
+  padding: 0;
+}
+
+.pf-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.04);
+}
+
+.pf-foot-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pf-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.pf-split-wide {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+}
+
+.pf-split-narrow {
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+}
+
+/* Le prototype pose `container-type: inline-size` sur la page : à l'étroit, les colonnes
+   s'empilent plutôt que de comprimer les tableaux. */
+@container (max-width: 1040px) {
+  .pf-split,
+  .pf-split-wide,
+  .pf-split-narrow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pf-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------------ Graphique cumulé */
+
+.pf-chart-body {
+  padding: 14px 16px 10px;
+}
+
+.pf-chart {
+  display: block;
+  width: 100%;
+  height: 240px;
+}
+
+.pf-ticks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.pf-tick {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.pf-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--color-neutral-800);
+  white-space: nowrap;
+}
+
+.pf-legend-line {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.pf-legend-chip {
+  width: 12px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.pf-legend-chip-ok {
+  background: var(--ink-ok);
+}
+
+.pf-legend-chip-bench {
+  background: rgba(91, 62, 168, 0.45);
+}
+
+.pf-legend-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ Tableaux */
+
+.pf-table-scroll {
+  overflow-x: auto;
+}
+
+/* Le pied de tableau est une table séparée : MatTable n'expose pas de ligne de total, et un
+   `<tr>` glissé dans son `<tbody>` sortirait de son modèle de colonnes. Les deux tables
+   partagent `table-layout: fixed` et les mêmes largeurs de colonne, donc elles s'alignent. */
+.pf-table-scroll-top {
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.pf-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+  background: var(--surface);
+}
+
+.pf-table-period {
+  min-width: 520px;
+}
+
+.pf-table-holdings {
+  min-width: 880px;
+}
+
+.pf-table-attrib {
+  min-width: 700px;
+}
+
+/* 700px et non les 620px de la source : les cinq colonnes de droite sont à largeur fixe
+   (506px au total), et la coque de l'application est plus étroite que la fenêtre autonome du
+   prototype — à 620px la première colonne tombait sous 115px et tronquait tous les libellés.
+   Le surplus part dans le défilement horizontal déjà prévu par `.pf-table-scroll`. */
+.pf-table-detail {
+  min-width: 700px;
+}
+
+.pf-table-years {
+  min-width: 780px;
+}
+
+.pf-table th {
+  height: 32px;
+  padding: 0 12px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.pf-table td {
+  height: 36px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.pf-table th:first-child,
+.pf-table td:first-child {
+  padding-left: 16px;
+}
+
+.pf-table th:last-child,
+.pf-table td:last-child {
+  padding-right: 16px;
+}
+
+.pf-header-row {
+  height: 32px;
+}
+
+.pf-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-td-num-left {
+  font-variant-numeric: tabular-nums;
+  /* Le liseré marque l'année retenue ; il occupe la place en permanence pour que la ligne ne
+     se décale pas à la sélection. */
+  border-left: 3px solid transparent;
+}
+
+.pf-td-strong {
+  font-weight: 600;
+}
+
+.pf-td-muted {
+  color: var(--color-neutral-800);
+}
+
+.pf-td-dim {
+  color: var(--color-neutral-700);
+}
+
+.pf-td-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-col-period { width: 120px; }
+.pf-col-contrib { width: 150px; }
+.pf-col-ticker { width: 96px; }
+.pf-col-cls { width: 120px; }
+.pf-col-num { width: 96px; }
+.pf-col-perf { width: 104px; }
+.pf-col-beta { width: 82px; }
+.pf-col-attrib { width: 118px; }
+.pf-col-net { width: 126px; }
+
+.pf-total-table {
+  border-collapse: collapse;
+}
+
+.pf-total-row td {
+  height: 34px;
+  padding: 0 12px;
+  background: rgba(0, 61, 165, 0.10);
+  border-top: 1px solid rgba(0, 61, 165, 0.28);
+  border-bottom: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.pf-total-row td:first-child {
+  padding-left: 16px;
+}
+
+.pf-total-row td:last-child {
+  padding-right: 16px;
+}
+
+.pf-total-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.pf-year-row {
+  cursor: pointer;
+}
+
+.pf-year-row:hover {
+  background: rgba(0, 61, 165, 0.09) !important;
+}
+
+.pf-ticker {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pf-cls {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ Barres en cellule */
+
+.pf-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.pf-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-neutral-200);
+  overflow: hidden;
+}
+
+/* `flex: 1` seulement dans une rangée : la même piste sert aussi de barre pleine largeur dans
+   les périodes de perte, où le parent est une colonne — `flex-basis: 0` y écraserait la
+   hauteur à zéro et la barre disparaîtrait. */
+.pf-bar-row > .pf-bar-track {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-bar-fill {
+  display: block;
+  height: 100%;
+}
+
+.pf-bar-fill-warn {
+  background: var(--ink-warn-2);
+}
+
+/* Barre à point zéro central : elle part de la gauche ou de la droite selon le signe. */
+.pf-bar-signed {
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  display: flex;
+}
+
+.pf-bar-signed-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.pf-bar-value {
+  flex: none;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+
+.pf-bar-value-wide {
+  width: 62px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ Mesures et pertes */
+
+.pf-measure {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pf-measure-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+.pf-measure-bench {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-measure-value {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-measure-value-fixed {
+  width: 74px;
+  text-align: right;
+}
+
+.pf-dd {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pf-dd-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pf-dd-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-dd-depth {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-warn-2);
+}
+
+.pf-dd-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ------------------------------------------------------------------ Barres de fréquence */
+
+.pf-bars {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.pf-bar-col {
+  flex: 1;
+  min-width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.pf-bar-col-value {
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pf-bar-col-box {
+  width: 100%;
+  height: 104px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-bar-pair {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.pf-bar-port {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.pf-bar-bench {
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(91, 62, 168, 0.45);
+}
+
+.pf-bar-col-label {
+  font-size: 10px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ Contributeurs */
+
+.pf-contrib-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pf-contrib-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-contrib-bar {
+  flex: none;
+  width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf-contrib-bar .pf-bar-signed {
+  height: 8px;
+}
+
+.pf-contrib-value {
+  flex: none;
+  width: 86px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ Années (onglet Risque) */
+
+.pf-year-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.pf-year-col {
+  flex: 1;
+  min-width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf-year-value {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-year-box {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-year-bar {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+}
+
+.pf-year-label {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-year-bench {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ Composition du résultat */
+
+.pf-bands {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.pf-net {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pf-net-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.pf-net-value {
+  margin-left: auto;
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-band-strip {
+  display: flex;
+  width: 100%;
+  height: 26px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--color-neutral-200);
+}
+
+.pf-band-seg {
+  flex: none;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: opacity 140ms ease;
+}
+
+.pf-band-seg:hover {
+  opacity: 1 !important;
+}
+
+.pf-band-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid;
+  border-radius: 6px;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pf-band-row:hover {
+  background: rgba(0, 61, 165, 0.07) !important;
+}
+
+.pf-band-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.pf-band-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-band-share {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-band-value {
+  flex: none;
+  width: 88px;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ Graphique annuel */
+
+.pf-fill-ctl {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.pf-fill-label {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.pf-fill-ctl + .pf-card-note {
+  margin-left: 0;
+}
+
+/* Le curseur Material fait 48px de haut (zone tactile) contre 20px au curseur émulé du
+   prototype. On garde sa hauteur propre — la rogner désaxe la vignette, que Material
+   positionne par rapport à la boîte de l'hôte — et on annule son encombrement dans la rangée
+   d'en-tête par une marge négative, pour retrouver la ligne compacte de la source. */
+.pf-slider {
+  --mat-slider-active-track-color: var(--ink-brand-2);
+  --mat-slider-inactive-track-color: color-mix(in srgb, var(--ink-brand-2) 24%, transparent);
+  --mat-slider-handle-color: var(--ink-brand-2);
+  --mat-slider-focus-handle-color: var(--ink-brand-2);
+  --mat-slider-hover-handle-color: var(--ink-brand-2);
+  --mat-slider-label-container-color: var(--field-brand);
+  --mat-slider-label-label-text-color: #ffffff;
+  width: 124px;
+  min-width: 124px;
+  margin-block: -14px;
+}
+
+.pf-fill-value {
+  width: 40px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-brand);
+  white-space: nowrap;
+}
+
+.pf-year-chart-scroll,
+.pf-year-axis-scroll {
+  overflow-x: auto;
+}
+
+.pf-year-axis-scroll {
+  border-top: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.04);
+}
+
+.pf-year-chart {
+  min-width: 694px;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px;
+}
+
+.pf-half {
+  position: relative;
+}
+
+.pf-levels {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.pf-level {
+  position: relative;
+  display: block;
+  height: 0;
+  border-top: 1px dashed var(--color-neutral-300);
+}
+
+.pf-level-label {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  padding: 0 3px;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-600);
+  background: var(--surface);
+}
+
+.pf-stack-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  padding: 0 20px 0 74px;
+}
+
+.pf-stack-up {
+  height: 240px;
+}
+
+.pf-stack-down {
+  height: 150px;
+}
+
+.pf-stack {
+  flex: 1;
+  min-width: 96px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.pf-stack-top {
+  justify-content: flex-start;
+}
+
+.pf-seg {
+  display: block;
+  width: 100%;
+  border-style: solid;
+  transition: opacity 160ms ease;
+}
+
+.pf-seg-up {
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.pf-seg-down {
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.pf-axis {
+  height: 2px;
+  width: calc(100% + 20px);
+  margin: 0 -10px;
+  background: var(--color-neutral-500);
+}
+
+.pf-year-axis {
+  min-width: 694px;
+  display: flex;
+  gap: 20px;
+  padding: 8px 36px 8px 90px;
+}
+
+.pf-year-btn {
+  flex: 1;
+  min-width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 4px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.pf-year-btn:hover {
+  background: rgba(0, 61, 165, 0.09) !important;
+}
+
+.pf-year-net {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-year-tag {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}

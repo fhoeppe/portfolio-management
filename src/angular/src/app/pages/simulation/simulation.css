@@ -1,0 +1,483 @@
+/* Le prototype pose `box-sizing: border-box` sur tout le sous-arbre, et déclare ses propres
+   encres : la coque n'expose ni --ink-ok/-2, ni --ink-info, ni --ink-alt, et une `var()` non
+   résolue invalide la déclaration entière qui la porte. */
+:host {
+  display: block;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-info: #075985;
+  --ink-alt: #5b3ea8;
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-info: #7dd3fc;
+  --ink-alt: #c4b5fd;
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+}
+
+/* ===========================================================================
+   En-tête
+   =========================================================================== */
+
+.sim-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.sim-head-titles {
+  min-width: 0;
+}
+
+.sim-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.sim-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.sim-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-scope {
+  --pm-sel-h: 28px;
+  --pm-sel-fs: 12px;
+  --pm-sel-pad: 0 8px;
+  min-width: 190px;
+}
+
+.sim-reset {
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-size: 14px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-brand);
+}
+
+.sim-reset:hover {
+  background: rgba(0, 61, 165, 0.09);
+}
+
+/* ===========================================================================
+   Bandeau d'indicateurs
+   =========================================================================== */
+
+/* `gap: 1px` sur fond bleu : les filets entre vignettes sont le fond qui transparaît, comme
+   dans les bandeaux de Titres et de Transactions. */
+.sim-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--field-brand);
+}
+
+.sim-kpi {
+  min-width: 0;
+  padding: 13px 14px 15px;
+}
+
+.sim-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sim-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Grille en deux colonnes
+   =========================================================================== */
+
+.sim-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 1.6fr);
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+.sim-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Sous 1040px la colonne de droite n'a plus la place de porter un graphique lisible à côté de
+   la liste : les deux passent l'une sous l'autre, et les vignettes sur deux rangs. */
+@media (max-width: 1180px) {
+  .sim-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sim-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ===========================================================================
+   Cartes
+   =========================================================================== */
+
+.sim-card {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.sim-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.sim-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.sim-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Liste des modèles
+   =========================================================================== */
+
+/* `mat-action-list` apporte la sémantique de liste de commandes et la navigation au clavier ;
+   ses cotes M3 (56px de haut, 16px de rayon, ondulation) sont ramenées par jetons à la rangée
+   dense de la maquette. */
+.sim-model-list {
+  --mat-list-list-item-leading-icon-start-space: 16px;
+  --mat-list-list-item-leading-icon-end-space: 10px;
+  --mat-list-list-item-label-text-size: 12px;
+  --mat-list-list-item-label-text-weight: 700;
+  --mat-list-list-item-label-text-color: var(--color-text);
+  --mat-list-list-item-supporting-text-size: 11px;
+  --mat-list-list-item-supporting-text-color: var(--color-neutral-700);
+  --mat-list-list-item-two-line-container-height: auto;
+  --mat-list-list-item-container-shape: 0;
+  padding: 0;
+}
+
+.sim-model {
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--color-neutral-200);
+  /* L'ancrage en haut plutôt qu'au centre : un libellé de deux lignes ne doit pas décaler la
+     pastille vers le bas. */
+  align-items: flex-start;
+}
+
+.sim-model:last-of-type {
+  border-bottom: 0;
+}
+
+/* Le détail du modèle tient sur deux lignes dans la colonne étroite ; Material tronque par
+   défaut le texte secondaire d'un item à une ligne. */
+.sim-model ::ng-deep .mat-mdc-list-item-unscoped-content,
+.sim-model ::ng-deep .mdc-list-item__secondary-text {
+  white-space: normal;
+  text-wrap: pretty;
+}
+
+.sim-model ::ng-deep .mdc-list-item__content {
+  padding-block: 11px;
+}
+
+.sim-model-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+
+.sim-model-detail {
+  line-height: 1.35;
+}
+
+/* ===========================================================================
+   Choc personnalisé et bouton de lancement
+   =========================================================================== */
+
+.sim-custom-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.sim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.sim-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.sim-input:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.34), 0 0 0 3px rgba(0, 61, 165, 0.10);
+}
+
+.sim-run {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 40px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 13px;
+  --mat-button-filled-label-text-weight: 700;
+  --mat-button-filled-icon-spacing: 8px;
+  width: 100%;
+}
+
+/* ===========================================================================
+   Graphique
+   =========================================================================== */
+
+.sim-chart-body {
+  padding: 16px 16px 8px;
+}
+
+.sim-chart {
+  display: block;
+  width: 100%;
+  height: 170px;
+}
+
+.sim-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.sim-tick {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+.sim-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.sim-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+}
+
+.sim-legend-line {
+  width: 14px;
+  height: 2px;
+}
+
+.sim-legend-line-base {
+  background: var(--color-neutral-400);
+}
+
+.sim-legend-impact {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ===========================================================================
+   Tableau d'impact
+   =========================================================================== */
+
+.sim-table-scroll {
+  overflow-x: auto;
+}
+
+.sim-table {
+  width: 100%;
+  min-width: 560px;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.sim-header-row {
+  height: 30px;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.sim-th`, qui ne pèse que 0-2-0 une fois encapsulé. Seul
+   le fond est remonté — toute la règle passerait sinon devant `.sim-th:first-of-type`. */
+.sim-th.sim-th {
+  background: rgba(0, 61, 165, 0.08);
+}
+
+.sim-th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.sim-th:first-of-type,
+.sim-td-label {
+  padding-left: 16px;
+}
+
+.sim-th-num {
+  text-align: right;
+}
+
+.sim-row {
+  height: 36px;
+}
+
+.sim-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.sim-td-label {
+  font-weight: 600;
+}
+
+.sim-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-td-delta {
+  font-weight: 600;
+}
+
+/* La projection de dividendes n'est pas une classe d'actifs : elle clôt le tableau sur un fond
+   distinct et un filet supérieur, comme une ligne de total. */
+.sim-row-div {
+  background: rgba(11, 95, 87, 0.06);
+}
+
+.sim-row-div .sim-td {
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+/* ===========================================================================
+   Points de vigilance et état vide
+   =========================================================================== */
+
+.sim-flag {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.sim-flag:last-of-type {
+  border-bottom: 0;
+}
+
+.sim-flag-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+}
+
+.sim-flag-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sim-flag-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sim-flag-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.sim-empty {
+  padding: 60px 20px;
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}

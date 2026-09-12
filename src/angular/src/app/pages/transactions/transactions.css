@@ -1,0 +1,1412 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--color-text);
+  container-type: inline-size;
+  /* --ink-brand/--ink-brand-2/--ink-warn/--ink-warn-2/--field-brand/--field-warn viennent déjà
+     de la coque (voir positions.css) ; le reste est propre à cet écran. */
+  --ink-magenta: #a21caf;
+  --ink-info: #075985;
+  --ink-ok-2: #0f766e;
+  --ink-ok: #0b5f57;
+  --ink-code: #3730a3;
+  --field-code: #3730a3;
+  --band-ok: #f2faf9;
+  --band-warn: #fdf6ef;
+  --ink-e6ebf5: #e6ebf5;
+  /* Fond des pastilles Titre/Trésorerie de la colonne Objet (voir transactions-filters.ts) :
+     une opacité fixe calculée pour un fond clair (--surface blanc) vire à l'aplat sombre en
+     thème sombre, puisque le fond derrière change — d'où une valeur propre à chaque thème
+     plutôt qu'un rgba() unique. */
+  --tx-titre-bg: rgba(0, 61, 165, 0.26);
+  --tx-treso-bg: rgba(162, 28, 175, 0.28);
+}
+
+:host-context([data-theme='dark']) {
+  --ink-magenta: #f0abfc;
+  --ink-info: #7dd3fc;
+  --ink-ok-2: #4fd1c5;
+  --ink-ok: #5fd6c4;
+  --ink-code: #a5b4fc;
+  --field-code: #25215f;
+  --band-ok: #152a28;
+  --band-warn: #2c1f14;
+  --ink-e6ebf5: #cbced3;
+  /* Même teinte que le texte (--ink-brand-2/--ink-magenta éclaircis), à faible opacité : un
+     aplat à l'intensité light-mode écraserait le texte clair du même badge. */
+  --tx-titre-bg: rgba(143, 180, 238, 0.18);
+  --tx-treso-bg: rgba(240, 171, 252, 0.20);
+}
+
+h1, h2 {
+  color: var(--ink-brand);
+}
+
+.tx-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.tx-head-row {
+  flex: none;
+  padding: 14px 20px 0;
+}
+
+.tx-h1 {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.tx-subtitle {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+.tx-tabs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 12px 20px 0;
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.tx-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--ds-brand-fill, var(--field-brand));
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tx-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.tx-page-tab-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-kpi-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+@container (max-width: 1040px) {
+  .tx-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tx-kpi-card {
+  min-width: 0;
+  padding: 13px 14px 15px;
+}
+
+.tx-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tx-tab-body {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+.tx-lead {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.tx-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tx-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+}
+
+.tx-card-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.tx-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-card-head-plain {
+  background: rgba(0, 61, 165, 0.06);
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: inherit;
+}
+
+.tx-card-title-plain {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-brand);
+}
+
+.tx-card-note-plain {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tx-reco-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.tx-reco-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+  white-space: nowrap;
+}
+
+.tx-reco-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tx-reco-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.tx-reco-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.tx-reco-stamp {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.tx-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.tx-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 230px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.tx-search-icon {
+  flex: none;
+  color: var(--color-neutral-500);
+}
+
+.tx-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-family: inherit;
+  outline: none;
+}
+
+.tx-clear-btn {
+  --mat-icon-button-icon-size: 12px;
+  --mat-icon-button-state-layer-size: 18px;
+  --mat-icon-button-icon-color: var(--color-neutral-600);
+  flex: none;
+}
+
+.tx-daterange {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-daterange-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.tx-daterange-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.tx-daterange-sep {
+  flex: none;
+  width: 8px;
+  height: 1px;
+  background: var(--color-neutral-400);
+}
+
+.tx-date-input {
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.tx-daterange .tx-date-input {
+  /* 72px : « jj/mm/aaaa » mesure 58px à 11px de police ; les 112px d'origine étaient calibrés
+     pour du 12px et un champ natif, et laissaient un large vide à droite de la date. */
+  width: 72px;
+}
+
+.tx-tool-btn {
+  --mat-icon-button-icon-size: 14px;
+  --mat-icon-button-state-layer-size: 30px;
+  /* Pictogrammes seuls : ni cadre ni fond. Le survol reste marqué par la couche d'état que
+     Material pose sur `matIconButton`, ce qui suffit à signaler qu'ils sont cliquables. */
+  --mat-icon-button-icon-color: var(--color-neutral-700);
+  flex: none;
+  border: 0;
+  background: transparent;
+}
+
+/* Le bouton « colonne Opération » marquait son état actif par son cadre et son fond, tous deux
+   supprimés : il le porte désormais par la couleur de son pictogramme, qui passe du gris
+   neutre au bleu de l'application. */
+.tx-tool-btn-on {
+  --mat-icon-button-icon-color: var(--ink-brand);
+}
+
+/* Les trois boutons sont repoussés en bout de barre : la marge automatique sur le premier
+   absorbe tout l'espace libre entre « Période » et lui. Ciblé par le frère qui les précède
+   plutôt que par un rang, pour rester juste si un contrôle s'intercale plus tard. */
+.tx-daterange + .tx-tool-btn {
+  margin-left: auto;
+}
+
+.tx-table-scroll {
+  overflow-x: auto;
+}
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Toute la typographie du tableau est alignée sur 11px — la taille que portaient déjà les
+     pastilles Objet/Nature/Type et les séparateurs de mois. Posé une seule fois ici et hérité
+     par les cellules ; les en-têtes et la ligne de filtres, qui déclaraient 12px, suivent. */
+  font-size: 11px;
+  table-layout: fixed;
+  background: var(--surface);
+}
+
+/* Registre : le tableau ne s'étire pas à la largeur du conteneur. Sous `table-layout: fixed`,
+   `width: 100%` redistribue tout l'espace excédentaire entre les colonnes — sur un écran large
+   les colonnes resserrées ci-dessus se retrouvaient élargies de moitié. En `auto`, le tableau
+   prend exactement la somme des largeurs déclarées, et le `min-width` posé par le gabarit lui
+   sert de plancher quand le conteneur est plus étroit (`.tx-table-scroll` prend le relais). */
+.tx-table-tight {
+  /* Le tableau occupe toute la largeur de son conteneur ; le `min-width` posé par le gabarit
+     (voir tableMinWidth dans transactions.ts) lui sert de plancher, en deçà duquel
+     `.tx-table-scroll` prend le relais par défilement horizontal. */
+  width: 100%;
+  max-width: none;
+}
+
+/* Sans ceci, la largeur déclarée d'une colonne exclut son remplissage : chaque colonne gagnait
+   ses 20px de padding, soit ~250px de trop sur les treize. Le projet ne pose pas `border-box`
+   globalement — même constat que sur la page Performance. Étendu au contenu des cellules :
+   les champs de la ligne de filtres sont en `width: 100%` et débordaient de leur colonne de
+   leur propre remplissage, ce qui les faisait se chevaucher une fois les colonnes resserrées. */
+.tx-table-tight th,
+.tx-table-tight td,
+.tx-table-tight th *,
+.tx-table-tight td * {
+  box-sizing: border-box;
+}
+
+/* Material pose sur chaque bouton-icône une zone tactile invisible de 48px, plus large que le
+   bouton lui-même : dans la dernière colonne elle dépassait de 17px à droite du tableau et
+   suffisait à déclencher une barre de défilement horizontale alors que tout tenait. Ramenée à
+   la largeur du bouton — la zone cliquable visible, elle, ne change pas. */
+/* `::ng-deep` : la zone tactile appartient au gabarit de `matIconButton`, elle ne porte donc
+   pas l'attribut de portée de cette page et une règle scopée ne l'atteindrait pas. */
+.tx-table-tight ::ng-deep .mat-mdc-button-touch-target {
+  width: 100%;
+}
+
+.tx-header-row th {
+  height: 36px;
+  text-align: left;
+  vertical-align: middle;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.tx-header-row th:first-child {
+  padding-left: 16px;
+}
+
+.tx-filter-row {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.tx-filter-row th {
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  font-weight: 400;
+}
+
+.tx-filter-row th:first-child {
+  padding-left: 12px;
+}
+
+/* Le filtre Référence est le seul champ de saisie libre de la ligne : 90px le rendaient
+   illisible dès qu'une référence était tapée. Il déborde donc volontairement vers la gauche,
+   par-dessus les colonnes Date et maillon — dont les cellules de filtre sont vides, rien n'est
+   masqué — et double ainsi sa largeur utile sans élargir aucune colonne.
+   En absolu : `left` négatif se mesure depuis la boîte de remplissage de la cellule, seul
+   moyen de sortir d'une cellule de tableau sans toucher à la largeur de la colonne. */
+.tx-filter-row th.tx-filter-ref {
+  position: relative;
+  overflow: visible;
+}
+
+.tx-filter-row th.tx-filter-ref .tx-filter-input {
+  position: absolute;
+  /* Centré, et non étiré par `top`/`bottom` : il garderait alors la hauteur de la rangée
+     (40px) au lieu des 26px communs à tous les filtres. La hauteur reste celle héritée de
+     `.tx-filter-input`. */
+  top: 50%;
+  transform: translateY(-50%);
+  left: -72px;
+  right: 8px;
+  width: auto;
+}
+
+.tx-filter-input {
+  width: 100%;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 11px;
+  outline: none;
+}
+
+/* Le composant est désormais à 11px pour tous ses usages de la page (voir tx-select.css) ;
+   cette surcharge, qui ne visait que la ligne de filtres, n'a plus lieu d'être. */
+
+/* `vertical-align: middle` explicite : Material pose `vertical-align: top` sur ses cellules
+   (.mat-mdc-cell), ce qui plaquait le texte en haut dès que la ligne dépasse la hauteur d'une
+   ligne de texte — d'autant plus visible depuis que la colonne Opération empile ses codes. */
+.tx-table td {
+  height: 38px;
+  padding: 0 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.tx-table td:first-child {
+  padding-left: 16px;
+}
+
+/* Largeurs resserrées : mesurées sur le contenu réel rendu à 11px (la plus large valeur de
+   chaque colonne, en-tête compris) plus les 20px de remplissage, au lieu des cotes héritées du
+   prototype, calculées pour du 13px. L'ensemble passe de ~1530px à ~1240px.
+   `width` et non `min-width` sur Titre/poche : sous `table-layout: fixed`, une colonne sans
+   largeur explicite ne reçoit que l'espace restant — ici zéro, ce qui faisait chevaucher son
+   en-tête avec celui de « Coût net ». Compte et Titre restent volontairement en deçà de leur
+   contenu le plus long, que l'ellipse prend en charge ; la poignée de redimensionnement
+   (`pmColResize`) permet de les élargir au cas par cas. */
+.tx-col-date { width: 54px; }
+.tx-col-link { width: 22px; padding: 0 !important; }
+.tx-col-ref { width: 90px; }
+.tx-col-op { width: 146px; padding-left: 40px !important; }
+.tx-col-kind { width: 110px; }
+.tx-col-nature { width: 98px; }
+.tx-col-type { width: 92px; }
+/* `auto` et non une largeur fixe : ce sont les deux seules colonnes à contenu long et tronqué,
+   donc les seules à qui profite l'espace disponible. Sous `table-layout: fixed`, les colonnes
+   sans largeur déclarée se partagent à parts égales ce qui reste une fois les autres servies —
+   le tableau remplit ainsi son conteneur sans que les colonnes courtes (dates, pastilles,
+   montants) ne s'élargissent inutilement, ce qu'aurait fait un `width: 100%` seul. */
+.tx-col-account { width: auto; }
+.tx-col-security { width: auto; }
+.tx-col-amount { width: 86px; text-align: right; }
+.tx-col-settle { width: 78px; }
+.tx-col-state { width: 80px; }
+.tx-col-reco { width: 140px; }
+/* Les deux boutons d'action font 58px à eux deux, et le remplissage (10px de chaque côté)
+   porte le besoin à 78px : à 62px ils débordaient de la dernière colonne et provoquaient à eux
+   seuls une barre de défilement horizontale. 96px leur laisse en plus un peu de dégagement. */
+.tx-col-edit { width: 96px; text-align: center; padding-right: 10px !important; }
+
+.tx-td-nowrap { white-space: nowrap; }
+.tx-td-wrap { text-wrap: pretty; }
+.tx-td-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Le registre se lit sans emphase : plus aucune graisse dans le tableau, la référence
+   comme les pastilles restent en graisse normale. Classe conservée pour ne pas toucher aux
+   14 usages du gabarit, mais neutralisée ici. */
+.tx-td-bold { font-weight: 400; }
+.tx-td-num { text-align: right; font-variant-numeric: tabular-nums; }
+.tx-td-num-end { text-align: right; font-variant-numeric: tabular-nums; color: var(--color-neutral-700); }
+.tx-td-mono { font-family: 'Courier New', Courier, monospace; font-size: 11px; font-variant-numeric: tabular-nums; }
+
+/* Une transaction à plusieurs jambes porte plusieurs codes d'opération : ils s'empilent, un
+   par ligne, plutôt que d'être résumés en « premier … dernier ». Interligne resserré pour que
+   deux codes tiennent dans la hauteur de ligne du tableau. */
+.tx-opno {
+  display: block;
+  line-height: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Colonne du maillon : `text-align` ne centre pas le pictogramme, qui est un conteneur
+   flexible et non du texte en ligne — il faut centrer la boîte elle-même. */
+.tx-td-link { padding: 0 !important; }
+
+.tx-td-link,
+.tx-col-link {
+  text-align: center;
+}
+
+.tx-td-link .tx-link-icon {
+  display: flex;
+  margin: 0 auto;
+}
+.tx-td-edit { text-align: center; }
+
+.tx-row {
+  cursor: pointer;
+}
+
+.tx-row:hover {
+  filter: brightness(0.985);
+}
+
+.tx-link-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-brand);
+}
+
+.tx-kind-badge, .tx-nature-badge, .tx-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.tx-nature-badge {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.03em;
+}
+
+/* Encre renforcée des trois colonnes Objet / Nature / Type. Le gras ayant été retiré, ces
+   pastilles avaient perdu leur relief : la couleur reprend ce rôle.
+
+   Les valeurs sont posées en ligne par le composant sous la forme `color: var(--ink-ok)` —
+   redéfinir ces jetons *sur les pastilles elles-mêmes* suffit donc à intensifier leur texte,
+   sans toucher ni au reste de la page ni aux légendes du Guide qui partagent les mêmes
+   sources. Chaque teinte descend d'un cran (~20 % plus sombre en clair, plus lumineuse en
+   sombre après deux crans successifs), ce qui préserve l'écart voulu entre Nature et Type : les codes d'opération restent
+   une nuance plus claire que leur nature (--ink-ok-2 sous --ink-ok, --ink-warn-2 sous
+   --ink-warn). */
+.tx-kind-badge,
+.tx-nature-badge,
+.tx-type-badge {
+  --ink-brand-2: #002259;
+  --ink-magenta: #5c0f6a;
+  --ink-ok: #05342f;
+  --ink-ok-2: #084a45;
+  --ink-warn: #522503;
+  --ink-warn-2: #703205;
+  --ink-info: #032e42;
+  --ink-code: #1c1759;
+}
+
+:host-context([data-theme='dark']) .tx-kind-badge,
+:host-context([data-theme='dark']) .tx-nature-badge,
+:host-context([data-theme='dark']) .tx-type-badge {
+  --ink-brand-2: #b3cdf7;
+  --ink-magenta: #f7c6ff;
+  --ink-ok: #86e6d7;
+  --ink-ok-2: #6fdccf;
+  --ink-warn: #f7bf8a;
+  --ink-warn-2: #f9d0a8;
+  --ink-info: #a5e3fd;
+  --ink-code: #c3ccff;
+}
+
+
+.tx-type-badge {
+  background: rgba(67, 56, 202, 0.16);
+  color: var(--ink-code);
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.03em;
+}
+
+.tx-state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.tx-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.tx-edit-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tx-edit-btn {
+  --mat-icon-button-icon-size: 13px;
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-icon-color: var(--ink-brand);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.tx-edit-btn-code {
+  --mat-icon-button-icon-color: var(--ink-code);
+}
+
+.tx-month-row {
+  background: rgba(0, 61, 165, 0.1);
+  cursor: pointer;
+}
+
+.tx-month-row:hover {
+  background: rgba(0, 61, 165, 0.16);
+}
+
+/* `:first-child` n'est pas decoratif : la cellule pleine largeur d'une rangee repliee est la
+   premiere de sa rangee, et `.tx-table td:first-child` lui impose alors ses 16px de gouttiere.
+   Cette regle-ci doit donc atteindre la meme specificite pour reprendre la main — sans quoi la
+   carte de detail se trouvait poussee de 16px a gauche et collee au bord droit, et le panneau
+   du mois perdait son retrait de 40px. */
+.tx-month-row td:first-child {
+  padding: 0 16px;
+  border-top: 1px solid rgba(0, 61, 165, 0.28);
+  border-bottom: 1px solid rgba(0, 61, 165, 0.28);
+  height: 38px;
+}
+
+.tx-month-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tx-month-chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--ink-brand);
+  transition: transform 160ms ease;
+}
+
+.tx-month-label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.tx-month-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-month-detail-row {
+  background: rgba(0, 61, 165, 0.05);
+}
+
+.tx-month-detail-row td:first-child {
+  padding: 10px 16px 12px 40px;
+  border-bottom: 1px solid rgba(0, 61, 165, 0.28);
+}
+
+.tx-month-detail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Réserve la place de la commande de regroupement, calée en haut à droite hors du flux :
+     sans cette marge, les statistiques passeraient dessous sur une largeur réduite. */
+  padding-right: 210px;
+}
+
+.tx-month-stats {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.tx-month-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tx-month-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.tx-month-stat-value {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tx-month-natures {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Commande de regroupement, calée en haut à droite du panneau. Hors du flux : elle doit rester
+   sur la première ligne quel que soit le nombre de statistiques ou de natures affichées. */
+.tx-month-group {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-month-group-select {
+  width: 168px;
+}
+
+/* Sous-en-tête de nature, inséré entre les transactions d'un mois regroupé. Plus discret que
+   l'en-tête de mois : c'est un niveau de plus dans la hiérarchie, pas un pair. */
+.tx-nature-row {
+  background: rgba(0, 61, 165, 0.045);
+}
+
+.tx-nature-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 34px;
+}
+
+.tx-nature-head-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.tx-nature-head-count {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tx-month-nat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.tx-month-nat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.tx-month-nat-count {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-detail-row td:first-child {
+  padding: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  max-width: 0;
+  background: rgba(0, 61, 165, 0.1);
+}
+
+.tx-detail-card {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 8px;
+  border: 1px solid rgba(0, 61, 165, 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.tx-detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px 14px;
+  background: rgba(0, 61, 165, 0.14);
+  border-bottom: 1px solid rgba(0, 61, 165, 0.3);
+}
+
+.tx-detail-head-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 20px;
+}
+
+.tx-detail-head-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+  white-space: nowrap;
+}
+
+.tx-detail-head-count {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--field-brand);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-detail-sep {
+  flex: none;
+  width: 1px;
+  height: 14px;
+  background: rgba(0, 61, 165, 0.3);
+}
+
+.tx-detail-nature {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.tx-detail-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--color-neutral-800);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tx-detail-meta svg {
+  color: var(--ink-brand);
+}
+
+.tx-detail-comment {
+  min-width: 0;
+  flex: 1;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-detail-total {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tx-detail-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tx-detail-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  table-layout: fixed;
+  background: transparent;
+}
+
+.tx-detail-table th {
+  height: 30px;
+  text-align: left;
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand);
+}
+
+.tx-detail-table td {
+  height: 34px;
+  padding: 0 7px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Code d'operation centre dans sa colonne, en-tete compris : c'est un identifiant a chasse
+   fixe, de longueur constante, qui se lit mieux au centre d'une colonne etroite qu'aligne a
+   gauche contre le bord de la carte. `text-align` est pose sur la cellule et non sur la
+   colonne : Material aligne ses cellules en `start` par une regle plus specifique que la
+   classe de colonne seule. */
+.tx-dcol-opno { width: 88px; }
+
+/* Classe doublee des deux cotes : Material aligne en `start` ses en-tetes comme ses cellules
+   par une regle plus specifique qu'une classe seule. */
+.tx-dcol-opno.tx-dcol-opno { text-align: center; }
+
+.tx-td-opno.tx-td-opno { text-align: center; }
+
+.tx-dcol-seq { width: 38px; text-align: right; }
+.tx-dcol-date { width: 60px; }
+.tx-dcol-type { width: 74px; }
+
+/* Le cours tient sur une ligne (« 1 USD = 0,9200 EUR ») : la colonne est dimensionnee pour
+   l'accueillir sans rupture, et le texte y est aligne a droite comme les montants qu'il sert
+   a convertir. */
+.tx-dcol-fx { width: 124px; }
+
+.tx-td-fx.tx-td-fx {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+.tx-dcol-account { width: 22%; min-width: 130px; }
+.tx-dcol-security { width: 26%; min-width: 150px; }
+.tx-dcol-num { width: 70px; text-align: right; }
+.tx-dcol-num-sm { width: 60px; text-align: right; }
+.tx-dcol-num-lg { width: 92px; text-align: right; }
+
+.tx-empty {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* -- Suspens de règlement ------------------------------------------------- */
+.tx-scol-code { width: 120px; }
+.tx-scol-amount { width: 150px; text-align: right; }
+.tx-scol-count { width: 96px; text-align: right; padding-right: 16px !important; }
+
+.tx-code-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tx-suspense-note {
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.04);
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.tx-pcol-date { width: 92px; }
+.tx-pcol-type { width: 120px; }
+.tx-pcol-amount { width: 138px; text-align: right; }
+.tx-pcol-left { width: 110px; }
+
+/* -- Nouvelle transaction -------------------------------------------------- */
+.tx-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.tx-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tx-form-row-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.tx-form-row-desc {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.tx-nature-toggle {
+  --mat-button-toggle-height: 32px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: var(--surface);
+  --mat-button-toggle-text-color: var(--tx-toggle-fg, var(--color-neutral-800));
+  --mat-button-toggle-selected-state-background-color: var(--tx-toggle-bg, rgba(0, 61, 165, 0.14));
+  --mat-button-toggle-selected-state-text-color: var(--tx-toggle-fg, var(--ink-brand));
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.tx-type-toggle {
+  --mat-button-toggle-height: 32px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: rgba(67, 56, 202, 0.16);
+  --mat-button-toggle-text-color: var(--ink-code);
+  --mat-button-toggle-selected-state-background-color: var(--field-code);
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.tx-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 14px;
+  border: 1px solid rgba(0, 61, 165, 0.28);
+  border-left: 3px solid var(--ds-brand-fill, var(--field-brand));
+  border-radius: 4px;
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.tx-callout-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand);
+}
+
+.tx-callout-text {
+  font-size: 11px;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+.tx-section {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tx-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.tx-section-head-row {
+  justify-content: space-between;
+}
+
+.tx-legs-count {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-neutral-700);
+}
+
+.tx-order-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px 12px;
+  align-items: start;
+  padding: 14px;
+}
+
+.tx-order-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding-bottom: 0;
+}
+
+.tx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  min-width: 0;
+}
+
+.tx-field-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dénouement posé un jour où la place ne dénoue pas : signalé, jamais corrigé d'office — la
+   date reste à la main de qui saisit. */
+.tx-field-sub-warn {
+  color: var(--ink-warn-2);
+  font-weight: 600;
+}
+
+.tx-text-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 400;
+  font-family: inherit;
+  outline: none;
+}
+
+.tx-order-grid .tx-date-input,
+.tx-exec-rows .tx-date-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-readonly {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-100);
+  color: var(--color-text);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-exec-rows {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tx-exec-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) 30px 34px;
+  gap: 14px;
+  align-items: start;
+}
+
+.tx-exec-remove {
+  --mat-icon-button-icon-size: 13px;
+  --mat-icon-button-state-layer-size: 30px;
+  --mat-icon-button-icon-color: var(--ink-warn-2, #b45309);
+  align-self: end;
+  border: 1px solid rgba(180, 83, 9, 0.4);
+  border-radius: 999px;
+}
+
+.tx-exec-add {
+  --mat-icon-button-icon-size: 20px;
+  --mat-icon-button-state-layer-size: 32px;
+  --mat-icon-button-icon-color: var(--ink-brand-2);
+  --mat-icon-button-disabled-icon-color: var(--color-neutral-400);
+  align-self: end;
+}
+
+.tx-no-legs {
+  margin: 0;
+  padding: 14px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.tx-legs-table {
+  min-width: 640px;
+}
+
+.tx-lcol-seq { width: 56px; text-align: center; padding-left: 14px !important; }
+.tx-lcol-type { width: 110px; }
+.tx-lcol-amount { width: 130px; text-align: right; padding-right: 14px !important; }
+
+.tx-leg-seq {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+/* Enregistrer/Annuler : de vrais mat-flat-button/mat-stroked-button (voir
+   project_mat_button_color_tokens) plutôt que des <button> nus — même recette que
+   side-panel.css, sans `color="primary"` pour ne pas injecter le bleu M3 du thème. */
+.tx-cancel-btn {
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-horizontal-padding: 12px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: #c53030;
+  --mat-button-outlined-outline-color: rgba(197, 48, 48, 0.4);
+  --mat-button-outlined-state-layer-color: #c53030;
+  --mat-button-outlined-container-color: rgba(197, 48, 48, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tx-submit-btn {
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-horizontal-padding: 14px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-state-layer-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tx-form-status {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-ok);
+}
+
+/* -- Options de l'autocomplete de recherche -------------------------------- */
+.tx-ac-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-ac-count {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bouton calendrier de MatDatepicker accolé au champ, sans <mat-form-field> : celui-ci
+   imposerait son cadre M3 (hauteur ~56px, libellé flottant) et casserait la compacité des
+   champs de la barre d'outils, de la ligne de filtres et du formulaire de saisie. */
+.tx-datepicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  /* Toute la commande en 11px, comme le reste des filtres et du tableau : le champ le
+     déclarait déjà, mais pas son conteneur — un ajout de texte y aurait repris les 14px
+     hérités du thème. */
+  font-size: 11px;
+}
+
+/* `::ng-deep` : le bouton est engendré par le gabarit de `mat-datepicker-toggle`, il ne porte
+   donc pas l'attribut de portée de cette page et la règle scopée écrite ici ne l'atteignait
+   pas — il restait à ses 40px de zone tactile Material et débordait de la boîte de 32px qui
+   l'entoure, désalignant la commande « Période ». */
+.tx-datepicker ::ng-deep .mat-mdc-icon-button {
+  --mat-icon-button-icon-size: 12px;
+  --mat-icon-button-state-layer-size: 20px;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 4px;
+}
+
+.tx-datepicker ::ng-deep .mat-mdc-button-touch-target {
+  width: 20px;
+  height: 20px;
+}

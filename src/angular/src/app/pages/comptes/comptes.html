@@ -1,0 +1,606 @@
+<div class="ac-page">
+  <div class="ac-header">
+    <div class="ac-header-row">
+      <div class="ac-title-block">
+        <h1>Comptes</h1>
+        <p class="ac-subtitle">{{ subtitle() }}</p>
+      </div>
+      <span class="ac-filters">
+        <span class="ac-search" [class.ac-filters-off]="filtersOff()" [matTooltip]="filtersTitle()">
+          <mat-icon svgIcon="search" style="font-size:14px" class="ac-search-icon"></mat-icon>
+          <input [value]="query()" (input)="setQuery($any($event.target).value)" [disabled]="filtersOff()" placeholder="Client, compte, référence" />
+        </span>
+        <select class="ac-status-select" [class.ac-filters-off]="filtersOff()" [value]="statusFilter()" (change)="setStatusFilter($any($event.target).value)" [disabled]="filtersOff()" [matTooltip]="filtersTitle()">
+          <option value="all">Tous les états</option>
+          <option value="active">Actif</option>
+          <option value="onboarding">En ouverture</option>
+          <option value="frozen">Gelé</option>
+          <option value="closing">En clôture</option>
+        </select>
+      </span>
+    </div>
+    <nav mat-tab-nav-bar class="ac-tabs pm-tabnav" [tabPanel]="acTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'list'"
+        [class.ac-tab-on]="tab() === 'list'" (click)="setTab('list')">
+        <mat-icon svgIcon="list-dots" style="font-size:16px"></mat-icon>
+        Liste des comptes
+        <span class="ac-tab-badge">{{ filteredAccounts().length }}</span>
+      </button>
+      <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'ops'"
+        [class.ac-tab-on]="tab() === 'ops'" (click)="setTab('ops')">
+        <mat-icon svgIcon="pencil" style="font-size:16px"></mat-icon>
+        Gérer compte
+        <span class="ac-tab-badge">{{ opsBadge() }}</span>
+      </button>
+      <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'entry'"
+        [class.ac-tab-on]="tab() === 'entry'" (click)="setTab('entry')">
+        <mat-icon svgIcon="log-in" style="font-size:16px"></mat-icon>
+        Entrée en relation
+        <span class="ac-tab-badge">{{ entryCount() }}</span>
+      </button>
+    </nav>
+  </div>
+
+  <mat-tab-nav-panel #acTabPanel>
+  <div class="ac-body">
+    @if (tab() === 'list') {
+      <div class="ac-list">
+        <div class="ac-list-head-row">
+          <span class="ac-list-head-label">Portefeuilles clients</span>
+          <span class="ac-list-note">{{ listNote() }}</span>
+        </div>
+        <div class="ac-list-scroll">
+          <div class="ac-list-inner">
+            <div class="ac-grid ac-grid-head">
+              <span>Client</span>
+              <span>Référence</span>
+              <span class="ac-right">Encours</span>
+              <span class="ac-right">Perf.</span>
+              <span class="ac-right">Bénéf.</span>
+              <span>Compte de liquidité</span>
+              <span>Statut</span>
+              <span></span>
+              <span></span>
+            </div>
+            @for (a of accountRows(); track a.id) {
+              <div class="ac-grid ac-row" [style.border-left-color]="a.mark" [style.background]="a.bg">
+                <button type="button" class="ac-row-client" (click)="pickAccount(a.id)" matTooltip="Sélectionner ce compte">
+                  <span class="ac-row-client-name" [style.font-weight]="a.weight">{{ a.client }}</span>
+                  <span class="ac-row-client-meta">{{ a.meta }}</span>
+                </button>
+                <span class="ac-row-ref">{{ a.id }}</span>
+                <span class="ac-right ac-row-aum">{{ a.aum }}</span>
+                <span class="ac-right ac-row-perf" [style.color]="a.perfColor">{{ a.perf }}</span>
+                <span class="ac-right ac-row-benef" [matTooltip]="a.beneficiariesTitle">{{ a.beneficiaries }}</span>
+                <span class="ac-row-cash">
+                  <span class="ac-row-cash-flag">{{ a.cashFlag }}</span>
+                  <span class="ac-row-cash-body">
+                    <span class="ac-row-cash-bank">{{ a.cashBank }}</span>
+                    <span class="ac-row-cash-meta">{{ a.cashMeta }}</span>
+                  </span>
+                </span>
+                <span><span class="ac-state-pill" [style.background]="a.stateBg" [style.color]="a.stateFg">{{ a.state }}</span></span>
+                <button type="button" class="ac-icon-btn" (click)="openDetail(a.id, $event)" matTooltip="Consulter le détail du compte" aria-label="Détail du compte">
+                  <mat-icon svgIcon="file-text" style="font-size:15px"></mat-icon>
+                </button>
+                <span class="ac-manage-wrap">
+                  <button type="button" class="ac-icon-btn" [matMenuTriggerFor]="manageMenu" (click)="$event.stopPropagation()" matTooltip="Gérer le compte" aria-label="Gérer le compte">
+                    <mat-icon svgIcon="pencil" style="font-size:15px"></mat-icon>
+                  </button>
+                  <mat-menu #manageMenu="matMenu" class="pm-unfold">
+                    @for (o of a.manageOptions; track o.key) {
+                      <button mat-menu-item [disabled]="o.disabled" [title]="o.hint" (click)="pickManage(a.id, o.key)">
+                        <span class="ac-manage-col">
+                          <span class="ac-manage-label">{{ o.label }}</span>
+                          <span class="ac-manage-hint">{{ o.hint }}</span>
+                        </span>
+                      </button>
+                    }
+                  </mat-menu>
+                </span>
+              </div>
+            }
+            @if (noAccounts()) {
+              <p class="ac-empty">Aucun compte ne correspond aux critères.</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (tab() === 'ops') {
+      <div class="ac-ops">
+        <div class="ac-ops-tabs-row">
+          <span class="ac-pill-group">
+            @for (k of opKinds; track k) {
+              <button type="button" class="ac-pill" [class.ac-pill-on]="op() === k" (click)="switchOp(k)">{{ defs()[k].label }}</button>
+            }
+          </span>
+          <span class="ac-ops-hint">{{ def().hint }}</span>
+        </div>
+
+        <div class="ac-ops-card">
+          <!-- MatStepper pilote l'en-tête ; le corps reste un gabarit unique piloté par
+               `currentStep()`, réinjecté dans l'étape sélectionnée via `matStepContent` (rendu
+               paresseux : sans lui, les 6 étapes instancieraient chacune tout le formulaire). -->
+          <mat-stepper class="ac-stepper" [selectedIndex]="currentStepIndex()"
+            (selectionChange)="goStep($event.selectedIndex)">
+            @for (s of opSteps(); track s.title) {
+              <mat-step [completed]="s.isDone">
+                <ng-template matStepLabel>
+                  <span class="ac-step-text">
+                    <span class="ac-step-title">{{ s.title }}</span>
+                    <span class="ac-step-hint">{{ s.hint }}</span>
+                  </span>
+                </ng-template>
+                <ng-template matStepContent>
+                  <ng-container *ngTemplateOutlet="stepBody"></ng-container>
+                </ng-template>
+              </mat-step>
+            }
+          </mat-stepper>
+
+          <ng-template #stepBody>
+          <div class="ac-step-body">
+            <h2 class="ac-step-heading">{{ opStepTitle() }}</h2>
+
+            @if (onCashStep()) {
+              <div class="ac-cash-subheader">
+                <span class="ac-pill-group ac-pill-group-wrap">
+                  @for (t of cashTabsView(); track t.key) {
+                    <button type="button" class="ac-pill ac-pill-sm" [class.ac-pill-on]="t.active" (click)="pickCashTab(t.key)">
+                      <span class="ac-pill-chip" [class.ac-pill-chip-on]="t.active">{{ t.chip }}</span>{{ t.label }}
+                    </button>
+                  }
+                </span>
+                <span class="ac-cash-principal-note">
+                  <mat-icon svgIcon="lock" style="font-size:13px"></mat-icon>
+                  <span class="ac-pill-chip ac-pill-chip-brand">P</span>
+                  Le premier établissement de la liste est le compte principal
+                </span>
+                <button type="button" class="ac-add-btn" (click)="addCash()" matTooltip="Ajouter un compte bancaire externe" aria-label="Ajouter un compte bancaire externe">
+                  <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
+                </button>
+              </div>
+            }
+
+            @if (onCheckStep()) {
+              <div class="ac-check-callout">
+                <span class="ac-check-callout-text">
+                  <span class="ac-check-callout-title">Contrôle avant enregistrement</span>
+                  <span class="ac-check-callout-note">Ouvrez le récapitulatif pour relire l'ensemble des informations saisies avant de renseigner la fermeture et le statut.</span>
+                </span>
+                <button type="button" mat-stroked-button class="ac-recap-btn" (click)="openRecap()">
+                  <mat-icon svgIcon="log-in" style="font-size:15px"></mat-icon>
+                  Vérifier la saisie
+                </button>
+              </div>
+            }
+
+            <div class="ac-fields-grid" [style.grid-template-columns]="opColsValue()">
+              @for (f of opFields(); track f.key) {
+                <label class="ac-field" [style.grid-column]="f.span">
+                  <span class="ac-field-label">{{ f.label }}</span>
+                  @switch (f.kind) {
+                    @case ('combo') {
+                      <app-ac-select [groups]="f.groups" [value]="f.value" [leadFlag]="f.leadFlag" [place]="f.place" [asBadge]="f.asBadge" [badgeBg]="f.badgeBg" [badgeFg]="f.badgeFg" [checkOk]="f.checkOk" [checkBad]="f.checkBad" [checkMessage]="f.checkMessage" (valueChange)="setField(f.key, $event)" />
+                    }
+                    @case ('chips') {
+                      <app-ac-chips [options]="f.options" [chips]="f.chips" placeholder="Sélectionner une ou plusieurs origines" (toggle)="toggleKycOrigin($event)" />
+                    }
+                    @case ('badge') {
+                      <span class="ac-field-badge-wrap">
+                        <span class="ac-field-badge" [style.background]="f.badgeBg" [style.color]="f.badgeFg">
+                          <span class="ac-field-badge-dot" [style.background]="f.badgeFg"></span>
+                          {{ f.value }}
+                        </span>
+                        <span class="ac-field-badge-hint">{{ f.hint }}</span>
+                      </span>
+                    }
+                    @case ('url') {
+                      <span class="ac-field-url">
+                        <input [value]="f.value" (change)="setTextField(f.key, $any($event.target).value)" [placeholder]="f.placeholder" />
+                        <a [href]="f.href || '#'" target="_blank" rel="noreferrer noopener" class="ac-field-url-btn" [class.ac-field-url-disabled]="!f.valid">
+                          <mat-icon svgIcon="external-link" style="font-size:14px"></mat-icon>
+                        </a>
+                      </span>
+                    }
+                    @case ('iban') {
+                      <span class="ac-field-iban-wrap">
+                        <span class="ac-field-iban" [class.ac-field-iban-ok]="f.ok" [class.ac-field-iban-bad]="f.bad">
+                          <input [value]="f.value" (change)="setTextField(f.key, $any($event.target).value)" placeholder="NL91 ABNA 0417 1643 00" />
+                          @if (f.ok) {
+                            <span class="ac-check-icon ac-check-icon-ok"><mat-icon svgIcon="check" style="font-size:12px;color:#ffffff"></mat-icon></span>
+                          }
+                          @if (f.bad) {
+                            <span class="ac-check-icon ac-check-icon-bad"><mat-icon svgIcon="exclamation" style="font-size:12px;color:#ffffff"></mat-icon></span>
+                          }
+                        </span>
+                        @if (f.message) {
+                          <span class="ac-field-iban-msg" [class.ac-field-iban-msg-bad]="f.bad">{{ f.message }}</span>
+                        }
+                      </span>
+                    }
+                    @case ('dateLocked') {
+                      <span class="ac-field-datelocked-wrap">
+                        <span class="ac-field-datelocked">
+                          <mat-icon svgIcon="lock" style="font-size:14px"></mat-icon>
+                          {{ f.lockedValue }}
+                        </span>
+                        <span class="ac-field-sub">{{ f.hint }}</span>
+                      </span>
+                    }
+                    @case ('dateOpen') {
+                      <span class="ac-field-datepicker">
+                        <input class="ac-field-date" [matDatepicker]="acOpenPicker" [value]="isoToDate(f.value)"
+                          [max]="isoToDate(f.max)" (dateChange)="setDateField(f.key, dateToIso($event.value))" />
+                        <mat-datepicker-toggle matIconSuffix [for]="acOpenPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #acOpenPicker></mat-datepicker>
+                      </span>
+                    }
+                    @default {
+                      <input class="ac-field-input" [value]="f.value" [placeholder]="f.placeholder" (change)="setTextField(f.key, $any($event.target).value)" />
+                    }
+                  }
+                </label>
+              }
+            </div>
+
+            @if (onCashStep()) {
+              <div class="ac-cash-table">
+                <div class="ac-cash-table-head">
+                  <span class="ac-cash-table-head-bank">Établissement bancaire</span>
+                  <span>IBAN</span>
+                  <span>Devise</span>
+                  <span></span>
+                </div>
+                @for (row of cashSelected(); track row.index) {
+                  <div class="ac-cash-table-row">
+                    <span class="ac-cash-bank-cell">
+                      <button type="button" class="ac-cash-rank" [matMenuTriggerFor]="rankMenu">
+                        <span class="ac-cash-rank-chip" [class.ac-cash-rank-chip-main]="row.main">{{ row.rankCode }}</span>
+                        <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
+                      </button>
+                      <mat-menu #rankMenu="matMenu">
+                        <button mat-menu-item [disabled]="row.main" (click)="promoteCash(row.index)">
+                          <span class="ac-cash-rank-chip ac-cash-rank-chip-main">P</span>
+                          {{ row.main ? 'Principal — compte par défaut' : 'Principal — devient le compte par défaut' }}
+                        </button>
+                        <button mat-menu-item disabled>
+                          <span class="ac-cash-rank-chip">S</span>
+                          Secondaire
+                        </button>
+                      </mat-menu>
+                      <app-ac-select class="ac-cash-bank-select" [groups]="bankGroupsList" [value]="row.main && row.bank === 'Établissement à choisir' ? '' : row.bank" [leadFlag]="row.bankFlag" (valueChange)="patchCashField(row.index, { bank: $event })" />
+                    </span>
+                    <span class="ac-field-iban" [class.ac-field-iban-ok]="row.ibanOk" [class.ac-field-iban-bad]="row.ibanBad">
+                      <input [value]="row.iban" (change)="patchCashField(row.index, { iban: $any($event.target).value })" placeholder="NL91 ABNA 0417 1643 00" />
+                      @if (row.ibanOk) {
+                        <span class="ac-check-icon ac-check-icon-ok ac-check-icon-sm"><mat-icon svgIcon="check" style="font-size:10px;color:#ffffff"></mat-icon></span>
+                      }
+                      @if (row.ibanBad) {
+                        <span class="ac-check-icon ac-check-icon-bad ac-check-icon-sm"><mat-icon svgIcon="exclamation" style="font-size:10px;color:#ffffff"></mat-icon></span>
+                      }
+                    </span>
+                    <app-ac-select class="ac-cash-cur-select" [groups]="cashCurrencyGroupsList" [value]="row.currency" [leadFlag]="row.currencyFlag" (valueChange)="patchCashField(row.index, { currency: $event })" />
+                    @if (row.canRemove) {
+                      <button type="button" class="ac-cash-remove" (click)="removeCash(row.index)" matTooltip="Retirer ce compte">
+                        <mat-icon svgIcon="shopping-bag" style="font-size:13px"></mat-icon>
+                      </button>
+                    } @else {
+                      <span></span>
+                    }
+                  </div>
+                }
+                <span class="ac-cash-table-note">Le compte principal, en tête de liste, porte les mouvements par défaut : son remplacement passe par la promotion d'un compte secondaire.</span>
+              </div>
+
+              @if (opCashStatusField(); as sf) {
+                <label class="ac-field ac-field-standalone">
+                  <span class="ac-field-label">{{ sf.label }}</span>
+                  @switch (sf.kind) {
+                    @case ('combo') {
+                      <app-ac-select [groups]="sf.groups" [value]="sf.value" [leadFlag]="sf.leadFlag" [place]="sf.place" [asBadge]="sf.asBadge" [badgeBg]="sf.badgeBg" [badgeFg]="sf.badgeFg" (valueChange)="setField(sf.key, $event)" />
+                    }
+                  }
+                </label>
+              }
+
+              <p class="ac-cash-explain">Rattacher un compte bancaire externe à ce compte titres. C'est par lui que passent les mouvements d'espèces dans les deux sens : les versements qui alimentent le compte titres avant un achat, et les retraits qui rapatrient la liquidité disponible une fois les titres vendus. Sans compte rattaché, aucun mouvement de trésorerie n'est possible — le compte titres peut détenir des positions, mais rien n'y entre ni n'en sort. Le rattachement se contrôle sur la clé de l'IBAN, qui doit être conforme pour être enregistré.</p>
+            }
+
+            @if (onHolderStep()) {
+              <div class="ac-holder-subheader">
+                <span class="ac-pill-group ac-pill-group-wrap">
+                  @for (t of holderTabsView(); track t.key) {
+                    <button type="button" class="ac-pill ac-pill-sm" [class.ac-pill-on]="t.active" (click)="pickHolderTab(t.key)">
+                      <span class="ac-pill-chip" [class.ac-pill-chip-on]="t.active">{{ t.chip }}</span>{{ t.label }}
+                    </button>
+                  }
+                </span>
+                <button type="button" class="ac-add-btn" (click)="addCo()" matTooltip="Ajouter un co-titulaire ou bénéficiaire" aria-label="Ajouter un co-titulaire ou bénéficiaire">
+                  <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
+                </button>
+              </div>
+            }
+
+            @if (onCoPane()) {
+              <div class="ac-co-table">
+                @for (row of coSelected(); track row.index) {
+                  <div class="ac-co-row">
+                    <label class="ac-co-field">
+                      Nom
+                      <input [value]="row.last" (change)="setCoLast(row.index, $any($event.target).value)" placeholder="Nom" />
+                    </label>
+                    <label class="ac-co-field">
+                      Prénom
+                      <input [value]="row.first" (change)="setCoFirst(row.index, $any($event.target).value)" placeholder="Prénom" />
+                    </label>
+                    <label class="ac-co-field">
+                      Qualité
+                      <app-ac-select [groups]="qualityGroups" [value]="row.role" (valueChange)="setCoRole(row.index, $event)" />
+                    </label>
+                    <label class="ac-co-field">
+                      Référence rattachée
+                      <span class="ac-co-ref">{{ row.ref }}</span>
+                    </label>
+                    <button type="button" class="ac-co-remove" (click)="removeCo(row.index)" matTooltip="Retirer">
+                      <mat-icon svgIcon="minus" style="font-size:14px"></mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            @for (c of opChecksView(); track c.label) {
+              <div class="ac-check-row">
+                <span class="ac-check-dot" [style.background]="c.color"></span>
+                <span class="ac-check-label">{{ c.label }}</span>
+              </div>
+            }
+
+            <div class="ac-footer">
+              @if (currentStepIndex() === 0) {
+                <button type="button" mat-flat-button class="ac-prev-btn ac-prev-btn-cancel" (click)="opPrev()" matTooltip="Efface tous les champs saisis en vue d'une prochaine création">
+                  <mat-icon svgIcon="close" style="font-size:14px"></mat-icon>
+                  {{ opPrevLabel() }}
+                </button>
+              } @else {
+                <button type="button" mat-stroked-button class="ac-prev-btn" (click)="opPrev()" matTooltip="Revenir à l'étape précédente">
+                  <mat-icon svgIcon="chevron-left" style="font-size:14px"></mat-icon>
+                  {{ opPrevLabel() }}
+                </button>
+              }
+              <button type="button" mat-stroked-button class="ac-draft-btn" [disabled]="opDraftDisabled()" (click)="opDraft()" [matTooltip]="opDraftDisabled() ? 'Disponible dès la deuxième étape, une fois le broker choisi' : 'Conserve la saisie en brouillon, sans créer le compte'">
+                <mat-icon svgIcon="save" style="font-size:14px"></mat-icon>
+                Brouillon
+              </button>
+              <button type="button" mat-flat-button class="ac-next-btn" [disabled]="opNextBlocked()" (click)="opNext()" [matTooltip]="opNextBlocked() ? 'IBAN à corriger : la clé de contrôle doit être conforme pour enregistrer le rattachement' : ''">
+                {{ opNextLabel() }}
+                @if (isLastStep()) {
+                  <mat-icon iconPositionEnd svgIcon="check" style="font-size:14px"></mat-icon>
+                } @else {
+                  <mat-icon iconPositionEnd svgIcon="chevron-right" style="font-size:14px"></mat-icon>
+                }
+              </button>
+              <span class="ac-status-note">{{ opStatus() }}</span>
+              <button type="button" class="ac-reset-btn" (click)="opReset()" matTooltip="Réinitialiser la saisie : tous les champs reviennent à leur valeur initiale" aria-label="Réinitialiser la saisie">
+                <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+              </button>
+            </div>
+          </div>
+          </ng-template>
+        </div>
+      </div>
+    }
+
+    <!-- ───────────────────────── Entrée en relation ───────────────────────── -->
+    @if (tab() === 'entry') {
+      <div class="ac-entry">
+        <div class="ac-entry-kpis">
+          @for (k of entryKpis(); track k.label) {
+            <div class="ac-entry-kpi" [class.ac-entry-kpi-warn]="k.tone === 'warn'" [class.ac-entry-kpi-ok]="k.tone === 'ok'">
+              <span class="ac-entry-kpi-label">{{ k.label }}</span>
+              <span class="ac-entry-kpi-value">{{ k.value }}</span>
+              <span class="ac-entry-kpi-note">{{ k.note }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="ac-entry-split">
+          <!-- Vivier par phase -->
+          <section class="ac-entry-card">
+            <header class="ac-entry-card-head">
+              <h2 class="ac-entry-card-title">Vivier</h2>
+              <span class="ac-entry-card-note">Chaque phase dit à qui la main revient</span>
+            </header>
+
+            @for (p of entryPipeline(); track p.label) {
+              <div class="ac-entry-phase">
+                <span class="ac-entry-phase-head">
+                  <span class="ac-entry-phase-label">{{ p.label }}</span>
+                  <span class="ac-entry-phase-count">{{ p.count }}</span>
+                </span>
+                @if (!p.count) {
+                  <span class="ac-entry-phase-empty">Aucun dossier</span>
+                }
+                @for (c of p.cases; track c.id) {
+                  <button type="button" class="ac-entry-case" [class.ac-entry-case-on]="c.id === currentCase().id"
+                    (click)="selectCase(c.id)">
+                    <span class="ac-entry-case-line">
+                      <span class="ac-entry-case-name">{{ c.name }}</span>
+                      @if (c.blocked) {
+                        <mat-icon class="ac-entry-case-flag" svgIcon="alert-triangle" style="font-size:12px"
+                          [matTooltip]="c.blocked"></mat-icon>
+                      }
+                      <span class="ac-entry-case-aum">{{ c.aum }}</span>
+                    </span>
+                    <span class="ac-entry-case-meta">{{ c.stageLabel }} · {{ c.owner }}</span>
+                    <span class="ac-entry-case-bar">
+                      <span class="ac-entry-case-fill" [style.width.%]="c.progress"
+                        [class.ac-entry-case-fill-warn]="c.blocked"></span>
+                    </span>
+                  </button>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Détail du dossier retenu -->
+          <div class="ac-entry-col">
+            @if (currentCase(); as c) {
+              <section class="ac-entry-card">
+                <header class="ac-entry-card-head">
+                  <h2 class="ac-entry-card-title">{{ c.name }}</h2>
+                  <span class="ac-entry-ref">{{ c.id }}</span>
+                  @if (c.accountId) {
+                    <span class="ac-entry-account" matTooltip="Compte ouvert chez le dépositaire">{{ c.accountId }}</span>
+                  }
+                  <span class="ac-entry-card-note ac-entry-push">{{ c.progress }} % du parcours</span>
+                </header>
+
+                <div class="ac-entry-facts">
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Nature</span>{{ c.kindLabel }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Origine</span>{{ c.origin }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Responsable</span>{{ c.owner }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Ouvert le</span>{{ c.since }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Dernier mouvement</span>{{ c.lastUpdate }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Encours cible</span>{{ c.aum }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Profil pressenti</span>{{ c.profile }}</span>
+                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Phase</span>{{ c.phase }}</span>
+                </div>
+
+                @if (c.blocked) {
+                  <div class="ac-entry-blocked">
+                    <mat-icon svgIcon="alert-triangle" style="font-size:14px"></mat-icon>
+                    <span>{{ c.blocked }}</span>
+                  </div>
+                }
+
+                @if (c.missingDocs.length) {
+                  <div class="ac-entry-docs">
+                    <span class="ac-entry-docs-label">Pièces attendues</span>
+                    @for (d of c.missingDocs; track d) {
+                      <span class="ac-entry-doc">{{ d }}</span>
+                    }
+                  </div>
+                }
+              </section>
+
+              <section class="ac-entry-card">
+                <header class="ac-entry-card-head">
+                  <h2 class="ac-entry-card-title">Parcours</h2>
+                  <span class="ac-entry-card-note ac-entry-push">Étapes du cycle de vie, jusqu'à l'apport initial</span>
+                </header>
+
+                @for (s of caseStages(); track s.index) {
+                  <div class="ac-entry-stage" [class.ac-entry-stage-done]="s.done" [class.ac-entry-stage-current]="s.current">
+                    <span class="ac-entry-stage-mark">
+                      @if (s.done) {
+                        <mat-icon svgIcon="check" style="font-size:12px"></mat-icon>
+                      } @else {
+                        {{ s.index + 1 }}
+                      }
+                    </span>
+                    <span class="ac-entry-stage-texts">
+                      <span class="ac-entry-stage-label">{{ s.label }}</span>
+                      <span class="ac-entry-stage-detail">{{ s.detail }}</span>
+                      <span class="ac-entry-stage-docs">{{ s.docs }}</span>
+                    </span>
+                    <span class="ac-entry-stage-actor">{{ s.actor }}</span>
+                  </div>
+                }
+              </section>
+            }
+          </div>
+        </div>
+
+        <!-- Liste a plat, pour comparer les dossiers entre eux -->
+        <section class="ac-entry-card">
+          <header class="ac-entry-card-head">
+            <h2 class="ac-entry-card-title">Liste des entrées en relation</h2>
+            <span class="ac-entry-card-note ac-entry-push">{{ entryRows().length }} dossiers · triés par avancement</span>
+          </header>
+
+          <div class="ac-entry-table-scroll">
+            <table mat-table [dataSource]="entryRows()" class="ac-entry-table">
+              <ng-container matColumnDef="ref">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-ref">Référence</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td">
+                  <span class="ac-entry-ref">{{ c.id }}</span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="case">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th">Dossier</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td">
+                  <span class="ac-entry-cell-stack">
+                    <span class="ac-entry-cell-main">{{ c.name }}</span>
+                    <span class="ac-entry-cell-sub">{{ c.kindLabel }}</span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="origin">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-origin">Origine</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td ac-entry-td-muted ac-entry-ellipsis">{{ c.origin }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="stage">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-stage">Étape</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td">
+                  <span class="ac-entry-cell-stack">
+                    <span class="ac-entry-cell-main">{{ c.stageLabel }}</span>
+                    <span class="ac-entry-cell-sub">{{ c.phase }}</span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="owner">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-owner">Responsable</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td ac-entry-td-muted">{{ c.owner }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="aum">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-th-num ac-entry-col-aum">Encours cible</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td ac-entry-td-num">{{ c.aum }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="progress">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-progress">Avancement</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td">
+                  <span class="ac-entry-progress">
+                    <span class="ac-entry-case-bar">
+                      <span class="ac-entry-case-fill" [style.width.%]="c.progress"
+                        [class.ac-entry-case-fill-warn]="c.blocked"></span>
+                    </span>
+                    <span class="ac-entry-progress-value">{{ c.progress }} %</span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="state">
+                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-state">État</th>
+                <td mat-cell *matCellDef="let c" class="ac-entry-td">
+                  @if (c.blocked) {
+                    <span class="ac-entry-state ac-entry-state-warn" [matTooltip]="c.blocked">Bloqué</span>
+                  } @else if (c.missingDocs.length) {
+                    <span class="ac-entry-state ac-entry-state-wait">{{ c.missingDocs.length }} pièce(s) attendue(s)</span>
+                  } @else {
+                    <span class="ac-entry-state ac-entry-state-ok">Complet</span>
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="entryColumns" class="ac-entry-header-row"></tr>
+              <tr mat-row *matRowDef="let c; columns: entryColumns" class="ac-entry-row"
+                [class.ac-entry-row-on]="c.id === currentCase().id"
+                [matTooltip]="'Voir le parcours de ' + c.name" (click)="selectCase(c.id)"></tr>
+            </table>
+          </div>
+        </section>
+      </div>
+    }
+  </div>
+</mat-tab-nav-panel>
+</div>

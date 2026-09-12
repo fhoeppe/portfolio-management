@@ -1,0 +1,235 @@
+/**
+ * Monté par MatDialog hors de l'arbre DOM d'app-shell (cdk-overlay-container) : mêmes jetons
+ * locaux que `side-panel.css`, qui ne parviennent pas ici par héritage CSS.
+ */
+:host {
+  display: block;
+  width: min(900px, 94vw);
+  max-height: 85vh;
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --ink-brand: #002a6e;
+  --ink-brand-2: #003da5;
+  --ink-ok-2: #0f766e;
+  --field-brand: #002a6e;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+}
+
+:host, :host * {
+  box-sizing: border-box;
+}
+
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --ink-brand-2: #8fb4ee;
+  --ink-ok-2: #4fd1c5;
+  --field-brand: #12325e;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #b5b0ad;
+}
+
+.ti-pv {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  background: var(--surface);
+  color: var(--color-text);
+}
+
+.ti-pv-head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--field-brand);
+  color: #ffffff;
+}
+
+.ti-pv-head-titles {
+  min-width: 0;
+}
+
+.ti-pv-title {
+  margin: 0;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.ti-pv-detail {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ti-pv-close {
+  flex: none;
+  margin-left: auto;
+  color: #ffffff !important;
+}
+
+.ti-pv-kpis {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.ti-pv-kpi {
+  padding: 11px 18px 13px;
+  background: var(--surface);
+}
+
+.ti-pv-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.ti-pv-kpi-value {
+  margin-top: 4px;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ti-pv-table-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.ti-pv-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+/* `thead`/`tbody` sont créés par MatTable, hors encapsulation de ce composant : les
+   traverser ne cible plus rien. On vise les cellules, elles, rendues depuis ce gabarit-ci. */
+.ti-pv-table th.mat-mdc-header-cell {
+  position: sticky;
+  top: 0;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-100);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ti-pv-th-member {
+  padding-left: 18px !important;
+  width: 38%;
+}
+
+.ti-pv-th-weight {
+  text-align: right !important;
+}
+
+.ti-pv-th-switch {
+  width: 60px;
+}
+
+.ti-pv-table td.mat-mdc-cell {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  vertical-align: middle;
+}
+
+.ti-pv-table tr.mat-mdc-row td:first-child {
+  padding-left: 18px;
+}
+
+.ti-pv-member-name {
+  display: block;
+  font-weight: 600;
+}
+
+.ti-pv-member-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ti-pv-sector {
+  color: var(--color-text);
+}
+
+.ti-pv-weight {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ti-pv-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ti-pv-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.ti-pv-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--field-brand);
+}
+
+.ti-pv-footer-note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.ti-pv-load-btn {
+  margin-left: auto;
+  --mat-button-filled-container-height: 28px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-horizontal-padding: 13px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-container-color: #ffffff;
+  --mat-button-filled-label-text-color: var(--ink-brand-2);
+  --mat-button-filled-state-layer-color: var(--ink-brand-2);
+}
+
+.ti-pv-close-btn {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-horizontal-padding: 13px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: #ffffff;
+  --mat-button-outlined-outline-color: rgba(255, 255, 255, 0.35);
+  --mat-button-outlined-state-layer-color: #ffffff;
+}

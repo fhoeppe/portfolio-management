@@ -79,6 +79,14 @@ h2 {
   --mat-button-toggle-height: 26px;
   --mat-button-toggle-shape: 6px;
   --mat-button-toggle-label-text-size: 11px;
+  /* Sans jetons de couleur, l'état sélectionné retombe sur le défaut M3 — un bleu pâle qui ne
+     se distinguait guère des options inactives. On reprend le bleu du bandeau (--field-brand),
+     comme la pastille FR/EN du menu compte et la variante rouge ci-dessous. */
+  --mat-button-toggle-background-color: transparent;
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--field-brand);
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: var(--color-neutral-300);
 }
 
 .pm-toggle-group-red {
@@ -246,7 +254,9 @@ h2 {
   table-layout: fixed;
 }
 
-.pm-table thead tr {
+/* `thead` vient du gabarit de MatTable, hors encapsulation de ce composant : le traverser
+   ne cible plus rien. On vise directement la ligne d'en-tête, rendue depuis ce gabarit-ci. */
+.pm-table tr.mat-mdc-header-row {
   background: rgba(0, 61, 165, 0.14);
 }
 

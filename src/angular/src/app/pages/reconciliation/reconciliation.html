@@ -1,0 +1,196 @@
+<div class="rc-page">
+  <div class="rc-head-row">
+    <div class="rc-head-top">
+      <div class="rc-head-titles">
+        <h1 class="rc-h1">Réconciliation</h1>
+        <p class="rc-subtitle">{{ subtitle() }}</p>
+      </div>
+      <span class="rc-head-actions">
+        <mat-select class="rc-scope-select" [value]="scope()" (selectionChange)="scope.set($event.value)">
+          @for (o of scopeOptions; track o.value) {
+            <mat-option [value]="o.value">{{ o.label }}</mat-option>
+          }
+        </mat-select>
+        <button type="button" mat-flat-button class="rc-run-btn" (click)="runRecon()">
+          <mat-icon svgIcon="refresh" style="font-size:14px"></mat-icon>
+          {{ runLabel() }}
+        </button>
+      </span>
+    </div>
+
+    <nav mat-tab-nav-bar class="rc-tabs-row pm-tabnav" [tabPanel]="rcTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      @for (t of pageTabs(); track t.key) {
+        <button type="button" mat-tab-link class="rc-page-tab" [active]="tab() === t.key"
+          [class.rc-page-tab-active]="tab() === t.key" [style.height]="t.height" [style.padding]="t.padding"
+          [style.background]="t.bg" [style.color]="t.fg" [style.font-size]="t.size" (click)="setTab(t.key)">
+          @if (t.key === 'sec') {
+            <mat-icon svgIcon="chart-bar-alt" style="font-size:16px"></mat-icon>
+          } @else {
+            <mat-icon svgIcon="banknote" style="font-size:16px"></mat-icon>
+          }
+          {{ t.label }}
+          <span class="rc-tab-badge" [style.background]="t.badgeBg" [style.color]="t.badgeFg">{{ t.badge }}</span>
+        </button>
+      }
+    </nav>
+  </div>
+
+  <mat-tab-nav-panel #rcTabPanel>
+  <div class="rc-kpi-grid">
+    @for (k of kpis(); track k.label) {
+      <div class="rc-kpi-card" [style.background]="k.bg">
+        <div class="rc-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+        <div class="rc-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+        <div class="rc-kpi-note">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="rc-split">
+    <div class="rc-left">
+      @if (tab() === 'sec') {
+        <div class="rc-card">
+          <div class="rc-card-head">
+            <h2 class="rc-card-title">Rapprochement saisie interne / rapport broker</h2>
+            <span class="rc-filter-tabs">
+              @for (t of filterTabs(); track t.label) {
+                <button type="button" class="rc-filter-tab" [style.border-left]="t.divider" [style.background]="t.bg" [style.color]="t.fg" [style.font-weight]="t.weight" (click)="t.onClick()">{{ t.label }}</button>
+              }
+            </span>
+          </div>
+          <div class="rc-table-scroll">
+            <table mat-table [dataSource]="rows()" class="rc-table">
+              <ng-container matColumnDef="ligne">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-left">Ligne</th>
+                <td mat-cell *matCellDef="let r" class="rc-td">
+                  <span class="rc-cell-stack">
+                    <span class="rc-cell-strong">{{ r.ticker }}</span>
+                    <span class="rc-cell-sub">{{ r.name }}</span>
+                  </span>
+                </td>
+                <!-- Le pied ne compte que deux cellules : celle-ci couvre les quatre premières
+                     colonnes, d'où le colspan porté par la cellule et la liste réduite passée à
+                     `matFooterRowDef`. -->
+                <td mat-footer-cell *matFooterCellDef colspan="4" class="rc-tfoot-note">{{ rowsNote() }}</td>
+              </ng-container>
+              <ng-container matColumnDef="interne">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-right">Saisie interne</th>
+                <td mat-cell *matCellDef="let r" class="rc-td rc-td-right rc-tabular">{{ r.internal }}</td>
+              </ng-container>
+              <ng-container matColumnDef="broker">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-right">Rapport broker</th>
+                <td mat-cell *matCellDef="let r" class="rc-td rc-td-right rc-tabular">{{ r.custody }}</td>
+              </ng-container>
+              <ng-container matColumnDef="ecart">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-right">Écart</th>
+                <td mat-cell *matCellDef="let r" class="rc-td rc-td-right rc-tabular rc-td-strong" [style.color]="r.diffColor">{{ r.diff }}</td>
+              </ng-container>
+              <ng-container matColumnDef="etat">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-left">État</th>
+                <td mat-cell *matCellDef="let r" class="rc-td">
+                  <span class="rc-state-pill" [style.background]="r.stateBg" [style.color]="r.stateFg">
+                    <span class="rc-state-dot" [style.background]="r.stateFg"></span>
+                    {{ r.state }}
+                  </span>
+                </td>
+                <td mat-footer-cell *matFooterCellDef class="rc-tfoot-diff" [style.color]="footColor()">{{ footNote() }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="secColumns" class="rc-thead-row"></tr>
+              <tr mat-row *matRowDef="let r; columns: secColumns" class="rc-row" [style.background]="r.bg" [style.border-left]="'3px solid ' + r.mark" (click)="r.onSelect()"></tr>
+              <tr mat-footer-row *matFooterRowDef="secFooterColumns" class="rc-tfoot-row"></tr>
+            </table>
+          </div>
+        </div>
+      } @else {
+        <div class="rc-card">
+          <div class="rc-card-head">
+            <h2 class="rc-card-title">Rapprochement des espèces (relevés brokers)</h2>
+            <span class="rc-card-note">{{ cashNote() }}</span>
+          </div>
+          <div class="rc-table-scroll">
+            <table mat-table [dataSource]="cashRows()" class="rc-table">
+              <ng-container matColumnDef="compte">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-left">Compte</th>
+                <td mat-cell *matCellDef="let c" class="rc-td rc-td-strong">{{ c.label }}</td>
+              </ng-container>
+              <ng-container matColumnDef="interne">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-right">Saisie interne</th>
+                <td mat-cell *matCellDef="let c" class="rc-td rc-td-right rc-tabular">{{ c.internal }}</td>
+              </ng-container>
+              <ng-container matColumnDef="releve">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-right">Relevé broker</th>
+                <td mat-cell *matCellDef="let c" class="rc-td rc-td-right rc-tabular">{{ c.bank }}</td>
+              </ng-container>
+              <ng-container matColumnDef="ecart">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-right">Écart</th>
+                <td mat-cell *matCellDef="let c" class="rc-td rc-td-right rc-tabular rc-td-strong" [style.color]="c.diffColor">{{ c.diff }}</td>
+              </ng-container>
+              <ng-container matColumnDef="cause">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-left">Cause probable</th>
+                <td mat-cell *matCellDef="let c" class="rc-td rc-cell-cause">{{ c.cause }}</td>
+              </ng-container>
+              <ng-container matColumnDef="etat">
+                <th mat-header-cell *matHeaderCellDef class="rc-th rc-th-left rc-th-state">État</th>
+                <td mat-cell *matCellDef="let c" class="rc-td">
+                  <span class="rc-state-pill" [style.background]="c.stateBg" [style.color]="c.stateFg">
+                    <span class="rc-state-dot" [style.background]="c.stateFg"></span>
+                    {{ c.state }}
+                  </span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="cashColumns" class="rc-thead-row"></tr>
+              <tr mat-row *matRowDef="let c; columns: cashColumns" class="rc-row" [style.background]="c.bg" [style.border-left]="'3px solid ' + c.mark" (click)="c.onSelect()"></tr>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="rc-right">
+      <div class="rc-card">
+        <div class="rc-detail-head">
+          <div class="rc-detail-titles">
+            <h2 class="rc-card-title">{{ detail().title }}</h2>
+            <p class="rc-detail-subtitle">{{ detail().subtitle }}</p>
+          </div>
+          <span class="rc-state-pill rc-state-pill-flex" [style.background]="detail().stateBg" [style.color]="detail().stateFg">{{ detail().state }}</span>
+        </div>
+        @for (d of detail().rows; track d.label) {
+          <div class="rc-detail-row">
+            <span class="rc-detail-label">{{ d.label }}</span>
+            <span class="rc-detail-value">{{ d.value }}</span>
+          </div>
+        }
+        <div class="rc-action-block">
+          <label class="rc-note-label">
+            Justification
+            <textarea class="rc-note-input" rows="2" placeholder="Cause de l'écart, correction de saisie ou demande au broker…"
+              [value]="note()" (input)="setNote($any($event.target).value)"></textarea>
+          </label>
+          <span class="rc-action-row">
+            <button type="button" mat-stroked-button class="rc-escalate-btn" (click)="escalate()">Escalader au broker</button>
+            <button type="button" mat-stroked-button class="rc-justify-btn" (click)="justify()">Marquer justifié</button>
+            <button type="button" mat-flat-button class="rc-resolve-btn" (click)="resolve()">Solder l'écart</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="rc-card">
+        <div class="rc-log-head">
+          <h2 class="rc-card-title">Journal de réconciliation</h2>
+        </div>
+        @for (l of log(); track l.time + l.label) {
+          <div class="rc-log-row">
+            <span class="rc-log-time">{{ l.time }}</span>
+            <span class="rc-cell-stack">
+              <span class="rc-cell-strong">{{ l.label }}</span>
+              <span class="rc-cell-sub">{{ l.detail }}</span>
+            </span>
+            <span class="rc-log-actor">{{ l.actor }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</mat-tab-nav-panel>
+</div>

@@ -1,0 +1,425 @@
+<app-side-panel
+  [title]="info().title"
+  [subtitle]="info().subtitle"
+  [accent]="info().bg"
+  [icon]="info().icon"
+  [footer]="true"
+  [showSubmit]="true"
+  submitLabel="Enregistrer"
+  cancelLabel="Annuler"
+  (closed)="close()"
+  (submitted)="submit()"
+  (pinnedChange)="onPinnedChange($event)"
+>
+  @if (kind === 'trade') {
+    <nav mat-tab-nav-bar class="pm-subtabs pm-tabnav" [tabPanel]="tradeTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      <button type="button" mat-tab-link class="pm-subtab" [active]="tradeSub() === 'main'" [class.pm-subtab-active]="tradeSub() === 'main'" (click)="tradeSub.set('main')">Ordre / Exécution</button>
+      <button type="button" mat-tab-link class="pm-subtab" [active]="tradeSub() === 'legs'" [class.pm-subtab-active]="tradeSub() === 'legs'" (click)="tradeSub.set('legs')">Jambes et comptable</button>
+    </nav>
+    <mat-tab-nav-panel #tradeTabPanel>
+
+    @if (tradeSub() === 'main') {
+      <span class="pm-field-block">
+        <span class="pm-field-label">Type d'opération</span>
+        <mat-button-toggle-group class="pm-side-toggle" hideSingleSelectionIndicator [value]="side()" (change)="side.set($event.value)">
+          <mat-button-toggle value="ACHAT">ACHAT</mat-button-toggle>
+          <mat-button-toggle value="VENTE">VENTE</mat-button-toggle>
+        </mat-button-toggle-group>
+      </span>
+      <span class="pm-callout" [style.border-color]="info().border" [style.border-left-color]="info().bg" [style.background]="info().tint">
+        <span class="pm-callout-title" [style.color]="info().bg">Une opération, ou une par exécution partielle</span>
+        <span class="pm-callout-text">Le décaissement se déduit de quantité × prix + frais. Un ordre à cours limité dénoué en plusieurs exécutions, parfois sur plusieurs jours, produit autant d'opérations que d'exécutions.</span>
+      </span>
+
+      <div class="pm-section">
+        <div class="pm-section-head" [style.background]="info().tint" [style.color]="info().bg">Définition de l'ordre</div>
+        <div class="pm-order-grid">
+          <label class="pm-field" style="grid-column:1 / 2">Date
+            <span class="pm-datepicker"><input [matDatepicker]="opPicker1" [value]="isoToDate(form().date)" (dateChange)="patchForm({ date: dateToIso($event.value) })" [max]="isoToDate(today)" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker1"></mat-datepicker-toggle><mat-datepicker #opPicker1></mat-datepicker></span>
+          </label>
+          <label class="pm-field" style="grid-column:2 / 3">Compte
+            <app-ops-select [options]="accountOptions" [value]="form().account" (valueChange)="patchForm({ account: $event })" />
+            <span class="pm-field-sub">{{ accountSub() }}</span>
+          </label>
+          <label class="pm-field" style="grid-column:3 / 4">Place (MIC)
+            <app-ops-select [options]="micOptions" [value]="form().mic" [placeholder]="'Aucune'" (valueChange)="patchForm({ mic: $event })" />
+            <span class="pm-field-sub">{{ micSub() }}</span>
+          </label>
+          <label class="pm-field" style="grid-column:1 / 3">Titre
+            <app-ops-select [options]="securityOptions" [groups]="securityGroups()"
+              panelClass="pm-sel-panel pm-sel-panel-banded pm-sel-panel-wide"
+              [value]="form().security" (valueChange)="patchForm({ security: $event })" />
+            <span class="pm-field-sub">{{ securitySub() }}</span>
+          </label>
+          <label class="pm-field" style="grid-column:3 / 4">Quantité
+            <app-ops-stepper-input [value]="form().qty" placeholder="20" [integer]="true" [step]="1" (valueChange)="patchForm({ qty: $event })" />
+          </label>
+          <label class="pm-field" style="grid-column:1 / 2">Prix
+            <app-ops-stepper-input [value]="form().price" placeholder="150,00" [prefix]="ccy().symbol" [step]="0.5" (valueChange)="patchForm({ price: $event })" />
+          </label>
+          <label class="pm-field" style="grid-column:2 / 3">Frais
+            <app-ops-stepper-input [value]="form().fees" placeholder="12,00" [prefix]="ccy().symbol" [step]="0.5" (valueChange)="patchForm({ fees: $event })" />
+          </label>
+          <label class="pm-field" style="grid-column:3 / 4">Taxes
+            <app-ops-stepper-input [value]="form().taxes" placeholder="1,80" [prefix]="ccy().symbol" [step]="0.1" (valueChange)="patchForm({ taxes: $event })" />
+          </label>
+          <label class="pm-field" style="grid-column:1 / 3">Stratégie
+            <app-ops-select [options]="strategyOptions" [value]="form().strategy" (valueChange)="patchForm({ strategy: $event })" />
+            <span class="pm-field-sub">{{ strategySub() }}</span>
+          </label>
+          <label class="pm-field" style="grid-column:3 / 4">Validité
+            <app-ops-select [options]="tifOptions" [value]="form().tif" (valueChange)="patchForm({ tif: $event })" />
+            <span class="pm-field-sub">{{ tifSub() }}</span>
+          </label>
+          <label class="pm-field" style="grid-column:1 / 3">Coût brut
+            <span class="pm-readonly" [style.border-color]="readOnlyTone()" [style.background]="readOnlyToneBg()" [style.color]="readOnlyTone()">{{ grossLabel() }}</span>
+          </label>
+          <label class="pm-field" style="grid-column:3 / 4">Coût net
+            <span class="pm-readonly" [style.border-color]="readOnlyTone()" [style.background]="readOnlyToneBg()" [style.color]="readOnlyTone()">{{ netLabel() }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pm-section">
+        <div class="pm-exec-head" [style.background]="info().tint">
+          <span class="pm-section-title" [style.color]="info().bg">Exécution</span>
+          <span class="pm-osel pm-exec-menu">
+            <button type="button" matButton class="pm-exec-trigger" [matMenuTriggerFor]="fillMenu" #fillTrigger="matMenuTrigger" [class.pm-exec-trigger-open]="fillTrigger.menuOpen">
+              @if (tradeFill() === 'full') {
+                <mat-icon svgIcon="check" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+              } @else {
+                <mat-icon svgIcon="circle-minus" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+              }
+              <span>{{ tradeFill() === 'full' ? 'Totale' : 'Partielle' }}</span>
+              <mat-icon iconPositionEnd svgIcon="chevron-down" style="font-size:13px" class="pm-exec-chevron"></mat-icon>
+            </button>
+            <mat-menu #fillMenu="matMenu">
+              <button mat-menu-item (click)="setFillFull()">
+                <mat-icon svgIcon="check" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+                Totale
+              </button>
+              <button mat-menu-item (click)="setFillPartial()">
+                <mat-icon svgIcon="circle-minus" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+                Partielle
+              </button>
+            </mat-menu>
+          </span>
+        </div>
+        <div class="pm-exec-rows">
+          @for (r of execRows(); track $index) {
+            <span class="pm-exec-row">
+              <label class="pm-field">Date d'exécution
+                <span class="pm-datepicker"><input [matDatepicker]="opPicker2" [value]="isoToDate(r.date)" [max]="isoToDate(today)" (dateChange)="setExecRow($index, { date: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker2"></mat-datepicker-toggle><mat-datepicker #opPicker2></mat-datepicker></span>
+              </label>
+              <label class="pm-field">Quantité exécutée
+                <input [value]="r.qty" (input)="setExecQty($index, $any($event.target).value)" class="pm-text-input" />
+              </label>
+              <label class="pm-field">Prix d'exécution
+                <input [value]="r.price" (input)="setExecRow($index, { price: $any($event.target).value })" class="pm-text-input" />
+              </label>
+              <label class="pm-field">Date de règlement
+                <span class="pm-datepicker"><input [matDatepicker]="opPicker3" [value]="isoToDate(r.settle)" (dateChange)="setExecRow($index, { settle: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker3"></mat-datepicker-toggle><mat-datepicker #opPicker3></mat-datepicker></span>
+              </label>
+              @if ($last) {
+                <button type="button" matIconButton class="pm-exec-add" [disabled]="!canAddExecRow()" [matTooltip]="addExecRowTitle()" (click)="addExecRow()">
+                  <mat-icon svgIcon="collapse" style="font-size:20px"></mat-icon>
+                </button>
+              }
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="pm-section">
+        <div class="pm-comment-head" [style.background]="info().tint">
+          <mat-icon svgIcon="comment" style="font-size:14px"></mat-icon>
+          <span class="pm-section-title" [style.color]="info().bg">Commentaire</span>
+          <span class="pm-comment-count">{{ tradeComment().length }} / 1024</span>
+        </div>
+        <div class="pm-comment-body">
+          <textarea rows="6" maxlength="1024" placeholder="Motif de l'ordre, contexte de marché, instruction du client…" [value]="tradeComment()" (input)="tradeComment.set($any($event.target).value)" class="pm-textarea"></textarea>
+          <span class="pm-hint-text">Le commentaire suit la transaction dans le registre et s'affiche dans le bandeau de ses opérations.</span>
+        </div>
+      </div>
+    } @else {
+      <div class="pm-legs-block">
+        <div class="pm-legs-head" [style.background]="info().tint">
+          <span class="pm-legs-title">Jambes de la transaction</span>
+          <span class="pm-legs-count">{{ tradeLegs().length }} jambe{{ tradeLegs().length > 1 ? 's' : '' }}</span>
+        </div>
+        @for (l of tradeLegs(); track l.seq) {
+          <div class="pm-leg-row">
+            <span class="pm-leg-seq" [style.background]="info().tint">{{ l.seq }}</span>
+            <span class="pm-leg-type">{{ l.type }}</span>
+            <span class="pm-leg-detail">{{ l.detail }}</span>
+            <span class="pm-leg-amount">{{ l.amount }}</span>
+          </div>
+        }
+      </div>
+      <div class="pm-entry-block">
+        <span class="pm-section-title">Écriture produite</span>
+        <pre class="pm-entry-text">{{ tradeEntryText() }}</pre>
+      </div>
+    }
+    </mat-tab-nav-panel>
+  }
+
+  @if (kind === 'transfer') {
+    <nav mat-tab-nav-bar class="pm-subtabs pm-tabnav" [tabPanel]="trfTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      <button type="button" mat-tab-link class="pm-subtab" [active]="trfSub() === 'init'" [class.pm-subtab-active]="trfSub() === 'init'" (click)="trfSub.set('init')">Initiation</button>
+      <button type="button" mat-tab-link class="pm-subtab" [active]="trfSub() === 'legs'" [class.pm-subtab-active]="trfSub() === 'legs'" (click)="trfSub.set('legs')">Jambes impactées</button>
+    </nav>
+    <mat-tab-nav-panel #trfTabPanel>
+    <span class="pm-callout" style="border-color:rgba(7,89,133,0.28);border-left-color:var(--field-info);background:rgba(7,89,133,0.06)">
+      <span class="pm-dir-lines">
+        @for (l of trfDirLines(); track l.code) {
+          <span class="pm-dir-line">
+            <span class="pm-dir-dot"></span>
+            <span><span class="pm-dir-code">{{ l.code }}</span> — {{ l.text }}</span>
+          </span>
+        }
+      </span>
+    </span>
+
+    @if (trfSub() === 'init') {
+      <label class="pm-field">Compte source
+        <app-ops-select [options]="transferFromOptions()" [value]="quick().from" [placeholder]="'Aucun'" (valueChange)="patchQuick({ from: $event })" />
+      </label>
+      @if (trfFromExternal()) {
+        <label class="pm-field">Numéro du compte titre externe (source)
+          <input [value]="quick().extFrom" (input)="patchQuick({ extFrom: $any($event.target).value })" placeholder="Référence du compte chez l'établissement source" class="pm-text-input" />
+          <span class="pm-hint-text-sm">Le compte doit appartenir au titulaire du transfert.</span>
+        </label>
+      }
+      <label class="pm-field">Compte destinataire
+        <app-ops-select [options]="transferToOptions()" [value]="quick().to" [placeholder]="'Aucun'" (valueChange)="patchQuick({ to: $event })" />
+      </label>
+      @if (trfIsExternal()) {
+        <label class="pm-field">Numéro du compte titre externe
+          <input [value]="quick().extAccount" (input)="patchQuick({ extAccount: $any($event.target).value })" placeholder="Référence du compte chez l'établissement destinataire" class="pm-text-input" />
+          <span class="pm-hint-text-sm">Le compte externe doit appartenir au propriétaire du transfert.</span>
+        </label>
+      }
+      <span class="pm-row-2">
+        <label class="pm-field pm-field-narrow">Place (MIC)
+          <span class="pm-static-box">{{ trfMic() }}</span>
+          <span class="pm-hint-text-sm">{{ trfMicPlace() }}</span>
+        </label>
+        <label class="pm-field pm-field-grow">Titre transféré
+          <app-ops-select [options]="transferSecOptions" [value]="quick().security" (valueChange)="patchQuick({ security: $event })" />
+        </label>
+      </span>
+      <span class="pm-row-2">
+        <label class="pm-field pm-field-grow">Quantité
+          <app-ops-stepper-input [value]="quick().qty" placeholder="20" [integer]="true" [step]="1" (valueChange)="patchQuick({ qty: $event })" />
+        </label>
+        <label class="pm-field pm-field-grow">Prix estimé
+          <app-ops-stepper-input [value]="quick().price" placeholder="150,00" [prefix]="trfCurrency()" [step]="0.5" (valueChange)="patchQuick({ price: $event })" />
+        </label>
+      </span>
+      <span class="pm-row-2">
+        <label class="pm-field pm-field-narrow">Type de transfert
+          <span class="pm-static-box">
+            <span [matTooltip]="trfKindHint()" class="pm-kind-badges">
+              @for (b of trfKindBadges(); track b.code) {
+                <span class="pm-kind-badge" [style.background]="b.bg" [style.color]="b.fg"><span class="pm-kind-dot" [style.background]="b.fg"></span>{{ b.code }}</span>
+              }
+            </span>
+          </span>
+        </label>
+        <label class="pm-field pm-field-grow">Valeur du transfert
+          <span class="pm-static-value"><span class="pm-static-prefix">{{ trfCurrency() }}</span><span class="pm-static-amount">{{ trfValueLabel() }}</span></span>
+        </label>
+      </span>
+    } @else {
+      <div class="pm-section">
+        <div class="pm-legs-head" [style.background]="info().tint">
+          <span class="pm-legs-title" [style.color]="info().bg">Jambes impactées</span>
+          <span class="pm-legs-count">{{ trfLegsCount() }}</span>
+        </div>
+        @for (l of trfLegs(); track l.seq) {
+          <div class="pm-leg-row pm-leg-row-sm">
+            <span class="pm-leg-seq pm-leg-seq-sm">{{ l.seq }}</span>
+            <span class="pm-leg-type pm-leg-type-info">{{ l.type }}</span>
+            <span class="pm-leg-detail">{{ l.detail }}</span>
+            <span class="pm-leg-amount">{{ l.amount }}</span>
+          </div>
+        }
+      </div>
+      <div class="pm-entry-block">
+        <span class="pm-section-title" [style.color]="info().bg">Écriture produite</span>
+        <pre class="pm-entry-text pm-entry-text-sm">{{ trfEntryText() }}</pre>
+      </div>
+    }
+
+    <div class="pm-section">
+      <div class="pm-comment-head" style="background:rgba(2,132,199,0.12)">
+        <mat-icon svgIcon="comment" style="font-size:14px;color:var(--ink-info)"></mat-icon>
+        <span class="pm-section-title" [style.color]="info().bg">Commentaire</span>
+        <span class="pm-comment-count">{{ trfComment().length }} / 1024</span>
+      </div>
+      <div class="pm-comment-body">
+        <textarea rows="6" maxlength="1024" placeholder="Motif du transfert, instruction du client, référence du dossier…" [value]="trfComment()" (input)="trfComment.set($any($event.target).value)" class="pm-textarea"></textarea>
+        <span class="pm-hint-text">Le commentaire suit la transaction dans le registre et s'affiche dans le bandeau de ses opérations.</span>
+      </div>
+    </div>
+    </mat-tab-nav-panel>
+  }
+
+  @if (kind === 'calendar') {
+    <label class="pm-field">Nature de l'événement
+      <mat-button-toggle-group class="pm-type-toggle" hideSingleSelectionIndicator [value]="quick().evType" (change)="patchQuick({ evType: $event.value })">
+        @for (o of evTypeOptions; track o.key) {
+          <mat-button-toggle [value]="o.key">{{ o.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </label>
+    <span class="pm-callout" style="border-color:rgba(67,56,202,0.28);border-left-color:var(--ink-code);background:rgba(67,56,202,0.06)">
+      <span class="pm-callout-title" style="color:var(--ink-code)">{{ evDefTitle() }}</span>
+      <span class="pm-callout-text">{{ evDefText() }}</span>
+    </span>
+    <label class="pm-field">Intitulé
+      <input [value]="quick().evTitle" (input)="patchQuick({ evTitle: $any($event.target).value })" [placeholder]="evTitlePlaceholder()" class="pm-text-input" />
+    </label>
+    <span class="pm-row-wrap">
+      <label class="pm-field pm-field-fixed">Date
+        <span class="pm-datepicker"><input [matDatepicker]="opPicker4" [value]="isoToDate(quick().evDate)" (dateChange)="patchQuick({ evDate: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker4"></mat-datepicker-toggle><mat-datepicker #opPicker4></mat-datepicker></span>
+      </label>
+      <label class="pm-field pm-field-narrow">Situation
+        <span class="pm-static-box">
+          <span [matTooltip]="evWhenHint()" class="pm-kind-badge" [style.background]="evWhenBg()" [style.color]="evWhenFg()"><span class="pm-kind-dot" [style.background]="evWhenFg()"></span>{{ evWhenCode() }}</span>
+        </span>
+      </label>
+      <label class="pm-field pm-field-narrow">Heure
+        <input type="time" [value]="quick().evTime" (change)="patchQuick({ evTime: $any($event.target).value })" class="pm-date-input" />
+      </label>
+      <label class="pm-field pm-field-narrow">Rappel
+        <app-ops-select [options]="evRemindOptions" [value]="quick().evRemind" [placeholder]="'Aucun'" (valueChange)="patchQuick({ evRemind: $event })" />
+      </label>
+    </span>
+    <label class="pm-field">Rattachement
+      <app-ops-select [options]="evLinkOptions" [value]="quick().evLink" [placeholder]="'Aucun'" (valueChange)="patchQuick({ evLink: $event })" />
+    </label>
+    <div class="pm-section">
+      <div class="pm-comment-head" [style.background]="info().tint">
+        <mat-icon svgIcon="comment" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+        <span class="pm-section-title" [style.color]="info().bg">Commentaire</span>
+        <span class="pm-comment-count">{{ evComment().length }} / 1024</span>
+      </div>
+      <div class="pm-comment-body">
+        <textarea rows="6" maxlength="1024" placeholder="Contexte de l'événement, source, incidence attendue sur les positions…" [value]="evComment()" (input)="evComment.set($any($event.target).value)" class="pm-textarea"></textarea>
+        <span class="pm-hint-text">Le commentaire suit l'événement dans le calendrier et dans la page Échéances.</span>
+      </div>
+    </div>
+  }
+
+  @if (kind === 'corporate') {
+    <label class="pm-field">Type d'opération sur titre
+      <mat-button-toggle-group class="pm-type-toggle" hideSingleSelectionIndicator [value]="quick().caType" (change)="patchQuick({ caType: $event.value })">
+        @for (o of caTypeOptions; track o.key) {
+          <mat-button-toggle [value]="o.key">{{ o.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </label>
+    <span class="pm-callout" style="border-color:rgba(180,83,9,0.28);border-left-color:var(--field-warn);background:rgba(180,83,9,0.06)">
+      <span class="pm-callout-title" style="color:var(--ink-warn)">{{ caDefTitle() }}</span>
+      <span class="pm-callout-text">{{ caDefText() }}</span>
+    </span>
+    <label class="pm-field">Titre concerné
+      <app-ops-select [options]="caSecOptions" [value]="quick().security" (valueChange)="patchQuick({ security: $event })" />
+    </label>
+    <span class="pm-row-wrap">
+      <label class="pm-field pm-field-flex">Date de détachement
+        <span class="pm-datepicker"><input [matDatepicker]="opPicker5" [value]="isoToDate(quick().caExDate)" (dateChange)="patchQuick({ caExDate: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker5"></mat-datepicker-toggle><mat-datepicker #opPicker5></mat-datepicker></span>
+      </label>
+      <label class="pm-field pm-field-flex">Date de paiement ou d'effet
+        <span class="pm-datepicker"><input [matDatepicker]="opPicker6" [value]="isoToDate(quick().caPayDate)" (dateChange)="patchQuick({ caPayDate: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker6"></mat-datepicker-toggle><mat-datepicker #opPicker6></mat-datepicker></span>
+      </label>
+    </span>
+    <span class="pm-row-2">
+      <label class="pm-field pm-field-grow">{{ caAmountLabel() }}
+        <app-ops-stepper-input [value]="quick().caAmount" [placeholder]="caAmountPlaceholder()" [prefix]="caAmountPrefix()" [step]="caAmountStep()" (valueChange)="patchQuick({ caAmount: $event })" />
+      </label>
+      <label class="pm-field pm-field-grow">Taxes
+        <app-ops-stepper-input [value]="quick().caTax" [placeholder]="caTaxPlaceholder()" [prefix]="caTaxPrefix()" [step]="1" (valueChange)="patchQuick({ caTax: $event })" />
+      </label>
+      <label class="pm-field pm-field-narrow">Incidence
+        <span class="pm-static-box">
+          <span [matTooltip]="caImpactHint()" class="pm-kind-badge" style="background:rgba(180,83,9,0.16);color:var(--ink-warn)"><span class="pm-kind-dot" style="background:var(--ink-warn)"></span>{{ caImpactCode() }}</span>
+        </span>
+      </label>
+    </span>
+    <div class="pm-section">
+      <div class="pm-comment-head" [style.background]="info().tint">
+        <mat-icon svgIcon="comment" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+        <span class="pm-section-title" [style.color]="info().bg">Commentaire</span>
+        <span class="pm-comment-count">{{ caComment().length }} / 1024</span>
+      </div>
+      <div class="pm-comment-body">
+        <textarea rows="6" maxlength="1024" placeholder="Référence de l'avis, source de l'information, incidence attendue…" [value]="caComment()" (input)="caComment.set($any($event.target).value)" class="pm-textarea"></textarea>
+        <span class="pm-hint-text">Le commentaire suit l'opération sur titre dans le registre et le calendrier.</span>
+      </div>
+    </div>
+  }
+
+  @if (kind === 'cashflow') {
+    <label class="pm-field">Nature du cashflow
+      <mat-button-toggle-group class="pm-type-toggle pm-type-toggle-magenta" hideSingleSelectionIndicator [value]="quick().cfType" (change)="setCfType($event.value)">
+        @for (o of cfTypeOptions; track o.value) {
+          <mat-button-toggle [value]="o.value">{{ o.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </label>
+    <span class="pm-callout" style="border-color:rgba(162,28,175,0.28);border-left-color:var(--field-magenta);background:rgba(162,28,175,0.06)">
+      <span class="pm-callout-title" style="color:var(--ink-magenta)">{{ cfTypeDef().title }}</span>
+      <span class="pm-callout-text">{{ cfTypeDef().text }}</span>
+    </span>
+    <label class="pm-field">Date
+      <span class="pm-datepicker"><input [matDatepicker]="opPicker7" [value]="isoToDate(quick().date)" (dateChange)="patchQuick({ date: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker7"></mat-datepicker-toggle><mat-datepicker #opPicker7></mat-datepicker></span>
+    </label>
+    @if (cfExternalAllowed()) {
+      <label class="pm-field">Compte de rattachement
+        <app-ops-select [options]="cfBankOptions()" [value]="quick().linkedBank" [disabled]="cfBankLocked()" [placeholder]="'Aucun'" (valueChange)="patchQuick({ linkedBank: $event })" />
+      </label>
+    } @else {
+      <span class="pm-callout" style="border-color:var(--color-neutral-300);border-left-color:var(--color-neutral-400);background:var(--color-neutral-100)">
+        <span class="pm-callout-title" style="color:var(--color-neutral-800)">Aucun compte bancaire externe</span>
+        <span class="pm-callout-text">{{ cfInternalWhy() }}</span>
+      </span>
+    }
+    <label class="pm-field">Compte
+      <app-ops-select [options]="cfAccOptions" [value]="quick().account" (valueChange)="setAccount($event)" />
+    </label>
+    <span class="pm-row-2 pm-row-start">
+      <label class="pm-field pm-field-grow">{{ cfGrossLabel() }}
+        <app-ops-stepper-input [value]="quick().amount" placeholder="1 000,00" [prefix]="cfCurrency()" [step]="100" (valueChange)="patchQuick({ amount: $event })" />
+      </label>
+      @if (cfHasFee()) {
+        <label class="pm-field pm-field-grow">Frais
+          <app-ops-stepper-input [value]="quick().fee" placeholder="0,00" [prefix]="cfCurrency()" [step]="0.5" (valueChange)="patchQuick({ fee: $event })" />
+        </label>
+      }
+      @if (cfHasTax()) {
+        <label class="pm-field pm-field-grow">Taxes
+          <app-ops-stepper-input [value]="quick().tax" placeholder="0,00" [prefix]="cfCurrency()" [step]="0.5" (valueChange)="patchQuick({ tax: $event })" />
+        </label>
+      }
+      @if (cfHasNet()) {
+        <label class="pm-field pm-field-grow">Montant net
+          <span class="pm-static-value pm-static-value-tint"><span class="pm-static-prefix">{{ cfCurrency() }}</span><span class="pm-static-amount">{{ cfNetAmount() }}</span></span>
+        </label>
+      }
+    </span>
+    <div class="pm-section">
+      <div class="pm-comment-head" [style.background]="info().tint">
+        <mat-icon svgIcon="comment" style="font-size:15px" [style.color]="info().bg"></mat-icon>
+        <span class="pm-section-title" [style.color]="info().bg">Commentaire</span>
+        <span class="pm-comment-count">{{ cfComment().length }} / 1024</span>
+      </div>
+      <div class="pm-comment-body">
+        <textarea rows="6" maxlength="1024" placeholder="Motif du mouvement, instruction du client, référence du virement…" [value]="cfComment()" (input)="cfComment.set($any($event.target).value)" class="pm-textarea"></textarea>
+        <span class="pm-hint-text">Le commentaire suit le mouvement dans le registre et le relevé d'espèces.</span>
+      </div>
+    </div>
+  }
+</app-side-panel>

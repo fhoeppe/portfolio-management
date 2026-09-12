@@ -1,0 +1,125 @@
+.ac-chips {
+  display: flex;
+  width: 100%;
+}
+
+.ac-chips-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 32px;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.ac-chips-trigger:hover {
+  background: rgba(0, 61, 165, 0.05);
+}
+
+.ac-chips-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 4px 0 9px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ac-chips-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-brand);
+  cursor: pointer;
+}
+
+.ac-chips-remove:hover {
+  background: rgba(0, 61, 165, 0.22);
+}
+
+.ac-chips-placeholder {
+  flex: 1;
+  min-width: 60px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-neutral-600);
+}
+
+.ac-chips-chevron {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-brand);
+  transition: transform 140ms ease;
+}
+
+.ac-chips-chevron-open {
+  transform: rotate(180deg);
+}
+
+.ac-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
+  /* Contenu de mat-menu, portalé hors de l'arbre DOM de la page (voir memory
+     project_cdk_overlay_dark_mode_body_mirror) : repli hexadécimal explicite — --color-text
+     n'est pas de ceux repris dans le patch sombre global de styles.scss pour ce cas précis. */
+  color: var(--color-text, #1d1b1a);
+  font-family: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ac-chips-row:hover {
+  background: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.09));
+  border-radius: var(--menu-item-radius, 6px);
+}
+
+.ac-chips-row-active {
+  font-weight: 700;
+  color: var(--ink-brand, #002a6e);
+}
+
+.ac-chips-check {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  /* --color-neutral-400 n'est repris nulle part pour .mat-mdc-menu-panel (ni le patch sombre
+     global de styles.scss, ni :root) : sans repli, tout le raccourci `border` est invalide et
+     disparaît (voir memory project_cdk_overlay_dark_mode_body_mirror) — repli hexadécimal
+     explicite. */
+  border: 1px solid var(--color-neutral-400, #bab6b6);
+  border-radius: 3px;
+}
+
+.ac-chips-check-on {
+  /* Contenu de mat-menu, portalé hors de l'arbre DOM de la page (voir memory
+     project_cdk_overlay_dark_mode_body_mirror) : repli hexadécimal explicite. */
+  background: var(--ink-brand, #002a6e);
+  border-color: var(--ink-brand, #002a6e);
+  color: #ffffff;
+}

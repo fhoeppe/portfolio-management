@@ -1,0 +1,76 @@
+<div class="ac-cre-box">
+  <div class="ac-cre-head">
+    <span class="ac-cre-title">{{ title() }}</span>
+    @if (phase() !== 'busy') {
+      <button matIconButton class="ac-cre-close" (click)="closeDialog()" title="Fermer" aria-label="Fermer">
+        <mat-icon svgIcon="close" style="font-size:14px;color:#ffffff"></mat-icon>
+      </button>
+    }
+  </div>
+
+  @if (phase() === 'busy') {
+    <div class="ac-cre-busy">
+      <span class="ac-cre-spinner">
+        <span class="ac-cre-spinner-ring"></span>
+        <mat-icon svgIcon="lock-keyhole" style="font-size:26px"></mat-icon>
+      </span>
+      <span class="ac-cre-stage">{{ stage() }}</span>
+      <span class="ac-cre-bar"><span class="ac-cre-bar-fill"></span></span>
+    </div>
+  }
+
+  @if (phase() === 'ok') {
+    <div class="ac-cre-result">
+      <div class="ac-cre-result-head">
+        <span class="ac-cre-result-icon ac-cre-result-icon-ok">
+          <mat-icon svgIcon="check" style="font-size:19px;color:#ffffff"></mat-icon>
+        </span>
+        <span class="ac-cre-result-text">
+          <span class="ac-cre-result-title ac-cre-result-title-ok">Compte créé</span>
+          <span class="ac-cre-result-sub">Le compte est enregistré au référentiel et son statut est actif.</span>
+        </span>
+      </div>
+      @for (r of rows(); track r.label) {
+        <div class="ac-cre-row">
+          <span class="ac-cre-row-label">{{ r.label }}</span>
+          <span class="ac-cre-row-value">{{ r.value }}</span>
+        </div>
+      }
+      <div class="ac-cre-footer">
+        <span class="ac-cre-active-badge">
+          <span class="ac-cre-active-dot"></span>
+          Actif
+        </span>
+        <button mat-flat-button class="ac-cre-finish-btn" (click)="closeDialog()">Terminer</button>
+      </div>
+    </div>
+  }
+
+  @if (phase() === 'fail') {
+    <div class="ac-cre-result">
+      <div class="ac-cre-result-head">
+        <span class="ac-cre-result-icon ac-cre-result-icon-fail">
+          <mat-icon svgIcon="exclamation" style="font-size:19px;color:#ffffff"></mat-icon>
+        </span>
+        <span class="ac-cre-result-text">
+          <span class="ac-cre-result-title ac-cre-result-title-fail">Création interrompue</span>
+          <span class="ac-cre-result-sub">{{ failNote() }}</span>
+        </span>
+      </div>
+      @for (e of errors(); track e.title) {
+        <div class="ac-cre-error-row">
+          <span class="ac-cre-error-dot"></span>
+          <span class="ac-cre-error-text">
+            <span class="ac-cre-error-title">{{ e.title }}</span>
+            <span class="ac-cre-error-detail">{{ e.detail }}</span>
+          </span>
+          <span class="ac-cre-error-step">{{ e.step }}</span>
+        </div>
+      }
+      <div class="ac-cre-footer">
+        <button mat-stroked-button class="ac-cre-fix-btn" (click)="closeDialog()">Corriger la saisie</button>
+        <button mat-flat-button class="ac-cre-retry-btn" (click)="retry()">Relancer</button>
+      </div>
+    </div>
+  }
+</div>

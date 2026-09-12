@@ -1,0 +1,162 @@
+<div class="ec-page">
+  <div class="ec-head">
+    <div class="ec-head-titles">
+      <h1 class="ec-h1">Échéances</h1>
+      <p class="ec-subtitle">{{ subtitle() }}</p>
+    </div>
+    <span class="ec-head-tools">
+      <label class="pm-search">
+        <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+        <input type="text" placeholder="Objet, compte, responsable"
+          [value]="query()" (input)="query.set($any($event.target).value)" />
+      </label>
+      <mat-button-toggle-group class="ec-seg" hideSingleSelectionIndicator
+        [value]="horizon()" (change)="horizon.set($event.value)">
+        @for (h of horizons; track h.key) {
+          <mat-button-toggle [value]="h.key">{{ h.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </span>
+  </div>
+
+  <div class="ec-kpi-grid">
+    @for (k of kpis(); track k.label) {
+      <div class="ec-kpi" [style.background]="k.bg">
+        <div class="ec-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+        <div class="ec-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+        <div class="ec-kpi-note">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="ec-split">
+
+    <!-- ───────────────────────── Listes groupées ───────────────────────── -->
+    <div class="ec-col">
+      @for (g of groups(); track g.key) {
+        <section class="ec-card ec-group" [style.border-left-color]="g.accent">
+          <header class="ec-group-head" [style.background]="g.headBg">
+            <h2 class="ec-group-title" [style.color]="g.accent">{{ g.title }}</h2>
+            <span class="ec-group-count" [style.background]="g.accent">{{ g.count }}</span>
+            <span class="ec-group-note">{{ g.note }}</span>
+          </header>
+
+          <div class="ec-table-scroll">
+            <table mat-table [dataSource]="g.rows" class="ec-table">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef class="ec-th ec-col-date">Échéance</th>
+                <td mat-cell *matCellDef="let r" class="ec-td ec-col-date ec-td-num">{{ r.date }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef class="ec-th ec-col-title">Objet</th>
+                <td mat-cell *matCellDef="let r" class="ec-td ec-col-title" [matTooltip]="r.detail">
+                  <span class="ec-object">
+                    <span class="ec-object-title">{{ r.title }}</span>
+                    <span class="ec-object-detail">{{ r.detail }}</span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="kind">
+                <th mat-header-cell *matHeaderCellDef class="ec-th">Nature</th>
+                <td mat-cell *matCellDef="let r" class="ec-td">{{ r.kind }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="account">
+                <th mat-header-cell *matHeaderCellDef class="ec-th ec-col-account">Compte</th>
+                <td mat-cell *matCellDef="let r" class="ec-td ec-td-num">{{ r.account }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="owner">
+                <th mat-header-cell *matHeaderCellDef class="ec-th ec-col-owner">Responsable</th>
+                <td mat-cell *matCellDef="let r" class="ec-td ec-td-muted ec-td-clip">{{ r.owner }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="remaining">
+                <th mat-header-cell *matHeaderCellDef class="ec-th ec-col-remaining">Reste</th>
+                <td mat-cell *matCellDef="let r" class="ec-td ec-col-remaining">
+                  <span class="ec-tag" [style.background]="r.tagBg" [style.color]="r.tagFg">
+                    <span class="ec-tag-dot" [style.background]="r.tagFg"></span>
+                    {{ r.remaining }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="columns" class="ec-header-row"></tr>
+              <tr mat-row *matRowDef="let r; columns: columns" class="ec-row"
+                [class.ec-row-selected]="r.selected" (click)="select(r.id)"></tr>
+            </table>
+          </div>
+        </section>
+      }
+
+      @if (noRows()) {
+        <p class="ec-empty">Aucune échéance ne correspond aux critères.</p>
+      }
+    </div>
+
+    <!-- ───────────────────────── Colonne de droite ───────────────────────── -->
+    <div class="ec-col">
+
+      <section class="ec-card">
+        <header class="ec-detail-head">
+          <div class="ec-detail-titles">
+            <h2 class="ec-card-title">{{ detail().title }}</h2>
+            <p class="ec-detail-sub">{{ detail().detail }}</p>
+          </div>
+          <span class="ec-tag ec-tag-strong" [style.background]="detail().tagBg" [style.color]="detail().tagFg">
+            {{ detail().remaining }}
+          </span>
+        </header>
+
+        @for (d of detail().rows; track d.label) {
+          <div class="ec-detail-row">
+            <span class="ec-detail-label">{{ d.label }}</span>
+            <span class="ec-detail-value">{{ d.value }}</span>
+          </div>
+        }
+
+        <footer class="ec-detail-foot">
+          <span class="ec-detail-actions">
+            <button type="button" matButton="filled" class="ec-primary-btn" (click)="markDone()">Marquer traitée</button>
+            <button type="button" matButton="outlined" class="ec-ghost-btn" (click)="postpone()">Reporter de 7 jours</button>
+          </span>
+          @if (status()) {
+            <span class="ec-status">{{ status() }}</span>
+          }
+        </footer>
+      </section>
+
+      <section class="ec-card">
+        <header class="ec-card-head">
+          <h2 class="ec-card-title">Charge par nature</h2>
+        </header>
+        <div class="ec-bars">
+          @for (b of byKind(); track b.label) {
+            <div class="ec-bar-row">
+              <span class="ec-bar-label">{{ b.label }}</span>
+              <span class="ec-bar-track"><span class="ec-bar-fill" [style.width]="b.width"></span></span>
+              <span class="ec-bar-count">{{ b.count }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="ec-card">
+        <header class="ec-card-head">
+          <h2 class="ec-card-title">Charge des 6 prochaines semaines</h2>
+        </header>
+        <div class="ec-chart">
+          @for (w of weeks(); track w.label) {
+            <span class="ec-chart-col">
+              <span class="ec-chart-count">{{ w.count }}</span>
+              <span class="ec-chart-bar" [style.height]="w.height" [style.background]="w.color"></span>
+              <span class="ec-chart-label">{{ w.label }}</span>
+            </span>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

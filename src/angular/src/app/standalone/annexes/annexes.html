@@ -1,0 +1,169 @@
+<div class="pm-page">
+  <div class="pm-page-header">
+    <div class="pm-page-title">
+      <h1>Annexes et légendes</h1>
+      <p>{{ subtitle() }}</p>
+    </div>
+  </div>
+
+  <nav mat-tab-nav-bar class="pm-page-tabs pm-tabnav" [tabPanel]="anxTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of pageTabs(); track t.key) {
+      <button type="button" mat-tab-link class="pm-page-tab" [active]="page() === t.key"
+        [class.pm-page-tab-active]="page() === t.key" (click)="page.set(t.key)">
+        <mat-icon [svgIcon]="t.icon" [style.font-size.px]="16"></mat-icon>
+        {{ t.label }}
+        <span class="pm-page-tab-badge">{{ t.badge }}</span>
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #anxTabPanel>
+  @if (page() === 'annexe') {
+    <div class="pm-toolbar">
+      <label class="pm-search">
+        <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+        <input type="text" [ngModel]="query()" (ngModelChange)="query.set($event)" [placeholder]="searchHint()">
+      </label>
+      <span class="pm-toolbar-count">{{ annexeTotalEntries }} entrées</span>
+    </div>
+
+      <!-- `multi` : plusieurs sections peuvent rester ouvertes (openSections est un Set),
+           contrairement à la FAQ du guide qui n'en ouvre qu'une. -->
+      <mat-accordion class="pm-annexe-list" multi displayMode="flat">
+      @for (sec of annexeSections(); track sec.title) {
+          <mat-expansion-panel class="pm-accordion" [expanded]="isSectionOpen(sec.index)"
+            (expandedChange)="setSection(sec.index, $event)" hideToggle>
+            <mat-expansion-panel-header class="pm-accordion-header" [style.background]="sec.toneBg">
+            <span class="pm-accordion-chev" [class.pm-rotated]="!isSectionOpen(sec.index)">
+              <mat-icon svgIcon="chevron-down" style="font-size:15px" [attr.stroke]="sec.toneFg"></mat-icon>
+            </span>
+            <h2 [style.color]="sec.toneFg">{{ sec.title }}</h2>
+            <span class="pm-accordion-count" [style.color]="sec.toneFg">{{ sec.count }}</span>
+            </mat-expansion-panel-header>
+            <div class="pm-accordion-body">
+              @if (sec.intro) {
+                <p class="pm-accordion-intro">{{ sec.intro }}</p>
+              }
+              @for (entry of sec.entries; track entry.code) {
+                <div class="pm-entry" [style.border-left-color]="sec.toneFg">
+                  <div class="pm-entry-header" [style.background]="sec.toneFg">
+                    <span class="pm-entry-title">{{ entry.title }}</span>
+                    <span class="pm-entry-code" [style.background]="entry.badgeBg" [style.color]="entry.badgeFg">{{ entry.code }}</span>
+                  </div>
+                  <div class="pm-entry-body">
+                    <p class="pm-entry-desc">{{ entry.desc }}</p>
+                    @for (b of entry.blocks; track $index) {
+                      <app-annexe-bloc [block]="b" />
+                    }
+                    @for (f of entry.fields; track f.label) {
+                      <div class="pm-entry-field">
+                        <span class="pm-entry-field-label" [style.color]="sec.toneFg">{{ f.label }}</span>
+                        <span class="pm-entry-field-text">{{ f.text }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </mat-expansion-panel>
+      }
+      </mat-accordion>
+  }
+
+  @if (page() === 'legs') {
+    <div class="pm-toolbar">
+      <label class="pm-search">
+        <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+        <input type="text" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Code, opération">
+      </label>
+      <span class="pm-toolbar-count">{{ legsTotalCount }} transactions</span>
+    </div>
+
+    <div class="pm-card-list">
+      @for (g of legsGroups(); track g.title) {
+        <div class="pm-card">
+          <div class="pm-card-header">
+            <h2>{{ g.title }}</h2>
+            <span class="pm-card-note">{{ g.note }}</span>
+          </div>
+          <div class="pm-table-scroll">
+            <table mat-table [dataSource]="g.rows" class="pm-table">
+              <ng-container matColumnDef="code">
+                <th mat-header-cell *matHeaderCellDef class="pm-col-code">Code</th>
+                <td mat-cell *matCellDef="let r"><span class="pm-code-badge" [style.background]="r.bg" [style.color]="r.fg">{{ r.label }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="fait">
+                <th mat-header-cell *matHeaderCellDef>Fait et raison du découpage</th>
+                <td mat-cell *matCellDef="let r">{{ r.meaning }}</td>
+              </ng-container>
+              <ng-container matColumnDef="jambes">
+                <th mat-header-cell *matHeaderCellDef class="pm-col-legs">Jambes</th>
+                <td mat-cell *matCellDef="let r" class="pm-strong" [style.color]="r.fg">{{ r.where }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="legsColumns"></tr>
+              <tr mat-row *matRowDef="let r; columns: legsColumns"></tr>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (page() === 'legend') {
+    <div class="pm-toolbar">
+      <label class="pm-search">
+        <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+        <input type="text" [ngModel]="query()" (ngModelChange)="query.set($event)" [placeholder]="searchHint()">
+      </label>
+      <mat-button-toggle-group class="pm-toggle-group" hideSingleSelectionIndicator aria-label="Filtrer par catégorie" [value]="tab()" (change)="setTab($event.value)">
+        @for (opt of tabOptions; track opt.key) {
+          <mat-button-toggle [value]="opt.key">{{ opt.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+      <span class="pm-toolbar-count">{{ legendShownEntries() }} / {{ legendTotalEntries() }} entrées</span>
+    </div>
+
+    <div class="pm-legend-grid">
+      @for (g of legendGroups(); track g.title) {
+        <div class="pm-card">
+          <div class="pm-card-header">
+            <h2>{{ g.title }}</h2>
+            <span class="pm-card-note">{{ g.note }}</span>
+          </div>
+          @for (r of g.rows; track r.label + r.meaning) {
+            <div class="pm-legend-row">
+              <span class="pm-legend-marker">
+                @switch (r.kind) {
+                  @case ('chip') {
+                    <span class="pm-chip" [style.background]="r.bg" [style.color]="r.fg">
+                      <span class="pm-chip-dot" [style.background]="r.fg"></span>
+                      {{ r.label }}
+                    </span>
+                  }
+                  @case ('code') {
+                    <span class="pm-code-badge" [style.background]="r.bg" [style.color]="r.fg">{{ r.label }}</span>
+                  }
+                  @case ('swatch') {
+                    <span class="pm-swatch" [style.background]="r.bg"></span>
+                    <span class="pm-swatch-label" [style.color]="r.fg ?? 'inherit'">{{ r.label }}</span>
+                  }
+                  @case ('text') {
+                    <span class="pm-text-label">{{ r.label }}</span>
+                  }
+                }
+              </span>
+              <span class="pm-legend-content">
+                <span class="pm-legend-meaning">{{ r.meaning }}</span>
+                <span class="pm-legend-where">{{ r.where }}</span>
+              </span>
+            </div>
+          }
+        </div>
+      }
+      @if (legendGroups().length === 0) {
+        <p class="pm-empty">Aucune entrée ne correspond à la recherche.</p>
+      }
+    </div>
+  }
+</mat-tab-nav-panel>
+</div>

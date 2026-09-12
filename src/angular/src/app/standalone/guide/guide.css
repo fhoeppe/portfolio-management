@@ -1,0 +1,551 @@
+/**
+ * Page hors coque (voir `guide.ts`) : pas de parent `app-shell` pour fournir les jetons
+ * `--ink-*`/`--field-*`/`--surface`/`--color-*` par héritage CSS, donc reportés ici avec les
+ * mêmes valeurs que `app-shell.css` — même recette que les anciennes boîtes de dialogue
+ * (`side-panel.css`, `ac-create-dialog.css`…), qui sont hors de l'arbre DOM de la coque pour la
+ * même raison (montage `cdk-overlay-container`), sauf qu'ici c'est le routeur racine qui monte
+ * ce composant sans wrapper, pas `MatDialog`.
+ */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --ink-brand: #002a6e;
+  --ink-brand-2: #003da5;
+  --field-brand: #002a6e;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #35322f;
+  --color-neutral-900: #2d2b2b;
+}
+
+:host, :host * {
+  box-sizing: border-box;
+}
+
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --ink-brand-2: #8fb4ee;
+  --field-brand: #12325e;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-400: #4a4643;
+  --color-neutral-500: #605d5d;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #a8a3a0;
+  --color-neutral-800: #d8d5d2;
+  --color-neutral-900: #f3f2f2;
+}
+
+.gd-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+/* `mat-tab-nav-panel` s'intercale entre la colonne flex et le corps défilant. Laissé en
+   `display: block` et à sa hauteur naturelle, il grandissait avec son contenu : `.gd-body`
+   n'héritait alors d'aucune hauteur à saturer, son `overflow-y: auto` ne s'appliquait à rien,
+   et le trop-plein disparaissait sous l'`overflow: hidden` de l'hôte. Il doit relayer la
+   contrainte de hauteur au lieu de l'absorber. */
+.gd-page > mat-tab-nav-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  color: var(--ink-brand);
+  margin: 0;
+}
+
+/* Onglet « Annexes et légendes » : <app-annexes> gère sa propre hauteur/scroll (:host
+   height:100%; overflow-y:auto — voir annexes.css), comme lorsqu'il vivait sous
+   `.pm-router-area` dans la coque ; ce conteneur ne fait que lui donner une hauteur définie
+   dans laquelle se caler, sans lui ajouter de padding ni de scroll concurrent. */
+.gd-annexes-host {
+  flex: 1;
+  min-height: 0;
+}
+
+/* En-tête */
+
+.gd-header {
+  flex: none;
+  padding: 14px 20px 0;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.gd-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gd-title {
+  min-width: 0;
+}
+
+.gd-title h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.gd-title-icon {
+  flex: none;
+}
+
+.gd-title p {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+/* C'est ce conteneur, et non plus la recherche seule, qui est poussé à droite : la recherche
+   disparaît sur l'onglet Annexes, les bascules doivent rester en place malgré tout. */
+.gd-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Bascules FR/EN et Jour/Nuit — mêmes proportions que la pastille FR/EN du menu compte
+   (.pm-lang-toggle, app-shell.css), pour que les deux se ressemblent d'un écran à l'autre. */
+.gd-toggle {
+  --mat-button-toggle-shape: 6px;
+  --mat-button-toggle-height: 24px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-divider-color: var(--color-neutral-300);
+  --mat-button-toggle-background-color: transparent;
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--field-brand);
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  flex: none;
+  border: 1px solid var(--color-neutral-300) !important;
+}
+
+.gd-toggle ::ng-deep .mat-button-toggle-label-content {
+  padding: 2px 9px;
+  font-weight: 600;
+}
+
+.gd-toggle ::ng-deep .mat-button-toggle:not(.mat-button-toggle-checked) .mat-button-toggle-label-content {
+  font-weight: 400;
+}
+
+/* Variante à pictogramme (Jour/Nuit) : le contenu d'une pastille est centré sur la ligne de
+   base du texte par défaut, ce qui décale un <mat-icon> seul dans sa hauteur.
+   `min-height` rétablit ce que le passage en `flex` fait perdre : la hauteur du libellé texte
+   vient de son `line-height` (24px), sans effet dès lors que la boîte devient flexible — sans
+   quoi la pastille se referme sur les 14px du pictogramme et le groupe Jour/Nuit se retrouve
+   plus bas que le groupe FR/EN d'à côté. Le remplissage reste celui de la règle commune. */
+.gd-toggle-icon ::ng-deep .mat-button-toggle-label-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+}
+
+.gd-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 250px;
+  flex: none;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+}
+
+.gd-search svg {
+  flex: none;
+  color: var(--color-neutral-500);
+}
+
+.gd-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.gd-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.gd-tab {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.gd-tab:hover:not(.gd-tab-active) {
+  filter: brightness(0.97);
+}
+
+.gd-tab-active {
+  height: 40px;
+  padding: 0 16px;
+  background: var(--field-brand);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Corps */
+
+.gd-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+}
+
+.gd-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 16px;
+  align-items: start;
+}
+
+@container (max-width: 900px) {
+  .gd-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.gd-main, .gd-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.gd-card {
+  flex: none;
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.gd-card-head {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.gd-card-head h2 {
+  font-size: 16px;
+}
+
+.gd-card-head p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.gd-card-head h3 {
+  font-size: 14px;
+}
+
+.gd-section {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.gd-section h3 {
+  font-size: 13px;
+  margin: 0 0 6px;
+}
+
+.gd-section p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+.gd-empty {
+  margin: 0;
+  padding: 20px 18px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+.gd-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.gd-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.gd-step-n {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-step-text {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+/* FAQ */
+
+/* Même neutralisation que pour panel-card : le panneau Material apporte ombrage, coins
+   arrondis, surface et hauteurs de bandeau qui écraseraient la liste plate du prototype. */
+.gd-faq-row.mat-expansion-panel {
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+}
+
+.gd-faq-q.mat-expansion-panel-header {
+  height: auto;
+  padding: 11px 18px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.gd-faq-q.mat-expansion-panel-header:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.gd-faq-row ::ng-deep .mat-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: visible;
+}
+
+.gd-faq-row ::ng-deep .mat-expansion-panel-body {
+  padding: 0;
+}
+
+.gd-faq-row {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.gd-faq-row:last-child {
+  border-bottom: 0;
+}
+
+.gd-faq-q {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 18px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gd-faq-q:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.gd-faq-q-open {
+  background: var(--color-neutral-100);
+}
+
+.gd-faq-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+.gd-faq-sign {
+  flex: none;
+  font-size: 14px;
+  color: var(--color-neutral-600);
+}
+
+.gd-faq-a {
+  margin: 0;
+  padding: 0 18px 13px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+/* Colonne latérale */
+
+.gd-key-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.gd-key-row:last-child {
+  border-bottom: 0;
+}
+
+.gd-key-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--field-brand);
+}
+
+.gd-key-text {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+.gd-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.gd-link-row:last-child {
+  border-bottom: 0;
+}
+
+.gd-link-row svg {
+  flex: none;
+  color: var(--color-neutral-600);
+}
+
+.gd-link-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gd-topic-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 16px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gd-topic-row:last-child {
+  border-bottom: 0;
+}
+
+.gd-topic-row:hover:not(.gd-topic-row-active) {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.gd-topic-row-active {
+  border-left-color: var(--ink-brand-2);
+  background: var(--color-neutral-100);
+}
+
+.gd-topic-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gd-topic-row-active .gd-topic-label {
+  font-weight: 700;
+}
+
+.gd-topic-count {
+  flex: none;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}

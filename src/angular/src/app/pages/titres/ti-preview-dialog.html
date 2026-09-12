@@ -1,0 +1,65 @@
+<div class="ti-pv">
+  <div class="ti-pv-head">
+    <div class="ti-pv-head-titles">
+      <h2 class="ti-pv-title">{{ preview().title }}</h2>
+      <p class="ti-pv-detail">{{ preview().detail }}</p>
+    </div>
+    <button type="button" matIconButton class="ti-pv-close" matTooltip="Fermer" (click)="close()">
+      <mat-icon svgIcon="close" style="font-size:15px"></mat-icon>
+    </button>
+  </div>
+
+  <div class="ti-pv-kpis">
+    @for (k of preview().kpis; track k.label) {
+      <div class="ti-pv-kpi">
+        <div class="ti-pv-kpi-label">{{ k.label }}</div>
+        <div class="ti-pv-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="ti-pv-table-scroll">
+    <table mat-table [dataSource]="preview().rows" class="ti-pv-table">
+      <ng-container matColumnDef="composant">
+        <th mat-header-cell *matHeaderCellDef class="ti-pv-th-member">Composant</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="ti-pv-member-name">{{ r.name }}</span>
+          <span class="ti-pv-member-sub">{{ r.ticker }} · {{ r.isin }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="secteur">
+        <th mat-header-cell *matHeaderCellDef>Secteur</th>
+        <td mat-cell *matCellDef="let r" class="ti-pv-sector">{{ r.sector }}</td>
+      </ng-container>
+      <ng-container matColumnDef="poids">
+        <th mat-header-cell *matHeaderCellDef class="ti-pv-th-weight">Poids</th>
+        <td mat-cell *matCellDef="let r" class="ti-pv-weight">{{ r.weight }}</td>
+      </ng-container>
+      <ng-container matColumnDef="bascule">
+        <th mat-header-cell *matHeaderCellDef class="ti-pv-th-switch">
+          <mat-slide-toggle [checked]="preview().allOn" [matTooltip]="preview().allOn ? 'Désélectionner tous les composants' : 'Sélectionner tous les composants'" (change)="toggleAll()"></mat-slide-toggle>
+        </th>
+        <td mat-cell *matCellDef="let r">
+          <mat-slide-toggle [checked]="r.on" [matTooltip]="r.switchTitle" (change)="toggleRow(r.ticker, r.on)"></mat-slide-toggle>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="statut">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="ti-pv-status-badge" [style.background]="r.tagBg" [style.color]="r.tagFg" [matTooltip]="r.posHint">
+            <span class="ti-pv-status-dot" [style.background]="r.tagFg"></span>
+            {{ r.eligible }}
+          </span>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="previewColumns"></tr>
+      <tr mat-row *matRowDef="let r; columns: previewColumns"></tr>
+    </table>
+  </div>
+
+  <div class="ti-pv-footer">
+    <span class="ti-pv-footer-note">{{ preview().footer }}</span>
+    <button type="button" mat-flat-button class="ti-pv-load-btn" (click)="close()">Charger dans la liste</button>
+    <button type="button" mat-stroked-button class="ti-pv-close-btn" (click)="close()">Fermer</button>
+  </div>
+</div>

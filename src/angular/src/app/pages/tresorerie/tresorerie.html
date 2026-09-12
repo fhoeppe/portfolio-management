@@ -1,0 +1,298 @@
+<div class="tr-page">
+  <div class="tr-head">
+    <div class="tr-head-titles">
+      <h1 class="tr-h1">Trésorerie</h1>
+      <p class="tr-subtitle">Soldes par devise, prévisionnel et instructions de mouvement</p>
+    </div>
+    <span class="tr-head-tools">
+      <mat-select class="pm-sel-trigger tr-mandate" [panelWidth]="null" panelClass="pm-sel-panel"
+        [value]="mandate()" (valueChange)="mandate.set($event)">
+        @for (o of mandates; track o.value) {
+          <mat-option [value]="o.value">{{ o.label }}</mat-option>
+        }
+      </mat-select>
+      <button type="button" matButton="filled" class="tr-primary-btn" (click)="openInstruction()">
+        <mat-icon svgIcon="plus" style="font-size:14px"></mat-icon>
+        Nouvelle instruction
+      </button>
+    </span>
+  </div>
+
+  <nav mat-tab-nav-bar class="tr-tabs-row pm-tabnav" [tabPanel]="trTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of pageTabs; track t.key) {
+      <button type="button" mat-tab-link class="tr-page-tab" [active]="tab() === t.key"
+        [class.tr-page-tab-active]="tab() === t.key" (click)="setTab(t.key)">
+        {{ t.label }}
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #trTabPanel class="tr-panel">
+
+    <!-- ───────────────────────── Vue d'ensemble ───────────────────────── -->
+    @if (tab() === 'overview') {
+      <div class="tr-kpi-grid">
+        @for (k of kpis(); track k.label) {
+          <div class="tr-kpi" [style.background]="k.bg">
+            <div class="tr-kpi-label" [style.color]="k.ink">{{ k.label }}</div>
+            <div class="tr-kpi-value">{{ k.value }}</div>
+            <div class="tr-kpi-note" [style.color]="k.ink">{{ k.note }}</div>
+          </div>
+        }
+      </div>
+
+      <div class="tr-split">
+        <div class="tr-col">
+
+          <!-- Soldes par compte -->
+          <section class="tr-card">
+            <header class="tr-card-head">
+              <mat-icon svgIcon="banknote" style="font-size:16px" class="tr-card-icon"></mat-icon>
+              <h2 class="tr-card-title">Soldes par compte</h2>
+              <span class="tr-card-note">{{ accountsNote() }}</span>
+            </header>
+
+            <div class="tr-table-scroll">
+              <table mat-table [dataSource]="accountRows()" class="tr-table tr-table-accounts">
+                <ng-container matColumnDef="account">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th">Compte</th>
+                  <td mat-cell *matCellDef="let a" class="tr-td">
+                    <span class="tr-account">
+                      <span class="tr-account-name">{{ a.currency }} · {{ a.bank }}</span>
+                      <span class="tr-account-iban">{{ a.iban }}</span>
+                    </span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="balance">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-th-num tr-col-amount">Solde</th>
+                  <td mat-cell *matCellDef="let a" class="tr-td tr-td-num" [style.color]="a.balColor">{{ a.balance }}</td>
+                </ng-container>
+                <ng-container matColumnDef="blocked">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-th-num tr-col-small">Bloqué</th>
+                  <td mat-cell *matCellDef="let a" class="tr-td tr-td-num tr-td-muted">{{ a.blocked }}</td>
+                </ng-container>
+                <ng-container matColumnDef="available">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-th-num tr-col-amount">Disponible</th>
+                  <td mat-cell *matCellDef="let a" class="tr-td tr-td-num tr-td-strong">{{ a.available }}</td>
+                </ng-container>
+                <ng-container matColumnDef="eur">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-th-num tr-col-amount">Contre-valeur €</th>
+                  <td mat-cell *matCellDef="let a" class="tr-td tr-td-num tr-td-muted">{{ a.eur }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="accountColumns" class="tr-header-row"></tr>
+                <tr mat-row *matRowDef="let a; columns: accountColumns" class="tr-row"></tr>
+              </table>
+            </div>
+          </section>
+
+          <!-- Prévisionnel -->
+          <section class="tr-card">
+            <header class="tr-card-head">
+              <mat-icon svgIcon="chart-trend" style="font-size:16px" class="tr-card-icon"></mat-icon>
+              <h2 class="tr-card-title">Prévisionnel de trésorerie</h2>
+              <mat-button-toggle-group class="tr-seg tr-card-push" hideSingleSelectionIndicator
+                [value]="horizon()" (change)="horizon.set($event.value)">
+                @for (h of horizons; track h.key) {
+                  <mat-button-toggle [value]="h.key">{{ h.label }}</mat-button-toggle>
+                }
+              </mat-button-toggle-group>
+            </header>
+
+            <div class="tr-chart-body">
+              <div class="tr-chart">
+                @for (f of forecast(); track f.label) {
+                  <div class="tr-bar-col" [matTooltip]="f.below ? f.value + ' M€ — sous le seuil' : f.value + ' M€'">
+                    <span class="tr-bar-value" [style.color]="f.valueColor">{{ f.value }}</span>
+                    <span class="tr-bar" [style.height]="f.height" [style.background]="f.color"></span>
+                    <span class="tr-bar-label">{{ f.label }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <footer class="tr-chart-foot">
+              <span class="tr-chart-note">{{ forecastNote }}</span>
+              <span class="tr-legend">
+                <span class="tr-legend-item"><span class="tr-legend-swatch tr-legend-ok"></span>Solde projeté positif</span>
+                <span class="tr-legend-item"><span class="tr-legend-swatch tr-legend-warn"></span>Sous le seuil minimum</span>
+              </span>
+            </footer>
+          </section>
+
+          <!-- Mouvements -->
+          <section class="tr-card">
+            <header class="tr-card-head">
+              <h2 class="tr-card-title">Mouvements et instructions</h2>
+              <mat-button-toggle-group class="tr-seg tr-card-push" hideSingleSelectionIndicator
+                [value]="flowFilter()" (change)="flowFilter.set($event.value)">
+                @for (f of flowFilters; track f.value) {
+                  <mat-button-toggle [value]="f.value">{{ f.label }}</mat-button-toggle>
+                }
+              </mat-button-toggle-group>
+            </header>
+
+            <div class="tr-table-scroll">
+              <table mat-table [dataSource]="flowRows()" class="tr-table tr-table-flows">
+                <ng-container matColumnDef="date">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-col-date">Date</th>
+                  <td mat-cell *matCellDef="let f" class="tr-td tr-td-muted tr-num tr-nowrap">{{ f.date }}</td>
+                </ng-container>
+                <ng-container matColumnDef="label">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th">Libellé</th>
+                  <td mat-cell *matCellDef="let f" class="tr-td">
+                    <span class="tr-flow-label">
+                      <span class="tr-flow-name">{{ f.label }}</span>
+                      <span class="tr-flow-detail">{{ f.detail }}</span>
+                    </span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="kind">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-col-kind">Nature</th>
+                  <td mat-cell *matCellDef="let f" class="tr-td tr-td-muted">{{ f.kind }}</td>
+                </ng-container>
+                <ng-container matColumnDef="amount">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-th-num tr-col-amount">Montant</th>
+                  <td mat-cell *matCellDef="let f" class="tr-td tr-td-num tr-td-strong" [style.color]="f.color">{{ f.amountLabel }}</td>
+                </ng-container>
+                <ng-container matColumnDef="state">
+                  <th mat-header-cell *matHeaderCellDef class="tr-th tr-col-state">État</th>
+                  <td mat-cell *matCellDef="let f" class="tr-td">
+                    <span class="tr-state" [style.background]="f.stateBg" [style.color]="f.stateFg">
+                      <span class="tr-state-dot" [style.background]="f.stateFg"></span>
+                      {{ f.state }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="flowColumns" class="tr-header-row"></tr>
+                <tr mat-row *matRowDef="let f; columns: flowColumns" class="tr-row"></tr>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="tr-col">
+          <!-- Vigilance -->
+          <section class="tr-card">
+            <header class="tr-card-head">
+              <mat-icon svgIcon="alert-triangle" style="font-size:16px" class="tr-card-icon tr-card-icon-warn"></mat-icon>
+              <h2 class="tr-card-title">Points de vigilance</h2>
+            </header>
+            @for (a of alerts; track a.title) {
+              <div class="tr-alert">
+                <span class="tr-alert-dot" [style.background]="a.color"></span>
+                <span class="tr-alert-texts">
+                  <span class="tr-alert-title">{{ a.title }}</span>
+                  <span class="tr-alert-detail">{{ a.detail }}</span>
+                </span>
+              </div>
+            }
+          </section>
+
+          <!-- Placements -->
+          <section class="tr-card">
+            <header class="tr-card-head">
+              <h2 class="tr-card-title">Placement du disponible</h2>
+            </header>
+            @for (p of placements; track p.label) {
+              <div class="tr-placement">
+                <span class="tr-placement-texts">
+                  <span class="tr-placement-label">{{ p.label }}</span>
+                  <span class="tr-placement-detail">{{ p.detail }}</span>
+                </span>
+                <span class="tr-placement-figures">
+                  <span class="tr-placement-rate">{{ p.rate }}</span>
+                  <span class="tr-placement-horizon">{{ p.horizon }}</span>
+                </span>
+              </div>
+            }
+          </section>
+        </div>
+      </div>
+    }
+
+    <!-- ───────────────────────── Nouvelle opération ───────────────────────── -->
+    @if (tab() === 'entry') {
+      <div class="tr-entry-body">
+        <section class="tr-card tr-entry-card">
+          <header class="tr-card-head">
+            <h2 class="tr-card-title">Nouvelle instruction</h2>
+            <button type="button" matIconButton class="tr-close-btn tr-card-push" matTooltip="Fermer" (click)="closeInstruction()">
+              <mat-icon svgIcon="close" style="font-size:13px"></mat-icon>
+            </button>
+          </header>
+
+          <div class="tr-form">
+            <label class="tr-field">
+              <span class="tr-field-label">
+                <mat-icon class="tr-field-icon" svgIcon="filter"></mat-icon>
+                Nature
+              </span>
+              <mat-select class="pm-sel-trigger tr-select" [panelWidth]="null" panelClass="pm-sel-panel tr-kind-panel"
+                [value]="draft().kind" (valueChange)="patch({ kind: $event })">
+                <mat-select-trigger>
+                  <span class="tr-kind-option">
+                    <mat-icon class="tr-kind-icon" [svgIcon]="kindOption().icon ?? ''"></mat-icon>
+                    {{ kindOption().label }}
+                  </span>
+                </mat-select-trigger>
+                @for (o of instructionKinds; track o.value) {
+                  <mat-option [value]="o.value">
+                    <span class="tr-kind-option">
+                      <mat-icon class="tr-kind-icon" [svgIcon]="o.icon ?? ''"></mat-icon>
+                      {{ o.label }}
+                    </span>
+                  </mat-option>
+                }
+              </mat-select>
+            </label>
+
+            <label class="tr-field">
+              <span class="tr-field-label">
+                <mat-icon class="tr-field-icon" svgIcon="banknote"></mat-icon>
+                Montant
+              </span>
+              <span class="tr-amount-row">
+                <input class="tr-input tr-amount-input" placeholder="250 000"
+                  [value]="draft().amount" (input)="patch({ amount: $any($event.target).value })" />
+                <mat-select class="pm-sel-trigger tr-select tr-currency" [panelWidth]="null" panelClass="pm-sel-panel"
+                  [value]="draft().currency" (valueChange)="patch({ currency: $event })">
+                  @for (c of currencies; track c) {
+                    <mat-option [value]="c">{{ c }}</mat-option>
+                  }
+                </mat-select>
+              </span>
+            </label>
+
+            <label class="tr-field">
+              <span class="tr-field-label">
+                <mat-icon class="tr-field-icon" svgIcon="calendar"></mat-icon>
+                Date de valeur
+              </span>
+              <input type="date" class="tr-input tr-input-date"
+                [value]="draft().date" (input)="patch({ date: $any($event.target).value })" />
+            </label>
+
+            <label class="tr-field">
+              <span class="tr-field-label">
+                <mat-icon class="tr-field-icon" svgIcon="edit"></mat-icon>
+                Libellé
+              </span>
+              <input class="tr-input" placeholder="Virement client LU12 …4471"
+                [value]="draft().label" (input)="patch({ label: $any($event.target).value })" />
+            </label>
+
+            <span class="tr-impact" [style.color]="impactColor()">{{ impact() }}</span>
+
+            <button type="button" matButton="filled" class="tr-primary-btn tr-submit" (click)="submitInstruction()">
+              <mat-icon svgIcon="save" style="font-size:14px"></mat-icon>
+              Enregistrer l'instruction
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+
+  </mat-tab-nav-panel>
+</div>

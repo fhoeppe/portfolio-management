@@ -1,0 +1,759 @@
+<div class="tx-page">
+  <div class="tx-head-row">
+    <div class="tx-head-titles">
+      <h1 class="tx-h1">Transactions</h1>
+      <p class="tx-subtitle">{{ subtitle() }}</p>
+    </div>
+  </div>
+
+  <nav mat-tab-nav-bar class="tx-tabs-row pm-tabnav" [tabPanel]="txTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of pageTabs(); track t.key) {
+      <button
+        type="button"
+        mat-tab-link
+        class="tx-page-tab"
+        [active]="tab() === t.key"
+        [style.height]="t.height"
+        [style.padding]="t.padding"
+        [style.background]="t.bg"
+        [style.color]="t.fg"
+        [style.font-size]="t.size"
+        [style.font-weight]="t.weight"
+        (click)="setTab(t.key)"
+      >
+        @if (t.key === 'register') {
+          <mat-icon svgIcon="book-text" style="font-size:16px"></mat-icon>
+        }
+        @if (t.key === 'new') {
+          <mat-icon svgIcon="edit" style="font-size:16px"></mat-icon>
+        }
+        {{ t.label }}
+        <span class="tx-page-tab-badge" [style.background]="t.badgeBg" [style.color]="t.badgeFg">{{ t.badge }}</span>
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #txTabPanel>
+  <div class="tx-kpi-grid">
+    @for (k of kpis(); track k.label) {
+      <div class="tx-kpi-card" [style.background]="k.bg">
+        <div class="tx-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+        <div class="tx-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+        <div class="tx-kpi-note">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  @if (tab() === 'register') {
+    <div class="tx-tab-body">
+      <p class="tx-lead">Chaque ligne est une transaction — un fait survenu à une date. Une transaction porte une ou plusieurs opérations : les mouvements réels de titres ou d'espèces qui la composent.</p>
+
+      <div class="tx-card">
+        <div class="tx-card-head">
+          <mat-icon svgIcon="book" style="font-size:17px;color:#ffffff"></mat-icon>
+          <h2 class="tx-card-title">Registre des transactions</h2>
+          <span class="tx-card-note">{{ listNote() }}</span>
+        </div>
+
+        <div class="tx-reco-row">
+          <span class="tx-reco-label">Réconciliation</span>
+          @for (r of recoStats; track r.key) {
+            <span class="tx-reco-stat" [style.background]="r.bg" [style.color]="r.fg" [matTooltip]="r.hint">
+              <span class="tx-reco-dot" [style.background]="r.fg"></span>
+              {{ r.label }}
+              <span class="tx-reco-value">{{ r.value }}</span>
+            </span>
+          }
+          <span class="tx-reco-stamp">{{ recoStamp }}</span>
+        </div>
+
+        <div class="tx-toolbar">
+          <span class="tx-search">
+            <mat-icon svgIcon="search" style="font-size:14px" class="tx-search-icon"></mat-icon>
+            <input class="tx-search-input" [value]="query()" (input)="pickSearch($any($event.target).value)" [matAutocomplete]="acMain" placeholder="Référence, titre, compte" autocomplete="off" />
+            @if (query()) {
+              <button type="button" matIconButton class="tx-clear-btn" matTooltip="Effacer la recherche" (click)="pickSearch('')">
+                <mat-icon svgIcon="close" style="font-size:12px"></mat-icon>
+              </button>
+            }
+            <mat-autocomplete #acMain="matAutocomplete" class="pm-unfold" (optionSelected)="pickSearch($event.option.value)">
+              @for (g of acGroups(); track g.label) {
+                <mat-optgroup [label]="g.label">
+                  @for (o of g.items; track o.label) {
+                    <mat-option [value]="o.label">
+                      <span class="tx-ac-label">{{ o.label }}</span>
+                      <span class="tx-ac-count">{{ o.count }}</span>
+                    </mat-option>
+                  }
+                </mat-optgroup>
+              }
+              @if (acEmpty()) {
+                <mat-option disabled>Aucune correspondance</mat-option>
+              }
+            </mat-autocomplete>
+          </span>
+
+          <span class="tx-daterange">
+            <span class="tx-daterange-label">Période</span>
+            <span class="tx-daterange-box">
+              <span class="tx-datepicker"><input [matDatepicker]="txPicker1" class="tx-date-input" [value]="isoToDate(dateFrom())" (dateChange)="dateFrom.set(dateToIso($event.value))" [max]="isoToDate(today)" matTooltip="Date de début" /><mat-datepicker-toggle [for]="txPicker1"></mat-datepicker-toggle><mat-datepicker #txPicker1></mat-datepicker></span>
+              <span class="tx-daterange-sep" aria-hidden="true"></span>
+              <span class="tx-datepicker"><input [matDatepicker]="txPicker2" class="tx-date-input" [value]="isoToDate(dateTo())" (dateChange)="dateTo.set(dateToIso($event.value))" [max]="isoToDate(today)" matTooltip="Date de fin" /><mat-datepicker-toggle [for]="txPicker2"></mat-datepicker-toggle><mat-datepicker #txPicker2></mat-datepicker></span>
+              @if (dateFrom() || dateTo()) {
+                <button type="button" matIconButton class="tx-clear-btn" matTooltip="Effacer la plage de dates" (click)="dateFrom.set(''); dateTo.set('')">
+                  <mat-icon svgIcon="close" style="font-size:12px"></mat-icon>
+                </button>
+              }
+            </span>
+          </span>
+
+          <button type="button" matIconButton class="tx-tool-btn" [class.tx-tool-btn-on]="showOp()" [matTooltip]="opColTitle()" (click)="showOp.set(!showOp())">
+            @if (showOp()) {
+              <mat-icon svgIcon="columns-3" style="font-size:14px"></mat-icon>
+            } @else {
+              <mat-icon svgIcon="box-slash" style="font-size:14px"></mat-icon>
+            }
+          </button>
+          <button type="button" matIconButton class="tx-tool-btn" [disabled]="structBtnOff()" [matTooltip]="structBtnTitle()" (click)="openStructFromSelection()">
+            <mat-icon svgIcon="eye" style="font-size:14px"></mat-icon>
+          </button>
+          <button type="button" matIconButton class="tx-tool-btn" matTooltip="Effacer la recherche et les filtres" (click)="resetView()">
+            <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+          </button>
+        </div>
+
+        <div class="tx-table-scroll">
+          <table mat-table [dataSource]="rows()" multiTemplateDataRows class="tx-table tx-table-tight" [style.min-width]="tableMinWidth()">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-date">Date</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-nowrap">{{ row.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="link">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-link"></th>
+              <td mat-cell *matCellDef="let row" class="tx-td-link">
+                @if (row.manyLegs) {
+                  <span [matTooltip]="row.legsTitle" class="tx-link-icon">
+                    <mat-icon svgIcon="merge" style="font-size:14px"></mat-icon>
+                  </span>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="ref">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-ref">Référence</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-nowrap tx-td-bold">{{ row.ref }}</td>
+            </ng-container>
+            <ng-container matColumnDef="op">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-op">Opération</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-mono">
+                @for (n of row.opNos; track n) {
+                  <span class="tx-opno">{{ n }}</span>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="kind">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-kind">Objet</th>
+              <td mat-cell *matCellDef="let row">
+                <span [matTooltip]="row.kindHint" class="tx-kind-badge" [style.background]="row.kindBg" [style.color]="row.kindFg">
+                  @if (row.isSecurity) {
+                    <mat-icon svgIcon="chart-trend" style="font-size:12px"></mat-icon>
+                  } @else {
+                    <mat-icon svgIcon="cash-simple" style="font-size:12px"></mat-icon>
+                  }
+                  {{ row.kindLabel }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="nature">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-nature">Nature</th>
+              <td mat-cell *matCellDef="let row"><span class="tx-nature-badge" [style.background]="row.natureBg" [style.color]="row.natureFg">{{ row.nature }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-type">Type</th>
+              <td mat-cell *matCellDef="let row">
+                @if (row.op) {
+                  <span [matTooltip]="row.opHint" class="tx-type-badge" [style.background]="row.opBg" [style.color]="row.opFg">{{ row.op }}</span>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="account">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-account">Compte</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-ellipsis" [matTooltip]="row.account">{{ row.account }}</td>
+            </ng-container>
+            <ng-container matColumnDef="security">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-security">Titre ou poche</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-ellipsis">{{ row.security }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-amount">Coût net</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-num" [style.color]="row.amountColor">{{ row.amount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="settle">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-settle">Règlement</th>
+              <td mat-cell *matCellDef="let row" class="tx-td-nowrap">{{ row.settle }}</td>
+            </ng-container>
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-state">État</th>
+              <td mat-cell *matCellDef="let row">
+                <span [matTooltip]="row.stateHint" class="tx-state-badge" [style.background]="row.stateBg" [style.color]="row.stateFg">
+                  <span class="tx-state-dot" [style.background]="row.stateFg"></span>
+                  {{ row.state }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="reco">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-reco">Réconciliation</th>
+              <td mat-cell *matCellDef="let row">
+                <span [matTooltip]="row.recoHint" class="tx-state-badge" [style.background]="row.recoBg" [style.color]="row.recoFg">
+                  <span class="tx-state-dot" [style.background]="row.recoFg"></span>
+                  {{ row.recoLabel }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="edit">
+              <th mat-header-cell *matHeaderCellDef pmColResize class="tx-col-edit"></th>
+              <td mat-cell *matCellDef="let row" class="tx-td-edit">
+                <span class="tx-edit-actions">
+                  <button type="button" matIconButton class="tx-edit-btn tx-edit-btn-code" matTooltip="Structure de la transaction" (click)="openStructFromRow(row.ref, $event)">
+                    <mat-icon svgIcon="corners" style="font-size:13px"></mat-icon>
+                  </button>
+                  <button type="button" matIconButton class="tx-edit-btn" matTooltip="Modifier la transaction" (click)="$event.stopPropagation()">
+                    <mat-icon svgIcon="edit" style="font-size:13px"></mat-icon>
+                  </button>
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Seconde ligne d'en-tête (filtres) : colonnes distinctes, MatTable ne rendant
+                 qu'un jeu de cellules par définition de colonne. -->
+            <ng-container matColumnDef="dateFilter">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+            <ng-container matColumnDef="linkFilter">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+            <ng-container matColumnDef="refFilter">
+              <th mat-header-cell *matHeaderCellDef class="tx-filter-ref">
+                <input class="tx-filter-input" [value]="refFilter()" (input)="pickRef($any($event.target).value)" [matAutocomplete]="acRef" placeholder="Référence" autocomplete="off" />
+                <mat-autocomplete #acRef="matAutocomplete" class="pm-unfold" (optionSelected)="pickRef($event.option.value)">
+                  @for (r of refOpts(); track r) {
+                    <mat-option [value]="r">{{ r }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="opFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <input class="tx-filter-input" [value]="opNoFilter()" (input)="opNoFilter.set($any($event.target).value)" placeholder="Tous" autocomplete="off" />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="kindFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-select [options]="kindOptions" [value]="kindFilter()" (valueChange)="setKindFilter($event)" />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="natureFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-multiselect
+                  [options]="natOptions()"
+                  [selected]="natPick()"
+                  [allSelected]="natAllSelected()"
+                  [triggerLabel]="natTrigger().label"
+                  [triggerBadge]="natTrigger().badge"
+                  [triggerMore]="natTrigger().more"
+                  [triggerHint]="natTrigger().hint"
+                  (toggle)="toggleSet(natPick, $event)"
+                  (toggleAll)="toggleAllSet(natPick, natKeysAll, natAllSelected())"
+                />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="typeFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-multiselect
+                  [options]="typeOptions()"
+                  [selected]="typePick()"
+                  [allSelected]="typeAllSelected()"
+                  [triggerLabel]="typeTrigger().label"
+                  [triggerBadge]="typeTrigger().badge"
+                  [triggerMore]="typeTrigger().more"
+                  [triggerHint]="typeTrigger().hint"
+                  (toggle)="toggleSet(typePick, $event)"
+                  (toggleAll)="toggleAllSet(typePick, typeKeysAll, typeAllSelected())"
+                />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="accountFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-multiselect
+                  [options]="accOptions()"
+                  [selected]="accPick()"
+                  [allSelected]="accAllSelected()"
+                  [triggerLabel]="accTrigger().label"
+                  [triggerMore]="accTrigger().more"
+                  [triggerHint]="accTrigger().hint"
+                  (toggle)="toggleSet(accPick, $event)"
+                  (toggleAll)="toggleAllSet(accPick, ACCOUNTS, accAllSelected())"
+                />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="securityFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-multiselect
+                  [options]="secOptions()"
+                  [selected]="secPick()"
+                  [allSelected]="secAllSelected()"
+                  [triggerLabel]="secTrigger().label"
+                  [triggerMore]="secTrigger().more"
+                  [triggerHint]="secTrigger().hint"
+                  (toggle)="toggleSet(secPick, $event)"
+                  (toggleAll)="toggleAllSet(secPick, SECURITIES, secAllSelected())"
+                />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="amountFilter">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+            <ng-container matColumnDef="settleFilter">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+            <ng-container matColumnDef="stateFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-select [options]="stateOptions" [value]="stateFilter()" (valueChange)="setStateFilter($event)" />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="recoFilter">
+              <th mat-header-cell *matHeaderCellDef>
+                <app-tx-multiselect
+                  [options]="recoOptions()"
+                  [selected]="recoPick()"
+                  [allSelected]="recoAllSelected()"
+                  [triggerLabel]="recoTrigger().label"
+                  [triggerBadge]="recoTrigger().badge"
+                  [triggerMore]="recoTrigger().more"
+                  [triggerHint]="recoTrigger().hint"
+                  (toggle)="toggleSet(recoPick, $event)"
+                  (toggleAll)="toggleAllSet(recoPick, recoKeysAll, recoAllSelected())"
+                />
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="editFilter">
+              <th mat-header-cell *matHeaderCellDef></th>
+            </ng-container>
+
+            <!-- Lignes pleine largeur : en-tête de mois, détail du mois déplié, détail des jambes. -->
+            <ng-container matColumnDef="monthCell">
+              <td mat-cell *matCellDef="let row" [attr.colSpan]="detailSpan()">
+                <span class="tx-month-line">
+                  <span class="tx-month-chevron" [style.transform]="'rotate(' + row.monthChevron + ')'">
+                    <mat-icon svgIcon="chevron-down" style="font-size:14px"></mat-icon>
+                  </span>
+                  <mat-icon svgIcon="calendar" style="font-size:13px"></mat-icon>
+                  <span class="tx-month-label">{{ row.monthLabel }}</span>
+                  <span class="tx-month-count">{{ row.monthCount }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="monthDetailCell">
+              <td mat-cell *matCellDef="let row" [attr.colSpan]="detailSpan()">
+                <span class="tx-month-detail">
+                  <span class="tx-month-group">
+                    <span class="tx-month-nat-label">Affichage</span>
+                    <app-tx-select class="tx-month-group-select" [options]="monthGroupOptions"
+                      [value]="monthGroupOf(row.key)" (valueChange)="setMonthGroup(row.key, $event)" />
+                  </span>
+                  <span class="tx-month-stats">
+                    @for (st of row.monthStats; track st.label) {
+                      <span class="tx-month-stat">
+                        <span class="tx-month-stat-label">{{ st.label }}</span>
+                        <span class="tx-month-stat-value" [style.color]="st.color">{{ st.value }}</span>
+                      </span>
+                    }
+                  </span>
+                  <span class="tx-month-natures">
+                    <span class="tx-month-nat-label">Natures</span>
+                    @for (n of row.monthNatures; track n.label) {
+                      <span class="tx-month-nat-tag" [style.background]="n.bg" [style.color]="n.fg">
+                        {{ n.label }}
+                        <span class="tx-month-nat-count">{{ n.count }}</span>
+                      </span>
+                    }
+                  </span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="natureCell">
+              <td mat-cell *matCellDef="let row" [attr.colSpan]="detailSpan()">
+                <span class="tx-nature-line">
+                  <span class="tx-nature-head-tag" [style.background]="row.natureBg" [style.color]="row.natureFg">{{ row.natureLabel }}</span>
+                  <span class="tx-nature-head-count">{{ row.natureCount }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="detailCell">
+              <td mat-cell *matCellDef="let row" [attr.colSpan]="detailSpan()">
+                <div class="tx-detail-card">
+                  <div class="tx-detail-head">
+                    <div class="tx-detail-head-line">
+                      <mat-icon svgIcon="filter-alt" style="font-size:14px"></mat-icon>
+                      <span class="tx-detail-head-title">Opérations de {{ row.detailRef }}</span>
+                      <span class="tx-detail-head-count">{{ row.detailCount }}</span>
+                      <span class="tx-detail-sep" aria-hidden="true"></span>
+                      <span class="tx-detail-nature">{{ row.detailNature }}</span>
+                      <span class="tx-detail-sep" aria-hidden="true"></span>
+                      <span [matTooltip]="row.detailRecoHint" class="tx-state-badge" [style.background]="row.detailRecoBg" [style.color]="row.detailRecoFg">
+                        <span class="tx-state-dot" [style.background]="row.detailRecoFg"></span>
+                        {{ row.detailReco }}
+                      </span>
+                    </div>
+                    <div class="tx-detail-head-line">
+                      <span [matTooltip]="row.detailStampHint" class="tx-detail-meta">
+                        <mat-icon svgIcon="clock" style="font-size:12px"></mat-icon>
+                        {{ row.detailStamp }}
+                      </span>
+                      <span class="tx-detail-sep" aria-hidden="true"></span>
+                      <span class="tx-detail-meta">
+                        <mat-icon svgIcon="user" style="font-size:12px"></mat-icon>
+                        {{ row.detailOwner }}
+                      </span>
+                      <span class="tx-detail-sep" aria-hidden="true"></span>
+                      <span class="tx-detail-comment" [matTooltip]="row.detailComment">{{ row.detailComment }}</span>
+                      <span class="tx-detail-sep" aria-hidden="true"></span>
+                      <span class="tx-detail-total">{{ row.detailTotal }}</span>
+                    </div>
+                  </div>
+                  <div class="tx-detail-table-scroll">
+                    <table mat-table [dataSource]="row.legRows" class="tx-detail-table">
+                      <ng-container matColumnDef="opno">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-opno">Opération</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-mono tx-td-opno">{{ l.opNo }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="seq">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-seq">Séq.</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num">{{ l.seq }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="date">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-date">Date</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-nowrap">{{ l.date }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="type">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-type">Type</th>
+                        <td mat-cell *matCellDef="let l"><span class="tx-type-badge" [style.background]="tradeTypeBg(l.type)" [style.color]="tradeTypeFg(l.type)">{{ l.type }}</span></td>
+                      </ng-container>
+                      <ng-container matColumnDef="account">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-account">Compte</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-ellipsis">{{ l.account }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="security">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-security">Titre</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-ellipsis">{{ l.security }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="qty">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-num">Qté</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num">{{ l.qty }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="price">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-num">Prix</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num">{{ l.price }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="fees">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-num-sm">Frais</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num">{{ l.fees }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="taxes">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-num-sm">Taxes</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num">{{ l.taxes }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="fx">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-fx">Change</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-fx" [matTooltip]="l.fxHint">{{ l.fx }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="gross">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-num-lg">Brut</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num">{{ l.amount }}</td>
+                      </ng-container>
+                      <ng-container matColumnDef="net">
+                        <th mat-header-cell *matHeaderCellDef class="tx-dcol-num-lg">Net</th>
+                        <td mat-cell *matCellDef="let l" class="tx-td-num tx-td-bold" [style.color]="l.color">{{ l.net }}</td>
+                      </ng-container>
+                      <tr mat-header-row *matHeaderRowDef="legColumns"></tr>
+                      <tr mat-row *matRowDef="let l; columns: legColumns" [style.background]="l.bg"></tr>
+                    </table>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="txColumns()" class="tx-header-row"></tr>
+            <tr mat-header-row *matHeaderRowDef="txFilterColumns()" class="tx-filter-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: txMonthColumns; when: isMonthRow" class="tx-month-row" (click)="toggleMonth(row.key)" [matTooltip]="row.monthToggleTitle"></tr>
+            <tr mat-row *matRowDef="let row; columns: txMonthDetailColumns; when: isMonthOpenRow" class="tx-month-detail-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: txNatureColumns; when: isNatureRow" class="tx-nature-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: txColumns(); when: isTxRow" class="tx-row" [style.background]="row.bg" (click)="selectRow(row.ref)" [matTooltip]="row.rowTitle"></tr>
+            <tr mat-row *matRowDef="let row; columns: txDetailColumns; when: isDetailRow" class="tx-detail-row"></tr>
+          </table>
+        </div>
+        @if (noRows()) {
+          <p class="tx-empty">Aucune transaction ne correspond aux critères.</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'pending') {
+    <div class="tx-tab-body">
+      <div class="tx-card">
+        <div class="tx-card-head tx-card-head-plain">
+          <h2 class="tx-card-title-plain">Suspens de règlement</h2>
+          <span class="tx-card-note-plain">En suspens à D ⟺ date ≤ D &lt; date de règlement</span>
+        </div>
+        <div class="tx-table-scroll">
+          <table mat-table [dataSource]="suspense()" class="tx-table" style="min-width:820px">
+            <ng-container matColumnDef="code">
+              <th mat-header-cell *matHeaderCellDef class="tx-scol-code">Compte PCG</th>
+              <td mat-cell *matCellDef="let s"><span class="tx-code-tag" [style.background]="s.tagBg" [style.color]="s.tagFg">{{ s.code }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="label">
+              <th mat-header-cell *matHeaderCellDef>Intitulé</th>
+              <td mat-cell *matCellDef="let s" class="tx-td-wrap">{{ s.label }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="tx-scol-amount">Montant</th>
+              <td mat-cell *matCellDef="let s" class="tx-td-num tx-td-bold" [style.color]="s.color">{{ s.amount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="count">
+              <th mat-header-cell *matHeaderCellDef class="tx-scol-count">Lignes</th>
+              <td mat-cell *matCellDef="let s" class="tx-td-num-end">{{ s.count }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="suspenseColumns" class="tx-header-row"></tr>
+            <tr mat-row *matRowDef="let s; columns: suspenseColumns" [style.background]="s.bg"></tr>
+          </table>
+        </div>
+        <div class="tx-suspense-note">Solde projeté = solde réglé + à recevoir − à régler (512 + 465 − 464). Le suspens ne se stocke pas : il se déduit du couple de dates de l'opération.</div>
+      </div>
+
+      <div class="tx-card">
+        <div class="tx-card-head tx-card-head-plain">
+          <h2 class="tx-card-title-plain">Opérations négociées, non réglées</h2>
+          <span class="tx-card-note-plain">{{ pendingNote() }}</span>
+        </div>
+        <div class="tx-table-scroll">
+          <table mat-table [dataSource]="pendingRows()" class="tx-table" style="min-width:900px">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="tx-pcol-date">Négocié</th>
+              <td mat-cell *matCellDef="let p" class="tx-td-nowrap">{{ p.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="settle">
+              <th mat-header-cell *matHeaderCellDef class="tx-pcol-date">Règlement</th>
+              <td mat-cell *matCellDef="let p" class="tx-td-nowrap">{{ p.settle }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef class="tx-pcol-type">Type</th>
+              <td mat-cell *matCellDef="let p"><span class="tx-type-badge" [style.background]="tradeTypeBg(p.type)" [style.color]="tradeTypeFg(p.type)">{{ p.type }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="security">
+              <th mat-header-cell *matHeaderCellDef>Référence / Titre</th>
+              <td mat-cell *matCellDef="let p" class="tx-td-ellipsis">{{ p.security }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="tx-pcol-amount">Montant</th>
+              <td mat-cell *matCellDef="let p" class="tx-td-num tx-td-bold" [style.color]="p.color">{{ p.amount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="left">
+              <th mat-header-cell *matHeaderCellDef class="tx-pcol-left">Reste</th>
+              <td mat-cell *matCellDef="let p" class="tx-td-bold" [style.color]="p.leftColor">{{ p.left }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="pendingColumns" class="tx-header-row"></tr>
+            <tr mat-row *matRowDef="let p; columns: pendingColumns" [style.background]="p.bg"></tr>
+          </table>
+        </div>
+        @if (noPending()) {
+          <p class="tx-empty">Aucune opération en suspens : tout est dénoué.</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'new') {
+    <div class="tx-tab-body">
+      <p class="tx-lead">Choisissez la nature du fait puis le type d'opération qu'il produit — le nombre de jambes à saisir dépend de ce choix, comme détaillé ci-dessous.</p>
+      <div class="tx-card">
+        <div class="tx-card-head">
+          <mat-icon svgIcon="plus" style="font-size:17px;color:#ffffff"></mat-icon>
+          <h2 class="tx-card-title">Nouvelle transaction</h2>
+          <span class="tx-card-note">Nature {{ formNature() }}</span>
+        </div>
+
+        <div class="tx-form-body">
+          <div class="tx-form-row">
+            <span class="tx-form-row-label">Nature du fait</span>
+            <mat-button-toggle-group class="tx-nature-toggle" hideSingleSelectionIndicator [value]="formNature()" (change)="setNature($event.value)">
+              @for (c of natureChoices(); track c.key) {
+                <mat-button-toggle [value]="c.key" [style.--tx-toggle-bg]="c.bg" [style.--tx-toggle-fg]="c.fg">{{ c.label }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+            <span class="tx-form-row-desc">{{ natureDesc() }}</span>
+          </div>
+
+          <div class="tx-form-row">
+            <span class="tx-form-row-label">Type d'opération</span>
+            <mat-button-toggle-group class="tx-type-toggle" hideSingleSelectionIndicator [value]="ft()" (change)="setType($event.value)">
+              @for (c of typeChoices(); track c.key) {
+                <mat-button-toggle [value]="c.key">{{ c.label }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+            <span class="tx-form-row-desc">{{ legWhy() }}</span>
+          </div>
+
+          <div class="tx-callout">
+            <span class="tx-callout-title">{{ legHint() }}</span>
+            <span class="tx-callout-text">{{ legWhy() }}</span>
+          </div>
+
+          <div class="tx-section">
+            <div class="tx-section-head">Définition de l'ordre</div>
+            <div class="tx-order-grid">
+              @for (f of formFields(); track f.key) {
+                <label class="tx-field" [style.grid-column]="f.span === 'auto' ? 'auto' : f.span" [style.max-width]="f.maxWidth">
+                  {{ f.label }}
+                  @switch (f.kind) {
+                    @case ('select') {
+                      <app-tx-select [options]="f.options" [value]="f.value" (valueChange)="setFieldValue(f.key, $event)" />
+                      @if (f.sub) {
+                        <span class="tx-field-sub">{{ f.sub }}</span>
+                      }
+                    }
+                    @case ('date') {
+                      <span class="tx-datepicker"><input [matDatepicker]="txPicker4" class="tx-date-input" [value]="isoToDate(f.value)" [max]="isoToDate(f.max)" (dateChange)="setFieldValue(f.key, dateToIso($event.value))" /><mat-datepicker-toggle [for]="txPicker4"></mat-datepicker-toggle><mat-datepicker #txPicker4></mat-datepicker></span>
+                    }
+                    @case ('readonly') {
+                      <span class="tx-readonly">{{ f.value }}</span>
+                    }
+                    @case ('input') {
+                      <input class="tx-text-input" [value]="f.value" [placeholder]="f.placeholder" (input)="setFieldValue(f.key, $any($event.target).value)" />
+                    }
+                  }
+                </label>
+              }
+            </div>
+          </div>
+
+          @if (hasPanel2Val()) {
+            <div class="tx-section">
+              <div class="tx-section-head tx-section-head-row">
+                <span>Exécution</span>
+                @if (execToggle(); as opts) {
+                  <app-tx-select [options]="opts" [value]="form().fill" (valueChange)="patchForm({ fill: $event })" />
+                }
+              </div>
+              @if (formFields2().length) {
+                <div class="tx-order-grid tx-order-grid-4">
+                  @for (f of formFields2(); track f.key) {
+                    <label class="tx-field" [style.grid-column]="f.span === 'auto' ? 'auto' : f.span" [style.max-width]="f.maxWidth">
+                      {{ f.label }}
+                      @switch (f.kind) {
+                        @case ('select') {
+                          <app-tx-select [options]="f.options" [value]="f.value" (valueChange)="setFieldValue(f.key, $event)" />
+                        }
+                        @case ('date') {
+                          <span class="tx-datepicker"><input [matDatepicker]="txPicker5" class="tx-date-input" [value]="isoToDate(f.value)" (dateChange)="setFieldValue(f.key, dateToIso($event.value))" /><mat-datepicker-toggle [for]="txPicker5"></mat-datepicker-toggle><mat-datepicker #txPicker5></mat-datepicker></span>
+                        }
+                        @case ('readonly') {
+                          <span class="tx-readonly">{{ f.value }}</span>
+                        }
+                        @case ('input') {
+                          <input class="tx-text-input" [value]="f.value" [placeholder]="f.placeholder" (input)="setFieldValue(f.key, $any($event.target).value)" />
+                        }
+                      }
+                    </label>
+                  }
+                </div>
+              }
+              <div class="tx-exec-rows">
+                @for (r of execRows(); track r.idx) {
+                  <span class="tx-exec-row">
+                    <label class="tx-field">Date d'exécution
+                      <span class="tx-datepicker"><input [matDatepicker]="txPicker6" class="tx-date-input" [value]="isoToDate(r.date)" [max]="isoToDate(r.dateMax)" (dateChange)="setExecRow(r.idx, { date: dateToIso($event.value) })" /><mat-datepicker-toggle [for]="txPicker6"></mat-datepicker-toggle><mat-datepicker #txPicker6></mat-datepicker></span>
+                    </label>
+                    <label class="tx-field">Quantité exécutée
+                      <input class="tx-text-input" [value]="r.qty" placeholder="20" (input)="setExecQty(r.idx, $any($event.target).value)" />
+                    </label>
+                    <label class="tx-field">Prix d'exécution
+                      @if (r.priceReadOnly) {
+                        <span class="tx-readonly">{{ r.price }}</span>
+                      } @else {
+                        <input class="tx-text-input" [value]="r.price" placeholder="150,00" (input)="setExecRow(r.idx, { price: $any($event.target).value })" />
+                      }
+                    </label>
+                    <label class="tx-field">Date de règlement
+                      <span class="tx-datepicker"><input [matDatepicker]="txPicker7" class="tx-date-input" [value]="isoToDate(r.settle)" (dateChange)="setExecRow(r.idx, { settle: dateToIso($event.value) })" /><mat-datepicker-toggle [for]="txPicker7"></mat-datepicker-toggle><mat-datepicker #txPicker7></mat-datepicker></span>
+                      @if (r.settleWarn) {
+                        <span class="tx-field-sub tx-field-sub-warn">{{ r.settleWarn }}</span>
+                      } @else {
+                        <span class="tx-field-sub">{{ r.settleHint }}</span>
+                      }
+                    </label>
+                    @if (r.canRemove) {
+                      <button type="button" matIconButton class="tx-exec-remove" matTooltip="Retirer cette exécution" (click)="removeExecRow(r.idx)">
+                        <mat-icon svgIcon="minus" style="font-size:13px"></mat-icon>
+                      </button>
+                    }
+                    @if (r.isLast) {
+                      <button type="button" matIconButton class="tx-exec-add" [disabled]="r.addDisabled" [matTooltip]="r.addTitle" (click)="addExecRow()">
+                        <mat-icon svgIcon="collapse" style="font-size:20px"></mat-icon>
+                      </button>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="tx-section">
+            <div class="tx-section-head tx-section-head-row">
+              <span>Jambes engendrées</span>
+              <span class="tx-legs-count">{{ legsCount() }}</span>
+            </div>
+            @if (formLegs().length === 0) {
+              <p class="tx-no-legs">Ce fait n'engendre aucune opération : les montants vivent dans les champs de la transaction.</p>
+            } @else {
+              <div class="tx-table-scroll">
+                <table mat-table [dataSource]="formLegs()" class="tx-table tx-legs-table">
+                  <ng-container matColumnDef="seq">
+                    <th mat-header-cell *matHeaderCellDef class="tx-lcol-seq">N°</th>
+                    <td mat-cell *matCellDef="let l"><span class="tx-leg-seq">{{ l.seq }}</span></td>
+                  </ng-container>
+                  <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef class="tx-lcol-type">Type</th>
+                    <td mat-cell *matCellDef="let l"><span class="tx-type-badge" [style.background]="tradeTypeBg(l.type)" [style.color]="tradeTypeFg(l.type)">{{ l.type }}</span></td>
+                  </ng-container>
+                  <ng-container matColumnDef="detail">
+                    <th mat-header-cell *matHeaderCellDef>Détail</th>
+                    <td mat-cell *matCellDef="let l" class="tx-td-ellipsis">{{ l.detail }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef class="tx-lcol-amount">Coût net</th>
+                    <td mat-cell *matCellDef="let l" class="tx-td-num tx-td-bold" [style.color]="l.color">{{ l.amount }}</td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="formLegColumns" class="tx-header-row"></tr>
+                  <tr mat-row *matRowDef="let l; columns: formLegColumns" [style.background]="l.bg"></tr>
+                </table>
+              </div>
+            }
+          </div>
+
+          <div class="tx-form-actions">
+            <button type="button" mat-stroked-button class="tx-cancel-btn" (click)="resetForm()">
+              <mat-icon svgIcon="close" style="font-size:14px"></mat-icon>
+              Annuler
+            </button>
+            <button type="button" mat-flat-button class="tx-submit-btn" (click)="submitForm()">
+              <mat-icon svgIcon="check" style="font-size:14px"></mat-icon>
+              Enregistrer la transaction
+            </button>
+            <span class="tx-form-status">{{ formStatus() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</mat-tab-nav-panel>
+</div>

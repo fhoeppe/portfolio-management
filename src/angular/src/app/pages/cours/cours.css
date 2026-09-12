@@ -1,0 +1,512 @@
+/* Les encres de hausse/baisse et les fonds de vignette ne sont pas exposés par la coque : une
+   `var()` non résolue invalide la déclaration qui la porte, donc on les déclare ici. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --ink-warn: #8f3f06;
+  --ink-warn-2: #b45309;
+  --ink-brand-2: #003da5;
+  --band-ok: #f2faf9;
+  --band-warn: #fdf6ef;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --ink-warn: #f0a868;
+  --ink-warn-2: #f3b782;
+  --ink-brand-2: #8fb4ee;
+  --band-ok: #152a28;
+  --band-warn: #2c1f14;
+}
+
+.co-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+/* ===========================================================================
+   En-tête
+   =========================================================================== */
+
+.co-head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.co-head-titles {
+  min-width: 0;
+}
+
+.co-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.co-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.co-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 210px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-500);
+}
+
+.pm-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.co-refresh {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  --mat-button-outlined-icon-spacing: 7px;
+  flex: none;
+}
+
+.co-refresh:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+/* ===========================================================================
+   Indicateurs
+   =========================================================================== */
+
+.co-kpi-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+@container (max-width: 900px) {
+  .co-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.co-kpi {
+  padding: 13px 18px 15px;
+  background: var(--surface);
+}
+
+.co-kpi-ok {
+  background: var(--band-ok);
+}
+
+.co-kpi-warn {
+  background: var(--band-warn);
+}
+
+.co-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.co-kpi-ok .co-kpi-label {
+  color: var(--ink-ok);
+}
+
+.co-kpi-warn .co-kpi-label {
+  color: var(--ink-warn-2);
+}
+
+.co-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.co-kpi-ok .co-kpi-value {
+  color: var(--ink-ok);
+}
+
+.co-kpi-warn .co-kpi-value {
+  color: var(--ink-warn-2);
+}
+
+.co-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Corps
+   =========================================================================== */
+
+.co-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+@container (max-width: 1040px) {
+  .co-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.co-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.co-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.co-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.co-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.co-seg {
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.30);
+  flex: none;
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.co-seg-push {
+  margin-left: auto;
+}
+
+.co-empty {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Tableau
+   =========================================================================== */
+
+.co-table-scroll {
+  overflow-x: auto;
+}
+
+.co-table {
+  width: 100%;
+  min-width: 780px;
+  background: transparent;
+}
+
+.co-header-row,
+.co-row {
+  height: auto;
+}
+
+.co-row:hover {
+  background: rgba(0, 61, 165, 0.04);
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.co-th`, qui ne pèse que 0-2-0 une fois encapsulé. */
+.co-th.co-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.co-th {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.co-th-num {
+  text-align: right;
+}
+
+.co-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.co-th:first-of-type,
+.co-td:first-of-type {
+  padding-left: 16px;
+}
+
+.co-th:last-of-type,
+.co-td:last-of-type {
+  padding-right: 16px;
+}
+
+.co-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.co-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.co-td-strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.co-col-sec {
+  width: 30%;
+}
+
+.co-col-place {
+  width: 160px;
+}
+
+.co-col-num {
+  width: 110px;
+}
+
+.co-col-change {
+  width: 128px;
+}
+
+.co-col-range {
+  width: 150px;
+}
+
+.co-col-at {
+  width: 96px;
+  text-align: right;
+}
+
+.co-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.co-sec-ticker {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Le libellé complet reprend le ticker ; il est coupé plutôt que replié pour que toutes les
+   lignes gardent la même hauteur. */
+.co-sec-name {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-cur {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-neutral-600);
+}
+
+.co-change {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-weight: 600;
+}
+
+.co-change-abs {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+.co-up {
+  color: var(--ink-ok-2);
+}
+
+.co-down {
+  color: var(--ink-warn-2);
+}
+
+.co-at {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Cours figé depuis la clôture : la pendule le dit sans crier, un cours de clôture reste une
+   information valable. */
+.co-at-stale {
+  color: var(--color-neutral-600);
+}
+
+.co-at-icon {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  font-size: 11px;
+}
+
+/* ===========================================================================
+   Colonne des places
+   =========================================================================== */
+
+.co-place {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.co-place:last-child {
+  border-bottom: 0;
+}
+
+/* Trois états, trois couleurs : gris pour une séance close, vert pour une séance en cours,
+   orange pour une fermeture exceptionnelle — un jour chômé n'est pas une clôture ordinaire. */
+.co-place-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-neutral-400);
+}
+
+.co-dot-open {
+  background: var(--ink-ok-2);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+}
+
+.co-dot-holiday {
+  background: var(--ink-warn-2);
+}
+
+.co-place-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.co-place-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.co-place-hint {
+  font-size: 10px;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-place-meta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.co-place-cur {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+.co-place-count {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-neutral-800);
+}

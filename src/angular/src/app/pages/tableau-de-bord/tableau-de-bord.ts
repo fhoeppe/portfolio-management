@@ -3,7 +3,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { PanelCard } from '../../ui/panel-card/panel-card';
-import { IconGlyph } from '../../shell/icon-glyph';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
 import {
   ACTIVITY,
   ALLOCATION,
@@ -107,7 +108,7 @@ const ANO_FILTER_OPTIONS: readonly ToggleOption[] = [
 /** Porté depuis `TableauDeBord.dc.html` — voir ce fichier pour le détail des écarts. */
 @Component({
   selector: 'app-tableau-de-bord',
-  imports: [MatMenuModule, MatButtonModule, MatButtonToggleModule, PanelCard, IconGlyph],
+  imports: [MatMenuModule, MatButtonModule, MatButtonToggleModule, PanelCard, MatIconModule, MatTableModule],
   templateUrl: './tableau-de-bord.html',
   styleUrl: './tableau-de-bord.css',
 })
@@ -216,6 +217,10 @@ export class TableauDeBord {
   );
 
   protected readonly blocking = computed(() => ANOMALIES.filter((a) => a.severity === 'high').length);
+
+  protected readonly anomalyColumns = ['anomalie', 'origine', 'detectee', 'gravite', 'action'];
+
+  protected readonly positionColumns = ['ligne', 'valorisation', 'poids', 'jour', 'ytd'];
 
   protected readonly anomalies = computed(() => {
     const f = this.anoFilter();

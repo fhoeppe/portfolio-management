@@ -1,0 +1,609 @@
+<div class="ti-page">
+  <div class="ti-head-row">
+    <div class="ti-head-titles">
+      <h1 class="ti-h1">Titres</h1>
+      <p class="ti-subtitle">{{ subtitle }}</p>
+    </div>
+  </div>
+
+  <nav mat-tab-nav-bar class="ti-tabs-row pm-tabnav" [tabPanel]="tiTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of pageTabs; track t.key) {
+      <button type="button" mat-tab-link class="ti-page-tab" [active]="tab() === t.key"
+        [class.ti-page-tab-active]="tab() === t.key" (click)="setTab(t.key)">
+        @if (t.key === 'universe') {
+          <mat-icon svgIcon="globe-lines" style="font-size:15px"></mat-icon>
+        } @else {
+          <mat-icon svgIcon="search" style="font-size:15px"></mat-icon>
+        }
+        {{ t.label }}
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #tiTabPanel>
+  @if (tab() === 'universe') {
+    <div class="ti-kpi-grid">
+      @for (k of kpis(); track k.label) {
+        <div class="ti-kpi-card" [style.background]="k.bg">
+          <div class="ti-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+          <div class="ti-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+          <div class="ti-kpi-note">{{ k.note }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="ti-uni-body">
+      <!-- Titres négociables -->
+      <div class="ti-card">
+        <div class="ti-card-head">
+          <mat-icon svgIcon="list-dots" style="font-size:17px;color:#ffffff"></mat-icon>
+          <h2 class="ti-card-title">Titres négociables</h2>
+          @if (deleteNote()) {
+            <span class="ti-card-delete-note">{{ deleteNote() }}</span>
+          }
+          <span class="ti-card-list-note" [style.margin-left]="listNoteMargin()">{{ listNote() }}</span>
+        </div>
+
+        <div class="ti-toolbar">
+          <label class="ti-toolbar-field">
+            Compte
+            <app-ti-multiselect
+              class="ti-acct-msel"
+              [options]="accountOptions"
+              [selected]="acctKeysSet()"
+              [allSelected]="accountAllOn()"
+              [triggerLabel]="accountTrigger()"
+              (toggle)="toggleAccount($event)"
+              (toggleAll)="toggleAllAccounts()"
+            ></app-ti-multiselect>
+          </label>
+          <span class="ti-toolbar-note">{{ accountNote() }}</span>
+          <span class="ti-toolbar-spacer">
+            <mat-slide-toggle class="ti-switch" [class.ti-switch-on]="groupByStatus()" hideIcon
+              [checked]="groupByStatus()" matTooltip="Créer une section par statut, titres classés par nom"
+              (change)="toggleGrouping()">Grouper par statut</mat-slide-toggle>
+          </span>
+          <button type="button" matIconButton class="ti-reset-btn" matTooltip="Réinitialiser le compte, les filtres de colonnes et les statuts" (click)="resetUniverseView()">
+            <mat-icon svgIcon="rotate-left" style="font-size:15px"></mat-icon>
+          </button>
+        </div>
+
+        <div class="ti-table-scroll">
+          <table mat-table [dataSource]="uniTableRows()" [trackBy]="uniTrackBy" class="ti-table">
+            <ng-container matColumnDef="isin">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-isin">
+                <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('isin').color" [style.font-weight]="uniSortHeader('isin').weight" [matTooltip]="uniSortHeader('isin').title" (click)="onUniSort('isin')">
+                  ISIN
+                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('isin').opacity" [style.transform]="'rotate(' + uniSortHeader('isin').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let row" class="ti-td ti-td-isin">{{ row.r.isin }}</td>
+            </ng-container>
+            <ng-container matColumnDef="ticker">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-ticker">
+                <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('ticker').color" [style.font-weight]="uniSortHeader('ticker').weight" [matTooltip]="uniSortHeader('ticker').title" (click)="onUniSort('ticker')">
+                  Ticker
+                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('ticker').opacity" [style.transform]="'rotate(' + uniSortHeader('ticker').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let row" class="ti-td ti-td-ticker">{{ row.r.symbol }}</td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef class="ti-th">
+                <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('name').color" [style.font-weight]="uniSortHeader('name').weight" [matTooltip]="uniSortHeader('name').title" (click)="onUniSort('name')">
+                  Nom
+                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('name').opacity" [style.transform]="'rotate(' + uniSortHeader('name').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let row" class="ti-td">{{ row.r.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="place">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-place">
+                <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('place').color" [style.font-weight]="uniSortHeader('place').weight" [matTooltip]="uniSortHeader('place').title" (click)="onUniSort('place')">
+                  Place boursière
+                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('place').opacity" [style.transform]="'rotate(' + uniSortHeader('place').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let row" class="ti-td">{{ row.r.market }}</td>
+            </ng-container>
+            <ng-container matColumnDef="currency">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-currency">
+                <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('currency').color" [style.font-weight]="uniSortHeader('currency').weight" [matTooltip]="uniSortHeader('currency').title" (click)="onUniSort('currency')">
+                  Devise
+                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('currency').opacity" [style.transform]="'rotate(' + uniSortHeader('currency').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let row" class="ti-td">{{ row.r.currency }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-status">
+                <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('status').color" [style.font-weight]="uniSortHeader('status').weight" [matTooltip]="uniSortHeader('status').title" (click)="onUniSort('status')">
+                  Statut
+                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('status').opacity" [style.transform]="'rotate(' + uniSortHeader('status').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let row" class="ti-td">
+                <span class="ti-status-badge" [style.background]="row.r.tagBg" [style.color]="row.r.tagFg" [matTooltip]="row.r.statusHint">
+                  <span class="ti-status-dot" [style.background]="row.r.dotColor"></span>
+                  {{ row.r.status }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-actions">Action</th>
+              <td mat-cell *matCellDef="let row" class="ti-td ti-td-actions">
+                <button type="button" class="ti-del-btn" [disabled]="row.r.lockDelete" [matTooltip]="row.r.deleteTitle" (click)="$event.stopPropagation(); deleteSecurity(row.r.ticker)">
+                  <mat-icon svgIcon="shopping-bag" style="font-size:14px"></mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <!-- Colonnes de la seconde ligne d'en-tête (filtres) : MatTable ne rend qu'un jeu de
+                 cellules par définition de colonne, il faut donc des colonnes distinctes pour la
+                 seconde `matHeaderRowDef`. -->
+            <ng-container matColumnDef="isinFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="colIsin()" (input)="colIsin.set($any($event.target).value)" /></th>
+            </ng-container>
+            <ng-container matColumnDef="tickerFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="tickerOptions()" [selected]="tickPick()" [allSelected]="tickPick().size > 0 && tickPick().size === tickerOptions().length" triggerLabel="Tous" (toggle)="toggleTick($event)" (toggleAll)="toggleAllTick()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="nameFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="colName()" (input)="colName.set($any($event.target).value)" /></th>
+            </ng-container>
+            <ng-container matColumnDef="placeFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="placeOptions()" [selected]="placePick()" [allSelected]="placePick().size > 0 && placePick().size === placeOptions().length" triggerLabel="Tous" (toggle)="togglePlace($event)" (toggleAll)="toggleAllPlace()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="currencyFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="currencyOptions()" [selected]="curPick()" [allSelected]="curPick().size > 0 && curPick().size === currencyOptions().length" triggerLabel="Tous" (toggle)="toggleCur($event)" (toggleAll)="toggleAllCur()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="statusFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="statusOptions()" [selected]="statPick()" [allSelected]="statPick().size > 0 && statPick().size === statusOptions().length" triggerLabel="Tous" (toggle)="toggleStat($event)" (toggleAll)="toggleAllStat()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="actionsFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"></th>
+            </ng-container>
+
+            <!-- En-tête de section « grouper par statut » : une seule cellule qui couvre les sept
+                 colonnes, d'où sa propre colonne et sa propre ligne. -->
+            <ng-container matColumnDef="uniGroupHead">
+              <td mat-cell *matCellDef="let row" colspan="7" class="ti-group-cell">
+                <span class="ti-group-tag" [style.background]="row.g.tagBg" [style.color]="row.g.tagFg">
+                  <span class="ti-group-dot" [style.background]="row.g.tagFg"></span>
+                  {{ row.g.label }}
+                </span>
+                <span class="ti-group-count">{{ row.g.count }}</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="uniColumns" class="ti-table-header-row"></tr>
+            <tr mat-header-row *matHeaderRowDef="uniFilterColumns" class="ti-filter-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: uniGroupColumns; when: isGroupRow" class="ti-group-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: uniColumns" class="ti-row" matTooltip="Ouvrir le détail du titre" (click)="openSecurity(row.r.ticker)"></tr>
+          </table>
+        </div>
+        @if (noRows()) {
+          <p class="ti-empty-note">Aucun titre ne correspond aux filtres.</p>
+        }
+      </div>
+
+      <!-- Titres suivis -->
+      <div class="ti-card">
+        <div class="ti-card-head">
+          <mat-icon svgIcon="list-dots" style="font-size:17px;color:#ffffff"></mat-icon>
+          <h2 class="ti-card-title">Titres suivis</h2>
+          <span class="ti-card-list-note" style="margin-left:auto">{{ watchNote() }}</span>
+        </div>
+        <div class="ti-toolbar">
+          <span class="ti-toolbar-note">Ces titres ne sont pas encore négociables : ils sont sous surveillance et peuvent être retenus dans l'univers d'investissement.</span>
+          <button type="button" matIconButton class="ti-reset-btn" style="margin-left:auto" matTooltip="Réinitialiser les filtres de colonnes et les statuts" (click)="resetWatchView()">
+            <mat-icon svgIcon="rotate-left" style="font-size:15px"></mat-icon>
+          </button>
+        </div>
+        <div class="ti-table-scroll">
+          <table mat-table [dataSource]="watchRows()" class="ti-table">
+            <ng-container matColumnDef="isin">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-isin">
+                <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('isin').color" [style.font-weight]="watchSortHeader('isin').weight" [matTooltip]="watchSortHeader('isin').title" (click)="onWatchSort('isin')">
+                  ISIN
+                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('isin').opacity" [style.transform]="'rotate(' + watchSortHeader('isin').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="ti-td ti-td-isin">{{ r.isin }}</td>
+            </ng-container>
+            <ng-container matColumnDef="ticker">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-ticker">
+                <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('ticker').color" [style.font-weight]="watchSortHeader('ticker').weight" [matTooltip]="watchSortHeader('ticker').title" (click)="onWatchSort('ticker')">
+                  Ticker
+                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('ticker').opacity" [style.transform]="'rotate(' + watchSortHeader('ticker').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="ti-td ti-td-ticker">{{ r.symbol }}</td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef class="ti-th">
+                <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('name').color" [style.font-weight]="watchSortHeader('name').weight" [matTooltip]="watchSortHeader('name').title" (click)="onWatchSort('name')">
+                  Nom
+                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('name').opacity" [style.transform]="'rotate(' + watchSortHeader('name').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="ti-td">{{ r.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="place">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-place">
+                <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('place').color" [style.font-weight]="watchSortHeader('place').weight" [matTooltip]="watchSortHeader('place').title" (click)="onWatchSort('place')">
+                  Place boursière
+                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('place').opacity" [style.transform]="'rotate(' + watchSortHeader('place').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="ti-td">{{ r.market }}</td>
+            </ng-container>
+            <ng-container matColumnDef="currency">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-currency">
+                <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('currency').color" [style.font-weight]="watchSortHeader('currency').weight" [matTooltip]="watchSortHeader('currency').title" (click)="onWatchSort('currency')">
+                  Devise
+                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('currency').opacity" [style.transform]="'rotate(' + watchSortHeader('currency').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="ti-td">{{ r.currency }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-status">
+                <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('status').color" [style.font-weight]="watchSortHeader('status').weight" [matTooltip]="watchSortHeader('status').title" (click)="onWatchSort('status')">
+                  Statut
+                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('status').opacity" [style.transform]="'rotate(' + watchSortHeader('status').rotate + ')'">
+                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  </span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="ti-td">
+                <span class="ti-status-badge" [style.background]="r.tagBg" [style.color]="r.tagFg" [matTooltip]="r.statusHint">
+                  <span class="ti-status-dot" style="background:#a37a00"></span>
+                  {{ r.status }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-actions">Action</th>
+              <td mat-cell *matCellDef="let r" class="ti-td ti-td-actions">
+                <button type="button" class="ti-del-btn" [disabled]="r.lockDelete" [matTooltip]="r.deleteTitle" (click)="$event.stopPropagation(); deleteSecurity(r.ticker)">
+                  <mat-icon svgIcon="shopping-bag" style="font-size:14px"></mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="isinFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="watchColIsin()" (input)="watchColIsin.set($any($event.target).value)" /></th>
+            </ng-container>
+            <ng-container matColumnDef="tickerFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="watchTickerOptions" [selected]="watchTickPick()" [allSelected]="watchTickPick().size > 0 && watchTickPick().size === watchTickerOptions.length" triggerLabel="Tous" (toggle)="toggleWatchTick($event)" (toggleAll)="toggleAllWatchTick()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="nameFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="watchColName()" (input)="watchColName.set($any($event.target).value)" /></th>
+            </ng-container>
+            <ng-container matColumnDef="placeFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="watchPlaceOptions" [selected]="watchPlacePick()" [allSelected]="watchPlacePick().size > 0 && watchPlacePick().size === watchPlaceOptions.length" triggerLabel="Tous" (toggle)="toggleWatchPlace($event)" (toggleAll)="toggleAllWatchPlace()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="currencyFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                <app-ti-multiselect [options]="watchCurrencyOptions" [selected]="watchCurPick()" [allSelected]="watchCurPick().size > 0 && watchCurPick().size === watchCurrencyOptions.length" triggerLabel="Tous" (toggle)="toggleWatchCur($event)" (toggleAll)="toggleAllWatchCur()"></app-ti-multiselect>
+              </th>
+            </ng-container>
+            <ng-container matColumnDef="statusFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"></th>
+            </ng-container>
+            <ng-container matColumnDef="actionsFilter">
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"></th>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="uniColumns" class="ti-table-header-row"></tr>
+            <tr mat-header-row *matHeaderRowDef="uniFilterColumns" class="ti-filter-row"></tr>
+            <tr mat-row *matRowDef="let r; columns: uniColumns" class="ti-row" matTooltip="Ouvrir le détail du titre" (click)="openSecurity(r.ticker)"></tr>
+          </table>
+        </div>
+        @if (noWatchRows()) {
+          <p class="ti-empty-note">Aucun titre uniquement suivi.</p>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="ti-search-body">
+      <!-- Indices de référence -->
+      <div class="ti-panel">
+        <button type="button" class="ti-panel-head" (click)="togglePanel('index')">
+          <span class="ti-panel-icon">
+            <mat-icon svgIcon="globe-grid" style="font-size:15px;color:#ffffff"></mat-icon>
+          </span>
+          <h2 class="ti-panel-title">Indices de référence</h2>
+          <span class="ti-panel-note">{{ indexNote }}</span>
+          <span class="ti-panel-chevron" [class.ti-panel-chevron-open]="panels().index">
+            <mat-icon svgIcon="chevron-down" style="font-size:15px;color:#ffffff"></mat-icon>
+          </span>
+        </button>
+        @if (panels().index) {
+          <div class="ti-panel-body pm-unfold-block">
+            <div class="ti-panel-body-row">
+              <label class="ti-index-select-field">
+                Indice
+                <app-ti-select [groups]="indexGroups()" [value]="index()" panelClass="pm-sel-panel pm-sel-panel-banded pm-unfold" (valueChange)="setIndex($event)"></app-ti-select>
+              </label>
+              <button type="button" mat-flat-button class="ti-preview-btn" (click)="openPreview()">
+                <mat-icon svgIcon="eye" style="font-size:14px"></mat-icon>
+                Aperçu
+              </button>
+              <button type="button" matIconButton [matTooltip]="refreshLabel()" (click)="refreshIndexAction()">
+                <mat-icon svgIcon="refresh" style="font-size:15px"></mat-icon>
+              </button>
+            </div>
+            <p class="ti-index-updated">Dernière mise à jour de la liste : {{ lastUpdate() }}</p>
+            <div class="ti-panel-body-row">
+              <span class="ti-index-summary">{{ indexMembersCurrent().length }} / {{ selectedIndex().count }} composants chargés</span>
+              @if (indexAction()) {
+                <span class="ti-index-action">{{ indexAction() }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Critères de recherche -->
+      <div class="ti-panel">
+        <button type="button" class="ti-panel-head" (click)="togglePanel('crit')">
+          <span class="ti-panel-icon">
+            <mat-icon svgIcon="filter" style="font-size:15px;color:#ffffff"></mat-icon>
+          </span>
+          <h2 class="ti-panel-title">Critères de recherche</h2>
+          <span class="ti-panel-note">{{ searchNote() }}</span>
+          <span class="ti-panel-chevron" [class.ti-panel-chevron-open]="panels().crit">
+            <mat-icon svgIcon="chevron-down" style="font-size:15px;color:#ffffff"></mat-icon>
+          </span>
+        </button>
+        @if (panels().crit) {
+          <div class="ti-panel-body pm-unfold-block">
+            <div class="ti-crit-grid">
+              <label class="ti-field">Texte libre
+                <input class="ti-input" placeholder="Nom, code, ISIN, émetteur" [value]="search().q" (input)="patchSearch({ q: $any($event.target).value })" />
+              </label>
+              <label class="ti-field">Classe d'actifs
+                <app-ti-select [groups]="classGroups" [value]="search().cls" (valueChange)="patchSearch({ cls: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Devise
+                <app-ti-select [groups]="currencyGroups" [value]="search().currency" (valueChange)="patchSearch({ currency: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Liquidité minimale
+                <app-ti-select [groups]="liquidityGroups" [value]="search().liquidity" (valueChange)="patchSearch({ liquidity: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Notation minimale
+                <app-ti-select [groups]="ratingGroups" [value]="search().rating" panelClass="pm-sel-panel pm-sel-panel-banded pm-unfold" (valueChange)="patchSearch({ rating: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Classification durable
+                <app-ti-select [groups]="esgGroups" [value]="search().esg" (valueChange)="patchSearch({ esg: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Consensus analystes
+                <app-ti-select [groups]="consensusGroups" [value]="search().consensus" (valueChange)="patchSearch({ consensus: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Fréquence du dividende
+                <app-ti-select [groups]="divFreqGroups" [value]="search().divFreq" (valueChange)="patchSearch({ divFreq: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Bénéfice par action minimal
+                <input class="ti-input" placeholder="ex : 2,50" [value]="search().eps" (input)="patchSearch({ eps: $any($event.target).value })" />
+              </label>
+              <label class="ti-field">Place boursière
+                <app-ti-select [groups]="placeGroups" [value]="search().place" (valueChange)="patchSearch({ place: $event })"></app-ti-select>
+              </label>
+              <label class="ti-field">Secteur d'activité
+                <app-ti-select [groups]="sectorGroups" [value]="search().sector" (valueChange)="patchSearch({ sector: $event })"></app-ti-select>
+              </label>
+            </div>
+            <div class="ti-panel-body-row">
+              <button type="button" matIconButton matTooltip="Réinitialiser les critères" (click)="resetSearch()">
+                <mat-icon svgIcon="rotate-left" style="font-size:15px"></mat-icon>
+              </button>
+              <span class="ti-crit-summary">{{ searchSummary() }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Résultats -->
+      <div class="ti-panel">
+        <button type="button" class="ti-panel-head" (click)="togglePanel('res')">
+          <span class="ti-panel-icon">
+            <mat-icon svgIcon="list" style="font-size:15px;color:#ffffff"></mat-icon>
+          </span>
+          <h2 class="ti-panel-title">Résultats</h2>
+          <span class="ti-panel-note">{{ searchCount() }}</span>
+          <span class="ti-panel-chevron" [class.ti-panel-chevron-open]="panels().res">
+            <mat-icon svgIcon="chevron-down" style="font-size:15px;color:#ffffff"></mat-icon>
+          </span>
+        </button>
+        @if (panels().res) {
+          <div class="ti-panel-body pm-unfold-block">
+            <div class="ti-res-toolbar">
+              <span class="ti-res-source" role="group" aria-label="Source des résultats">
+                @for (v of resSources; track v.key) {
+                  <button type="button" role="radio" [attr.aria-checked]="resSource() === v.key" class="ti-res-source-btn" [class.ti-res-source-btn-active]="resSource() === v.key" (click)="setResSource(v.key)">
+                    @if (resSource() === v.key) {
+                      <mat-icon svgIcon="check" style="font-size:15px"></mat-icon>
+                    }
+                    {{ v.label }}
+                  </button>
+                }
+              </span>
+              <span class="ti-pick-note">{{ pickNote() }}</span>
+              <span class="ti-pick-status" [style.color]="pickStatusColor()">{{ pickStatus() }}</span>
+              <button type="button" matIconButton class="ti-add-picked-btn" [disabled]="noPick()" matTooltip="Ajouter les titres sélectionnés à l'univers d'investissement" (click)="addPickedOk()">
+                <mat-icon svgIcon="plus" style="font-size:17px"></mat-icon>
+              </button>
+              <span class="ti-watch-hint" matTooltip="Le titre ajouté est mis en suivi : retenu dans l'univers, jamais négocié">
+                <mat-icon svgIcon="eye" style="font-size:17px"></mat-icon>
+              </span>
+              <button type="button" matIconButton class="ti-reset-picked-btn" matTooltip="Réinitialiser la sélection, les critères et les décisions de cette session" (click)="resetPicked()">
+                <mat-icon svgIcon="rotate-left" style="font-size:16px"></mat-icon>
+              </button>
+            </div>
+
+            <div class="ti-table-scroll">
+              <table mat-table [dataSource]="searchRows()" class="ti-table ti-res-table">
+                <ng-container matColumnDef="select">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-select"><mat-checkbox [checked]="allPicked()" (change)="togglePickAll()" matTooltip="Tout sélectionner"></mat-checkbox></th>
+                  <td mat-cell *matCellDef="let r" class="ti-td ti-td-select"><mat-checkbox [checked]="r.picked" (change)="togglePicked(r.ticker)"></mat-checkbox></td>
+                </ng-container>
+                <ng-container matColumnDef="security">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-security">
+                    <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('security').color" [style.font-weight]="resSortHeader('security').weight" [matTooltip]="resSortHeader('security').title" (click)="onResSort('security')">
+                      Titre
+                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('security').opacity" [style.transform]="'rotate(' + resSortHeader('security').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      </span>
+                    </button>
+                  </th>
+                  <td mat-cell *matCellDef="let r" class="ti-td">
+                    <span class="ti-res-security-name">{{ r.ticker }} — {{ r.name }}</span>
+                    <span class="ti-res-security-sub">{{ r.isin }} · {{ r.market }}</span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="cls">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th">
+                    <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('cls').color" [style.font-weight]="resSortHeader('cls').weight" [matTooltip]="resSortHeader('cls').title" (click)="onResSort('cls')">
+                      Classe
+                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('cls').opacity" [style.transform]="'rotate(' + resSortHeader('cls').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      </span>
+                    </button>
+                  </th>
+                  <td mat-cell *matCellDef="let r" class="ti-td">{{ r.assetClass }}</td>
+                </ng-container>
+                <ng-container matColumnDef="currency">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th">
+                    <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('currency').color" [style.font-weight]="resSortHeader('currency').weight" [matTooltip]="resSortHeader('currency').title" (click)="onResSort('currency')">
+                      Devise
+                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('currency').opacity" [style.transform]="'rotate(' + resSortHeader('currency').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      </span>
+                    </button>
+                  </th>
+                  <td mat-cell *matCellDef="let r" class="ti-td">{{ r.currency }}</td>
+                </ng-container>
+                <ng-container matColumnDef="rating">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th">
+                    <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('rating').color" [style.font-weight]="resSortHeader('rating').weight" [matTooltip]="resSortHeader('rating').title" (click)="onResSort('rating')">
+                      Notation
+                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('rating').opacity" [style.transform]="'rotate(' + resSortHeader('rating').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      </span>
+                    </button>
+                  </th>
+                  <td mat-cell *matCellDef="let r" class="ti-td">{{ r.rating }}</td>
+                </ng-container>
+                <ng-container matColumnDef="liquidity">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th">
+                    <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('liquidity').color" [style.font-weight]="resSortHeader('liquidity').weight" [matTooltip]="resSortHeader('liquidity').title" (click)="onResSort('liquidity')">
+                      Liquidité
+                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('liquidity').opacity" [style.transform]="'rotate(' + resSortHeader('liquidity').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      </span>
+                    </button>
+                  </th>
+                  <td mat-cell *matCellDef="let r" class="ti-td">{{ r.liquidity }}</td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th">
+                    <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('status').color" [style.font-weight]="resSortHeader('status').weight" [matTooltip]="resSortHeader('status').title" (click)="onResSort('status')">
+                      Statut
+                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('status').opacity" [style.transform]="'rotate(' + resSortHeader('status').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      </span>
+                    </button>
+                  </th>
+                  <td mat-cell *matCellDef="let r" class="ti-td">
+                    <span class="ti-status-badge" [style.background]="r.tagBg" [style.color]="r.tagFg" [matTooltip]="r.statusHint">
+                      <span class="ti-status-dot" [style.background]="r.dotColor"></span>
+                      {{ r.status }}
+                    </span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-actions">Action</th>
+                  <td mat-cell *matCellDef="let r" class="ti-td ti-td-actions">
+                    <button type="button" matIconButton matTooltip="Ouvrir la fiche du titre" (click)="openSecurity(r.ticker)">
+                      <mat-icon svgIcon="file-text" style="font-size:14px"></mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="selectFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"></th>
+                </ng-container>
+                <ng-container matColumnDef="securityFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColName()" (input)="resColName.set($any($event.target).value)" /></th>
+                </ng-container>
+                <ng-container matColumnDef="clsFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColCls()" (input)="resColCls.set($any($event.target).value)" /></th>
+                </ng-container>
+                <ng-container matColumnDef="currencyFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColCurrency()" (input)="resColCurrency.set($any($event.target).value)" /></th>
+                </ng-container>
+                <ng-container matColumnDef="ratingFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColRating()" (input)="resColRating.set($any($event.target).value)" /></th>
+                </ng-container>
+                <ng-container matColumnDef="liquidityFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColLiquidity()" (input)="resColLiquidity.set($any($event.target).value)" /></th>
+                </ng-container>
+                <ng-container matColumnDef="statusFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
+                    <app-ti-multiselect [options]="resStatusOptions()" [selected]="resStatusPick()" [allSelected]="resStatusPick().size > 0 && resStatusPick().size === resStatusOptions().length" triggerLabel="Tous" (toggle)="toggleResStatus($event)" (toggleAll)="toggleAllResStatus()"></app-ti-multiselect>
+                  </th>
+                </ng-container>
+                <ng-container matColumnDef="actionsFilter">
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"></th>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="resColumns" class="ti-table-header-row"></tr>
+                <tr mat-header-row *matHeaderRowDef="resFilterColumns" class="ti-filter-row"></tr>
+                <tr mat-row *matRowDef="let r; columns: resColumns" class="ti-row" [class.ti-row-picked]="r.picked"></tr>
+              </table>
+            </div>
+            @if (noSearchRows()) {
+              <p class="ti-empty-note">Aucun titre ne satisfait ces critères.</p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</mat-tab-nav-panel>
+</div>

@@ -1,0 +1,264 @@
+<app-side-panel
+  [title]="journal().title"
+  [subtitle]="journal().subtitle"
+  [icon]="icon"
+  [flush]="true"
+  [footer]="true"
+  cancelLabel="OK"
+  cancelKind="ok"
+  [note]="journal().subtitle"
+  (closed)="close()"
+  (pinnedChange)="onPinnedChange($event)"
+>
+  <nav mat-tab-nav-bar class="pm-hist-tabs pm-tabnav" [tabPanel]="histTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of tabs; track t.key) {
+      <button type="button" mat-tab-link class="pm-hist-tab" [active]="tab() === t.key"
+        [class.pm-hist-tab-active]="tab() === t.key" (click)="setTab(t.key)">
+        @if (t.key === 'journal') {
+          <mat-icon svgIcon="list" style="font-size:15px"></mat-icon>
+        } @else {
+          <mat-icon svgIcon="ticket" style="font-size:15px"></mat-icon>
+        }
+        {{ t.label }}
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #histTabPanel>
+  @if (tab() === 'journal') {
+    <div class="pm-hist-toolbar">
+      <mat-button-toggle-group class="pm-hist-range" hideSingleSelectionIndicator [value]="range()" (change)="setRange($event.value)">
+        @for (r of rangeOptions; track r.key) {
+          <mat-button-toggle [value]="r.key">
+            @if (range() === r.key) {
+              <mat-icon svgIcon="check" style="font-size:13px"></mat-icon>
+            }
+            {{ r.label }}
+          </mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+      <span class="pm-hist-note">{{ journal().note }}</span>
+    </div>
+
+    <div class="pm-hist-kinds">
+      <span class="pm-hist-kinds-label">Nature</span>
+      @for (k of kindOptions; track k.key) {
+        @let on = kinds()[k.key] !== false;
+        <button
+          type="button"
+          class="pm-hist-kind"
+          [class.pm-hist-kind-on]="on"
+          [style.background]="on ? k.bg : 'var(--surface)'"
+          [style.color]="on ? k.fg : 'var(--color-neutral-600)'"
+          [style.border-color]="on ? k.fg : 'var(--color-neutral-300)'"
+          (click)="toggleKind(k.key)"
+        >
+          @if (on) {
+            <mat-icon svgIcon="check" style="font-size:13px"></mat-icon>
+          } @else {
+            <span class="pm-hist-kind-dot" [style.background]="'var(--color-neutral-400)'"></span>
+          }
+          {{ k.label }}
+          <span class="pm-hist-kind-count">({{ journal().kindCounts[k.key] || 0 }})</span>
+        </button>
+      }
+      <button type="button" class="pm-hist-toggle-all" (click)="toggleAll()">{{ allOn() ? 'Aucune' : 'Toutes' }}</button>
+    </div>
+
+    <div class="pm-hist-kpis">
+      @for (k of journal().kpis; track k.label) {
+        <div class="pm-hist-kpi">
+          <div class="pm-hist-kpi-label">{{ k.label }}</div>
+          <div class="pm-hist-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="pm-hist-chart-wrap">
+      <div class="pm-hist-chart">
+        <svg viewBox="0 0 1000 150" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="pos-hist-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--ink-brand-2)" stop-opacity="0.20"></stop>
+              <stop offset="100%" stop-color="var(--ink-brand-2)" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="145" x2="1000" y2="145" stroke="var(--color-neutral-400)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <path [attr.d]="journal().area" fill="url(#pos-hist-grad)" stroke="none"></path>
+          <path [attr.d]="journal().path" fill="none" stroke="var(--ink-brand-2)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+        </svg>
+      </div>
+      <div class="pm-hist-ticks">
+        @for (t of journal().ticks; track $index) {
+          <span>{{ t.label }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="pm-hist-table-wrap">
+      <table mat-table [dataSource]="journal().rows" class="pm-hist-table">
+        <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>
+          <button type="button" class="pm-sort-btn" [style.color]="sortHeader('date').color" [style.font-weight]="sortHeader('date').weight" [matTooltip]="sortHeader('date').title" (click)="onSort('date')">
+            Date
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('date').opacity" [style.transform]="'rotate(' + sortHeader('date').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-nowrap">{{ r.date }}</td>
+        </ng-container>
+        <ng-container matColumnDef="security">
+        <th mat-header-cell *matHeaderCellDef>
+          <button type="button" class="pm-sort-btn" [style.color]="sortHeader('security').color" [style.font-weight]="sortHeader('security').weight" [matTooltip]="sortHeader('security').title" (click)="onSort('security')">
+            Titre
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('security').opacity" [style.transform]="'rotate(' + sortHeader('security').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-hist-ticker">{{ r.ticker }}</td>
+        </ng-container>
+        <ng-container matColumnDef="lot">
+        <th mat-header-cell *matHeaderCellDef class="pm-center">
+          <button type="button" class="pm-sort-btn pm-sort-btn-center" [style.color]="sortHeader('lot').color" [style.font-weight]="sortHeader('lot').weight" [matTooltip]="sortHeader('lot').title" (click)="onSort('lot')">
+            Lot
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('lot').opacity" [style.transform]="'rotate(' + sortHeader('lot').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-center pm-hist-lot">{{ r.lot }}</td>
+        </ng-container>
+        <ng-container matColumnDef="operation">
+        <th mat-header-cell *matHeaderCellDef>
+          <button type="button" class="pm-sort-btn" [style.color]="sortHeader('operation').color" [style.font-weight]="sortHeader('operation').weight" [matTooltip]="sortHeader('operation').title" (click)="onSort('operation')">
+            Opération
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('operation').opacity" [style.transform]="'rotate(' + sortHeader('operation').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r">
+            <span class="pm-hist-tag" [style.background]="r.tagBg" [style.color]="r.tagFg">
+              <span class="pm-hist-tag-dot" [style.background]="r.tagFg"></span>
+              {{ r.kind }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef class="pm-num">
+          <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('quantity').color" [style.font-weight]="sortHeader('quantity').weight" [matTooltip]="sortHeader('quantity').title" (click)="onSort('quantity')">
+            Quantité
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('quantity').opacity" [style.transform]="'rotate(' + sortHeader('quantity').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-num">{{ r.qty }}</td>
+        </ng-container>
+        <ng-container matColumnDef="price">
+        <th mat-header-cell *matHeaderCellDef class="pm-num">
+          <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('price').color" [style.font-weight]="sortHeader('price').weight" [matTooltip]="sortHeader('price').title" (click)="onSort('price')">
+            Cours
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('price').opacity" [style.transform]="'rotate(' + sortHeader('price').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-num">{{ r.price }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef class="pm-num">
+          <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('amount').color" [style.font-weight]="sortHeader('amount').weight" [matTooltip]="sortHeader('amount').title" (click)="onSort('amount')">
+            Montant
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('amount').opacity" [style.transform]="'rotate(' + sortHeader('amount').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-num" [style.color]="r.amountColor">{{ r.amount }}</td>
+        </ng-container>
+        <ng-container matColumnDef="position">
+        <th mat-header-cell *matHeaderCellDef class="pm-num">
+          <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('position').color" [style.font-weight]="sortHeader('position').weight" [matTooltip]="sortHeader('position').title" (click)="onSort('position')">
+            Position
+            <span class="pm-sort-chev" [style.opacity]="sortHeader('position').opacity" [style.transform]="'rotate(' + sortHeader('position').rotate + ')'">
+              <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+            </span>
+          </button>
+        </th>
+          <td mat-cell *matCellDef="let r" class="pm-num pm-muted">{{ r.balance }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="histColumns()"></tr>
+        <tr mat-row *matRowDef="let r; columns: histColumns()" [style.background]="r.zebra"></tr>
+      </table>
+    </div>
+  }
+
+  @if (tab() === 'ref' && ref(); as rf) {
+    <div class="pm-ref-wrap">
+      <div class="pm-ref-card">
+        <div class="pm-ref-head">
+          <span class="pm-ref-name">{{ rf.name }}</span>
+          <span class="pm-ref-pill pm-ref-pill-neutral">{{ rf.isin }}</span>
+          <span class="pm-ref-pill pm-ref-pill-brand">{{ rf.symbol }}</span>
+          <span class="pm-ref-pill pm-ref-pill-ok">{{ rf.currency }}</span>
+          <span class="pm-ref-pill pm-ref-pill-alt">{{ rf.index }}</span>
+          <span class="pm-ref-place">{{ rf.place }}</span>
+        </div>
+        <div class="pm-ref-body">
+          <div class="pm-ref-cards">
+            @for (c of rf.cards; track $index) {
+              <div class="pm-ref-mini-card">
+                @for (f of c.fields; track f.label) {
+                  <span class="pm-ref-field">
+                    <span class="pm-ref-field-label">{{ f.label }}</span>
+                    <span class="pm-ref-field-value">{{ f.value }}</span>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="pm-ref-mini-card">
+            <span class="pm-ref-field-label">Activité</span>
+            <span class="pm-ref-activity">
+              <span class="pm-ref-activity-kind">{{ rf.kind }}</span>
+              <span class="pm-ref-activity-text">
+                <span class="pm-ref-activity-desc">{{ rf.activity }}</span>
+                <span class="pm-ref-field-label">{{ rf.activityNote }}</span>
+              </span>
+            </span>
+          </div>
+
+          <div class="pm-ref-mini-card">
+            <span class="pm-ref-price-head">
+              <span class="pm-ref-field-label">Cours sur 12 mois</span>
+              <span class="pm-ref-year" [style.color]="rf.yearColor">{{ rf.yearRange }}</span>
+            </span>
+            <div class="pm-ref-chart">
+              <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="pos-ref-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--ink-brand-2)" stop-opacity="0.18"></stop>
+                    <stop offset="100%" stop-color="var(--ink-brand-2)" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="116" x2="1000" y2="116" stroke="var(--color-neutral-400)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+                <path [attr.d]="rf.priceArea" fill="url(#pos-ref-grad)" stroke="none"></path>
+                <path [attr.d]="rf.pricePath" fill="none" stroke="var(--ink-brand-2)" stroke-width="1.8" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+              </svg>
+            </div>
+            <div class="pm-ref-ticks">
+              @for (t of rf.priceTicks; track $index) {
+                <span>{{ t.label }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</mat-tab-nav-panel>
+</app-side-panel>

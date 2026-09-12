@@ -1,0 +1,275 @@
+<div class="cl-page">
+  <div class="cl-head">
+    <button type="button" matIconButton class="cl-burger" [class.cl-burger-on]="panelOpen()"
+      [matTooltip]="panelOpen() ? 'Masquer le panneau' : 'Afficher le panneau'"
+      [attr.aria-expanded]="panelOpen()" (click)="togglePanel()">
+      <mat-icon svgIcon="menu" style="font-size:19px"></mat-icon>
+    </button>
+
+    <div class="cl-head-titles">
+      <h1 class="cl-h1">Calendrier</h1>
+      <p class="cl-subtitle">{{ subtitle() }}</p>
+    </div>
+
+    <div class="cl-nav">
+      <button type="button" matIconButton class="cl-nav-btn" matTooltip="Période précédente" (click)="move(-1)">
+        <mat-icon svgIcon="chevron-left" style="font-size:14px"></mat-icon>
+      </button>
+      <button type="button" matButton="outlined" class="cl-today" (click)="goToday()">Aujourd'hui</button>
+      <button type="button" matIconButton class="cl-nav-btn" matTooltip="Période suivante" (click)="move(1)">
+        <mat-icon svgIcon="chevron-right" style="font-size:14px"></mat-icon>
+      </button>
+      <span class="cl-period">{{ periodLabel() }}</span>
+    </div>
+
+    <div class="cl-head-tools">
+      @if (searchOpen()) {
+        <input class="cl-search-input" type="search" autofocus placeholder="Rechercher un élément…"
+          [value]="search()" (input)="search.set($any($event.target).value)" />
+      }
+      <button type="button" matIconButton class="cl-tool-btn" [class.cl-tool-btn-on]="searchOpen()"
+        [matTooltip]="searchOpen() ? 'Fermer la recherche' : 'Rechercher'" (click)="toggleSearch()">
+        <mat-icon [svgIcon]="searchOpen() ? 'close' : 'search'" style="font-size:20px"></mat-icon>
+      </button>
+
+      <button type="button" matIconButton class="cl-tool-btn" matTooltip="Paramètres d'affichage"
+        [matMenuTriggerFor]="clSettings">
+        <mat-icon svgIcon="settings" style="font-size:20px"></mat-icon>
+      </button>
+      <mat-menu #clSettings="matMenu" class="cl-settings-menu" xPosition="before">
+        <div class="cl-settings" (click)="$event.stopPropagation()">
+          <h3 class="cl-settings-title">Affichage</h3>
+          <mat-checkbox class="cl-settings-check" [checked]="tintWeekends()"
+            (change)="tintWeekends.set($event.checked)">Teinter les fins de semaine</mat-checkbox>
+
+          <h3 class="cl-settings-title">Plage horaire</h3>
+          @for (r of dayRanges; track r.key) {
+            <button type="button" class="cl-settings-option" [class.cl-settings-option-on]="dayRange() === r.key"
+              (click)="setDayRange(r.key)">
+              <mat-icon class="cl-settings-tick" svgIcon="check"></mat-icon>
+              {{ r.label }}
+            </button>
+          }
+
+          <h3 class="cl-settings-title">Zone — fins de semaine et jours fériés</h3>
+          @for (g of zoneGroups; track g.area) {
+            <span class="cl-settings-sub">{{ g.area }}</span>
+            @for (z of g.zones; track z.id) {
+              <button type="button" class="cl-settings-option" [class.cl-settings-option-on]="zone() === z.id"
+                (click)="setZone(z.id)">
+                <mat-icon class="cl-settings-tick" svgIcon="check"></mat-icon>
+                {{ z.label }}
+              </button>
+            }
+          }
+        </div>
+      </mat-menu>
+
+      <mat-select class="pm-sel-trigger cl-combo cl-view-select" panelClass="pm-sel-panel pm-unfold"
+        [panelWidth]="null" [value]="view()" (valueChange)="setView($event)" aria-label="Maille d'affichage">
+        @for (v of views; track v.key) {
+          <mat-option class="cl-view-option" [value]="v.key">
+            <span class="cl-option">
+              <mat-icon class="cl-option-icon" [svgIcon]="v.icon"></mat-icon>
+              {{ v.label }}
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+    </div>
+  </div>
+
+  <!-- `mat-sidenav-container` n'accepte que `mat-sidenav` et `mat-sidenav-content` comme
+       enfants : tout autre nœud intercalé serait silencieusement perdu à la projection.
+       `autosize` est nécessaire pour que la marge du contenu suive la largeur du panneau. -->
+  <mat-sidenav-container class="cl-shell" autosize>
+    <mat-sidenav class="cl-side" mode="side" [opened]="panelOpen()" disableClose>
+      <mat-select #createSelect class="pm-sel-trigger cl-combo cl-side-new" panelClass="pm-sel-panel pm-unfold"
+        [panelWidth]="null" placeholder="Créer" aria-label="Créer un élément"
+        (selectionChange)="create($event.value)">
+        @for (o of createOptions; track o.value) {
+          <mat-option class="cl-create-option" [value]="o.value">
+            <span class="cl-kind">
+              <mat-icon class="cl-kind-icon" [svgIcon]="o.icon" [style.color]="o.color"></mat-icon>
+              <span class="cl-kind-text">
+                <span class="cl-kind-label">{{ o.label }}</span>
+                <span class="cl-kind-hint">{{ o.hint }}</span>
+              </span>
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+
+      <div class="cl-mini">
+        <div class="cl-mini-head">
+          <button type="button" matIconButton class="cl-mini-btn" matTooltip="Mois précédent" (click)="miniMove(-1)">
+            <mat-icon svgIcon="chevron-left" style="font-size:13px"></mat-icon>
+          </button>
+          <span class="cl-mini-label">{{ miniLabel() }}</span>
+          <button type="button" matIconButton class="cl-mini-btn" matTooltip="Mois suivant" (click)="miniMove(1)">
+            <mat-icon svgIcon="chevron-right" style="font-size:13px"></mat-icon>
+          </button>
+        </div>
+        <div class="cl-mini-grid">
+          @for (n of dow1(); track $index) {
+            <span class="cl-mini-dow" [class.cl-weekend]="n.weekend">{{ n.label }}</span>
+          }
+          @for (c of miniCells(); track c.key) {
+            <button type="button" class="cl-mini-cell" [class.cl-mini-other]="c.other"
+              [class.cl-weekend]="c.weekend" [class.cl-holiday]="c.holiday" [class.cl-mini-period]="c.inPeriod"
+              [class.cl-mini-today]="c.isToday" [matTooltip]="c.holiday ?? ''" (click)="pickDay(c.key)">
+              {{ c.dayNum }}
+              @if (c.hasItems) {
+                <span class="cl-mini-dot"></span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="cl-side-block">
+        <h2 class="cl-side-title">Catégories</h2>
+        @for (l of legend; track l.label) {
+          <span class="cl-legend-item">
+            <span class="cl-legend-swatch" [style.background]="l.color"></span>
+            {{ l.label }}
+          </span>
+        }
+      </div>
+
+      <p class="cl-count">{{ countLabel() }}</p>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="cl-body">
+
+    <!-- ───────────────────────── Semaine ───────────────────────── -->
+    @if (view() === 'week') {
+      <div class="cl-card">
+        <div class="cl-week-head">
+          <div class="cl-gutter"></div>
+          @for (d of weekDays(); track d.key) {
+            <button type="button" class="cl-day-head" [class.cl-day-today]="d.isToday"
+              [class.cl-weekend]="d.weekend" [class.cl-holiday]="d.holiday"
+              [matTooltip]="d.holiday ?? ''" (dblclick)="openNew(d.key)">
+              <span class="cl-day-dow">{{ d.dow }}</span>
+              <span class="cl-day-num">{{ d.dayNum }}</span>
+              @if (d.holiday) {
+                <span class="cl-day-holiday">{{ d.holiday }}</span>
+              }
+            </button>
+          }
+        </div>
+
+        <div class="cl-allday-row">
+          <div class="cl-gutter cl-gutter-label">Jour</div>
+          @for (d of weekDays(); track d.key) {
+            <div class="cl-allday-cell" [class.cl-weekend]="d.weekend">
+              @for (ev of d.allDay; track ev.item.id) {
+                <button type="button" class="cl-chip" [style.border-left-color]="ev.color" [style.background]="ev.tint"
+                  [matTooltip]="ev.tooltip" matTooltipClass="pm-tooltip-multiline" (dblclick)="openEdit(ev.item, $event)">
+                  <span class="cl-chip-title" [class.cl-struck]="ev.struck">{{ ev.title }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="cl-week-grid">
+          <div class="cl-gutter">
+            @for (h of hours(); track h) {
+              <div class="cl-hour" [style.height.px]="hourPx">{{ h }}</div>
+            }
+          </div>
+          @for (d of weekDays(); track d.key) {
+            <div class="cl-day-col" [class.cl-day-col-today]="d.isToday" [class.cl-weekend]="d.weekend"
+              [style.height.px]="gridHeight()"
+              (dblclick)="openAt(d.key, $event)">
+              @for (ev of d.timed; track ev.item.id) {
+                <button type="button" class="cl-event" [class.cl-event-compact]="ev.compact"
+                  [style.top.px]="ev.top" [style.height.px]="ev.height"
+                  [style.border-left-color]="ev.color" [style.background]="ev.tint"
+                  [matTooltip]="ev.tooltip" matTooltipClass="pm-tooltip-multiline" (dblclick)="openEdit(ev.item, $event)">
+                  @if (ev.compact) {
+                    <span class="cl-event-start">{{ ev.item.start }}</span>
+                  }
+                  <span class="cl-event-title" [class.cl-struck]="ev.struck">{{ ev.title }}</span>
+                  @if (!ev.compact) {
+                    <span class="cl-event-time">{{ ev.timeLabel }}</span>
+                  }
+                </button>
+              }
+              @if (d.showNow) {
+                <span class="cl-now" [style.top.px]="d.nowTop"></span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ───────────────────────── Mois ───────────────────────── -->
+    @if (view() === 'month') {
+      <div class="cl-card">
+        <div class="cl-month-head">
+          @for (n of dowNames(); track n.label) {
+            <div class="cl-month-dow" [class.cl-weekend]="n.weekend">{{ n.label }}</div>
+          }
+        </div>
+        <div class="cl-month-grid">
+          @for (c of monthCells(); track c.key) {
+            <div class="cl-month-cell" [class.cl-month-other]="c.other" [class.cl-weekend]="c.weekend"
+              [class.cl-holiday]="c.holiday" (dblclick)="openNew(c.key)">
+              <span class="cl-month-daybar">
+                <span class="cl-month-num" [class.cl-month-num-today]="c.isToday">{{ c.dayNum }}</span>
+                @if (c.holiday) {
+                  <span class="cl-month-holiday" [matTooltip]="c.holiday">{{ c.holiday }}</span>
+                }
+              </span>
+              @for (ev of c.chips; track ev.item.id) {
+                <button type="button" class="cl-chip" [style.border-left-color]="ev.color" [style.background]="ev.tint"
+                  [matTooltip]="ev.tooltip" matTooltipClass="pm-tooltip-multiline" (dblclick)="openEdit(ev.item, $event)">
+                  <span class="cl-chip-time">{{ ev.shortTime }}</span>
+                  <span class="cl-chip-title" [class.cl-struck]="ev.struck">{{ ev.title }}</span>
+                </button>
+              }
+              @if (c.hidden) {
+                <button type="button" class="cl-more" (click)="expand(c.key); $event.stopPropagation()">+ {{ c.hidden }} de plus</button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ───────────────────────── Année ───────────────────────── -->
+    @if (view() === 'year') {
+      <div class="cl-year-grid">
+        @for (m of yearMonths(); track m.index) {
+          <div class="cl-year-card">
+            <button type="button" class="cl-year-head" (click)="openMonth(m.index)">
+              {{ m.name }}
+              <span class="cl-year-count">{{ m.count }}</span>
+            </button>
+            <div class="cl-year-days">
+              @for (n of dow1(); track $index) {
+                <span class="cl-year-dow" [class.cl-weekend]="n.weekend">{{ n.label }}</span>
+              }
+              @for (c of m.cells; track c.key) {
+                <button type="button" class="cl-year-cell" [class.cl-year-other]="c.other"
+                  [class.cl-weekend]="c.weekend" [class.cl-holiday]="c.holiday"
+                  [class.cl-year-today]="c.isToday" [matTooltip]="c.holiday ?? ''"
+                  [disabled]="c.other" (click)="openDay(c.key)">
+                  {{ c.dayNum }}
+                  @if (c.hasItems) {
+                    <span class="cl-year-dot"></span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

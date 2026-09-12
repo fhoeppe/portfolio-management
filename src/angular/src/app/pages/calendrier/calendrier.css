@@ -1,0 +1,1058 @@
+/* Le prototype pose `box-sizing: border-box` sur tout le sous-arbre, et déclare deux encres que
+   la coque n'expose pas. Une `var()` non résolue invalide la déclaration qui la porte. */
+/* Hauteur fermée (`height`, pas `min-height`) : la zone de routage de la coque est déjà bornée,
+   et c'est ce qui permet au panneau latéral de rester en place pendant que seule la grille
+   défile. Sans cela, `mat-sidenav-container` se dimensionne sur son contenu et le panneau
+   s'en va avec lui. */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-ok-2: #0f766e;
+  --ink-warn-2: #b45309;
+  --ink-violet: #6d28d9;
+  --ink-stone: #57534e;
+  --ink-magenta: #a21caf;
+  /* Le trait de l'heure courante : la coque n'expose pas --color-accent. */
+  --color-accent: #d64541;
+  /* Voile de fin de semaine, volontairement très pâle : il doit se lire d'un coup d'œil sans
+     entrer en concurrence avec la pastille du jour ni avec les vignettes d'éléments. */
+  --band-weekend: rgba(0, 61, 165, 0.03);
+  /* Le férié se distingue de la fin de semaine par la teinte, pas seulement par le libellé :
+     tous deux sont chômés, mais l'un est régulier et l'autre exceptionnel. */
+  --band-holiday: rgba(180, 83, 9, 0.09);
+  --ink-holiday: #8f3f06;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+.cl-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok-2: #4fd1c5;
+  --ink-warn-2: #f3b782;
+  --ink-violet: #c4b5fd;
+  --ink-stone: #a8a29e;
+  --ink-magenta: #f7c6ff;
+  --color-accent: #f08a86;
+  --band-weekend: rgba(143, 180, 238, 0.045);
+  --band-holiday: rgba(240, 168, 104, 0.12);
+  --ink-holiday: #f0a868;
+}
+
+/* ===========================================================================
+   En-tête
+   =========================================================================== */
+
+.cl-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+/* Unique bascule du panneau latéral : en tête de bandeau, là où l'on cherche déjà ce genre de
+   commande. Elle vit hors du panneau, condition pour qu'elle survive à son repli et permette
+   de le rouvrir. */
+.cl-burger {
+  --mat-icon-button-state-layer-size: 36px;
+  --mat-icon-button-icon-size: 19px;
+  flex: none;
+  margin-right: -4px;
+  color: var(--ink-brand);
+}
+
+.cl-burger:hover {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.cl-burger-on {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.cl-head-titles {
+  min-width: 0;
+}
+
+.cl-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.cl-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.cl-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 18px;
+}
+
+/* Pas de `border-radius` : `matIconButton` est rond par défaut, et le forcer à 6px donnait un
+   carré arrondi de part et d'autre du bouton « Aujourd'hui ». */
+.cl-nav-btn {
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-size: 14px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  background: var(--surface);
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.cl-nav-btn:hover,
+.cl-today:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.cl-today {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  flex: none;
+}
+
+.cl-period {
+  margin-left: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cl-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===========================================================================
+   Outils de la barre : recherche et paramètres
+   =========================================================================== */
+
+/* Pas de `border-radius` ici : `matIconButton` est rond par défaut, et le forcer à 6px donnait
+   un carré arrondi au survol. */
+.cl-tool-btn {
+  --mat-icon-button-state-layer-size: 40px;
+  --mat-icon-button-icon-size: 20px;
+  flex: none;
+  color: var(--ink-brand);
+}
+
+.cl-tool-btn:hover {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.cl-tool-btn-on {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.cl-search-input {
+  width: 220px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.cl-search-input:focus {
+  border-color: var(--ink-brand-2);
+}
+
+/* Le contenu du menu est projeté depuis ce gabarit : il porte l'attribut d'encapsulation de la
+   page, donc ces règles l'atteignent malgré le montage dans l'overlay CDK. Toute règle qui
+   passerait par le `panelClass` en ancêtre, elle, ne matcherait jamais. */
+.cl-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 12px 8px;
+  min-width: 236px;
+}
+
+.cl-settings-title {
+  margin: 8px 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.cl-settings-check {
+  --mat-checkbox-label-text-size: 12px;
+  --mat-checkbox-state-layer-size: 26px;
+  --mat-checkbox-selected-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-checkbox-selected-focus-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-checkbox-selected-hover-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-checkbox-selected-pressed-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  margin-left: -8px;
+}
+
+/* Intertitre d'aire dans la liste des zones : plus discret que `.cl-settings-title`, qui sépare
+   les rubriques du menu. */
+.cl-settings-sub {
+  margin: 4px 0 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.cl-settings-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cl-settings-option:hover {
+  background: rgba(0, 61, 165, 0.08);
+}
+
+/* La coche occupe sa place même quand l'option n'est pas retenue : sans cela, les libellés se
+   décaleraient horizontalement au changement de choix. */
+.cl-settings-tick {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+  color: var(--ds-brand-fill, var(--ink-brand-2));
+  visibility: hidden;
+}
+
+.cl-settings-option-on {
+  font-weight: 600;
+}
+
+.cl-settings-option-on .cl-settings-tick {
+  visibility: visible;
+}
+
+/* ===========================================================================
+   Combos habillés en bouton plein
+   =========================================================================== */
+
+/* Traitement commun au combo « Créer » du panneau et au sélecteur de maille de l'en-tête : la
+   recette `pm-sel-trigger` de l'app, repeinte aux couleurs du bouton principal. */
+.cl-combo {
+  --mat-select-placeholder-text-color: #ffffff;
+  --mat-select-enabled-trigger-text-color: #ffffff;
+  --mat-select-enabled-arrow-color: #ffffff;
+  --mat-select-focused-arrow-color: #ffffff;
+  --mat-select-trigger-text-weight: 600;
+  width: auto;
+  border: 0;
+  background: var(--ds-brand-fill, var(--field-brand));
+}
+
+.cl-combo:hover {
+  background: var(--ds-brand-fill, var(--field-brand));
+  filter: brightness(1.08);
+}
+
+/* Le déclencheur étant ajusté à son contenu, le libellé et le chevron se touchent : Material ne
+   les sépare que par le `space-between` d'un champ pleine largeur. `::ng-deep` est nécessaire,
+   l'enveloppe de la flèche appartenant au gabarit de `mat-select`. */
+.cl-combo ::ng-deep .mat-mdc-select-arrow-wrapper {
+  margin-left: 12px;
+}
+
+/* Même gabarit que le combo « Créer » : les deux se répondent d'un bout à l'autre de l'écran. */
+.cl-view-select {
+  --pm-sel-h: 44px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 12px 0 18px;
+  flex: none;
+}
+
+/* ===========================================================================
+   Coque : panneau latéral + contenu
+   =========================================================================== */
+
+/* `mat-drawer-container` et `mat-drawer` posent chacun une couleur de texte et un fond issus du
+   thème M3 statique de Material, qui ignore le mode sombre maison porté par `[data-theme]` : les
+   numéros de jour ressortaient en #1a1b1f sur fond sombre. On les renvoie vers les jetons de
+   l'app — et non vers `inherit`, qui sur une propriété personnalisée est un mot-clé CSS : la
+   valeur serait héritée du parent, où le jeton n'existe pas, donc invalide, et Material
+   retomberait sur son propre défaut. */
+.cl-shell {
+  --mat-sidenav-content-text-color: var(--color-text);
+  --mat-sidenav-content-background-color: transparent;
+  --mat-sidenav-container-text-color: var(--color-text);
+  --mat-sidenav-container-background-color: transparent;
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.cl-side {
+  /* Material arrondit le coin du tiroir : le filet de séparation partait en courbe en haut à
+     droite. Le panneau est une colonne de l'écran, pas une carte — bord droit. */
+  --mat-sidenav-container-shape: 0;
+  width: 224px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Retrait haut plus généreux que les autres : il décolle le panneau du trait bleu de
+     l'en-tête, contre lequel le bouton venait buter. */
+  padding: 20px 14px 14px;
+  border-right: 1px solid var(--color-neutral-200);
+  background: var(--surface);
+}
+
+/* Combo d'action du panneau, habillé en bouton plein : plus haut et ajusté à son libellé, pas
+   étiré sur la largeur du panneau — c'est un point d'entrée, pas une barre. `align-self` est
+   nécessaire, le panneau étant une colonne flex qui étirerait sinon ses enfants. */
+.cl-side-new {
+  --pm-sel-h: 44px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 12px 0 16px;
+  align-self: flex-start;
+}
+
+/* Le « + » est dessiné en pseudo-élément sur la zone de valeur du déclencheur. `mat-select`
+   n'affiche son `mat-select-trigger` que lorsqu'une valeur est retenue, et ce combo n'en garde
+   jamais — c'est une action, pas un état : il n'existe donc aucun point d'insertion pour une
+   `mat-icon`. Le pseudo-élément appartient au déclencheur, il reste donc cliquable avec lui. */
+.cl-side-new ::ng-deep .mat-mdc-select-value {
+  display: flex;
+  align-items: center;
+}
+
+.cl-side-new ::ng-deep .mat-mdc-select-value::before {
+  content: '+';
+  flex: none;
+  margin-right: 9px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* Aération des entrées du sélecteur de maille. La marge est posée sur l'option elle-même et non
+   via le `panelClass` : le panneau est monté dans l'overlay CDK, hors de l'arbre de la page, et
+   une règle qui exigerait le `panelClass` en ancêtre ne matcherait jamais. Les marges verticales
+   voisines fusionnent : 8px donne bien 8px d'écart, pas 16. */
+/* `min-width` sur l'option, pas sur le panneau : celui-ci est en `panelWidth: null`, donc il se
+   dimensionne sur son contenu — élargir l'option élargit le panneau, et avec lui la bande de
+   survol et de sélection, qui va d'un bord à l'autre. */
+.cl-view-option {
+  margin-block: 8px;
+  min-width: 184px;
+}
+
+/* Le jeton doit être posé sur l'option elle-même : `pm-sel-panel` fixe la taille des options à
+   11px au niveau du panneau, hors de portée d'une règle encapsulée. */
+.cl-create-option,
+.cl-view-option {
+  --mat-option-label-text-size: 14px;
+  font-size: 14px;
+}
+
+/* Entrées du combo « Créer » : deux lignes, l'icône coloriée par nature. Material fixe la
+   hauteur d'une option sur une seule ligne de texte — il faut la rouvrir pour que la phrase
+   d'explication tienne. */
+.cl-create-option {
+  height: auto;
+  min-height: 46px;
+  padding-block: 6px;
+}
+
+.cl-kind {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cl-kind-icon {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  font-size: 17px;
+}
+
+.cl-kind-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.cl-kind-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cl-kind-hint {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* Option illustrée, commune aux deux combos de la page. */
+.cl-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cl-option-icon {
+  --mat-icon-color: var(--ink-brand-2);
+  flex: none;
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+}
+
+.cl-side-block {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.cl-side-title {
+  margin: 0 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Mini-mois
+   =========================================================================== */
+
+/* Écart volontairement plus large que le `gap` du panneau : le bouton d'action et le navigateur
+   de dates sont deux choses différentes, les coller donnerait l'impression d'un même bloc. */
+.cl-mini {
+  margin-top: 30px;
+}
+
+.cl-mini-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.cl-mini-label {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand);
+}
+
+.cl-mini-btn {
+  --mat-icon-button-state-layer-size: 22px;
+  --mat-icon-button-icon-size: 13px;
+  flex: none;
+  border-radius: 5px;
+  color: var(--color-neutral-700);
+}
+
+.cl-mini-btn:hover {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.cl-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+}
+
+.cl-mini-dow {
+  padding-bottom: 3px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--color-neutral-600);
+}
+
+.cl-mini-cell {
+  position: relative;
+  height: 22px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-neutral-800, var(--color-text));
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+/* Rappel des voiles de jour chômé : `.cl-mini-cell` remet le fond à `transparent` et, posée
+   plus bas dans le fichier, l'emporterait sur les règles génériques. */
+.cl-mini-cell.cl-weekend {
+  background-color: var(--band-weekend);
+}
+
+.cl-mini-cell.cl-holiday {
+  background-color: var(--band-holiday);
+}
+
+/* La période affichée dans la grille principale est rappelée en bloc, pour que le mini-mois
+   dise où l'on se trouve et pas seulement quel jour est sélectionné. */
+.cl-mini-cell.cl-mini-period {
+  background-color: rgba(0, 61, 165, 0.12);
+}
+
+.cl-mini-cell.cl-mini-other {
+  color: var(--color-neutral-600);
+  opacity: 0.5;
+}
+
+.cl-mini-cell.cl-mini-today {
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.cl-mini-cell:hover {
+  background-color: rgba(0, 61, 165, 0.18);
+}
+
+.cl-mini-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  border-radius: 999px;
+  background: var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+.cl-mini-today .cl-mini-dot {
+  background: #ffffff;
+}
+
+/* ===========================================================================
+   Légende
+   =========================================================================== */
+
+.cl-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.cl-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.cl-count {
+  margin: auto 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-200);
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.cl-body {
+  padding: 16px 20px 24px;
+  background: transparent;
+}
+
+.cl-card {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Vue semaine
+   =========================================================================== */
+
+/* La gouttière de 56px porte les heures ; les sept jours se partagent le reste à parts égales.
+   Les trois rangées de la vue — en-tête, journée entière, grille — partagent ce gabarit pour
+   rester alignées colonne par colonne. */
+.cl-week-head,
+.cl-allday-row,
+.cl-week-grid {
+  display: grid;
+  grid-template-columns: 56px repeat(7, minmax(0, 1fr));
+}
+
+.cl-week-head,
+.cl-allday-row {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.cl-allday-row {
+  background: var(--color-neutral-100);
+}
+
+.cl-gutter {
+  border-right: 1px solid var(--color-neutral-200);
+}
+
+.cl-gutter-label {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+.cl-day-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 0;
+  border-right: 1px solid var(--color-neutral-200);
+  background: var(--surface);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cl-day-head:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+/* Une seule règle pour les trois vues, posée ici à dessein : à spécificité égale (0-1-0), tout
+   ce qui suit dans le fichier l'emporte — le jour courant, les jours hors du mois, le survol.
+   Le voile de fin de semaine est donc le premier à céder la place, ce qui est bien l'ordre
+   voulu. `background-color` et non le raccourci : la grille horaire peint ses lignes d'heure en
+   `background-image`, que le raccourci effacerait. */
+.cl-weekend {
+  background-color: var(--band-weekend);
+}
+
+/* Posée après `.cl-weekend` et à même spécificité : un férié tombant un samedi se lit comme un
+   férié, l'information qui vaut d'être signalée. */
+.cl-holiday {
+  background-color: var(--band-holiday);
+}
+
+.cl-day-today {
+  background: var(--color-neutral-100);
+}
+
+/* Aujourd'hui tombant un samedi ou un dimanche : le gris d'« aujourd'hui », posé plus bas à
+   spécificité égale, effaçait le voile de fin de semaine — les deux jours de la fin de semaine
+   ne se ressemblaient plus. Le bleu l'emporte, et il est le même pour les deux : aujourd'hui
+   reste marqué par son numéro en bleu gras et par le trait de l'heure courante. */
+.cl-day-head.cl-weekend {
+  background-color: var(--band-weekend);
+}
+
+.cl-day-dow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.cl-day-num {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cl-day-today .cl-day-num {
+  font-weight: 700;
+  color: var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+/* Le nom du férié est coupé plutôt que replié : la rangée d'en-tête de la semaine partage sa
+   hauteur avec six autres colonnes, une ligne de plus les décalerait toutes. */
+.cl-day-holiday {
+  max-width: 100%;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink-holiday);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cl-allday-cell {
+  min-height: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px;
+  border-right: 1px solid var(--color-neutral-200);
+}
+
+/* Les lignes d'heure sont peintes par un dégradé répété plutôt que par 14 éléments vides :
+   la grille reste un seul nœud, quel que soit le nombre d'heures affichées. */
+.cl-day-col {
+  position: relative;
+  border-right: 1px solid var(--color-neutral-200);
+  background-image: repeating-linear-gradient(to bottom, var(--color-neutral-200) 0 1px, transparent 1px 48px);
+  background-position: 0 47px;
+  cursor: crosshair;
+}
+
+.cl-day-col-today {
+  background-color: rgba(0, 61, 165, 0.035);
+}
+
+/* Même arbitrage que pour l'en-tête : la colonne d'un samedi et celle d'un dimanche portent le
+   même voile, que l'un des deux soit aujourd'hui ou non. */
+.cl-day-col.cl-weekend {
+  background-color: var(--band-weekend);
+}
+
+.cl-hour {
+  padding: 2px 8px 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+  text-align: right;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+.cl-event {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 4px 6px;
+  border: 0;
+  border-left: 3px solid;
+  border-radius: 3px;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Sous 34px de haut, le bloc n'a plus la place d'empiler l'heure et l'intitulé : les deux
+   passent côte à côte et l'horaire de fin disparaît. */
+.cl-event-compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 6px;
+}
+
+.cl-event-start,
+.cl-event-time {
+  flex: none;
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--color-neutral-700);
+}
+
+.cl-event-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cl-now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-accent);
+  pointer-events: none;
+}
+
+/* ===========================================================================
+   Pastilles d'élément
+   =========================================================================== */
+
+.cl-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 2px 6px;
+  border: 0;
+  border-left: 3px solid;
+  border-radius: 3px;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cl-chip-time {
+  flex: none;
+  font-size: 10px;
+  color: var(--color-neutral-700);
+}
+
+.cl-chip-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Une tâche faite se barre : l'état se lit sans ouvrir l'élément. */
+.cl-struck {
+  text-decoration: line-through;
+}
+
+/* ===========================================================================
+   Vue mois
+   =========================================================================== */
+
+.cl-month-head,
+.cl-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cl-month-head {
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.cl-month-dow {
+  padding: 7px 10px;
+  border-right: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.cl-month-cell {
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px;
+  border-right: 1px solid var(--color-neutral-200);
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+/* Les jours des mois voisins restent visibles mais en retrait : ils complètent la grille sans
+   prétendre appartenir au mois consulté. */
+.cl-month-other {
+  background: var(--color-neutral-100);
+}
+
+/* Le numéro et le nom du férié partagent la première ligne de la case : le nom prend la place
+   restante et se coupe, les vignettes d'éléments gardant la leur en dessous. */
+.cl-month-daybar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cl-month-holiday {
+  min-width: 0;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink-holiday);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cl-month-num {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.cl-month-other .cl-month-num {
+  color: var(--color-neutral-600);
+}
+
+.cl-month-num-today {
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.cl-more {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-neutral-700);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===========================================================================
+   Vue année
+   =========================================================================== */
+
+.cl-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1180px) {
+  .cl-year-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cl-year-card {
+  padding: 10px 12px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.cl-year-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 0 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cl-year-count {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+}
+
+.cl-year-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+}
+
+.cl-year-dow {
+  text-align: center;
+  font-size: 9px;
+  color: var(--color-neutral-600);
+}
+
+.cl-year-cell {
+  position: relative;
+  height: 22px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-neutral-800, var(--color-text));
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+/* Rappel des voiles de jour chômé : `.cl-year-cell` remet le fond à `transparent` et, posée
+   plus bas dans le fichier, l'emporterait sur les règles génériques. */
+.cl-year-cell.cl-weekend {
+  background-color: var(--band-weekend);
+}
+
+.cl-year-cell.cl-holiday {
+  background-color: var(--band-holiday);
+}
+
+.cl-year-cell:hover:not(:disabled) {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+/* Les jours hors du mois ne sont pas masqués mais rendus muets : la grille garde ses six
+   semaines, donc sa hauteur, d'un mois à l'autre. */
+.cl-year-other {
+  color: transparent;
+  cursor: default;
+}
+
+/* Qualifiée pour rester au-dessus du voile de fin de semaine, remonté juste avant. */
+.cl-year-cell.cl-year-today {
+  background: var(--color-neutral-200);
+  font-weight: 700;
+}
+
+/* Le point signale qu'il se passe quelque chose ce jour-là, sans dire quoi : à cette échelle,
+   un libellé serait illisible. */
+.cl-year-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ds-brand-fill, var(--ink-brand-2));
+}

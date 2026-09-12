@@ -1,0 +1,586 @@
+/* Le prototype déclare ses propres encres et fonds de vignette : la coque n'expose ni --ink-ok,
+   ni --ink-warn-2, ni les bandes --band-*. Une `var()` non résolue invalide la déclaration. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --ink-warn: #8f3f06;
+  --ink-warn-2: #b45309;
+  --ink-brand-2: #003da5;
+  --band-ok: #f2faf9;
+  --band-warn: #fdf6ef;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --ink-warn: #f0a868;
+  --ink-warn-2: #f3b782;
+  --ink-brand-2: #8fb4ee;
+  --band-ok: #152a28;
+  --band-warn: #2c1f14;
+}
+
+/* La grille repasse sur une colonne selon la largeur du contenu, pas celle de la fenêtre : le
+   menu latéral peut être replié ou non. */
+.ec-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+/* ===========================================================================
+   En-tête
+   =========================================================================== */
+
+.ec-head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.ec-head-titles {
+  min-width: 0;
+}
+
+.ec-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.ec-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ec-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pm-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 210px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-500);
+}
+
+.pm-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.ec-seg {
+  --mat-button-toggle-height: 28px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.30);
+  flex: none;
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Indicateurs
+   =========================================================================== */
+
+/* Le `gap` d'un pixel sur fond bleu tient lieu de filets de séparation : une seule couleur à
+   régler, et les vignettes gardent chacune leur propre fond. */
+.ec-kpi-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+@container (max-width: 1040px) {
+  .ec-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ec-kpi {
+  padding: 13px 18px 15px;
+}
+
+.ec-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ec-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.ec-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Corps
+   =========================================================================== */
+
+.ec-split {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(290px, 1fr);
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+@container (max-width: 1040px) {
+  .ec-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ec-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.ec-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Liseré d'urgence : c'est lui qui distingue les trois blocs au premier coup d'œil, avant
+   même le titre. */
+.ec-group {
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.ec-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ec-group-title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ec-group-count {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ec-group-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ec-card-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ec-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.ec-empty {
+  margin: 0;
+  padding: 20px 4px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Tableaux
+   =========================================================================== */
+
+.ec-table-scroll {
+  overflow-x: auto;
+}
+
+/* `table-layout: fixed` : sans lui, la colonne « Objet » — la seule au contenu long — étirerait
+   le tableau et ferait varier la largeur des colonnes d'un bloc à l'autre. */
+.ec-table {
+  width: 100%;
+  min-width: 820px;
+  table-layout: fixed;
+  background: transparent;
+}
+
+.ec-header-row,
+.ec-row {
+  height: auto;
+}
+
+.ec-row {
+  cursor: pointer;
+}
+
+.ec-row:hover {
+  background: rgba(0, 61, 165, 0.04);
+}
+
+.ec-row-selected {
+  background: rgba(0, 61, 165, 0.08);
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.ec-th`, qui ne pèse que 0-2-0 une fois encapsulé. */
+.ec-th.ec-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.ec-th {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.ec-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.ec-th:first-of-type,
+.ec-td:first-of-type {
+  padding-left: 16px;
+}
+
+.ec-th:last-of-type,
+.ec-td:last-of-type {
+  padding-right: 16px;
+}
+
+.ec-td-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ec-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.ec-td-clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ec-col-date {
+  width: 92px;
+}
+
+.ec-col-title {
+  width: 36%;
+}
+
+.ec-col-account {
+  width: 92px;
+}
+
+.ec-col-owner {
+  width: 104px;
+}
+
+.ec-col-remaining {
+  width: 148px;
+}
+
+.ec-object {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ec-object-title {
+  font-weight: 600;
+}
+
+/* Le détail est coupé plutôt que replié : la ligne garde sa hauteur, et l'info-bulle donne le
+   texte complet. */
+.ec-object-detail {
+  display: block;
+  max-width: 100%;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ec-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ec-tag-strong {
+  flex: none;
+  padding: 2px 9px;
+  font-weight: 700;
+}
+
+.ec-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+/* ===========================================================================
+   Détail de l'échéance retenue
+   =========================================================================== */
+
+.ec-detail-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ec-detail-titles {
+  min-width: 0;
+}
+
+.ec-detail-sub {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.ec-detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ec-detail-label {
+  flex: none;
+  width: 130px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.ec-detail-value {
+  min-width: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.ec-detail-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 16px;
+}
+
+.ec-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ec-status {
+  font-size: 11px;
+  color: var(--ink-ok);
+}
+
+.ec-primary-btn {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 28px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 11px;
+  --mat-button-filled-label-text-weight: 600;
+  flex: none;
+}
+
+.ec-ghost-btn {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 11px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  flex: none;
+}
+
+.ec-ghost-btn:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+/* ===========================================================================
+   Synthèses
+   =========================================================================== */
+
+.ec-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 18px;
+}
+
+.ec-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ec-bar-label {
+  flex: none;
+  width: 126px;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ec-bar-track {
+  flex: 1;
+  min-width: 0;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--color-neutral-200);
+}
+
+.ec-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ds-brand-fill, var(--field-brand));
+}
+
+.ec-bar-count {
+  flex: none;
+  width: 22px;
+  text-align: right;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+
+.ec-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 130px;
+  padding: 16px 16px 12px;
+}
+
+.ec-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+
+.ec-chart-count {
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+
+.ec-chart-bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+}
+
+.ec-chart-label {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}

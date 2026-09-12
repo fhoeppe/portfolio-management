@@ -1,0 +1,147 @@
+<app-side-panel
+  [title]="account.client"
+  [subtitle]="account.id + ' · ' + account.type + ' · profil ' + account.profile.toLowerCase() + ' · gérant ' + account.manager"
+  accent="var(--ink-brand)"
+  [icon]="icon"
+  [openPct]="55"
+  [maxPct]="80"
+  [footer]="true"
+  cancelLabel="OK"
+  cancelKind="ok"
+  [note]="state.label"
+  (closed)="close()"
+  (pinnedChange)="onPinnedChange($event)"
+>
+  <div class="ac-det-card">
+    <div class="ac-det-identity-head">
+      <mat-icon svgIcon="file-text" style="font-size:16px;color:#ffffff"></mat-icon>
+      <h2>Identité du compte</h2>
+      <span class="ac-det-state-pill" [style.background]="state.bg" [style.color]="state.fg">
+        <span class="ac-det-dot" [style.background]="state.fg"></span>
+        {{ state.label }}
+      </span>
+    </div>
+    <div class="ac-det-identity-grid">
+      @for (i of identity; track i.label) {
+        <div class="ac-det-identity-row">
+          <span class="ac-det-identity-label">{{ i.label }}</span>
+          <span class="ac-det-identity-value">{{ i.value }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="ac-det-kpis">
+    @for (k of kpis; track k.label) {
+      <div class="ac-det-kpi" [style.background]="k.bg">
+        <div class="ac-det-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+        <div class="ac-det-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+        <div class="ac-det-kpi-note">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="ac-det-card">
+    <div class="ac-det-pane-head">
+      <h3>{{ paneTitle() }}</h3>
+      <span class="ac-det-pane-tabs">
+        @for (t of paneTabs; track t.key) {
+          <button type="button" class="ac-det-pane-tab" [class.ac-det-pane-tab-on]="pane() === t.key" (click)="setPane(t.key)">{{ t.label }}</button>
+        }
+      </span>
+    </div>
+
+    @if (pane() === 'life') {
+      <div class="ac-det-life">
+        <span class="ac-det-life-note">{{ lifeNote }}</span>
+        <span class="ac-det-life-phases">
+          @for (p of lifePhases; track p.label) {
+            <span class="ac-det-life-phase" [style.background]="p.bg" [style.color]="p.fg">
+              <span class="ac-det-life-phase-label" [style.font-weight]="p.weight">{{ p.label }}</span>
+              <span class="ac-det-life-phase-count">Étapes {{ p.count }}</span>
+            </span>
+          }
+        </span>
+        @for (s of life; track s.label) {
+          <div class="ac-det-life-row">
+            <span class="ac-det-life-badge-col">
+              <span class="ac-det-life-badge" [style.border-color]="s.ring" [style.background]="s.badgeBg" [style.color]="s.badgeFg">{{ s.badge }}</span>
+              @if (s.hasLine) {
+                <span class="ac-det-life-line" [style.background]="s.line"></span>
+              }
+            </span>
+            <span class="ac-det-life-body">
+              <span class="ac-det-life-title-row">
+                <span class="ac-det-life-title" [style.font-weight]="s.weight" [style.color]="s.fg">{{ s.label }}</span>
+                <span class="ac-det-life-state" [style.color]="s.stateColor">{{ s.state }}</span>
+              </span>
+              <span class="ac-det-life-detail">{{ s.detail }}</span>
+              <span class="ac-det-life-actor">{{ s.actor }} · {{ s.docs }}</span>
+              <span class="ac-det-life-date">{{ s.date }}</span>
+            </span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (pane() === 'mandate') {
+      <div class="ac-det-rules">
+        @for (r of mandateRules; track r.label) {
+          <div class="ac-det-rule">
+            <div class="ac-det-rule-head">
+              <span class="ac-det-rule-label">{{ r.label }}</span>
+              <span class="ac-det-rule-value">{{ r.value }}</span>
+              <span class="ac-det-rule-status" [style.color]="r.color">{{ r.status }}</span>
+            </div>
+            <div class="ac-det-rule-bar">
+              <div class="ac-det-rule-bar-fill" [style.width]="r.width" [style.background]="r.barColor"></div>
+              <div class="ac-det-rule-limit" [style.left]="r.limit"></div>
+            </div>
+          </div>
+        }
+        <span class="ac-det-rules-note">Le trait vertical marque la limite contractuelle du compte.</span>
+      </div>
+    }
+
+    @if (pane() === 'holders') {
+      @for (h of holders; track h.name) {
+        <div class="ac-det-holder-row">
+          <span class="ac-det-holder-initials">{{ h.initials }}</span>
+          <span class="ac-det-holder-body">
+            <span class="ac-det-holder-name">{{ h.name }}</span>
+            <span class="ac-det-holder-meta">{{ h.role }} · {{ h.detail }}</span>
+          </span>
+          <span class="ac-det-holder-kyc" [style.background]="h.kycBg" [style.color]="h.kycFg">{{ h.kyc }}</span>
+        </div>
+      }
+    }
+
+    @if (pane() === 'history') {
+      @for (e of history; track e.label) {
+        <div class="ac-det-history-row">
+          <span class="ac-det-history-date">{{ e.date }}</span>
+          <span class="ac-det-history-body">
+            <span class="ac-det-history-label">{{ e.label }}</span>
+            <span class="ac-det-history-detail">{{ e.detail }}</span>
+          </span>
+          <span class="ac-det-history-actor">{{ e.actor }}</span>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="ac-det-card">
+    <div class="ac-det-flags-head">
+      <h3>Points d'attention</h3>
+    </div>
+    @for (f of flags; track f.title) {
+      <div class="ac-det-flag-row">
+        <span class="ac-det-flag-dot" [style.background]="f.color"></span>
+        <span class="ac-det-flag-body">
+          <span class="ac-det-flag-title">{{ f.title }}</span>
+          <span class="ac-det-flag-detail">{{ f.detail }}</span>
+        </span>
+      </div>
+    }
+  </div>
+</app-side-panel>

@@ -1,0 +1,6 @@
+/* Voir tx-select.css : seules les cotes propres à la page, le reste est partagé (.pm-sel-*). */
+.pm-osel {
+  --pm-sel-h: 32px;
+  --pm-sel-pad: 0 5px 0 10px;
+  --pm-sel-fs: 13px;
+}

@@ -1,0 +1,44 @@
+@let b = block();
+@switch (b.kind) {
+  @case ('sub') {
+    <span class="pm-bloc-sub">{{ b.text }}</span>
+  }
+  @case ('text') {
+    <span class="pm-bloc-text">{{ b.text }}</span>
+  }
+  @case ('code') {
+    <pre class="pm-bloc-code">{{ b.text }}</pre>
+  }
+  @case ('table') {
+    <div class="pm-bloc-table-wrap">
+      <!-- Le nombre de colonnes vient de la donnée : les `matColumnDef` sont donc générés par
+           `@for` sur l'en-tête, et `columnIds()` en donne l'ordre à MatTable. -->
+      <table mat-table [dataSource]="tableRows()" class="pm-bloc-table">
+        @for (h of b.head; track $index) {
+          <ng-container [matColumnDef]="'c' + $index">
+            <th mat-header-cell *matHeaderCellDef>{{ h }}</th>
+            <td mat-cell *matCellDef="let row">
+              @let cell = row.cells[$index];
+              @if (cell.isBadges) {
+                <span class="pm-bloc-badges">
+                  @for (bd of cell.badges; track bd.code + bd.hint) {
+                    <span class="pm-bloc-badge" [style.background]="bd.bg" [style.color]="bd.fg">
+                      {{ bd.code }}
+                      @if (bd.hint) {
+                        <span class="pm-bloc-badge-hint">{{ bd.hint }}</span>
+                      }
+                    </span>
+                  }
+                </span>
+              } @else {
+                {{ cell.text }}
+              }
+            </td>
+          </ng-container>
+        }
+        <tr mat-header-row *matHeaderRowDef="columnIds()"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnIds()" [class.pm-zebra]="row.zebra"></tr>
+      </table>
+    </div>
+  }
+}

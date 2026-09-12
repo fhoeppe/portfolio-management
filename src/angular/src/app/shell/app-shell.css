@@ -22,8 +22,11 @@
   --color-neutral-700: #605d5d;
   --color-neutral-800: #35322f;
   --color-neutral-900: #2d2b2b;
-  --nav-hover-bg: rgba(0, 61, 165, 0.18);
-  --nav-hover-ink: #002a6e;
+  /* Alias historiques de .pm-nav-item:hover — sourcés depuis les jetons --menu-item-hover-*
+     consolidés dans styles.scss (nav, menu compte et filtres à sélection multiple partagent
+     désormais la même teinte). Gardés sous ce nom pour ne pas retoucher .pm-nav-item. */
+  --nav-hover-bg: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.18));
+  --nav-hover-ink: var(--menu-item-hover-ink, #002a6e);
 
   position: relative;
   display: flex;
@@ -62,8 +65,6 @@
   --color-neutral-700: #a8a3a0;
   --color-neutral-800: #d8d5d2;
   --color-neutral-900: #f3f2f2;
-  --nav-hover-bg: rgba(120, 165, 235, 0.22);
-  --nav-hover-ink: #e8e6e4;
 }
 
 svg {
@@ -119,7 +120,7 @@ svg {
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: 13px;
+  font-size: 11px;
   outline: none;
 }
 
@@ -152,6 +153,11 @@ svg {
      foncé sur gris foncé, sur le bandeau bleu. */
   --mat-icon-button-icon-color: rgba(255, 255, 255, 0.85);
   --mat-icon-button-state-layer-color: #ffffff;
+  /* Le bouton Guide est un <a> (nouvel onglet, voir app-shell.html), les autres des <button> :
+     un <a> hérite une line-height de son contexte (celle de mat-toolbar, 28px) qui pousse le
+     pictogramme vers le bas dans sa boîte de padding, alors qu'un <button> n'en hérite pas
+     (UA stylesheet: line-height normal). Neutralisé ici pour que les deux se centrent pareil. */
+  line-height: 0;
 }
 
 .pm-topbar-icon-btn:hover {
@@ -206,6 +212,173 @@ svg {
   font-size: 10px;
 }
 
+/* Menu compte (déclenché par .pm-account) : rendu par MatMenu dans le cdk-overlay-container,
+   hors de l'arbre DOM de la coque — les jetons --color-* n'y arrivent pas par héritage CSS
+   (même famille de problème que .pm-side-panel-overlay/mat-menu-item, voir styles.scss). Ici
+   on donne à chaque var() sa valeur de secours pour le clair, et --color-neutral-200/700/800
+   sont réécrits pour le sombre dans la règle globale [data-theme='dark'] .mat-mdc-menu-panel.
+   La largeur du panneau (.pm-account-menu) vit dans styles.scss, pas ici : .mat-mdc-menu-panel
+   est créé par MatMenu en TypeScript à l'ouverture, pas depuis un nœud du template d'app-shell
+   — il ne porte donc jamais l'attribut _ngcontent de la coque, même règle ::ng-deep ou classe
+   simple ici resterait sans effet (repéré via getBoundingClientRect : 182px au lieu de 264px). */
+
+.pm-account-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 10px;
+  cursor: default;
+}
+
+.pm-avatar-lg {
+  width: 32px;
+  height: 32px;
+  background: var(--color-neutral-200, #ececea);
+  color: var(--color-neutral-800, #35322f);
+}
+
+.pm-account-menu-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.pm-account-menu-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-brand, #002a6e);
+}
+
+.pm-account-menu-email {
+  font-size: 10px;
+  color: var(--color-neutral-700, #605d5d);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Même gabarit que .pm-nav-item du menu latéral (Comptes...Documents) : hauteur 30px, quasi
+   aucun espace entre les lignes (.pm-nav-list a gap:1px) plutôt qu'une liste aérée.
+   Sélecteur volontairement PAS préfixé par .pm-account-menu : ce dernier cible le panneau
+   MatMenu (.mat-mdc-menu-panel), créé en TypeScript à l'ouverture — il ne porte jamais
+   l'attribut _ngcontent de la coque (voir plus haut), donc tout sélecteur qui l'exige comme
+   ancêtre échoue silencieusement (constaté : hauteur retombée à 48px, gap à 0). Cette classe
+   est en revanche posée directement sur chaque <button> du template d'app-shell.html, qui lui
+   la conserve après portage dans l'overlay — même mécanisme que .pm-account-menu-header. */
+/* Taille/couleur du texte : .mat-mdc-menu-item-text (nœud créé par MatMenuItem, pas par le
+   template d'app-shell — même piège d'ancêtre que ci-dessus) peint sa propre police via
+   --mat-menu-item-label-text-size/-color/-weight, jamais par héritage direct de `font-size`/
+   `color` posés sur le bouton. Un simple `font-size: 12px` ici est donc sans effet sur le texte
+   affiché — seuls ces jetons, en custom property (qui traversent l'encapsulation par héritage
+   normal), l'atteignent. Valeurs alignées sur .pm-nav-item non actif : 12px, poids 400,
+   --ink-brand (#002a6e clair / #9db6d9 sombre, ce dernier dans styles.scss ci-dessous). */
+/* Encart horizontal (comme le padding de .pm-nav-list autour de .pm-nav-item) : le bouton ne
+   fait plus toute la largeur du panneau, angles arrondis à --menu-item-radius comme la nav.
+   Survol : --menu-item-hover-bg/-ink (jetons consolidés dans styles.scss, partagés avec
+   .pm-nav-item et les lignes de filtre tx-msel-row/ti-msel-row) — posés sur :root/body, ils
+   traversent la frontière du cdk-overlay-container sans contournement par-composant, d'où
+   l'absence de surcharge sombre ici (contrairement à --mat-menu-item-label-text-color juste
+   au-dessus, qui lui reste scopé à app-shell et a besoin de son pendant !important dans
+   styles.scss — voir project_matmenu_panel_ancestor_selector_trap). Le calque de survol
+   Material par défaut (--mat-menu-item-hover-state-layer-color) est neutralisé pour ne pas se
+   superposer et ternir la teinte. */
+.pm-account-menu-item {
+  --mat-menu-item-label-text-size: 12px;
+  --mat-menu-item-label-text-weight: 400;
+  --mat-menu-item-label-text-color: var(--ink-brand, #002a6e);
+  /* Depuis la bascule vers <mat-icon>, le pictogramme n'hérite plus la couleur du libellé par
+     `currentColor` comme le faisait le <svg> inline : Material le peint via son propre jeton,
+     dont le défaut M3 (on-surface-variant) est un gris qui jurait à côté du texte bleu. */
+  --mat-menu-item-icon-color: var(--ink-brand, #002a6e);
+  --mat-menu-item-hover-state-layer-color: transparent;
+  min-height: 30px;
+  font-size: 12px;
+  /* Material pose déjà width:100% sur .mat-mdc-menu-item — indispensable pour que chaque ligne
+     s'étire à la même largeur quel que soit son libellé (comme .pm-nav-item). Un `width: auto`
+     ici annulerait ce 100% et ferait rétrécir chaque bouton à son contenu (constaté : la zone
+     de survol suivait la longueur du texte au lieu de faire toute la largeur du panneau). */
+  width: calc(100% - 16px);
+  margin: 0 8px 1px;
+  border-radius: var(--menu-item-radius, 6px);
+}
+
+.pm-account-menu-item:hover {
+  /* !important : Material pose son propre `background: none` sur .mat-mdc-menu-item (état de
+     base, hors survol) avec la même spécificité effective — sans ceci, il continue de gagner. */
+  background: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.18)) !important;
+  --mat-menu-item-label-text-color: var(--menu-item-hover-ink, #002a6e);
+  --mat-menu-item-icon-color: var(--menu-item-hover-ink, #002a6e);
+}
+
+/* Le bouton (.pm-account-menu-item) n'a qu'un seul enfant flex, .mat-mdc-menu-item-text (créé
+   par MatMenuItem) — c'est CE span, pas le bouton, qui contient réellement le pictogramme et
+   le libellé côte à côte. En display:block par défaut, svg et texte s'alignent sur la ligne de
+   base du texte (vertical-align: baseline), pas centrés sur sa hauteur — d'où le décalage.
+   Cible via ::ng-deep : .pm-account-menu-item est un nœud du template d'app-shell (voir plus
+   haut), donc ::ng-deep qui le suit perce correctement vers ses descendants. */
+.pm-account-menu-item ::ng-deep .mat-mdc-menu-item-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pm-account-menu-lang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px 6px;
+}
+
+.pm-account-menu-lang-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-brand, #002a6e);
+}
+
+/* Pastilles FR/EN : fond bleu de marque (--field-brand) + texte blanc sur la langue
+   sélectionnée, comme .pm-nav-item.pm-active (bleu/blanc) plutôt que le gris neutre du
+   prototype. Les jetons --mat-button-toggle-* couvrent les couleurs (elles traversent
+   l'encapsulation via l'héritage normal des custom properties), mais pas le padding interne
+   (--mat-button-toggle-label-content n'a pas de jeton dédié) — celui-ci doit passer par
+   ::ng-deep, comme .pm-sidenav plus bas. */
+.pm-lang-toggle {
+  --mat-button-toggle-shape: 6px;
+  --mat-button-toggle-height: 24px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-divider-color: var(--color-neutral-300, #d8d5d2);
+  --mat-button-toggle-background-color: transparent;
+  --mat-button-toggle-text-color: var(--ink-brand, #002a6e);
+  --mat-button-toggle-selected-state-background-color: var(--field-brand, #002a6e);
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  border: 1px solid var(--color-neutral-300, #d8d5d2) !important;
+}
+
+.pm-lang-toggle ::ng-deep .mat-button-toggle-label-content {
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
+.pm-lang-toggle ::ng-deep .mat-button-toggle:not(.mat-button-toggle-checked) .mat-button-toggle-label-content {
+  font-weight: 400;
+}
+
+.pm-account-menu-logout {
+  color: #c53030 !important;
+  /* Comme pour les autres items : le <mat-icon> ne suit plus `color` par `currentColor`, il
+     faut lui repasser la teinte par le jeton, sinon le pictogramme reste au bleu hérité de
+     .pm-account-menu-item alors que son libellé est rouge. */
+  --mat-menu-item-icon-color: #c53030;
+  font-weight: 600;
+}
+
+.pm-account-menu-logout:hover {
+  background: rgba(197, 48, 48, 0.08) !important;
+  --mat-menu-item-icon-color: #c53030;
+}
+
 /* Barre de contexte */
 
 .pm-context-bar {
@@ -220,12 +393,16 @@ svg {
 /* Posé directement sur :host (racine du shell), pas sur .pm-context-bar ni .pm-sidenav :
    MatSidenavContainer ne projette que mat-sidenav/mat-sidenav-content (son template n'a pas
    de <ng-content> générique dès qu'un mat-sidenav-content explicite est fourni), donc tout
-   autre enfant placé entre les deux est silencieusement ignoré. Le bouton flotte au-dessus
-   de la case d'en-tête du panneau et de la barre de contexte du contenu, qui coïncident en
-   hauteur ; 85px = 56px de bandeau + moitié des 58px de la rangée d'en-tête. */
+   autre enfant placé entre les deux est silencieusement ignoré. La boîte du bouton (28px) vise
+   85px : 56px de bandeau + la moitié des 58px de .pm-context-bar, aussi désormais le centre de
+   la ligne "Accueil" du menu latéral depuis l'ajustement de padding-top de .pm-nav-list
+   ci-dessus — donc un seul et même axe pour le menu, le bouton et le contenu. Le padding
+   interne de matIconButton ne recentre pas son picto à 1px près dans les 28px (mesuré : 1px de
+   plus bas que la boîte) ; 84px (pas 85px) compense pour ramener le *picto* du bouton, pas sa
+   boîte, exactement sur 85px. */
 .pm-collapse-toggle {
   position: absolute;
-  top: 85px;
+  top: 84px;
   z-index: 5;
   transform: translateY(-50%);
   transition: left 180ms cubic-bezier(0.2, 0.6, 0.2, 1);
@@ -350,7 +527,13 @@ svg {
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
-  padding: 8px 12px 6px;
+  /* padding-top 14px (pas 8px) : centre la ligne "Accueil" sur la même hauteur que
+     .pm-context-bar (56px de bandeau + moitié des 58px de la barre de contexte = 85px), pour
+     que la ligne du menu et celle du contenu — qui se lisent côte à côte, séparées par le
+     bouton plier/déplier — soient réellement sur le même axe plutôt que de "coïncider en
+     hauteur" seulement en apparence, comme le supposait à tort le commentaire d'origine du
+     bouton (voir .pm-collapse-toggle). */
+  padding: 14px 12px 6px;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -363,7 +546,12 @@ svg {
   gap: 8px;
   cursor: pointer;
   height: 20px;
-  margin: 8px 4px 0;
+  /* margin-top 4px (pas 8px) : centre .pm-nav-section-line (le trait léger à côté de
+     "GESTION") sur la bordure basse de .pm-context-bar (56px de bandeau + 58px de barre de
+     contexte = 114px), pour prolonger visuellement ce trait plutôt que de le laisser 4-5px
+     plus bas. Dépend du padding-top de .pm-nav-list ci-dessus (14px) : revoir cette valeur si
+     ce padding change. */
+  margin: 4px 4px 0;
   overflow: hidden;
   white-space: nowrap;
 }

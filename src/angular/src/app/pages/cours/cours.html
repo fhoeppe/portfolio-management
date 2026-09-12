@@ -1,0 +1,140 @@
+<div class="co-page">
+  <div class="co-head">
+    <div class="co-head-titles">
+      <h1 class="co-h1">Cours marché</h1>
+      <p class="co-subtitle">{{ subtitle() }}</p>
+    </div>
+    <span class="co-head-tools">
+      <label class="pm-search">
+        <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+        <input type="text" placeholder="Titre, place"
+          [value]="query()" (input)="query.set($any($event.target).value)" />
+      </label>
+      <button type="button" matButton="outlined" class="co-refresh" (click)="refresh()">
+        <mat-icon svgIcon="refresh" style="font-size:13px"></mat-icon>
+        Rafraîchir
+      </button>
+    </span>
+  </div>
+
+  <div class="co-kpi-grid">
+    @for (k of kpis(); track k.label) {
+      <div class="co-kpi" [class.co-kpi-ok]="k.tone === 'ok'" [class.co-kpi-warn]="k.tone === 'warn'">
+        <div class="co-kpi-label">{{ k.label }}</div>
+        <div class="co-kpi-value">{{ k.value }}</div>
+        <div class="co-kpi-note">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="co-split">
+
+    <!-- ───────────────────────── Cours ───────────────────────── -->
+    <section class="co-card">
+      <header class="co-card-head">
+        <h2 class="co-card-title">Cours</h2>
+        <mat-button-toggle-group class="co-seg" hideSingleSelectionIndicator
+          [value]="micFilter()" (change)="setMic($event.value)">
+          @for (o of micOptions; track o.value) {
+            <mat-button-toggle [value]="o.value">{{ o.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+        <mat-button-toggle-group class="co-seg co-seg-push" hideSingleSelectionIndicator
+          [value]="sort()" (change)="setSort($event.value)">
+          @for (s of sorts; track s.key) {
+            <mat-button-toggle [value]="s.key">{{ s.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </header>
+
+      <div class="co-table-scroll">
+        <table mat-table [dataSource]="rows()" class="co-table">
+          <ng-container matColumnDef="security">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-col-sec">Instrument</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-col-sec">
+              <span class="co-sec">
+                <span class="co-sec-ticker">{{ q.ticker }}</span>
+                <span class="co-sec-name">{{ q.label }}</span>
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="place">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-col-place">Place</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-td-muted">{{ q.place }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="last">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-th-num co-col-num">Dernier</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-td-num co-td-strong">
+              {{ q.lastLabel }} <span class="co-cur">{{ q.currency }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="change">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-th-num co-col-change">Variation</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-td-num"
+              [class.co-up]="q.up" [class.co-down]="q.down">
+              <span class="co-change">
+                <span>{{ q.changePct }}</span>
+                <span class="co-change-abs">{{ q.changeAbs }}</span>
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="range">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-th-num co-col-range">Bas – haut</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-td-num co-td-muted">{{ q.rangeLabel }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="volume">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-th-num co-col-num">Volume</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-td-num co-td-muted">{{ q.volumeLabel }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="at">
+            <th mat-header-cell *matHeaderCellDef class="co-th co-col-at">Cotation</th>
+            <td mat-cell *matCellDef="let q" class="co-td co-td-num" [matTooltip]="q.atHint">
+              <span class="co-at" [class.co-at-stale]="q.stale">
+                @if (q.stale) {
+                  <mat-icon class="co-at-icon" svgIcon="clock"></mat-icon>
+                }
+                {{ q.atLabel }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columns" class="co-header-row"></tr>
+          <tr mat-row *matRowDef="let q; columns: columns" class="co-row"></tr>
+        </table>
+      </div>
+
+      @if (!rows().length) {
+        <p class="co-empty">Aucun instrument ne correspond aux critères.</p>
+      }
+    </section>
+
+    <!-- ───────────────────────── Places ───────────────────────── -->
+    <section class="co-card">
+      <header class="co-card-head">
+        <h2 class="co-card-title">Places</h2>
+        <span class="co-card-note">{{ openCount() }} en séance</span>
+      </header>
+
+      @for (p of places(); track p.mic) {
+        <div class="co-place">
+          <span class="co-place-dot" [class.co-dot-open]="p.status === 'open'"
+            [class.co-dot-holiday]="p.status === 'holiday'"></span>
+          <span class="co-place-text">
+            <span class="co-place-name">{{ p.flag }} {{ p.label }}</span>
+            <span class="co-place-hint">{{ p.hint }}</span>
+          </span>
+          <span class="co-place-meta">
+            <span class="co-place-cur">{{ p.currency }}</span>
+            <span class="co-place-count">{{ p.count }}</span>
+          </span>
+        </div>
+      }
+    </section>
+  </div>
+</div>

@@ -1,0 +1,191 @@
+<div class="rp-page">
+  <div class="rp-head">
+    <div class="rp-head-titles">
+      <h1 class="rp-h1">Rapports</h1>
+      <p class="rp-subtitle">Générer un rapport depuis le catalogue</p>
+    </div>
+    <label class="rp-head-field">
+      <span class="rp-field-label">Rapport à générer</span>
+      <!-- Panneau à la largeur du déclencheur (défaut `panelWidth: 'auto'`) plutôt qu'à celle de
+           son contenu : le champ fait 420px, un panneau ajusté aux libellés y flotterait. -->
+      <mat-select class="pm-sel-trigger rp-report-select" panelClass="pm-sel-panel"
+        [value]="selectedId()" (valueChange)="selectedId.set($event)">
+        @for (g of groups; track g.label) {
+          <mat-optgroup [label]="g.label">
+            @for (r of g.reports; track r.id) {
+              <mat-option [value]="r.id">{{ r.name }}</mat-option>
+            }
+          </mat-optgroup>
+        }
+      </mat-select>
+    </label>
+  </div>
+
+  <div class="rp-body">
+
+    <!-- ───────────────────────── Paramètres du rapport ───────────────────────── -->
+    <section class="rp-card">
+      <header class="rp-card-head">
+        <div class="rp-card-titles">
+          <h2 class="rp-card-title">{{ selected().name }}</h2>
+          <p class="rp-card-desc">{{ selected().desc }}</p>
+        </div>
+        <span class="rp-freq">{{ selected().freq }}</span>
+      </header>
+
+      <div class="rp-config">
+        <label class="rp-field">
+          <span class="rp-field-label">Portefeuille</span>
+          <mat-select class="pm-sel-trigger rp-select" [panelWidth]="null" panelClass="pm-sel-panel"
+            [value]="scope()" (valueChange)="scope.set($event)">
+            @for (o of scopes; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </label>
+
+        <label class="rp-field">
+          <span class="rp-field-label">Devise de présentation</span>
+          <mat-select class="pm-sel-trigger rp-select rp-select-narrow" [panelWidth]="null" panelClass="pm-sel-panel"
+            [value]="currency()" (valueChange)="currency.set($event)">
+            @for (o of currencies; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </label>
+
+        <div class="rp-field rp-field-wide">
+          <span class="rp-field-label">Période</span>
+          <mat-button-toggle-group class="rp-seg" hideSingleSelectionIndicator
+            [value]="period()" (change)="setPeriod($event.value)">
+            @for (p of periods; track p.key) {
+              <mat-button-toggle [value]="p.key">{{ p.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+
+        @if (isCustom()) {
+          <div class="rp-field-wide rp-dates">
+            <label class="rp-field">
+              <span class="rp-field-label">Du</span>
+              <span class="rp-datepicker">
+                <input class="rp-date-input" [matDatepicker]="rpFrom" [value]="isoToDate(from())"
+                  (dateChange)="from.set(dateToIso($event.value))" />
+                <mat-datepicker-toggle [for]="rpFrom"></mat-datepicker-toggle>
+                <mat-datepicker #rpFrom></mat-datepicker>
+              </span>
+            </label>
+            <label class="rp-field">
+              <span class="rp-field-label">Au</span>
+              <span class="rp-datepicker">
+                <input class="rp-date-input" [matDatepicker]="rpTo" [value]="isoToDate(to())"
+                  (dateChange)="to.set(dateToIso($event.value))" />
+                <mat-datepicker-toggle [for]="rpTo"></mat-datepicker-toggle>
+                <mat-datepicker #rpTo></mat-datepicker>
+              </span>
+            </label>
+          </div>
+        }
+
+        <div class="rp-field rp-field-wide">
+          <span class="rp-field-label">Options</span>
+          <div class="rp-options">
+            @for (o of options; track o.key) {
+              <mat-checkbox class="rp-checkbox" [checked]="opts()[o.key]"
+                (change)="toggleOption(o.key, $event.checked)">{{ o.label }}</mat-checkbox>
+            }
+          </div>
+        </div>
+
+        <footer class="rp-config-foot">
+          <div class="rp-field">
+            <span class="rp-field-label">Format</span>
+            <mat-button-toggle-group class="rp-seg" hideSingleSelectionIndicator
+              [value]="format()" (change)="format.set($event.value)">
+              @for (f of formats; track f) {
+                <mat-button-toggle [value]="f">{{ f }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+          </div>
+          <span class="rp-recap">{{ recap() }}</span>
+          <button type="button" matButton="filled" class="rp-primary-btn" (click)="generate()">
+            <mat-icon svgIcon="export" style="font-size:14px"></mat-icon>
+            Générer le rapport
+          </button>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── Générations récentes ───────────────────────── -->
+    <section class="rp-card">
+      <header class="rp-card-head rp-card-head-row">
+        <h2 class="rp-card-title">Générations récentes</h2>
+        <span class="rp-card-note">{{ jobCount() }}</span>
+      </header>
+
+      @if (jobRows().length) {
+        <div class="rp-table-scroll">
+          <table mat-table [dataSource]="jobRows()" class="rp-table">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef class="rp-th rp-cell-name">Rapport</th>
+              <td mat-cell *matCellDef="let j" class="rp-td rp-cell-name">
+                <span class="rp-job-name">
+                  <span class="rp-format">{{ j.format }}</span>
+                  <span class="rp-td-strong">{{ j.name }}</span>
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="scope">
+              <th mat-header-cell *matHeaderCellDef class="rp-th">Périmètre</th>
+              <td mat-cell *matCellDef="let j" class="rp-td rp-td-muted">{{ j.scope }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="period">
+              <th mat-header-cell *matHeaderCellDef class="rp-th">Période</th>
+              <td mat-cell *matCellDef="let j" class="rp-td rp-td-muted">{{ j.period }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="at">
+              <th mat-header-cell *matHeaderCellDef class="rp-th">Généré</th>
+              <td mat-cell *matCellDef="let j" class="rp-td rp-td-muted rp-td-num">{{ j.at }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="rp-th">État</th>
+              <td mat-cell *matCellDef="let j" class="rp-td">
+                <span class="rp-state" [style.background]="j.stateBg" [style.color]="j.stateFg">
+                  <span class="rp-state-dot" [style.background]="j.stateFg"></span>
+                  {{ j.stateLabel }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="rp-th rp-cell-actions"></th>
+              <td mat-cell *matCellDef="let j" class="rp-td rp-cell-actions">
+                <span class="rp-actions">
+                  @if (j.ready) {
+                    <button type="button" matButton="outlined" class="rp-ghost-btn" (click)="download(j)">
+                      <mat-icon svgIcon="export" style="font-size:12px"></mat-icon>
+                      Télécharger
+                    </button>
+                  }
+                  <button type="button" matIconButton class="rp-remove-btn" matTooltip="Retirer de la liste"
+                    aria-label="Retirer de la liste" (click)="remove(j.id)">
+                    <mat-icon svgIcon="close" style="font-size:12px"></mat-icon>
+                  </button>
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="jobColumns" class="rp-header-row"></tr>
+            <tr mat-row *matRowDef="let j; columns: jobColumns" class="rp-row"></tr>
+          </table>
+        </div>
+      } @else {
+        <p class="rp-empty">Aucune génération pour l'instant.</p>
+      }
+    </section>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 import { Component, HostBinding, inject, signal } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -19,7 +20,7 @@ import { ThemeService } from './theme.service';
  */
 @Component({
   selector: 'app-account-preferences-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatTooltipModule, MatSlideToggleModule, MatSliderModule, FormsModule],
+  imports: [MatIconModule, MatDialogModule, MatButtonModule, MatTooltipModule, MatSlideToggleModule, MatSliderModule, FormsModule],
   templateUrl: './account-preferences-dialog.html',
   styleUrl: './account-preferences-dialog.css',
 })

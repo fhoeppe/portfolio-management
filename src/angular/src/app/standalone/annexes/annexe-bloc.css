@@ -1,0 +1,101 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pm-bloc-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-brand);
+}
+
+.pm-bloc-text {
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+.pm-bloc-code {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--field-brand);
+  border-left: 3px solid var(--ink-brand-2);
+  border-radius: 4px;
+  background: #0e1420;
+  color: var(--ink-e6ebf5, #e6ebf5);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  font-variant-ligatures: none;
+  tab-size: 2;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.pm-bloc-table-wrap {
+  display: block;
+  overflow-x: auto;
+}
+
+.pm-bloc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: var(--surface);
+}
+
+/* `thead` est créé par MatTable lui-même, hors de ce composant : il ne porte pas l'attribut
+   d'encapsulation, donc un sélecteur qui le traverse ne s'applique plus. On vise la ligne
+   d'en-tête, elle, rendue depuis ce gabarit. */
+.pm-bloc-table tr.mat-mdc-header-row {
+  height: 30px;
+}
+
+.pm-bloc-table th {
+  text-align: left;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand-2);
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.pm-bloc-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-neutral-800);
+}
+
+.pm-bloc-table tr.pm-zebra {
+  background: color-mix(in srgb, var(--color-text) 2.5%, transparent);
+}
+
+.pm-bloc-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pm-bloc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.pm-bloc-badge-hint {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.75;
+}

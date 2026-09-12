@@ -1,0 +1,191 @@
+/* Contenu projeté dans <app-side-panel> (voir project_matdialog_token_inheritance_boundary) :
+   les jetons génériques viennent de là par héritage CSS — seuls --ink-warn-2/--ink-ok, absents
+   du jeu de SidePanel, sont redéclarés ici. */
+:host {
+  display: contents;
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-text);
+  --ink-warn-2: #b45309;
+  --ink-ok: #0b5f57;
+}
+:host([data-theme='dark']) {
+  --ink-warn-2: #f3b782;
+  --ink-ok: #5fd6c4;
+}
+
+.ac-rec-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.1);
+}
+
+.ac-rec-picker-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.ac-rec-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ac-rec-picker-trigger:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+/* .ac-rec-chip est aussi rendu à l'intérieur des panneaux mat-menu (holderMenu/bankMenu),
+   portalés hors de l'arbre DOM de la page (voir project_cdk_overlay_dark_mode_body_mirror) :
+   repli hexadécimal explicite sur --ink-brand plutôt qu'un simple var(--ink-brand). */
+.ac-rec-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.16);
+  color: var(--ink-brand, #002a6e);
+  font-size: 10px;
+  font-weight: 700;
+}
+.ac-rec-chip-main {
+  background: var(--ink-brand, #002a6e);
+  color: #ffffff;
+}
+
+.ac-rec-picker-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-rec-picker-role {
+  flex: none;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+.ac-rec-chevron {
+  flex: none;
+  color: var(--ink-brand-2);
+}
+
+.ac-rec-item-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+.ac-rec-item-role {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-neutral-600, #7a746f);
+}
+.ac-rec-item-active {
+  background: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.12));
+  font-weight: 700;
+}
+
+.ac-rec-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ac-rec-group-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 18px;
+  background: rgba(0, 61, 165, 0.1);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-rec-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+.ac-rec-group-state {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ac-rec-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-rec-row-label {
+  flex: none;
+  width: 150px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+.ac-rec-row-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ac-rec-row-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+.ac-rec-row-value {
+  min-width: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+.ac-rec-row-link {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--ink-brand);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-brand-2);
+  text-decoration: none;
+}
+.ac-rec-row-link:hover {
+  background: var(--ink-brand);
+  color: #ffffff;
+}

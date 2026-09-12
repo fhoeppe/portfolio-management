@@ -1,0 +1,74 @@
+<aside role="dialog" aria-modal="true" class="pm-panel" [style.width]="width()">
+  <div class="pm-grip" (mousedown)="grab($event)" matTooltip="Glisser pour redimensionner">
+    <svg width="8" height="26" viewBox="0 0 8 26" aria-hidden="true">
+      <circle cx="2" cy="3" r="1"></circle><circle cx="6" cy="3" r="1"></circle>
+      <circle cx="2" cy="8" r="1"></circle><circle cx="6" cy="8" r="1"></circle>
+      <circle cx="2" cy="13" r="1"></circle><circle cx="6" cy="13" r="1"></circle>
+      <circle cx="2" cy="18" r="1"></circle><circle cx="6" cy="18" r="1"></circle>
+      <circle cx="2" cy="23" r="1"></circle><circle cx="6" cy="23" r="1"></circle>
+    </svg>
+  </div>
+
+  <div class="pm-head" [style.background]="accent()">
+    @if (icon(); as ic) {
+      <mat-icon [svgIcon]="ic" [style.font-size.px]="34"></mat-icon>
+    }
+    <span class="pm-head-text">
+      <span class="pm-head-title">{{ title() }}</span>
+      <span class="pm-head-subtitle">{{ subtitle() }}</span>
+    </span>
+    <button
+      matIconButton
+      class="pm-pin-btn"
+      [class.pm-pin-btn-on]="pinned()"
+      matTooltip="{{ pinned() ? 'Détacher le panneau' : 'Épingler le panneau' }}"
+     
+      (click)="togglePin()"
+    >
+      <mat-icon svgIcon="pin" style="font-size:14px" [class.pm-pin-icon-off]="!pinned()"></mat-icon>
+    </button>
+    <button
+      matIconButton
+      class="pm-maximize-btn"
+      matTooltip="{{ maximized() ? 'Rétablir la largeur' : 'Élargir au maximum' }}"
+     
+      (click)="toggleMaximize()"
+    >
+      @if (maximized()) {
+        <mat-icon svgIcon="minimize" style="font-size:14px"></mat-icon>
+      } @else {
+        <mat-icon svgIcon="maximize" style="font-size:14px"></mat-icon>
+      }
+    </button>
+    <span class="pm-head-sep"></span>
+    <button matIconButton class="pm-close-btn" matTooltip="Fermer" (click)="close()">
+      <mat-icon svgIcon="close" style="font-size:14px"></mat-icon>
+    </button>
+  </div>
+
+  <div class="pm-body" [class.pm-body-flush]="flush()">
+    <ng-content />
+  </div>
+
+  @if (footer()) {
+    <div class="pm-footer" [style.background]="accent()">
+      @if (showSubmit()) {
+        <button mat-flat-button class="pm-submit-btn" (click)="submit()">
+          <mat-icon svgIcon="check" style="font-size:15px"></mat-icon>
+          {{ submitLabel() }}
+        </button>
+      }
+      <button mat-stroked-button class="pm-cancel-btn" (click)="close()">
+        @if (cancelKind() === 'ok') {
+          <mat-icon svgIcon="check-circle" style="font-size:15px"></mat-icon>
+        } @else {
+          <mat-icon svgIcon="close" style="font-size:15px"></mat-icon>
+        }
+        {{ cancelLabel() }}
+      </button>
+      @if (note()) {
+        <span class="pm-footer-note">{{ note() }}</span>
+      }
+    </div>
+  }
+</aside>

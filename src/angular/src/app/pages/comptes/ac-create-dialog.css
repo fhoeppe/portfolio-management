@@ -1,0 +1,284 @@
+/**
+ * Monté par MatDialog dans le `cdk-overlay-container`, hors de l'arbre DOM d'app-shell : les
+ * jetons de la coque n'y parviennent pas par héritage CSS, donc reportés ici. Boîte centrée
+ * classique (pas de panneau latéral) — le rayon 8px vient du jeton global
+ * `--mat-dialog-container-shape` posé dans `styles.scss`, aucun `panelClass` dédié n'est
+ * nécessaire.
+ */
+:host {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 94vw);
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+
+  --ink-brand: #002a6e;
+  --field-brand: #002a6e;
+  --field-ok: #0b5f57;
+  --field-warn: #8f3f06;
+  --ink-ok: #0b5f57;
+  --ink-warn: #8f3f06;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-200: #ececea;
+  --color-neutral-700: #605d5d;
+}
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --field-brand: #12325e;
+  --field-ok: #0d443f;
+  --field-warn: #5c2a06;
+  --ink-ok: #5fd6c4;
+  --ink-warn: #f0a868;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-200: #262423;
+  --color-neutral-700: #b5b0ad;
+}
+:host, :host * {
+  box-sizing: border-box;
+}
+
+@keyframes ac-cre-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ac-cre-bar {
+  from { width: 8%; }
+  to { width: 100%; }
+}
+@keyframes ac-cre-tick {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: none; }
+}
+
+.ac-cre-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.ac-cre-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--field-brand);
+  color: #ffffff;
+}
+.ac-cre-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+.ac-cre-close {
+  margin-left: auto;
+  --mat-icon-button-icon-size: 14px;
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-touch-target-size: 26px;
+  --mat-icon-button-icon-color: #ffffff;
+  --mat-icon-button-state-layer-color: #ffffff;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.ac-cre-close:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.ac-cre-busy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 34px 24px 30px;
+}
+.ac-cre-spinner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  color: var(--field-brand);
+}
+.ac-cre-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(0, 61, 165, 0.16);
+  border-top-color: var(--field-brand);
+  border-radius: 999px;
+  animation: ac-cre-spin 900ms linear infinite;
+}
+.ac-cre-stage {
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  text-align: center;
+  text-wrap: pretty;
+}
+.ac-cre-bar {
+  width: 100%;
+  max-width: 320px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  overflow: hidden;
+}
+.ac-cre-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--field-brand);
+  animation: ac-cre-bar 2100ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.ac-cre-result {
+  display: flex;
+  flex-direction: column;
+}
+.ac-cre-result-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-cre-result-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  animation: ac-cre-tick 300ms ease both;
+}
+.ac-cre-result-icon-ok {
+  background: var(--field-ok);
+}
+.ac-cre-result-icon-fail {
+  background: var(--field-warn);
+}
+.ac-cre-result-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ac-cre-result-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+.ac-cre-result-title-ok {
+  color: var(--ink-ok);
+}
+.ac-cre-result-title-fail {
+  color: var(--ink-warn);
+}
+.ac-cre-result-sub {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.ac-cre-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-cre-row-label {
+  flex: none;
+  width: 140px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+.ac-cre-row-value {
+  min-width: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.ac-cre-error-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-cre-error-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--field-warn);
+}
+.ac-cre-error-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ac-cre-error-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+.ac-cre-error-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ac-cre-error-step {
+  flex: none;
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.ac-cre-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+}
+.ac-cre-active-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--field-ok);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.ac-cre-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+.ac-cre-finish-btn {
+  margin-left: auto;
+  --mat-button-filled-container-color: var(--field-brand);
+  --mat-button-filled-label-text-color: #ffffff;
+}
+.ac-cre-fix-btn {
+  --mat-button-outlined-label-text-color: var(--color-text);
+  --mat-button-outlined-outline-color: var(--color-neutral-200);
+}
+.ac-cre-retry-btn {
+  margin-left: auto;
+  --mat-button-filled-container-color: var(--field-brand);
+  --mat-button-filled-label-text-color: #ffffff;
+}

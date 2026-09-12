@@ -1,0 +1,228 @@
+/**
+ * Monté par MatDialog dans le `cdk-overlay-container`, hors de l'arbre DOM d'app-shell : les
+ * jetons de la coque n'y parviennent pas par héritage CSS. Ce composant porte donc ses propres
+ * jetons — dont profite aussi le contenu projeté
+ * via `<ng-content>`, qui devient un descendant DOM réel de `:host`.
+ */
+:host {
+  display: block;
+  height: 100%;
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --ink-brand: #002a6e;
+  --ink-brand-2: #003da5;
+  --ink-ok-2: #0f766e;
+  --ink-alt: #5b3ea8;
+  --field-brand: #002a6e;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #35322f;
+}
+
+:host, :host * {
+  box-sizing: border-box;
+}
+
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --ink-brand-2: #8fb4ee;
+  --ink-ok-2: #4fd1c5;
+  --ink-alt: #c4b5fd;
+  --field-brand: #12325e;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-400: #4a4643;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #b5b0ad;
+  --color-neutral-800: #d8d4d1;
+}
+
+@keyframes sp-slide {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+
+.pm-panel {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--field-brand);
+  background: var(--surface);
+  color: var(--color-text);
+  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.22);
+  animation: sp-slide 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.pm-grip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  z-index: 5;
+  color: var(--ink-brand);
+}
+
+.pm-grip:hover {
+  background: rgba(0, 61, 165, 0.1);
+}
+
+.pm-grip svg {
+  flex: none;
+  opacity: 0.55;
+  fill: currentColor;
+}
+
+.pm-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px 14px 24px;
+  color: #ffffff;
+}
+
+.pm-head app-icon {
+  flex: none;
+}
+
+.pm-head-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pm-head-title {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+.pm-head-subtitle {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* Boutons d'en-tête (épingle/agrandir/fermer) : de vrais matIconButton, avec un fond
+   translucide permanent (que Material n'a pas nativement — l'état repos y est transparent,
+   seul le survol dessine une couche d'état) posé directement sur le bouton, sous la couche
+   de survol de Material elle-même. Sans --mat-icon-button-icon-size, Material force
+   systématiquement l'icône enfant à 24px quelle que soit la taille du <svg> (voir
+   project_mat_icon_button_svg_size_ignored) ; sans --mat-icon-button-icon-color, l'icône
+   prend le ton on-surface-variant du thème M3 statique au lieu du blanc voulu ici. */
+.pm-pin-btn,
+.pm-maximize-btn,
+.pm-close-btn {
+  --mat-icon-button-icon-size: 14px;
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-touch-target-size: 26px;
+  --mat-icon-button-icon-color: #ffffff;
+  --mat-icon-button-state-layer-color: #ffffff;
+  flex: none;
+  margin-left: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.pm-pin-btn {
+  margin-left: auto;
+}
+
+.pm-pin-btn-on {
+  background: rgba(255, 255, 255, 0.36);
+}
+
+.pm-pin-btn svg {
+  transition: transform 160ms ease;
+  transform: rotate(0deg);
+}
+
+.pm-pin-icon-off {
+  transform: rotate(32deg);
+}
+
+.pm-head-sep {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.pm-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.pm-body-flush {
+  gap: 0;
+  padding: 0;
+}
+
+.pm-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+/* Enregistrer/Annuler : de vrais mat-flat-button/mat-stroked-button, sans `color="primary"`
+   (qui injecterait le bleu M3 du thème plutôt que de s'accorder à `accent()`, une couleur
+   arbitraire choisie à l'ouverture du panneau) — les jetons ci-dessous les repeignent en
+   blanc translucide sur le fond de couleur du pied de page, comme le prototype. */
+.pm-submit-btn {
+  --mat-button-filled-container-height: 34px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-horizontal-padding: 16px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 700;
+  --mat-button-filled-container-color: rgba(255, 255, 255, 0.18);
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-state-layer-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pm-cancel-btn {
+  --mat-button-outlined-container-height: 34px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-horizontal-padding: 16px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: #ffffff;
+  --mat-button-outlined-outline-color: rgba(255, 255, 255, 0.45);
+  --mat-button-outlined-state-layer-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pm-footer-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+}

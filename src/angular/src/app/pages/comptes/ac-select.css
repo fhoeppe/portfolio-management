@@ -1,0 +1,138 @@
+/* Cotes propres à Comptes ; l'habillage du déclencheur et du panneau est partagé par les
+   quatre sélecteurs de l'app et vit dans styles.scss (.pm-sel-*). */
+.ac-sel {
+  --pm-sel-h: 32px;
+  --pm-sel-pad: 0 8px 0 10px;
+  --pm-sel-fs: 13px;
+
+  /* Seul sélecteur à empiler un sous-libellé (`place`) sous son champ. */
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+/* Contenu projeté dans <mat-select-trigger>, donc rendu à l'intérieur de
+   `.mat-mdc-select-value` : c'est ici qu'on remet la rangée flexible que portait l'ancien
+   bouton, pour que pastille, drapeau et icône de validation s'alignent comme avant. */
+.ac-sel-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ac-sel-flag {
+  flex: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ac-sel-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+}
+
+.ac-sel-spacer {
+  flex: 1;
+}
+
+.ac-sel-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ac-sel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.ac-sel-check {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.ac-sel-check-ok {
+  background: var(--field-ok);
+}
+
+.ac-sel-check-bad {
+  background: var(--field-warn);
+}
+
+.ac-sel-sub {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 15px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Contenu des options. Ces règles restent scopées bien que le panneau vive dans le
+   cdk-overlay-container : les <mat-option> sont déclarées dans ce template, donc leurs nœuds
+   portent l'attribut _ngcontent du composant, qui les suit lors du déplacement dans l'overlay
+   — contrairement au panneau lui-même, créé par Material et traité globalement dans
+   styles.scss. Les jetons --color-* de l'app, eux, ne s'héritent pas jusque-là, d'où les
+   valeurs de repli explicites. */
+.ac-sel-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ac-sel-item-flag {
+  flex: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ac-sel-item-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  line-height: 1.25;
+}
+
+.ac-sel-item-place {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-neutral-600, #7a746f);
+}
+
+.ac-sel-item-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}

@@ -1,0 +1,226 @@
+.ti-msel {
+  position: relative;
+  display: flex;
+}
+
+.ti-msel-trigger {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 6px;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 28px !important;
+  padding: 0 5px 0 9px !important;
+  border: 1px solid var(--color-neutral-300) !important;
+  border-radius: 6px !important;
+  background: var(--surface) !important;
+  color: var(--color-text);
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  line-height: normal !important;
+  cursor: pointer;
+}
+
+.ti-msel-trigger:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.ti-msel-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ti-msel-more {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+
+.ti-msel-chevron {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-brand-2);
+  transition: transform 160ms ease;
+}
+
+.ti-msel-chevron-open {
+  transform: rotate(180deg);
+}
+
+/* Mêmes contraintes que tx-multiselect (voir ce fichier pour le détail) : la case à cocher de
+   Material emporte une couche d'état et une zone tactile de 40px qui dictaient la hauteur de la
+   ligne, et son libellé est peint à la taille M3. Les trois se règlent par jeton. */
+.ti-msel-row {
+  --mat-checkbox-state-layer-size: 12px;
+  --mat-checkbox-touch-target-size: 12px;
+  --mat-checkbox-label-text-size: 11px;
+  --mat-checkbox-label-text-line-height: 13px;
+  --mat-checkbox-unselected-icon-color: #b9bec9;
+  --mat-checkbox-unselected-hover-icon-color: #8fa6c8;
+  --mat-checkbox-unselected-focus-icon-color: #8fa6c8;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--menu-item-radius, 6px);
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* --menu-item-hover-bg : jeton consolidé (styles.scss), partagé avec .pm-nav-item et le menu
+   compte plutôt qu'une teinte réglée indépendamment ici. */
+.ti-msel-row:hover {
+  background: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.18));
+}
+
+.ti-msel-all {
+  /* Filet de séparation entre « Tout sélectionner » et les options. Couleur littérale : le
+     panneau est monté dans le cdk-overlay-container, où `--color-neutral-200` n'est pas défini.
+     Une `var()` non résolue invalide la déclaration entière — la bordure tombait alors à
+     `0px none` et le trait n'apparaissait pas. Pendant sombre dans styles.scss. */
+  /* Hauteur fixe plutôt qu'un remplissage : la ligne doit mesurer 30px quel que soit ce que
+     contient son libellé, et se distinguer nettement des options resserrées en dessous. */
+  height: 30px;
+  border-bottom: 1px solid #e6e9ef;
+  border-radius: 4px 4px 0 0;
+  font-weight: 600;
+  font-size: 11px;
+  color: #45403d;
+}
+
+/* Options resserrées au minimum : elles forment une liste continue et se lisent mieux groupées.
+   « Tout sélectionner » garde son espacement d'origine, il joue le rôle d'en-tête au-dessus du
+   filet. Les pastilles se touchaient presque une fois l'en-tête passé à 30px : quelques pixels
+   rendus à chaque option suffisent à les détacher, sans perdre la densité recherchée. */
+.ti-msel-item {
+  /* 20px : à 12px les glyphes de 11px occupaient toute la hauteur de ligne et les pastilles se
+     touchaient, rendant la liste illisible. L'interligne de 15px donne de l'air au texte, le
+     remplissage détache les pastilles les unes des autres. */
+  padding-block: 3px;
+  line-height: 15px;
+}
+
+.ti-msel-item .ti-msel-item-badge {
+  padding-block: 1px;
+  line-height: 13px;
+}
+
+.ti-msel-item-active {
+  background: rgba(0, 61, 165, 0.1);
+}
+
+.ti-msel-item-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ti-msel-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ti-msel-item-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ti-msel-item-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.ti-msel-item-count {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Case ramenée à 11px, la taille du texte de la liste : sa dimension n'a pas de jeton, elle est
+   écrite dans le gabarit de `mat-checkbox` — d'où `::ng-deep`, une règle scopée n'atteignant pas
+   les éléments internes du composant. Le tracé de la coche suit la boîte. */
+/* La case porte, autour de son carré, une couche d'état et un conteneur qui lui rendaient 14px
+   de haut et fixaient d'autant la hauteur de la ligne : tous deux sont ramenés au carré. */
+/* Seul `.mdc-checkbox`, le conteneur du carré, est ramené à sa taille. `mat-checkbox` et
+   `.mdc-form-field` enveloppent aussi le libellé (« Tout sélectionner ») : les brider à 13px
+   avec un centrage faisait déborder ce libellé à gauche de la ligne, centré sur la case au lieu
+   de la suivre. Ils gardent donc leur largeur propre, et seule la hauteur est neutralisée pour
+   que la ligne ne soit pas gonflée. */
+.ti-msel-row ::ng-deep mat-checkbox,
+.ti-msel-row ::ng-deep .mdc-form-field {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+
+.ti-msel-row ::ng-deep .mdc-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+
+.ti-msel-row ::ng-deep .mdc-checkbox__background {
+  box-sizing: border-box;
+  /* Sorti du positionnement absolu : Material y décale le carré de -3px pour le recentrer dans
+     son conteneur d'origine, plus grand que lui de son remplissage. Ce conteneur étant ramené
+     ici à la taille exacte du carré, l'offset le sortait du centre — et remettre `top: 0` ne
+     réglait que les lignes sans libellé, les deux structures n'ayant pas la même hauteur
+     interne. En flux normal dans un conteneur centré, le carré est centré dans tous les cas. */
+  position: relative;
+  top: auto;
+  left: auto;
+  width: 13px;
+  height: 13px;
+  border-width: 1px;
+}
+
+/* Retrait en pourcentage et non en pixels : la coche suit ainsi toute modification de la taille
+   de la case, au lieu de rester calée sur une valeur écrite pour 11px. */
+.ti-msel-row ::ng-deep .mdc-checkbox__checkmark {
+  /* Retrait de 20 % de chaque côté : la coche occupe donc 60 % de la case, soit un dessin de
+     ~6px pour une case de 13 — le glyphe reste ainsi en deçà du texte de 11px qu'il précède,
+     au lieu de peser plus lourd que lui. Exprimé en pourcentage pour qu'elle suive toute
+     modification de la taille.
+     `box-sizing: border-box` est indispensable : la coche est positionnée en absolu sur toute
+     la case, et sans lui le retrait s'ajoutait à sa boîte au lieu de la rétrécir — il la
+     poussait donc vers le bas à droite au lieu de la centrer. */
+  box-sizing: border-box;
+  padding: 20%;
+}
+
+/* Le trait de la coche est dessiné par un `stroke-width` du SVG : il est épaissi à mesure que
+   la coche rétrécit, faute de quoi elle s'effacerait — mais assez peu pour qu'elle garde le
+   poids d'un texte de 11px et non celui d'un caractère gras. */
+.ti-msel-row ::ng-deep .mdc-checkbox__checkmark-path {
+  stroke-width: 2.7;
+}

@@ -7,7 +7,13 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:angular": "node dist/angular/server/server.mjs"
+    "serve:ssr:angular": "node dist/angular/server/server.mjs",
+    "api:lint": "redocly lint openapi/openapi.yaml",
+    "api:docs": "redocly preview-docs openapi/openapi.yaml",
+    "mock": "prism mock -p 4010 openapi/openapi.yaml",
+    "mock:dynamic": "prism mock -p 4010 --dynamic openapi/openapi.yaml",
+    "mock:proxy": "prism proxy -p 4010 openapi/openapi.yaml http://localhost:8080/v1",
+    "start:mock": "ng serve --proxy-config proxy.conf.json"
   },
   "private": true,
   "packageManager": "npm@11.16.0",
@@ -30,6 +36,8 @@
     "@angular/build": "^22.1.8",
     "@angular/cli": "^22.1.8",
     "@angular/compiler-cli": "^22.1.0",
+    "@redocly/cli": "^2.52.1",
+    "@stoplight/prism-cli": "^5.16.0",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
     "jsdom": "^28.0.0",

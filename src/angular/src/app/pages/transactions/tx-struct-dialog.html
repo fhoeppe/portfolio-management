@@ -1,0 +1,24 @@
+<app-side-panel
+  [title]="ref"
+  subtitle="Structure de la transaction — Annexe STRUCT"
+  accent="var(--ink-code)"
+  [icon]="icon"
+  [footer]="true"
+  cancelLabel="OK"
+  cancelKind="ok"
+  note="En-tête et opérations numérotées"
+  (closed)="close()"
+  (pinnedChange)="onPinnedChange($event)"
+>
+  <pre class="tx-struct-json">{{ structJson }}</pre>
+
+  <span class="tx-struct-reco-row">
+    <span class="tx-struct-reco-label">Réconciliation</span>
+    <span class="tx-struct-reco-badge" [style.background]="recoState.bg" [style.color]="recoState.fg" [matTooltip]="recoState.hint">
+      <span class="tx-struct-reco-dot" [style.background]="recoState.fg"></span>
+      {{ recoState.label }}
+    </span>
+  </span>
+  <pre class="tx-struct-json">{{ recoJson }}</pre>
+  <p class="tx-struct-note">L'en-tête ne porte aucune donnée chiffrée : quantité, prix, frais et taxe appartiennent à l'opération, seule à savoir quelle ligne elle touche. La séquence fixe l'ordre de rejeu.</p>
+</app-side-panel>

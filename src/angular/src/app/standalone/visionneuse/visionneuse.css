@@ -1,0 +1,189 @@
+/**
+ * Page hors coque (voir `visionneuse.ts`) : pas de parent `app-shell` pour fournir les jetons
+ * `--ink-*`/`--field-*`/`--surface`/`--color-*` par héritage, donc reportés ici avec les mêmes
+ * valeurs que `app-shell.css` — même recette que le guide.
+ */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-neutral-200);
+  color: var(--color-text);
+  font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --ink-brand: #002a6e;
+  --ink-brand-2: #003da5;
+  --field-brand: #002a6e;
+  --surface: #ffffff;
+  --color-text: #1d1b1a;
+  --color-neutral-100: #f7f6f5;
+  --color-neutral-200: #ececea;
+  --color-neutral-300: #d8d5d2;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #35322f;
+  --color-neutral-900: #2d2b2b;
+}
+
+:host,
+:host * {
+  box-sizing: border-box;
+}
+
+:host([data-theme='dark']) {
+  --ink-brand: #9db6d9;
+  --ink-brand-2: #8fb4ee;
+  --field-brand: #12325e;
+  --surface: #1d1b1a;
+  --color-text: #f3f2f2;
+  --color-neutral-100: #141313;
+  --color-neutral-200: #262423;
+  --color-neutral-300: #35322f;
+  --color-neutral-400: #4a4643;
+  --color-neutral-500: #605d5d;
+  --color-neutral-600: #8a8582;
+  --color-neutral-700: #a8a3a0;
+  --color-neutral-800: #d8d5d2;
+  --color-neutral-900: #f3f2f2;
+}
+
+.vw-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ===========================================================================
+   Bandeau du document
+   =========================================================================== */
+
+.vw-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.vw-head-icon {
+  flex: none;
+  color: var(--color-neutral-600);
+}
+
+.vw-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vw-meta {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+/* ===========================================================================
+   Scène
+   =========================================================================== */
+
+/* `touch-action: none` : sans cela le navigateur s'approprie le geste pour faire défiler la
+   page et le glisser ne reçoit plus rien sur écran tactile. */
+.vw-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* La feuille est dimensionnée en hauteur : sa largeur suit le rapport A4 porté par
+   `app-doc-page`. Les jetons `--dp-*` règlent l'échelle de son contenu, plus généreuse ici que
+   dans l'aperçu encastré. */
+.vw-sheet {
+  --dp-height: 78vh;
+  --dp-gap: 14px;
+  --dp-pad: 38px 34px;
+  --dp-shadow: var(--shadow-lg);
+  --dp-kicker-fs: 11px;
+  --dp-title-fs: 20px;
+  --dp-line-h: 9px;
+  --dp-footer-fs: 11px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+}
+
+/* ===========================================================================
+   Barre de commandes
+   =========================================================================== */
+
+.vw-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-neutral-300);
+  background: var(--surface);
+}
+
+.vw-btn {
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-size: 13px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-700);
+}
+
+.vw-btn:hover {
+  background: rgba(0, 61, 165, 0.07);
+  color: var(--color-text);
+}
+
+.vw-page-label {
+  min-width: 58px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vw-zoom-label {
+  width: 52px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vw-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--color-neutral-300);
+}
+
+.vw-fit {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  flex: none;
+}
+
+.vw-hint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}

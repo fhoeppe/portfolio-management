@@ -7,7 +7,7 @@
     <div class="pm-page-header-actions">
       <button class="pm-mandate" mat-stroked-button [matMenuTriggerFor]="mandateMenu" #mandateTrigger="matMenuTrigger">
         {{ mandateLabel() }}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [style.transform]="mandateTrigger.menuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"><path d="m6 9 6 6 6-6"></path></svg>
+        <mat-icon iconPositionEnd svgIcon="chevron-down" style="font-size:14px" [style.transform]="mandateTrigger.menuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></mat-icon>
       </button>
       <mat-menu #mandateMenu="matMenu">
         @for (m of mandates; track m.value) {
@@ -36,11 +36,9 @@
   <div class="pm-ano">
     <div class="pm-ano-header" [class.pm-ano-header-open]="anoOpen()">
       <button type="button" class="pm-ano-toggle" [attr.aria-label]="anoOpen() ? 'Replier' : 'Développer'" (click)="anoOpen.set(!anoOpen())">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.pm-ano-chev-closed]="!anoOpen()">
-          <path d="m6 9 6 6 6-6"></path>
-        </svg>
+        <mat-icon svgIcon="chevron-down" style="font-size:18px" [class.pm-ano-chev-closed]="!anoOpen()"></mat-icon>
       </button>
-      <span class="pm-ano-icon"><app-icon [shapes]="icons.anomaly" [size]="32" [strokeWidth]="1.6" /></span>
+      <span class="pm-ano-icon"><mat-icon [svgIcon]="icons.anomaly" [style.font-size.px]="32"></mat-icon></span>
       <h2 (click)="anoOpen.set(!anoOpen())">Anomalies détectées</h2>
       <span class="pm-ano-count">{{ anomalies().length }}</span>
       @if (!anoOpen()) {
@@ -58,37 +56,39 @@
     @if (anoOpen()) {
       @if (anomalies().length > 0) {
         <div class="pm-table-scroll">
-          <table class="pm-table pm-ano-table">
-            <thead>
-              <tr>
-                <th class="pm-col-anomaly">Anomalie</th>
-                <th>Origine</th>
-                <th>Détectée</th>
-                <th>Gravité</th>
-                <th class="pm-col-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (a of anomalies(); track a.label) {
-                <tr>
-                  <td>
-                    <span class="pm-stack">
-                      <span class="pm-strong">{{ a.label }}</span>
-                      <span class="pm-muted">{{ a.detail }}</span>
-                    </span>
-                  </td>
-                  <td class="pm-muted">{{ a.source }}</td>
-                  <td class="pm-muted pm-nowrap">{{ a.when }}</td>
-                  <td>
-                    <span class="pm-badge" [style.background]="a.tagBg" [style.color]="a.tagFg">
-                      <span class="pm-badge-dot" [style.background]="a.tagFg"></span>
-                      {{ a.severityLabel }}
-                    </span>
-                  </td>
-                  <td class="pm-col-right">{{ a.action }}</td>
-                </tr>
-              }
-            </tbody>
+          <table mat-table [dataSource]="anomalies()" class="pm-table pm-ano-table">
+            <ng-container matColumnDef="anomalie">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-anomaly">Anomalie</th>
+              <td mat-cell *matCellDef="let a">
+                <span class="pm-stack">
+                  <span class="pm-strong">{{ a.label }}</span>
+                  <span class="pm-muted">{{ a.detail }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="origine">
+              <th mat-header-cell *matHeaderCellDef>Origine</th>
+              <td mat-cell *matCellDef="let a" class="pm-muted">{{ a.source }}</td>
+            </ng-container>
+            <ng-container matColumnDef="detectee">
+              <th mat-header-cell *matHeaderCellDef>Détectée</th>
+              <td mat-cell *matCellDef="let a" class="pm-muted pm-nowrap">{{ a.when }}</td>
+            </ng-container>
+            <ng-container matColumnDef="gravite">
+              <th mat-header-cell *matHeaderCellDef>Gravité</th>
+              <td mat-cell *matCellDef="let a">
+                <span class="pm-badge" [style.background]="a.tagBg" [style.color]="a.tagFg">
+                  <span class="pm-badge-dot" [style.background]="a.tagFg"></span>
+                  {{ a.severityLabel }}
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-right">Action</th>
+              <td mat-cell *matCellDef="let a" class="pm-col-right">{{ a.action }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="anomalyColumns"></tr>
+            <tr mat-row *matRowDef="let a; columns: anomalyColumns"></tr>
           </table>
         </div>
       } @else {
@@ -148,32 +148,34 @@
           </mat-button-toggle-group>
         </span>
         <div class="pm-table-scroll">
-          <table class="pm-table">
-            <thead>
-              <tr>
-                <th>Ligne</th>
-                <th class="pm-col-right">Valorisation</th>
-                <th class="pm-col-right">Poids</th>
-                <th class="pm-col-right">Jour</th>
-                <th class="pm-col-right">Depuis janvier</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (p of positionsSorted(); track p.ticker) {
-                <tr>
-                  <td>
-                    <span class="pm-stack">
-                      <span class="pm-strong">{{ p.ticker }}</span>
-                      <span class="pm-muted">{{ p.name }}</span>
-                    </span>
-                  </td>
-                  <td class="pm-col-right pm-num">{{ p.value }}</td>
-                  <td class="pm-col-right pm-num pm-muted">{{ p.weight }}</td>
-                  <td class="pm-col-right pm-num" [style.color]="p.dayColor">{{ p.day }}</td>
-                  <td class="pm-col-right pm-num" [style.color]="p.ytdColor">{{ p.ytd }}</td>
-                </tr>
-              }
-            </tbody>
+          <table mat-table [dataSource]="positionsSorted()" class="pm-table">
+            <ng-container matColumnDef="ligne">
+              <th mat-header-cell *matHeaderCellDef>Ligne</th>
+              <td mat-cell *matCellDef="let p">
+                <span class="pm-stack">
+                  <span class="pm-strong">{{ p.ticker }}</span>
+                  <span class="pm-muted">{{ p.name }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="valorisation">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-right">Valorisation</th>
+              <td mat-cell *matCellDef="let p" class="pm-col-right pm-num">{{ p.value }}</td>
+            </ng-container>
+            <ng-container matColumnDef="poids">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-right">Poids</th>
+              <td mat-cell *matCellDef="let p" class="pm-col-right pm-num pm-muted">{{ p.weight }}</td>
+            </ng-container>
+            <ng-container matColumnDef="jour">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-right">Jour</th>
+              <td mat-cell *matCellDef="let p" class="pm-col-right pm-num" [style.color]="p.dayColor">{{ p.day }}</td>
+            </ng-container>
+            <ng-container matColumnDef="ytd">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-right">Depuis janvier</th>
+              <td mat-cell *matCellDef="let p" class="pm-col-right pm-num" [style.color]="p.ytdColor">{{ p.ytd }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="positionColumns"></tr>
+            <tr mat-row *matRowDef="let p; columns: positionColumns"></tr>
           </table>
         </div>
       </app-panel-card>

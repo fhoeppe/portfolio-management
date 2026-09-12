@@ -1,0 +1,84 @@
+<app-side-panel
+  title="Récapitulatif de la saisie"
+  [subtitle]="subtitle()"
+  accent="var(--ink-brand)"
+  [icon]="icon"
+  [flush]="true"
+  [openPct]="40"
+  [maxPct]="75"
+  [footer]="true"
+  cancelLabel="OK"
+  cancelKind="ok"
+  [note]="verdict()"
+  (closed)="close()"
+  (pinnedChange)="onPinnedChange($event)"
+>
+  <div class="ac-rec-picker">
+    <span class="ac-rec-picker-label">Titulaire affiché</span>
+    <button type="button" class="ac-rec-picker-trigger" [matMenuTriggerFor]="holderMenu">
+      <span class="ac-rec-chip" [class.ac-rec-chip-main]="who().main">{{ who().chip }}</span>
+      <span class="ac-rec-picker-name">{{ who().label }}</span>
+      <span class="ac-rec-picker-role">{{ who().role }}</span>
+      <mat-icon svgIcon="chevron-down" style="font-size:14px" class="ac-rec-chevron"></mat-icon>
+    </button>
+    <mat-menu #holderMenu="matMenu" class="pm-unfold">
+      @for (p of people(); track p.key) {
+        <button mat-menu-item [class.ac-rec-item-active]="p.key === recapHolder()" (click)="pickHolder(p.key)">
+          <span class="ac-rec-chip" [class.ac-rec-chip-main]="p.main">{{ p.chip }}</span>
+          <span class="ac-rec-item-col">
+            <span>{{ p.label }}</span>
+            <span class="ac-rec-item-role">{{ p.role }}</span>
+          </span>
+        </button>
+      }
+    </mat-menu>
+  </div>
+
+  @for (g of groups(); track g.title) {
+    <div class="ac-rec-group">
+      @if (g.isCash) {
+        <div class="ac-rec-picker">
+          <span class="ac-rec-picker-label">Compte de liquidité affiché</span>
+          <button type="button" class="ac-rec-picker-trigger" [matMenuTriggerFor]="bankMenu">
+            <span class="ac-rec-chip" [class.ac-rec-chip-main]="bank().main">{{ bank().chip }}</span>
+            <span class="ac-rec-picker-name">{{ bank().label }}</span>
+            <span class="ac-rec-picker-role">{{ bank().role }}</span>
+            <mat-icon svgIcon="chevron-down" style="font-size:14px" class="ac-rec-chevron"></mat-icon>
+          </button>
+          <mat-menu #bankMenu="matMenu" class="pm-unfold">
+            @for (b of banks(); track b.key) {
+              <button mat-menu-item [class.ac-rec-item-active]="b.key === recapBank()" (click)="pickBank(b.key)">
+                <span class="ac-rec-chip" [class.ac-rec-chip-main]="b.main">{{ b.chip }}</span>
+                <span class="ac-rec-item-col">
+                  <span>{{ b.label }}</span>
+                  <span class="ac-rec-item-role">{{ b.role }}</span>
+                </span>
+              </button>
+            }
+          </mat-menu>
+        </div>
+      }
+      <div class="ac-rec-group-head">
+        <span class="ac-rec-group-title">{{ g.title }}</span>
+        <span class="ac-rec-group-state" [style.color]="g.stateColor">{{ g.state }}</span>
+      </div>
+      @for (r of g.rows; track r.label) {
+        <div class="ac-rec-row">
+          <span class="ac-rec-row-label">{{ r.label }}</span>
+          @if (r.badge) {
+            <span class="ac-rec-row-badge" [style.background]="r.badgeBg" [style.color]="r.badgeFg">
+              <span class="ac-rec-row-dot" [style.background]="r.badgeFg"></span>
+              {{ r.badge }}
+            </span>
+          }
+          <span class="ac-rec-row-value" [style.color]="r.color">{{ r.value }}</span>
+          @if (r.href) {
+            <a [href]="r.href" target="_blank" rel="noopener" class="ac-rec-row-link" title="Ouvrir le site du broker dans un nouvel onglet">
+              <mat-icon svgIcon="external-link-alt" style="font-size:13px"></mat-icon>
+            </a>
+          }
+        </div>
+      }
+    </div>
+  }
+</app-side-panel>

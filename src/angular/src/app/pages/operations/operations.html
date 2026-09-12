@@ -1,0 +1,341 @@
+<div class="pm-page">
+  <div class="pm-head-row">
+    <div class="pm-head-titles">
+      <h1 class="pm-h1">OPÉRATIONS</h1>
+      <p class="pm-subtitle">{{ subtitle() }}</p>
+    </div>
+  </div>
+
+  <div class="pm-tabs-row">
+    <button type="button" matIconButton class="pm-add-btn" matTooltip="Ajouter une nouvelle opération" (click)="openSheet()">
+      <mat-icon svgIcon="plus" style="font-size:16px"></mat-icon>
+    </button>
+    <span class="pm-tabs-gap"></span>
+    <nav mat-tab-nav-bar class="pm-tabs-nav pm-tabnav" [tabPanel]="opsTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of pageTabs(); track t.key) {
+      <button
+        type="button"
+        mat-tab-link
+        class="pm-page-tab"
+        [active]="tab() === t.key"
+        [style.height]="t.height"
+        [style.padding]="t.padding"
+        [style.border-color]="t.borderColor"
+        [style.background]="t.bg"
+        [style.color]="t.fg"
+        [style.font-size]="t.size"
+        [style.font-weight]="t.weight"
+        (click)="setTab(t.key)"
+      >
+        {{ t.label }}
+        @if (t.hasBadge) {
+          <span class="pm-page-tab-badge" [style.background]="t.badgeBg">{{ t.badge }}</span>
+        }
+      </button>
+    }
+    </nav>
+  </div>
+
+  <mat-tab-nav-panel #opsTabPanel>
+  @if (tab() === 'overview') {
+    <mat-accordion class="pm-accordion">
+      <mat-expansion-panel class="pm-acc-band pm-acc-band-first" style="background:var(--band-brand)"
+        [expanded]="openPanel() === 'ordres'" (expandedChange)="setPanel('ordres', $event)" hideToggle>
+        <mat-expansion-panel-header class="pm-acc-head">
+          ORDRES
+          <span class="pm-acc-chevron" [class.pm-acc-chevron-open]="openPanel() === 'ordres'">
+            <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
+          </span>
+        </mat-expansion-panel-header>
+          <div class="pm-kpi-grid">
+            @for (k of kpis(); track k.label) {
+              <div class="pm-kpi-card" [style.border-color]="k.border" [style.background]="k.bg">
+                <div class="pm-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+                <div class="pm-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+                <div class="pm-kpi-note">{{ k.note }}</div>
+              </div>
+            }
+          </div>
+      </mat-expansion-panel>
+      <mat-expansion-panel class="pm-acc-band" style="border-top:1px solid var(--ink-info);background:var(--band-info)"
+        [expanded]="openPanel() === 'transferts'" (expandedChange)="setPanel('transferts', $event)" hideToggle>
+        <mat-expansion-panel-header class="pm-acc-head">
+          TRANSFERTS
+          <span class="pm-acc-chevron" [class.pm-acc-chevron-open]="openPanel() === 'transferts'">
+            <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
+          </span>
+        </mat-expansion-panel-header>
+          <div class="pm-kpi-grid">
+            @for (k of transferKpis(); track k.label) {
+              <div class="pm-kpi-card" [style.border-color]="k.border" [style.background]="k.bg">
+                <div class="pm-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+                <div class="pm-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+                <div class="pm-kpi-note">{{ k.note }}</div>
+              </div>
+            }
+          </div>
+      </mat-expansion-panel>
+      <mat-expansion-panel class="pm-acc-band" style="border-top:1px solid var(--ink-warn);background:var(--band-warn)"
+        [expanded]="openPanel() === 'corporate'" (expandedChange)="setPanel('corporate', $event)" hideToggle>
+        <mat-expansion-panel-header class="pm-acc-head">
+          CORPORATE ACTIONS
+          <span class="pm-acc-chevron" [class.pm-acc-chevron-open]="openPanel() === 'corporate'">
+            <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
+          </span>
+        </mat-expansion-panel-header>
+          <div class="pm-kpi-grid">
+            @for (k of corporateKpis(); track k.label) {
+              <div class="pm-kpi-card" [style.border-color]="k.border" [style.background]="k.bg">
+                <div class="pm-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+                <div class="pm-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+                <div class="pm-kpi-note">{{ k.note }}</div>
+              </div>
+            }
+          </div>
+      </mat-expansion-panel>
+      <mat-expansion-panel class="pm-acc-band pm-acc-band-last" style="border-top:1px solid var(--ink-magenta);background:var(--band-magenta)"
+        [expanded]="openPanel() === 'cashflow'" (expandedChange)="setPanel('cashflow', $event)" hideToggle>
+        <mat-expansion-panel-header class="pm-acc-head">
+          CASHFLOWS
+          <span class="pm-acc-chevron" [class.pm-acc-chevron-open]="openPanel() === 'cashflow'">
+            <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
+          </span>
+        </mat-expansion-panel-header>
+          <div class="pm-kpi-grid">
+            @for (k of cashflowKpis(); track k.label) {
+              <div class="pm-kpi-card" [style.border-color]="k.border" [style.background]="k.bg">
+                <div class="pm-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+                <div class="pm-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+                <div class="pm-kpi-note">{{ k.note }}</div>
+              </div>
+            }
+          </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+    <div class="pm-preview-grid">
+      <div class="pm-preview-card">
+        <div class="pm-preview-head" style="background:rgba(15,118,110,0.10)">
+          <span class="pm-preview-title" style="color:var(--ink-ok)">Trades récents</span>
+        </div>
+        @for (r of rows(); track $index) {
+          <div class="pm-preview-row">
+            <span class="pm-preview-side" [style.color]="r.sideColor">{{ r.side }}</span>
+            <span class="pm-preview-sec">{{ r.security }}</span>
+            <span class="pm-preview-badge" [style.background]="r.stateBg" [style.color]="r.stateFg">{{ r.state }}</span>
+          </div>
+        }
+      </div>
+      <div class="pm-preview-card">
+        <div class="pm-preview-head" style="background:rgba(2,132,199,0.10)">
+          <span class="pm-preview-title" style="color:var(--ink-info)">Transferts</span>
+        </div>
+        @for (r of transferRows(); track r.id) {
+          <div class="pm-preview-row">
+            <span class="pm-preview-sec">{{ r.from }} → {{ r.to }}</span>
+            <span class="pm-preview-amount">{{ r.amount }}</span>
+            <span class="pm-preview-badge" [style.background]="r.stateBg" [style.color]="r.stateFg">{{ r.state }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'list') {
+    <div class="pm-tab-body">
+      <div class="pm-table-card">
+        <div class="pm-table-toolbar">
+          <span class="pm-toolbar-label">État</span>
+          <mat-button-toggle-group class="pm-state-toggle" hideSingleSelectionIndicator [value]="stateFilter()" (change)="setStateFilter($event.value)">
+            @for (s of stateTabs(); track s.key) {
+              <mat-button-toggle [value]="s.key">{{ s.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+          <button type="button" matIconButton class="pm-reset-btn" matTooltip="Réinitialiser" (click)="setStateFilter('all')">
+            <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+          </button>
+        </div>
+        <div class="pm-table-scroll">
+          <table mat-table [dataSource]="rows()" class="pm-table">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-date">Date</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap">{{ r.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="side">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-side">Sens</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-bold" [style.color]="r.sideColor">{{ r.side }}</td>
+            </ng-container>
+            <ng-container matColumnDef="security">
+              <th mat-header-cell *matHeaderCellDef>Titre</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis">{{ r.security }}</td>
+            </ng-container>
+            <ng-container matColumnDef="qty">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-num">Quantité</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num">{{ r.qty }}</td>
+            </ng-container>
+            <ng-container matColumnDef="filled">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-num">Exécuté</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num">{{ r.filled }}</td>
+            </ng-container>
+            <ng-container matColumnDef="left">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-num-sm">Reste</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num" [style.color]="r.leftColor">{{ r.left }}</td>
+            </ng-container>
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-price">Prix / stratégie</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num pm-td-nowrap">{{ r.price }}</td>
+            </ng-container>
+            <ng-container matColumnDef="tif">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-tif">Validité</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-tif">{{ r.tif }}</td>
+            </ng-container>
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-state">État</th>
+              <td mat-cell *matCellDef="let r">
+                <span class="pm-state-badge" [style.background]="r.stateBg" [style.color]="r.stateFg" [matTooltip]="r.stateHint">
+                  <span class="pm-state-dot" [style.background]="r.stateFg"></span>
+                  {{ r.state }}
+                </span>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="orderColumns"></tr>
+            <tr mat-row *matRowDef="let r; columns: orderColumns" [style.background]="r.bg"></tr>
+          </table>
+        </div>
+        @if (rows().length === 0) {
+          <p class="pm-empty">Aucun ordre pour ce filtre.</p>
+        }
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'transfers') {
+    <div class="pm-tab-body">
+      <div class="pm-table-card">
+        <div class="pm-table-scroll">
+          <table mat-table [dataSource]="transferRows()" class="pm-table">
+            <ng-container matColumnDef="ref">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-ref">Référence</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap">{{ r.id }}</td>
+            </ng-container>
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-date">Date</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap">{{ r.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="from">
+              <th mat-header-cell *matHeaderCellDef>Source</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis">{{ r.from }}</td>
+            </ng-container>
+            <ng-container matColumnDef="to">
+              <th mat-header-cell *matHeaderCellDef>Destinataire</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis">{{ r.to }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-amount">Montant</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num">{{ r.amount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-state">État</th>
+              <td mat-cell *matCellDef="let r"><span class="pm-state-badge" [style.background]="r.stateBg" [style.color]="r.stateFg">{{ r.state }}</span></td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="transferColumns"></tr>
+            <tr mat-row *matRowDef="let r; columns: transferColumns" [style.background]="r.bg"></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'corporate') {
+    <div class="pm-tab-body">
+      <div class="pm-kpi-grid">
+        @for (k of corporateKpis(); track k.label) {
+          <div class="pm-kpi-card" [style.border-color]="k.border" [style.background]="k.bg">
+            <div class="pm-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+            <div class="pm-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+            <div class="pm-kpi-note">{{ k.note }}</div>
+          </div>
+        }
+      </div>
+      <p class="pm-upcoming">{{ corporateUpcoming() }}</p>
+      <div class="pm-table-card">
+        <div class="pm-table-scroll">
+          <table mat-table [dataSource]="corporateRows()" class="pm-table pm-table-wide">
+            <ng-container matColumnDef="ref">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-ref">Référence</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap pm-td-ellipsis">{{ r.id }}</td>
+            </ng-container>
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-date">Date</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap pm-td-ellipsis">{{ r.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-type">Type</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis">{{ r.type }}</td>
+            </ng-container>
+            <ng-container matColumnDef="security">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-sec">Titre</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis" [matTooltip]="r.security">{{ r.security }}</td>
+            </ng-container>
+            <ng-container matColumnDef="account">
+              <th mat-header-cell *matHeaderCellDef>Compte</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis" [matTooltip]="r.account">{{ r.account }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-amount">Montant</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num pm-td-ellipsis">{{ r.amount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="deadline">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-deadline">Échéance</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap" [style.color]="r.deadlineColor" [style.font-weight]="r.deadlineWeight" [matTooltip]="r.deadlineHint">{{ r.deadline }}</td>
+            </ng-container>
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-state">État</th>
+              <td mat-cell *matCellDef="let r"><span class="pm-state-badge" [style.background]="r.stateBg" [style.color]="r.stateFg">{{ r.state }}</span></td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="corporateColumns"></tr>
+            <tr mat-row *matRowDef="let r; columns: corporateColumns" [style.background]="r.bg"></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'cashflow') {
+    <div class="pm-tab-body">
+      <div class="pm-table-card">
+        <div class="pm-table-scroll">
+          <table mat-table [dataSource]="cashflowRows()" class="pm-table">
+            <ng-container matColumnDef="ref">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-ref">Référence</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap pm-td-ellipsis">{{ r.id }}</td>
+            </ng-container>
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-date">Date</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-nowrap pm-td-ellipsis">{{ r.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-type-lg">Type</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis">{{ r.type }}</td>
+            </ng-container>
+            <ng-container matColumnDef="account">
+              <th mat-header-cell *matHeaderCellDef>Compte</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-ellipsis">{{ r.account }}</td>
+            </ng-container>
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-amount">Montant</th>
+              <td mat-cell *matCellDef="let r" class="pm-td-num pm-td-ellipsis" [style.color]="r.amountColor">{{ r.amount }}</td>
+            </ng-container>
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="pm-col-state">État</th>
+              <td mat-cell *matCellDef="let r"><span class="pm-state-badge" [style.background]="r.stateBg" [style.color]="r.stateFg">{{ r.state }}</span></td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="cashflowColumns"></tr>
+            <tr mat-row *matRowDef="let r; columns: cashflowColumns" [style.background]="r.bg"></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</mat-tab-nav-panel>
+</div>

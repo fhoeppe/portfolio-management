@@ -1,0 +1,825 @@
+<div class="pr-page">
+  <div class="pr-head">
+    <h1 class="pr-h1">Paramètres</h1>
+    <p class="pr-subtitle">{{ subtitle() }}</p>
+  </div>
+
+  <nav mat-tab-nav-bar class="pr-tabs-row pm-tabnav" [tabPanel]="prTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of pageTabs; track t.key) {
+      <button type="button" mat-tab-link class="pr-page-tab" [active]="tab() === t.key"
+        [class.pr-page-tab-active]="tab() === t.key" (click)="setTab(t.key)">
+        <mat-icon [svgIcon]="t.icon" style="font-size:16px"></mat-icon>
+        {{ t.label }}
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #prTabPanel>
+
+    <!-- ───────────────────────────── Préférences ───────────────────────────── -->
+    @if (tab() === 'prefs') {
+      <div class="pr-body pr-body-narrow">
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Préférences de session</h2>
+          </header>
+
+          <div class="pr-pref-list">
+            <div class="pr-pref-row">
+              <span class="pr-pref-label">Densité de l'affichage</span>
+              <mat-button-toggle-group class="pr-seg" hideSingleSelectionIndicator
+                [value]="density()" (change)="density.set($event.value)">
+                <mat-button-toggle value="compact">Compact</mat-button-toggle>
+                <mat-button-toggle value="standard">Standard</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+
+            <div class="pr-pref-row">
+              <span class="pr-pref-label">Langue de l'interface</span>
+              <mat-button-toggle-group class="pr-seg" hideSingleSelectionIndicator
+                [value]="language()" (change)="language.set($event.value)">
+                <mat-button-toggle value="FR">FR</mat-button-toggle>
+                <mat-button-toggle value="EN">EN</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+
+            <div class="pr-pref-row">
+              <span class="pr-pref-label">Notifications par e-mail</span>
+              <mat-slide-toggle class="pr-switch" hideIcon [checked]="emailNotifications()"
+                (change)="emailNotifications.set($event.checked)"></mat-slide-toggle>
+            </div>
+
+            <div class="pr-pref-row pr-pref-row-last">
+              <span class="pr-pref-label">Page d'accueil</span>
+              <mat-select class="pm-sel-trigger pr-home-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                [value]="homePage()" (valueChange)="homePage.set($event)">
+                @for (g of homeGroups; track g.label) {
+                  <mat-optgroup [label]="g.label">
+                    @for (o of g.items; track o) {
+                      <mat-option [value]="o">{{ o }}</mat-option>
+                    }
+                  </mat-optgroup>
+                }
+              </mat-select>
+            </div>
+          </div>
+
+          <footer class="pr-card-foot">
+            <button type="button" matButton="outlined" class="pr-btn-cancel">Annuler</button>
+            <button type="button" matButton="filled" class="pr-btn-save">Enregistrer</button>
+          </footer>
+        </section>
+      </div>
+    }
+
+    <!-- ──────────────────────── Prélèvement à la source ──────────────────────── -->
+    @if (tab() === 'tax') {
+      <div class="pr-body">
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Régime du titulaire</h2>
+            <span class="pr-card-note">Applique la retenue par défaut aux dividendes et coupons</span>
+          </header>
+
+          <div class="pr-regime-grid">
+            <label class="pr-field">
+              Pays de résidence fiscale
+              <mat-select class="pm-sel-trigger pr-field-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                [value]="residence()" (valueChange)="residence.set($event)">
+                @for (o of residences; track o.value) {
+                  <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                }
+              </mat-select>
+              <span class="pr-field-hint">Détermine la convention applicable</span>
+            </label>
+
+            <label class="pr-field">
+              Statut du titulaire
+              <mat-select class="pm-sel-trigger pr-field-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                [value]="status()" (valueChange)="status.set($event)">
+                <mat-select-trigger>
+                  <span class="pr-status-option">
+                    <mat-icon class="pr-status-icon" [svgIcon]="statusOption().icon ?? ''"></mat-icon>
+                    {{ statusOption().label }}
+                  </span>
+                </mat-select-trigger>
+                @for (o of holderStatus; track o.value) {
+                  <mat-option [value]="o.value">
+                    <span class="pr-status-option">
+                      <mat-icon class="pr-status-icon" [svgIcon]="o.icon ?? ''"></mat-icon>
+                      {{ o.label }}
+                    </span>
+                  </mat-option>
+                }
+              </mat-select>
+              <span class="pr-field-hint">Conditionne le taux de faveur</span>
+            </label>
+
+            <label class="pr-field">
+              Certificat de résidence — validité
+              <input class="pr-input" placeholder="AAAA-MM-JJ" [value]="certificate()"
+                (input)="certificate.set($any($event.target).value)" />
+              <span class="pr-field-hint">{{ certificateHint() }}</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Taux par pays de source</h2>
+            <span class="pr-card-note pr-card-note-push">{{ rateNote() }}</span>
+            @if (hasRateEdits()) {
+              <span class="pr-card-edits">{{ rateEditCount() }}</span>
+              <button type="button" matIconButton class="pr-icon-btn" matTooltip="Revenir au barème officiel" (click)="resetRates()">
+                <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+              </button>
+            }
+          </header>
+
+          @for (g of taxGroups(); track g.continent) {
+            <mat-expansion-panel class="pr-panel pr-tax-panel" hideToggle
+              [expanded]="taxContinentOpen(g.continent)"
+              (expandedChange)="setTaxContinentOpen(g.continent, $event)">
+              <mat-expansion-panel-header class="pr-panel-head pr-tax-panel-head"
+                [matTooltip]="taxContinentOpen(g.continent) ? 'Replier ' + g.continent : 'Déplier ' + g.continent">
+                <mat-panel-title class="pr-panel-title-wrap">
+                  <mat-icon class="pr-panel-chevron" [class.pr-panel-chevron-open]="taxContinentOpen(g.continent)" svgIcon="chevron-down" style="font-size:15px"></mat-icon>
+                  <mat-icon svgIcon="globe" style="font-size:13px"></mat-icon>
+                  <span class="pr-group-label">{{ g.continent }}</span>
+                </mat-panel-title>
+                <mat-panel-description class="pr-panel-desc-count">
+                  <span class="pr-group-count">{{ g.count }}</span>
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <div class="pr-table-scroll">
+                <table mat-table [dataSource]="g.rows" class="pr-table pr-table-tax">
+                  <ng-container matColumnDef="country">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-country">Pays de source</th>
+                    <td mat-cell *matCellDef="let row" class="pr-td pr-col-country">
+                      <span class="pr-country">
+                        <span class="pr-flag">{{ row.flag }}</span>
+                        <span class="pr-code">{{ row.code }}</span>
+                        <span class="pr-country-name">{{ row.country }}</span>
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="places">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-places">Places de marché</th>
+                    <td mat-cell *matCellDef="let row" class="pr-td pr-col-places">
+                      <span class="pr-chip-field" [style.border-color]="row.chipBorder">
+                        <mat-chip-set class="pr-place-set" aria-label="Places rattachées">
+                          @for (ch of row.chips; track ch.mic) {
+                            <mat-chip-row class="pr-place-chip" [matTooltip]="ch.place" (removed)="removeTaxPlace(row.code, ch.mic)">
+                              {{ ch.mic }}
+                              <button matChipRemove [attr.aria-label]="'Retirer ' + ch.mic" matTooltip="Retirer cette place">
+                                <mat-icon svgIcon="close" style="font-size:9px"></mat-icon>
+                              </button>
+                            </mat-chip-row>
+                          }
+                        </mat-chip-set>
+                        <mat-select class="pr-chip-add" [panelWidth]="null" panelClass="pm-sel-panel"
+                          placeholder="+" matTooltip="Ajouter une place de marché"
+                          (valueChange)="addTaxPlace(row.code, $event)">
+                          @for (o of row.addOptions; track o.value) {
+                            <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                          }
+                        </mat-select>
+                        @if (row.hasHiddenChips) {
+                          <button type="button" matIconButton class="pr-chip-restore" matTooltip="Revenir aux places d'origine" (click)="restoreTaxPlaces(row.code)">
+                            <mat-icon svgIcon="rotate-left" style="font-size:12px"></mat-icon>
+                          </button>
+                        }
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="legal">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-rate">Taux légal</th>
+                    <td mat-cell *matCellDef="let row" class="pr-td pr-col-rate">
+                      <span class="pr-num" [style.border-color]="row.border">
+                        <span class="pr-num-prefix">%</span>
+                        <input class="pr-num-input" [value]="row.legal" (input)="setRate(row.code, 'legal', $any($event.target).value)" />
+                        <span class="pr-num-steps">
+                          <button type="button" class="pr-num-step" matTooltip="Augmenter" (click)="stepRate(row.code, 'legal', row.legal, 0.5)">
+                            <mat-icon svgIcon="chevron-up" style="font-size:10px"></mat-icon>
+                          </button>
+                          <button type="button" class="pr-num-step" matTooltip="Diminuer" (click)="stepRate(row.code, 'legal', row.legal, -0.5)">
+                            <mat-icon svgIcon="chevron-down" style="font-size:10px"></mat-icon>
+                          </button>
+                        </span>
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="treaty">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-rate">Taux conventionnel</th>
+                    <td mat-cell *matCellDef="let row" class="pr-td pr-col-rate">
+                      <span class="pr-num" [style.border-color]="row.border">
+                        <span class="pr-num-prefix">%</span>
+                        <input class="pr-num-input" [value]="row.treaty" (input)="setRate(row.code, 'treaty', $any($event.target).value)" />
+                        <span class="pr-num-steps">
+                          <button type="button" class="pr-num-step" matTooltip="Augmenter" (click)="stepRate(row.code, 'treaty', row.treaty, 0.5)">
+                            <mat-icon svgIcon="chevron-up" style="font-size:10px"></mat-icon>
+                          </button>
+                          <button type="button" class="pr-num-step" matTooltip="Diminuer" (click)="stepRate(row.code, 'treaty', row.treaty, -0.5)">
+                            <mat-icon svgIcon="chevron-down" style="font-size:10px"></mat-icon>
+                          </button>
+                        </span>
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="applied">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-applied">Retenue appliquée</th>
+                    <td mat-cell *matCellDef="let row" class="pr-td pr-col-applied" [style.color]="row.color">{{ row.applied }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="recovery">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-recovery">Récupération</th>
+                    <td mat-cell *matCellDef="let row" class="pr-td pr-col-recovery">
+                      <input class="pr-input pr-input-sm" [style.border-color]="row.border" [value]="row.recovery"
+                        (input)="setRate(row.code, 'recovery', $any($event.target).value)" />
+                    </td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="taxColumns" class="pr-header-row"></tr>
+                  <tr mat-row *matRowDef="let row; columns: taxColumns" class="pr-row" [style.background]="row.bg"></tr>
+                </table>
+              </div>
+            </mat-expansion-panel>
+          }
+
+          <footer class="pr-card-note-foot">
+            Le taux conventionnel s'applique sur présentation d'un certificat de résidence fiscale en cours de
+            validité. À défaut, le taux légal est retenu à la source et la différence se réclame par voie de
+            remboursement.
+          </footer>
+        </section>
+      </div>
+    }
+
+    <!-- ───────────────────────── Règlement-livraison ───────────────────────── -->
+    @if (tab() === 'settle') {
+      <div class="pr-body">
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Délais de dénouement par place</h2>
+            <span class="pr-card-note pr-card-note-push pr-num-note">{{ settleNote() }}</span>
+          </header>
+
+          @for (g of settleGroups(); track g.continent) {
+            <mat-expansion-panel class="pr-panel pr-tax-panel" hideToggle
+              [expanded]="settleContinentOpen(g.continent)"
+              (expandedChange)="setSettleContinentOpen(g.continent, $event)">
+              <mat-expansion-panel-header class="pr-panel-head pr-tax-panel-head"
+                [matTooltip]="settleContinentOpen(g.continent) ? 'Replier ' + g.continent : 'Déplier ' + g.continent">
+                <mat-panel-title class="pr-panel-title-wrap">
+                  <mat-icon class="pr-panel-chevron" [class.pr-panel-chevron-open]="settleContinentOpen(g.continent)" svgIcon="chevron-down" style="font-size:15px"></mat-icon>
+                  <mat-icon svgIcon="globe" style="font-size:13px"></mat-icon>
+                  <span class="pr-group-label">{{ g.continent }}</span>
+                </mat-panel-title>
+                <mat-panel-description class="pr-panel-desc-count">
+                  <span class="pr-group-count">{{ g.count }}</span>
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <div class="pr-table-scroll">
+                <table mat-table [dataSource]="g.rows" class="pr-table pr-table-settle">
+                  <ng-container matColumnDef="mic">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-mic">MIC</th>
+                    <td mat-cell *matCellDef="let p" class="pr-td pr-col-mic">
+                      <span class="pr-country">
+                        <span class="pr-flag">{{ p.flag }}</span>
+                        <span class="pr-mic">{{ p.mic }}</span>
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="place">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th">Place</th>
+                    <td mat-cell *matCellDef="let p" class="pr-td pr-ellipsis">{{ p.place }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="cycle">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-cycle">Cycle</th>
+                    <td mat-cell *matCellDef="let p" class="pr-td pr-col-cycle">
+                      <mat-select class="pr-cycle-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                        [value]="p.cycle" matTooltip="Cycle de dénouement" [style.border-color]="p.cycleBorder"
+                        (valueChange)="setCycle(p.mic, $event)">
+                        <mat-select-trigger>
+                          <mat-chip class="pr-cycle-chip" disableRipple
+                            [style.--mat-chip-elevated-container-color]="p.cycleBg"
+                            [style.--mat-chip-label-text-color]="p.cycleFg">{{ p.cycle }}</mat-chip>
+                        </mat-select-trigger>
+                        @for (o of cycleOptions; track o) {
+                          <mat-option [value]="o">{{ o }}</mat-option>
+                        }
+                      </mat-select>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="shift">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-shift">Bascule</th>
+                    <td mat-cell *matCellDef="let p" class="pr-td pr-col-shift pr-num-note">{{ p.shift }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="csd">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-csd">Dépositaire</th>
+                    <td mat-cell *matCellDef="let p" class="pr-td pr-col-csd pr-ellipsis">{{ p.csd }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="penalty">
+                    <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-penalty">Régime de pénalités</th>
+                    <td mat-cell *matCellDef="let p" class="pr-td pr-col-penalty pr-ellipsis">{{ p.penalty }}</td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="settleColumns" class="pr-header-row"></tr>
+                  <tr mat-row *matRowDef="let p; columns: settleColumns" class="pr-row" [style.background]="p.bg"></tr>
+                </table>
+              </div>
+            </mat-expansion-panel>
+          }
+
+          <footer class="pr-card-note-foot">
+            Le règlement (UE) 909/2014 fixe le dénouement au deuxième jour ouvré et assortit les défauts de
+            pénalités quotidiennes. Le délai se déduit du code MIC de la place, en jours ouvrés de cette place.
+          </footer>
+        </section>
+
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Règles de suspens</h2>
+            <span class="pr-card-note pr-card-note-push">Modèle hybride : position à la négociation, espèces au règlement</span>
+          </header>
+          @for (r of suspenseRules; track r.label) {
+            <div class="pr-rule-row">
+              <span class="pr-rule-label">{{ r.label }}</span>
+              <span class="pr-rule-value">{{ r.value }}</span>
+              <span class="pr-rule-hint">{{ r.hint }}</span>
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+    <!-- ───────────────────────── Places boursières ───────────────────────── -->
+    @if (tab() === 'venues') {
+      <div class="pr-body">
+        <mat-expansion-panel class="pr-card pr-panel" hideToggle [expanded]="isoPanelOpen()"
+          (expandedChange)="isoPanelOpen.set($event)">
+          <mat-expansion-panel-header class="pr-panel-head" [matTooltip]="isoPanelOpen() ? 'Replier la note' : 'Déplier la note'">
+            <mat-panel-title class="pr-panel-title-wrap">
+              <mat-icon class="pr-panel-chevron" [class.pr-panel-chevron-open]="isoPanelOpen()" svgIcon="chevron-down" style="font-size:15px"></mat-icon>
+              <span class="pr-panel-title">ISO 10383</span>
+              <span class="pr-code">MIC</span>
+            </mat-panel-title>
+            <mat-panel-description class="pr-panel-desc">
+              Codification des places de négociation — structure du code et portée dans l'application
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+            <div class="pr-panel-body">
+              <p class="pr-prose">
+                La norme ISO 10383 attribue à chaque marché un identifiant de quatre caractères, le MIC
+                (<em>Market Identifier Code</em>). Ce code est la clé de rattachement retenue par l'application :
+                il détermine le pays de source pour la fiscalité, la devise de règlement et le calendrier de jours
+                ouvrés servant au calcul du délai de dénouement.
+              </p>
+
+              <div class="pr-mic-block">
+                <span class="pr-mic-head">
+                  Les MIC Code supportés
+                  <span class="pr-mic-note">{{ isoMicNote() }}</span>
+                  @if (micTouched()) {
+                    <span class="pr-mic-edits">{{ micOffCount() }}</span>
+                    <button type="button" matIconButton class="pr-icon-btn" matTooltip="Rétablir tous les codes" (click)="resetMic()">
+                      <mat-icon svgIcon="rotate-left" style="font-size:12px"></mat-icon>
+                    </button>
+                  }
+                </span>
+
+                <span class="pr-mic-field">
+                  <mat-chip-set class="pr-mic-set" aria-label="Codes MIC supportés">
+                    @for (m of isoMicChips(); track m.mic) {
+                      <mat-chip-row class="pr-mic-chip" [matTooltip]="m.hint"
+                        [style.background]="m.bg" [style.border-color]="m.border"
+                        [style.--mat-chip-label-text-color]="m.fg"
+                        [style.--mat-chip-with-trailing-icon-trailing-icon-color]="m.fg"
+                        (click)="toggleMicSel(m.mic)" (removed)="removeMic(m.mic)">
+                        <span class="pr-mic-flag">{{ m.flag }}</span>{{ m.mic }}
+                        <button matChipRemove [attr.aria-label]="m.removeLabel" [matTooltip]="m.removeLabel">
+                          <mat-icon svgIcon="close" style="font-size:10px"></mat-icon>
+                        </button>
+                      </mat-chip-row>
+                    }
+                  </mat-chip-set>
+                  <input class="pr-mic-input" placeholder="Nouveau code MIC…" aria-label="Ajouter un code MIC"
+                    [value]="micInput()" (input)="micInput.set($any($event.target).value)"
+                    (keydown.enter)="commitMicInput()" (keydown.tab)="commitMicInput()" />
+                </span>
+              </div>
+
+              @if (micHasSel()) {
+                <div class="pr-mic-cards">
+                  <span class="pr-mic-cards-head">
+                    <span class="pr-group-label">Registre ISO 10383</span>
+                    <span class="pr-mic-note">{{ micSelNote() }}</span>
+                    <button type="button" matIconButton class="pr-icon-btn pr-icon-btn-flat" matTooltip="Fermer la fiche" (click)="clearMicSel()">
+                      <mat-icon svgIcon="close" style="font-size:12px"></mat-icon>
+                    </button>
+                  </span>
+                  @for (c of micSelCards(); track c.mic) {
+                    <div class="pr-mic-card">
+                      <span class="pr-mic-card-head">
+                        <span class="pr-flag">{{ c.flag }}</span>
+                        <span class="pr-code">{{ c.mic }}</span>
+                        <span class="pr-mic-card-name">{{ c.marketName }}</span>
+                        <span class="pr-mic-type" [style.background]="c.typeBg" [style.color]="c.typeFg">{{ c.typeLabel }}</span>
+                      </span>
+                      <span class="pr-mic-fields">
+                        @for (f of c.fields; track f.label) {
+                          <span class="pr-mic-field-item">
+                            <span class="pr-mic-field-label">{{ f.label }}</span>
+                            <span class="pr-mic-field-value">{{ f.value }}</span>
+                          </span>
+                        }
+                      </span>
+                    </div>
+                  }
+                </div>
+              }
+
+              @for (i of isoRules; track i.code) {
+                <div class="pr-rule-row pr-rule-row-top">
+                  <span class="pr-code pr-code-neutral">{{ i.code }}</span>
+                  <span class="pr-rule-value pr-rule-value-plain">{{ i.label }}</span>
+                  <span class="pr-rule-hint">{{ i.hint }}</span>
+                </div>
+              }
+            </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel class="pr-card pr-panel" hideToggle [expanded]="venuePanelOpen()"
+          (expandedChange)="venuePanelOpen.set($event)">
+          <mat-expansion-panel-header class="pr-panel-head pr-panel-head-rich"
+            [matTooltip]="venuePanelOpen() ? 'Replier le référentiel' : 'Déplier le référentiel'">
+            <mat-panel-title class="pr-panel-title-wrap">
+              <mat-icon class="pr-panel-chevron" [class.pr-panel-chevron-open]="venuePanelOpen()" svgIcon="chevron-down" style="font-size:15px"></mat-icon>
+              <h2 class="pr-card-title">Référentiel des places</h2>
+            </mat-panel-title>
+            <mat-panel-description class="pr-panel-desc-rich">
+              <!-- `$event.stopPropagation()` sur la recherche et le bouton : l'en-tête d'un
+                   mat-expansion-panel bascule au moindre clic, ce qui replierait le panneau
+                   à la première frappe ou à la remise à zéro. -->
+              <span class="pr-search" (click)="$event.stopPropagation()">
+                <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+                <input class="pr-search-input" placeholder="Pays, code, MIC, place"
+                  [value]="venueQuery()" (input)="venueQuery.set($any($event.target).value)"
+                  (keydown)="$event.stopPropagation()" />
+              </span>
+              <span class="pr-card-note pr-card-note-push pr-num-note">{{ venueNote() }}</span>
+              <button type="button" matIconButton class="pr-icon-btn" matTooltip="Revenir au référentiel d'origine"
+                (click)="$event.stopPropagation(); resetVenues()">
+                <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+            <div class="pr-table-scroll">
+              <table mat-table [dataSource]="venueRows()" class="pr-table pr-table-venue">
+                <ng-container matColumnDef="group">
+                  <td mat-cell *matCellDef="let row" [attr.colspan]="venueColumns.length" class="pr-group-cell">
+                    <span class="pr-group-inner">
+                      <mat-icon svgIcon="globe" style="font-size:13px"></mat-icon>
+                      <span class="pr-group-label">{{ row.continent }}</span>
+                      <span class="pr-group-count">{{ row.count }}</span>
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="country">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vcountry">Pays</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vcountry">
+                    <span class="pr-country">
+                      <span class="pr-flag">{{ v.flag }}</span>
+                      <span class="pr-code pr-code-neutral">{{ v.code }}</span>
+                      <span class="pr-country-name">{{ v.country }}</span>
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="places">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vplaces">Places boursières</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vplaces">
+                    <span class="pr-venue-cell">
+                      <span class="pr-chip-field" [style.border-color]="v.chipBorder">
+                        <mat-chip-set class="pr-place-set" aria-label="Places rattachées">
+                          @for (ch of v.chips; track ch.mic) {
+                            <mat-chip-row class="pr-place-chip" [matTooltip]="ch.place" (removed)="removeVenue(v.code, ch.mic)">
+                              {{ ch.mic }}
+                              <button matChipRemove [attr.aria-label]="'Retirer ' + ch.mic" matTooltip="Retirer cette place">
+                                <mat-icon svgIcon="close" style="font-size:9px"></mat-icon>
+                              </button>
+                            </mat-chip-row>
+                          }
+                        </mat-chip-set>
+                        @if (!v.chips.length) {
+                          <span class="pr-muted">Aucune place</span>
+                        }
+                        <mat-select class="pr-chip-add" [panelWidth]="null" panelClass="pm-sel-panel"
+                          placeholder="+" matTooltip="Ajouter une place boursière"
+                          (valueChange)="addVenue(v.code, $event)">
+                          @for (o of v.addOptions; track o.value) {
+                            <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                          }
+                        </mat-select>
+                      </span>
+                      <button type="button" matIconButton class="pr-venue-reset" [disabled]="!v.touched" [matTooltip]="v.resetTitle" (click)="restoreVenues(v.code)">
+                        <mat-icon svgIcon="rotate-left" style="font-size:13px"></mat-icon>
+                      </button>
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="venues">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vvenues">Bourse</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vvenues">
+                    <span class="pr-stack">
+                      @for (bo of v.venues; track bo.name) {
+                        <span class="pr-stack-line" [matTooltip]="bo.hint">{{ bo.name }}</span>
+                      }
+                      @if (!v.venues.length) {
+                        <span class="pr-muted">—</span>
+                      }
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="indices">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vindices">Indices</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vindices">
+                    <span class="pr-stack pr-stack-start">
+                      @for (ix of v.indices; track ix.label) {
+                        <span class="pr-index-chip" [matTooltip]="ix.hint">{{ ix.label }}</span>
+                      }
+                      @if (!v.indices.length) {
+                        <span class="pr-muted">—</span>
+                      }
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="currency">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vcur">Devise</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vcur">
+                    <span class="pr-cur-wrap">
+                      @for (cu of v.currencies; track cu) {
+                        <span class="pr-cur-chip">{{ cu }}</span>
+                      }
+                      @if (!v.currencies.length) {
+                        <span class="pr-muted">—</span>
+                      }
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="zone">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vzone">Fuseau horaire</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vzone">
+                    <span class="pr-stack">
+                      @for (z of v.zones; track z.full) {
+                        <span class="pr-stack-line" [matTooltip]="z.full">{{ z.label }}</span>
+                      }
+                      @if (!v.zones.length) {
+                        <span class="pr-muted">—</span>
+                      }
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="session">
+                  <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-vsession">Séance</th>
+                  <td mat-cell *matCellDef="let v" class="pr-td pr-col-vsession">
+                    <span class="pr-stack">
+                      @for (se of v.sessions; track se.hours) {
+                        <span class="pr-stack-line pr-num-note" [matTooltip]="se.mic">{{ se.hours }}</span>
+                      }
+                      @if (!v.sessions.length) {
+                        <span class="pr-muted">—</span>
+                      }
+                    </span>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="venueColumns" class="pr-header-row"></tr>
+                <tr mat-row *matRowDef="let row; columns: venueGroupColumns; when: isGroupRow" class="pr-group-row"></tr>
+                <tr mat-row *matRowDef="let row; columns: venueColumns; when: isDataRow" class="pr-row" [style.background]="row.bg"></tr>
+              </table>
+            </div>
+
+          <footer class="pr-card-note-foot">
+            Les places rattachées à un pays déterminent les indices de référence et les devises de règlement
+            proposés à la saisie d'un ordre. Retirer une place ne modifie pas les positions déjà détenues.
+          </footer>
+        </mat-expansion-panel>
+      </div>
+    }
+
+
+    <!-- ───────────────────────── Gestion des rôles ───────────────────────── -->
+    @if (tab() === 'roles') {
+      <div class="pr-body">
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Rôles</h2>
+            <span class="pr-card-note pr-card-note-push">Cinq rôles, cumulatifs : chaque degré contient le précédent</span>
+          </header>
+
+          <div class="pr-role-grid">
+            @for (r of roleCards(); track r.key) {
+              <div class="pr-role-card">
+                <span class="pr-role-head">
+                  <span class="pr-role-badge" [style.background]="r.bg" [style.color]="r.fg">{{ r.label }}</span>
+                  @if (r.locked) {
+                    <mat-icon class="pr-role-lock" svgIcon="lock" style="font-size:12px" matTooltip="Rôle non modifiable : il porte l'accès complet"></mat-icon>
+                  }
+                  <span class="pr-role-users">{{ r.users }} utilisateur(s)</span>
+                </span>
+                <span class="pr-role-hint">{{ r.hint }}</span>
+                <span class="pr-role-stats">
+                  <span class="pr-role-stat">{{ r.granted }}</span>
+                  @if (r.approvals) {
+                    <span class="pr-role-stat pr-role-stat-ok">{{ r.approvals }} en validation</span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Matrice des permissions</h2>
+            <span class="pr-card-note pr-card-note-push">Écrans dérivés du menu — une entrée ajoutée y apparaît d'elle-même</span>
+            @if (permissionEditCount()) {
+              <span class="pr-card-edits">{{ permissionEditCount() }} droit(s) modifié(s)</span>
+              <button type="button" matIconButton class="pr-icon-btn" matTooltip="Revenir au barème par défaut" (click)="resetPermissions()">
+                <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+              </button>
+            }
+          </header>
+
+          @for (g of permissionGroups(); track g.section) {
+            <mat-expansion-panel class="pr-panel pr-tax-panel" hideToggle
+              [expanded]="permissionSectionOpen(g.section)"
+              (expandedChange)="setPermissionSectionOpen(g.section, $event)">
+              <mat-expansion-panel-header class="pr-panel-head pr-tax-panel-head"
+                [matTooltip]="permissionSectionOpen(g.section) ? 'Replier ' + g.section : 'Déplier ' + g.section">
+                <mat-panel-title class="pr-panel-title-wrap">
+                  <mat-icon class="pr-panel-chevron" [class.pr-panel-chevron-open]="permissionSectionOpen(g.section)" svgIcon="chevron-down" style="font-size:15px"></mat-icon>
+                  <span class="pr-group-label">{{ g.section }}</span>
+                </mat-panel-title>
+                <mat-panel-description class="pr-panel-desc-count">
+                  <span class="pr-group-count">{{ g.count }}</span>
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <div class="pr-table-scroll">
+                <table class="pr-table pr-table-perm">
+                  <thead>
+                    <tr class="pr-header-row">
+                      <th class="pr-th pr-col-area">Écran</th>
+                      @for (r of roles; track r.key) {
+                        <th class="pr-th pr-col-role" [matTooltip]="r.hint">{{ r.label }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of g.rows; track row.id) {
+                      <tr class="pr-row">
+                        <td class="pr-td pr-col-area">
+                          <span class="pr-country">
+                            <mat-icon [svgIcon]="row.icon" style="font-size:14px" class="pr-area-icon"></mat-icon>
+                            <span class="pr-country-name">{{ row.label }}</span>
+                          </span>
+                        </td>
+                        @for (c of row.cells; track c.roleKey) {
+                          <td class="pr-td pr-col-role">
+                            @if (c.locked) {
+                              <mat-chip class="pr-perm-chip pr-perm-chip-locked" disableRipple
+                                [matTooltip]="c.hint"
+                                [style.--mat-chip-elevated-container-color]="c.bg"
+                                [style.--mat-chip-label-text-color]="c.fg">{{ c.label }}</mat-chip>
+                            } @else {
+                              <mat-select class="pr-perm-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                                [value]="c.level" [matTooltip]="c.hint" [class.pr-perm-select-edited]="c.edited"
+                                (valueChange)="setLevel(row.id, c.roleKey, $event)">
+                                <mat-select-trigger>
+                                  <mat-chip class="pr-perm-chip" disableRipple
+                                    [style.--mat-chip-elevated-container-color]="c.bg"
+                                    [style.--mat-chip-label-text-color]="c.fg">{{ c.label }}</mat-chip>
+                                </mat-select-trigger>
+                                @for (lv of permissionOrder; track lv) {
+                                  <mat-option [value]="lv">
+                                    <span class="pr-perm-option" [style.background]="permissionLevels[lv].bg" [style.color]="permissionLevels[lv].fg">{{ permissionLevels[lv].short }}</span>
+                                    <span class="pr-perm-option-hint">{{ permissionLevels[lv].hint }}</span>
+                                  </mat-option>
+                                }
+                              </mat-select>
+                            }
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </mat-expansion-panel>
+          }
+
+          <footer class="pr-card-note-foot">
+            Les degrés sont cumulatifs : la validation contient la modification, qui contient la consultation.
+            Le rôle d'administrateur n'est pas modifiable — le rétrograder fermerait l'application à son seul détenteur.
+          </footer>
+        </section>
+
+        <section class="pr-card">
+          <header class="pr-card-head">
+            <h2 class="pr-card-title">Utilisateurs</h2>
+            <span class="pr-search">
+              <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+              <input class="pr-search-input" placeholder="Nom ou adresse"
+                [value]="userQuery()" (input)="userQuery.set($any($event.target).value)" />
+            </span>
+            <span class="pr-card-note pr-card-note-push pr-num-note">{{ userNote() }}</span>
+            @if (userEditCount()) {
+              <span class="pr-card-edits">{{ userEditCount() }} affectation(s) modifiée(s)</span>
+            }
+            <button type="button" matIconButton class="pr-icon-btn" matTooltip="Revenir aux affectations d'origine" (click)="resetUsers()">
+              <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+            </button>
+          </header>
+
+          <div class="pr-table-scroll">
+            <table mat-table [dataSource]="userRows()" class="pr-table pr-table-users">
+              <ng-container matColumnDef="user">
+                <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-user">Utilisateur</th>
+                <td mat-cell *matCellDef="let u" class="pr-td pr-col-user">
+                  <span class="pr-user">
+                    <span class="pr-avatar">{{ u.initials }}</span>
+                    <span class="pr-user-ids">
+                      <span class="pr-user-name">{{ u.name }}</span>
+                      <span class="pr-user-mail">{{ u.email }}</span>
+                    </span>
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="role">
+                <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-userrole">Rôle</th>
+                <td mat-cell *matCellDef="let u" class="pr-td pr-col-userrole">
+                  <mat-select class="pr-perm-select pr-role-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="u.roleKey" [matTooltip]="u.roleHint" [class.pr-perm-select-edited]="u.roleEdited"
+                    (valueChange)="setUserRole(u.id, $event)">
+                    <mat-select-trigger>
+                      <mat-chip class="pr-perm-chip" disableRipple
+                        [style.--mat-chip-elevated-container-color]="u.roleBg"
+                        [style.--mat-chip-label-text-color]="u.roleFg">{{ u.roleLabel }}</mat-chip>
+                    </mat-select-trigger>
+                    @for (r of roles; track r.key) {
+                      <mat-option [value]="r.key">
+                        <span class="pr-perm-option" [style.background]="r.bg" [style.color]="r.fg">{{ r.label }}</span>
+                        <span class="pr-perm-option-hint">{{ r.hint }}</span>
+                      </mat-option>
+                    }
+                  </mat-select>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-userstatus">Statut</th>
+                <td mat-cell *matCellDef="let u" class="pr-td pr-col-userstatus">
+                  <span class="pr-status-chip" [style.background]="u.statusBg" [style.color]="u.statusFg">{{ u.statusLabel }}</span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lastSeen">
+                <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-userseen">Dernière connexion</th>
+                <td mat-cell *matCellDef="let u" class="pr-td pr-col-userseen pr-num-note">{{ u.lastSeen }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="userColumns" class="pr-header-row"></tr>
+              <tr mat-row *matRowDef="let u; columns: userColumns" class="pr-row" [style.background]="u.bg"></tr>
+            </table>
+          </div>
+
+          <footer class="pr-card-note-foot">
+            Un compte invité n'a pas encore ouvert de session ; un compte suspendu conserve son rôle mais ne peut
+            plus se connecter. Changer un rôle prend effet à la session suivante.
+          </footer>
+        </section>
+      </div>
+    }
+
+  </mat-tab-nav-panel>
+</div>

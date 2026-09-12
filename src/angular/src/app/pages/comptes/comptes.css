@@ -1,0 +1,1709 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-size: 12px;
+  container-type: inline-size;
+  /* --ink-brand/--ink-brand-2/--ink-warn/--ink-warn-2/--field-brand/--field-warn viennent déjà
+     de la coque (app-shell.css) ; --ink-ok/--field-ok (jamais posés globalement, comme dans
+     positions.css/titres.css/operations.css) sont propres à cet écran. */
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --field-ok: #0b5f57;
+  --ink-5c4700: #5c4700;
+}
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --field-ok: #0d443f;
+  --ink-5c4700: #ffff5a;
+}
+
+.ac-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--surface);
+  color: var(--color-text);
+}
+
+/* ---- En-tête ------------------------------------------------------------ */
+
+.ac-header {
+  flex: none;
+  padding: 14px 20px 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.ac-header-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ac-title-block {
+  min-width: 0;
+}
+.ac-title-block h1 {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+.ac-subtitle {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+.ac-filters {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 230px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.ac-search-icon {
+  flex: none;
+  color: var(--color-neutral-500);
+}
+.ac-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+}
+.ac-status-select {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+}
+.ac-filters-off {
+  background: var(--color-neutral-100);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Filet bleu de base : les onglets sont dessinés en chemise — bordure sur trois côtés, ouverte
+   en bas — et ont besoin d'une ligne qui ferme la rangée, faute de quoi les onglets inactifs
+   flottent. Même filet que Transactions, Opérations et Performance. */
+.ac-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 12px;
+  border-bottom: 1px solid var(--field-brand);
+}
+.ac-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-brand-fill, var(--field-brand));
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ac-tab:hover {
+  filter: brightness(0.97);
+}
+.ac-tab-on {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.ac-tab-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.16);
+  color: var(--ink-brand);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ac-tab-on .ac-tab-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.ac-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---- Liste des comptes ---------------------------------------------------- */
+
+.ac-list {
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--surface);
+}
+.ac-list-head-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-list-head-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+.ac-list-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+.ac-list-scroll {
+  overflow-x: auto;
+}
+.ac-list-inner {
+  min-width: 900px;
+}
+
+.ac-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) 96px 96px 84px 74px minmax(150px, 1.15fr) 108px 34px 34px;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 14px;
+}
+.ac-grid-head {
+  background: rgba(0, 61, 165, 0.14);
+  border-bottom: 1px solid var(--color-neutral-200);
+  padding: 8px 14px;
+}
+.ac-grid-head span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+.ac-right {
+  text-align: right;
+}
+
+.ac-row {
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ac-row-client {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ac-row-client-name {
+  max-width: 100%;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-row-client-meta {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+.ac-row-ref {
+  min-width: 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-row-aum,
+.ac-row-perf {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ac-row-benef {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800);
+}
+.ac-row-cash {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ac-row-cash-flag {
+  flex: none;
+  font-size: 12px;
+  line-height: 1;
+}
+.ac-row-cash-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ac-row-cash-bank {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-row-cash-meta {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-state-pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ac-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--ds-brand-fill, var(--field-brand));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-brand);
+  cursor: pointer;
+}
+.ac-icon-btn:hover {
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+}
+.ac-manage-wrap {
+  display: flex;
+}
+
+.ac-manage-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ac-manage-label {
+  font-weight: 600;
+}
+.ac-manage-hint {
+  font-size: 10px;
+  font-weight: 400;
+  /* Contenu de mat-menu, portalé hors de l'arbre DOM de la page (voir memory
+     project_cdk_overlay_dark_mode_body_mirror) : repli hexadécimal explicite. */
+  color: var(--color-neutral-600, #7a746f);
+  text-wrap: pretty;
+  white-space: normal;
+}
+
+.ac-empty {
+  margin: 0;
+  padding: 22px 14px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}
+
+/* ---- Onglet Gérer compte ------------------------------------------------ */
+
+.ac-ops {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ac-ops-tabs-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ac-ops-hint {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ac-pill-group {
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ac-pill-group-wrap {
+  flex-wrap: wrap;
+}
+.ac-pill {
+  height: 28px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid rgba(0, 61, 165, 0.3);
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ac-pill:first-child {
+  border-left: 0;
+}
+.ac-pill:hover {
+  filter: brightness(0.96);
+}
+.ac-pill-on {
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-weight: 700;
+}
+.ac-pill-sm {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 400;
+}
+.ac-pill-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.16);
+  color: var(--ink-brand);
+  font-size: 10px;
+  font-weight: 700;
+}
+.ac-pill-chip-on {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+.ac-pill-chip-brand {
+  background: var(--field-brand);
+  color: #ffffff;
+}
+
+.ac-ops-card {
+  flex: none;
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+}
+
+.ac-stepper {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-step {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ac-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ac-step-badge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-neutral-300);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ac-step-badge-done,
+.ac-step-badge-current {
+  background: var(--ds-brand-fill, var(--field-brand));
+}
+.ac-step-text {
+  min-width: 0;
+  overflow: hidden;
+}
+.ac-step-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-step-title-current {
+  font-weight: 500;
+  color: var(--color-text);
+}
+.ac-step-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-step-line {
+  flex: 1 1 24px;
+  min-width: 24px;
+  margin: 0 8px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.ac-step-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ac-step-heading {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-brand);
+}
+
+.ac-cash-subheader,
+.ac-holder-subheader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.ac-cash-principal-note {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ac-add-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  cursor: pointer;
+}
+.ac-add-btn:hover {
+  background: var(--field-brand);
+}
+
+.ac-check-callout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: rgba(0, 61, 165, 0.04);
+}
+.ac-check-callout-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ac-check-callout-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-brand);
+}
+.ac-check-callout-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+.ac-recap-btn {
+  margin-left: auto;
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-button-outlined-outline-color: var(--ds-brand-fill, var(--field-brand));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-fields-grid {
+  display: grid;
+  gap: 10px 14px;
+  align-items: stretch;
+  grid-auto-rows: min-content;
+}
+.ac-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.ac-field-standalone {
+  max-width: 420px;
+}
+.ac-field-label {
+  display: block;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ac-field-input,
+/* Le bouton calendrier de MatDatepicker se place à côté du champ, dans le même cadre visuel
+   que celui-ci — sans <mat-form-field>, qui imposerait son propre cadre (hauteur ~56px et
+   libellé flottant) et casserait la compacité des champs du prototype. */
+.ac-field-datepicker {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ac-field-datepicker .mat-mdc-icon-button {
+  --mat-icon-button-icon-size: 16px;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+}
+
+.ac-field-date {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: inherit;
+  outline: none;
+}
+
+.ac-field-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-100);
+}
+.ac-field-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ac-field-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+.ac-field-badge-hint {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-field-url {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.ac-field-url input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.ac-field-url-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 100%;
+  border-left: 1px solid var(--color-neutral-300);
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ds-brand-fill, var(--ink-brand-2));
+  text-decoration: none;
+}
+.ac-field-url-btn:hover {
+  background: rgba(0, 61, 165, 0.18);
+}
+.ac-field-url-disabled {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.ac-field-iban-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ac-field-iban {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.ac-field-iban-ok {
+  border-color: var(--field-ok);
+}
+.ac-field-iban-bad {
+  border-color: var(--field-warn);
+}
+.ac-field-iban input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.ac-field-iban-msg {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink-ok-2);
+  white-space: nowrap;
+}
+.ac-field-iban-msg-bad {
+  color: var(--ink-warn-2);
+}
+
+.ac-check-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+}
+.ac-check-icon-sm {
+  width: 16px;
+  height: 16px;
+}
+.ac-check-icon-ok {
+  background: var(--field-ok);
+}
+.ac-check-icon-bad {
+  background: var(--field-warn);
+}
+
+.ac-field-datelocked-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ac-field-datelocked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-600);
+  font-size: 13px;
+}
+.ac-field-sub {
+  display: flex;
+  align-items: center;
+  height: 15px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Tableau des comptes de liquidité ------------------------------------ */
+
+.ac-cash-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ac-cash-table-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.4fr) minmax(0, 0.62fr) 30px;
+  gap: 10px;
+  align-items: center;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-cash-table-head-bank {
+  padding-left: 41px;
+}
+.ac-cash-table-head span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+.ac-cash-table-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.4fr) minmax(0, 0.62fr) 30px;
+  gap: 10px;
+  align-items: center;
+  padding: 2px 0;
+}
+.ac-cash-bank-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.ac-cash-rank {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 30px;
+  padding: 0 5px 0 4px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+  font-family: inherit;
+  cursor: pointer;
+}
+.ac-cash-rank:hover {
+  filter: brightness(0.96);
+}
+/* Rendu à la fois dans le déclencheur (DOM réel) et dans le panneau mat-menu associé (portalé
+   hors de l'arbre DOM de la page, voir memory project_cdk_overlay_dark_mode_body_mirror) :
+   repli hexadécimal explicite pour rester correct dans les deux. */
+.ac-cash-rank-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-neutral-300, #d8d5d2);
+  color: var(--color-neutral-800, #35322f);
+  font-size: 11px;
+  font-weight: 700;
+}
+.ac-cash-rank-chip-main {
+  background: var(--ink-brand, #002a6e);
+  color: #ffffff;
+}
+.ac-cash-bank-select {
+  flex: 1;
+  min-width: 0;
+}
+.ac-cash-cur-select {
+  min-width: 0;
+}
+
+.ac-cash-remove,
+.ac-co-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--color-accent-300, var(--color-neutral-300));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--color-accent-700, var(--ink-warn-2));
+  cursor: pointer;
+}
+.ac-cash-remove:hover,
+.ac-co-remove:hover {
+  background: var(--color-accent-100, var(--color-neutral-200));
+}
+.ac-cash-table-note,
+.ac-cash-explain {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+.ac-cash-explain {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+/* ---- Co-titulaires --------------------------------------------------------- */
+
+.ac-co-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ac-co-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) 30px;
+  gap: 10px;
+  align-items: end;
+}
+.ac-co-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.ac-co-field input {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+}
+.ac-co-ref {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-100);
+  font-size: 12px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Contrôles / pied de page ---------------------------------------------- */
+
+.ac-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ac-check-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+}
+.ac-check-label {
+  min-width: 0;
+  font-size: 12px;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+.ac-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 56px;
+  padding: 10px 0 8px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+.ac-prev-btn {
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800);
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* État "Annuler" (première étape) : bouton plein (mat-flat-button), pas juste bordé — le
+   jeton --mat-button-outlined-container-color n'a pas d'effet visuel sur un bouton "outlined"
+   (toujours transparent chez Material), d'où le changement de variante dans le template plutôt
+   qu'une simple surcharge de couleur sur mat-stroked-button. */
+.ac-prev-btn-cancel {
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-color: var(--field-warn);
+}
+.ac-draft-btn {
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-button-outlined-outline-color: var(--ds-brand-fill, var(--ink-brand-2));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ac-next-btn {
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ac-status-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-ok);
+}
+.ac-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-800);
+  cursor: pointer;
+}
+.ac-reset-btn:hover {
+  background: rgba(0, 61, 165, 0.07);
+  color: var(--color-text);
+}
+
+@container (max-width: 980px) {
+  .ac-fields-grid {
+    gap: 10px;
+  }
+  .ac-stepper {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+  .ac-step-line {
+    display: none;
+  }
+}
+
+/* MatStepper : neutralisation des marges propres à Material pour retrouver exactement le
+   gabarit du prototype. Sans ceci, `.mat-horizontal-content-container` ajoute son rembourrage
+   de 24px et l'en-tête sa hauteur de 72px — la carte dépassait la largeur de la fenêtre et les
+   champs de droite se retrouvaient coupés. Les pastilles numérotées, les libellés et les
+   filets de liaison viennent en revanche de Material tels quels : ils reproduisent déjà le
+   dessin d'origine. */
+.ac-stepper.mat-stepper-horizontal {
+  background: transparent;
+  font-family: inherit;
+}
+
+.ac-stepper .mat-horizontal-stepper-header-container {
+  padding: 14px 18px 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ac-stepper .mat-horizontal-stepper-header {
+  height: auto;
+  padding: 0 8px 14px;
+}
+
+/* Le corps garde son propre rembourrage (.ac-step-body) : celui de Material s'y ajouterait. */
+.ac-stepper .mat-horizontal-content-container {
+  padding: 0;
+}
+
+/* Material dimensionne en-tête et contenu sur leur largeur intrinsèque, sans les contraindre
+   au conteneur : mesuré, l'en-tête débordait la carte de 152px et le corps de 147px. Les
+   `.ac-step` d'origine, eux, étaient en `flex: 0 1 auto; min-width: 0` et se comprimaient avec
+   ellipse. On restitue ce comportement. */
+.ac-stepper,
+.ac-stepper .mat-horizontal-content-container,
+.ac-stepper .mat-horizontal-stepper-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.ac-stepper .mat-step-header {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ac-stepper .mat-step-label {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Entrée en relation
+   =========================================================================== */
+
+.ac-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+.ac-entry-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ac-entry-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+/* La teinte ne sert qu'aux vignettes qui appellent une action : un dossier bloqué, une pièce
+   manquante. Les deux autres restent neutres pour ne pas diluer le signal. */
+.ac-entry-kpi-warn {
+  border-color: rgba(180, 83, 9, 0.34);
+  background: rgba(180, 83, 9, 0.06);
+}
+
+.ac-entry-kpi-ok {
+  border-color: rgba(15, 118, 110, 0.30);
+  background: rgba(15, 118, 110, 0.05);
+}
+
+.ac-entry-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-entry-kpi-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-split {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1180px) {
+  .ac-entry-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ac-entry-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ac-entry-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.ac-entry-card {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.ac-entry-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ac-entry-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.ac-entry-card-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-push {
+  margin-left: auto;
+}
+
+.ac-entry-ref,
+.ac-entry-account {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800, var(--color-text));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Le compte porte l'encre de la marque : c'est le seul élément de l'en-tête qui renvoie à un
+   objet déjà existant dans l'application. */
+.ac-entry-account {
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+}
+
+/* ---- Vivier ---- */
+
+.ac-entry-phase {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ac-entry-phase:last-child {
+  border-bottom: 0;
+}
+
+.ac-entry-phase-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.ac-entry-phase-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.ac-entry-phase-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-entry-phase-empty {
+  display: block;
+  padding: 9px 16px;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+
+.ac-entry-case {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 0;
+  border-left: 3px solid transparent;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ac-entry-case:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.ac-entry-case-on {
+  border-left-color: var(--ds-brand-fill, var(--ink-brand-2));
+  background: var(--color-neutral-100);
+}
+
+.ac-entry-case-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-entry-case-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-entry-case-flag {
+  flex: none;
+  color: var(--ink-warn-2, #b45309);
+}
+
+.ac-entry-case-aum {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-entry-case-meta {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Jauge d'avancement : la part du parcours franchie, en une barre plutôt qu'en pourcentage —
+   la comparaison entre dossiers se fait d'un coup d'œil. */
+.ac-entry-case-bar {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  overflow: hidden;
+}
+
+.ac-entry-case-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+.ac-entry-case-fill-warn {
+  background: var(--ink-warn-2, #b45309);
+}
+
+/* ---- Détail ---- */
+
+.ac-entry-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px 16px;
+  padding: 14px 16px;
+}
+
+.ac-entry-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.ac-entry-fact-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-blocked {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: rgba(180, 83, 9, 0.07);
+  color: var(--ink-warn-2, #b45309);
+  font-size: 11px;
+}
+
+.ac-entry-docs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 11px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.ac-entry-docs-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-doc {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border: 1px dashed var(--color-neutral-400);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+/* ---- Parcours ---- */
+
+.ac-entry-stage {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ac-entry-stage:last-child {
+  border-bottom: 0;
+}
+
+.ac-entry-stage-mark {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ac-entry-stage-done .ac-entry-stage-mark {
+  background: rgba(15, 118, 110, 0.14);
+  color: var(--ink-ok, #0b5f57);
+}
+
+.ac-entry-stage-current .ac-entry-stage-mark {
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+}
+
+/* L'étape en cours est la seule à porter un fond : c'est là que le dossier attend. */
+.ac-entry-stage-current {
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.ac-entry-stage-texts {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ac-entry-stage-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ac-entry-stage-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.ac-entry-stage-docs {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  text-wrap: pretty;
+}
+
+.ac-entry-stage-actor {
+  flex: none;
+  width: 140px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ---- Liste a plat des entrees en relation ---- */
+
+.ac-entry-table-scroll {
+  overflow-x: auto;
+}
+
+.ac-entry-table {
+  width: 100%;
+  min-width: 980px;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.ac-entry-header-row {
+  height: 30px;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.ac-entry-th`, qui ne pèse que 0-2-0 une fois encapsulé.
+   Seul le fond est remonté — toute la règle passerait sinon devant `.ac-entry-th-num`. */
+.ac-entry-th.ac-entry-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.ac-entry-th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.ac-entry-th-num {
+  text-align: right;
+}
+
+.ac-entry-th:first-of-type,
+.ac-entry-td:first-of-type {
+  padding-left: 16px;
+}
+
+.ac-entry-row {
+  height: 46px;
+  cursor: pointer;
+}
+
+.ac-entry-row:hover {
+  background: rgba(0, 61, 165, 0.05);
+}
+
+/* La ligne retenue porte le meme liseré que le dossier choisi dans le vivier : les deux vues
+   montrent le meme dossier, la selection doit se lire des deux cotes. */
+.ac-entry-row-on {
+  background: var(--color-neutral-100);
+  box-shadow: inset 3px 0 0 var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+.ac-entry-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.ac-entry-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-entry-ellipsis {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-entry-col-ref { width: 124px; }
+.ac-entry-col-origin { width: 220px; }
+.ac-entry-col-stage { width: 190px; }
+.ac-entry-col-owner { width: 110px; }
+.ac-entry-col-aum { width: 104px; }
+.ac-entry-col-progress { width: 140px; }
+.ac-entry-col-state { width: 160px; }
+
+.ac-entry-cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ac-entry-cell-main {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-entry-cell-sub {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-entry-progress .ac-entry-case-bar {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-entry-progress-value {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-entry-state {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ac-entry-state-warn {
+  background: rgba(180, 83, 9, 0.12);
+  color: var(--ink-warn-2, #b45309);
+}
+
+.ac-entry-state-wait {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+}
+
+.ac-entry-state-ok {
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--ink-ok, #0b5f57);
+}

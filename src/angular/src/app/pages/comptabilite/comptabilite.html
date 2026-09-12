@@ -1,0 +1,231 @@
+<div class="ct-page">
+  <div class="ct-head">
+    <div class="ct-head-row">
+      <div class="ct-head-titles">
+        <h1 class="ct-h1">Comptabilité</h1>
+        <p class="ct-subtitle">{{ subtitle() }}</p>
+      </div>
+      <span class="ct-head-tools">
+        <mat-select class="pm-sel-trigger ct-period" [panelWidth]="null" panelClass="pm-sel-panel"
+          [value]="period()" (valueChange)="period.set($event)">
+          @for (o of periods; track o.value) {
+            <mat-option [value]="o.value">{{ o.label }}</mat-option>
+          }
+        </mat-select>
+        <span class="ct-close-badge" [style.background]="closeBadge().bg" [style.color]="closeBadge().fg">
+          <span class="ct-close-dot" [style.background]="closeBadge().fg"></span>
+          {{ closeBadge().label }}
+        </span>
+      </span>
+    </div>
+
+    <nav mat-tab-nav-bar class="ct-tabs-row pm-tabnav" [tabPanel]="ctTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      @for (t of pageTabs; track t.key) {
+        <button type="button" mat-tab-link class="ct-page-tab" [active]="tab() === t.key"
+          [class.ct-page-tab-active]="tab() === t.key" (click)="setTab(t.key)">
+          <mat-icon [svgIcon]="t.icon" style="font-size:15px"></mat-icon>
+          {{ t.label }}
+        </button>
+      }
+    </nav>
+  </div>
+
+  <mat-tab-nav-panel #ctTabPanel class="ct-body">
+
+    <!-- ───────────────────────── Journal des écritures ───────────────────────── -->
+    @if (tab() === 'journal') {
+      <section class="ct-card">
+        <header class="ct-toolbar">
+          <span class="ct-search">
+            <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+            <input class="ct-search-input" placeholder="Pièce, compte, libellé"
+              [value]="query()" (input)="query.set($any($event.target).value)" />
+          </span>
+          <mat-select class="pm-sel-trigger ct-filter" [panelWidth]="null" panelClass="pm-sel-panel"
+            [value]="journalFilter()" (valueChange)="journalFilter.set($event)">
+            <mat-option value="all">Tous les journaux</mat-option>
+            @for (o of journals; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+          <span class="ct-toolbar-note">{{ journalNote() }}</span>
+        </header>
+
+        <div class="ct-table-scroll">
+          <table mat-table [dataSource]="journalRows()" class="ct-table ct-table-journal">
+            <ng-container matColumnDef="ref">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-col-ref">Pièce</th>
+              <td mat-cell *matCellDef="let r" class="ct-td ct-td-ref">{{ view(r.ref).ref }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-col-date">Date</th>
+              <td mat-cell *matCellDef="let r" class="ct-td ct-td-muted ct-num ct-nowrap">{{ view(r.ref).date }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="journal">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-col-journal">Journal</th>
+              <td mat-cell *matCellDef="let r" class="ct-td ct-td-muted">{{ view(r.ref).journal }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="label">
+              <th mat-header-cell *matHeaderCellDef class="ct-th">Libellé</th>
+              <td mat-cell *matCellDef="let r" class="ct-td">
+                <span class="ct-entry-label">
+                  <span>{{ view(r.ref).label }}</span>
+                  <span class="ct-entry-origin">{{ view(r.ref).origin }}</span>
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="debit">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-th-num ct-col-amount">Débit</th>
+              <td mat-cell *matCellDef="let r" class="ct-td ct-td-num">{{ view(r.ref).debit }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="credit">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-th-num ct-col-amount">Crédit</th>
+              <td mat-cell *matCellDef="let r" class="ct-td ct-td-num">{{ view(r.ref).credit }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-col-state"></th>
+              <td mat-cell *matCellDef="let r" class="ct-td ct-td-state">
+                <span class="ct-state" [style.background]="view(r.ref).stateBg" [style.color]="view(r.ref).stateFg">{{ view(r.ref).state }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Détail des lignes, déplié -->
+            <ng-container matColumnDef="detail">
+              <td mat-cell *matCellDef="let r" [attr.colspan]="journalColumns.length" class="ct-detail-cell">
+                @for (l of view(r.ref).detailLines; track l.account + l.name) {
+                  <span class="ct-detail-line">
+                    <span class="ct-detail-account">{{ l.account }}</span>
+                    <span class="ct-detail-name">{{ l.name }}</span>
+                    <span class="ct-detail-amount">{{ l.debit }}</span>
+                    <span class="ct-detail-amount">{{ l.credit }}</span>
+                  </span>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="journalColumns" class="ct-header-row"></tr>
+            <tr mat-row *matRowDef="let r; columns: journalColumns; when: isEntryRow" class="ct-row ct-row-click"
+              [style.background]="view(r.ref).bg" [matTooltip]="view(r.ref).open ? 'Replier le détail' : 'Déplier le détail'"
+              (click)="toggle(r.ref)"></tr>
+            <tr mat-row *matRowDef="let r; columns: journalDetailColumns; when: isDetailRow" class="ct-detail-row"></tr>
+          </table>
+        </div>
+
+        <footer class="ct-journal-foot">
+          <span class="ct-foot-label">Total période</span>
+          <span class="ct-foot-amount">{{ totalDebit() }}</span>
+          <span class="ct-foot-amount">{{ totalCredit() }}</span>
+          <span class="ct-foot-balance" [style.color]="balanceColor()">{{ balanceLabel() }}</span>
+        </footer>
+      </section>
+    }
+
+    <!-- ───────────────────────── Balance ───────────────────────── -->
+    @if (tab() === 'balance') {
+      <section class="ct-card">
+        <header class="ct-section-head">
+          <h2 class="ct-section-title">Balance générale</h2>
+          <span class="ct-section-note">{{ balanceNote() }}</span>
+        </header>
+
+        <div class="ct-table-scroll">
+          <table mat-table [dataSource]="balanceRows()" class="ct-table ct-table-balance">
+            <ng-container matColumnDef="account">
+              <th mat-header-cell *matHeaderCellDef class="ct-th">Compte</th>
+              <td mat-cell *matCellDef="let b" class="ct-td">
+                <span class="ct-account">
+                  <span class="ct-account-no">{{ b.account }}</span>
+                  <span class="ct-account-name">{{ b.name }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="debit">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-th-num ct-col-amount">Débit</th>
+              <td mat-cell *matCellDef="let b" class="ct-td ct-td-num ct-td-muted">{{ b.debit }}</td>
+            </ng-container>
+            <ng-container matColumnDef="credit">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-th-num ct-col-amount">Crédit</th>
+              <td mat-cell *matCellDef="let b" class="ct-td ct-td-num ct-td-muted">{{ b.credit }}</td>
+            </ng-container>
+            <ng-container matColumnDef="balance">
+              <th mat-header-cell *matHeaderCellDef class="ct-th ct-th-num ct-col-amount">Solde</th>
+              <td mat-cell *matCellDef="let b" class="ct-td ct-td-num ct-td-strong">{{ b.balance }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="balanceColumns" class="ct-header-row"></tr>
+            <tr mat-row *matRowDef="let b; columns: balanceColumns" class="ct-row"></tr>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- ───────────────────────── Compte de résultat ───────────────────────── -->
+    @if (tab() === 'result') {
+      <section class="ct-card">
+        <header class="ct-section-head">
+          <h2 class="ct-section-title">Compte de résultat du compte</h2>
+          <span class="ct-section-note">{{ resultNote() }}</span>
+        </header>
+
+        @for (r of resultRows(); track r.label) {
+          <div class="ct-result-row" [style.background]="r.rowBg">
+            <span class="ct-result-label" [style.font-size]="r.size" [style.font-weight]="r.weight" [style.padding-left]="r.indent">{{ r.label }}</span>
+            <span class="ct-result-amount" [style.font-size]="r.size" [style.font-weight]="r.weight" [style.color]="r.color">{{ r.amount }}</span>
+            <span class="ct-result-share">{{ r.share }}</span>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ───────────────────────── Clôture ───────────────────────── -->
+    @if (tab() === 'close') {
+      <div class="ct-close-grid">
+        <section class="ct-card">
+          <header class="ct-section-head">
+            <h2 class="ct-section-title">Travaux de clôture</h2>
+            <span class="ct-section-note">{{ closeProgress() }}</span>
+          </header>
+
+          @for (t of closeTasks(); track t.id) {
+            <div class="ct-task">
+              <mat-checkbox class="ct-checkbox" [checked]="t.done" (change)="toggleTask(t.id)"></mat-checkbox>
+              <span class="ct-task-texts">
+                <span class="ct-task-label" [class.ct-task-done]="t.done">{{ t.label }}</span>
+                <span class="ct-task-meta" [style.color]="t.metaColor">{{ t.meta }}</span>
+              </span>
+            </div>
+          }
+
+          <footer class="ct-close-foot">
+            <span class="ct-close-hint">{{ closeHint() }}</span>
+            <button type="button" matButton="filled" class="ct-close-btn" [disabled]="!canClose()" (click)="closePeriod()">
+              Clôturer la période
+            </button>
+          </footer>
+        </section>
+
+        <section class="ct-card">
+          <header class="ct-section-head">
+            <h2 class="ct-section-title">Contrôles automatiques</h2>
+          </header>
+          @for (c of checks(); track c.label) {
+            <div class="ct-check">
+              <span class="ct-check-dot" [style.background]="c.color"></span>
+              <span class="ct-check-texts">
+                <span class="ct-check-label">{{ c.label }}</span>
+                <span class="ct-check-detail">{{ c.detail }}</span>
+              </span>
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+  </mat-tab-nav-panel>
+</div>

@@ -1,0 +1,710 @@
+/* Le prototype pose `box-sizing: border-box` sur tout le sous-arbre, et déclare ses propres
+   encres et bandes : la coque n'expose ni --ink-ok-2, ni --ink-warn-2, ni --field-ok/--field-warn,
+   ni les fonds de vignette --band-*. Une `var()` non résolue invalide la déclaration entière. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-ok: #0b5f57;
+  --ink-ok-2: #0f766e;
+  --ink-warn-2: #b45309;
+  --field-ok: #0b5f57;
+  --field-warn: #8f3f06;
+  --band-ok: #f2faf9;
+  --band-warn: #fdf6ef;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-ok-2: #4fd1c5;
+  --ink-warn-2: #f3b782;
+  --field-ok: #0d443f;
+  --field-warn: #5c2a06;
+  --band-ok: #152a28;
+  --band-warn: #2c1f14;
+}
+
+/* ===========================================================================
+   En-tête et onglets
+   =========================================================================== */
+
+.tr-head {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.tr-head-titles {
+  min-width: 0;
+}
+
+.tr-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.tr-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tr-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tr-mandate {
+  --pm-sel-h: 28px;
+  --pm-sel-fs: 12px;
+  --pm-sel-pad: 0 8px;
+  flex: none;
+  width: 252px;
+}
+
+.tr-tabs-row {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.tr-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-brand-fill, var(--field-brand));
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tr-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.tr-page-tab-active {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tr-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===========================================================================
+   Bandeau d'indicateurs
+   =========================================================================== */
+
+/* `gap: 1px` sur fond bleu : les filets entre vignettes sont le fond qui transparaît, comme
+   dans les bandeaux de Titres et de Transactions. */
+.tr-kpi-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--field-brand);
+}
+
+.tr-kpi {
+  padding: 13px 18px 15px;
+}
+
+.tr-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tr-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+/* ===========================================================================
+   Grille principale
+   =========================================================================== */
+
+.tr-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 16px;
+  padding: 16px 20px 24px;
+  align-items: start;
+}
+
+.tr-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .tr-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tr-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ===========================================================================
+   Cartes
+   =========================================================================== */
+
+.tr-card {
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.tr-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.tr-card-icon {
+  flex: none;
+  color: var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+.tr-card-icon-warn {
+  color: var(--ink-warn-2);
+}
+
+.tr-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.tr-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tr-card-push {
+  margin-left: auto;
+}
+
+/* Contrôle segmenté : même recette que les groupes de Transactions — la bordure du groupe est
+   reposée par-dessus celle de Material, le reste passe par les jetons. */
+.tr-seg {
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.30);
+  flex: none;
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* ===========================================================================
+   Boutons
+   =========================================================================== */
+
+.tr-primary-btn {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 28px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-icon-spacing: 8px;
+  flex: none;
+}
+
+.tr-close-btn {
+  --mat-icon-button-state-layer-size: 24px;
+  --mat-icon-button-icon-size: 13px;
+  flex: none;
+  border-radius: 6px;
+  color: var(--color-neutral-700);
+}
+
+.tr-close-btn:hover {
+  background: rgba(0, 61, 165, 0.10);
+  color: var(--color-text);
+}
+
+/* ===========================================================================
+   Tableaux
+   =========================================================================== */
+
+.tr-table-scroll {
+  overflow-x: auto;
+}
+
+.tr-table {
+  width: 100%;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.tr-table-accounts {
+  min-width: 620px;
+}
+
+.tr-table-flows {
+  min-width: 660px;
+}
+
+.tr-header-row {
+  height: 30px;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.tr-th`, qui ne pèse que 0-2-0 une fois encapsulé. Seul
+   le fond est remonté — toute la règle passerait sinon devant `.tr-th-num`. */
+.tr-th.tr-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.tr-th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.tr-th-num {
+  text-align: right;
+}
+
+.tr-th:first-of-type,
+.tr-td:first-of-type {
+  padding-left: 16px;
+}
+
+.tr-row {
+  height: 42px;
+}
+
+.tr-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.tr-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.tr-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-td-strong {
+  font-weight: 600;
+}
+
+.tr-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-nowrap {
+  white-space: nowrap;
+}
+
+.tr-col-amount { width: 148px; }
+.tr-col-small { width: 104px; }
+.tr-col-date { width: 74px; }
+.tr-col-kind { width: 128px; }
+.tr-col-state { width: 132px; }
+
+.tr-account,
+.tr-flow-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tr-account-name,
+.tr-flow-name {
+  font-weight: 600;
+}
+
+.tr-account-iban,
+.tr-flow-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tr-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tr-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+/* ===========================================================================
+   Prévisionnel
+   =========================================================================== */
+
+.tr-chart-body {
+  padding: 14px 16px 6px;
+}
+
+.tr-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 150px;
+}
+
+/* Chaque colonne occupe toute la hauteur et pousse son contenu vers le bas : c'est la barre
+   qui porte la hauteur, la valeur et le libellé restent collés à elle. */
+.tr-bar-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 5px;
+  height: 100%;
+}
+
+.tr-bar-value {
+  font-size: 9px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-bar {
+  border-radius: 2px 2px 0 0;
+}
+
+.tr-bar-label {
+  font-size: 9px;
+  text-align: center;
+  color: var(--color-neutral-600);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tr-chart-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.tr-chart-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.tr-legend {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tr-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--color-neutral-700);
+}
+
+.tr-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.tr-legend-ok {
+  background: var(--field-ok);
+}
+
+.tr-legend-warn {
+  background: var(--field-warn);
+}
+
+/* ===========================================================================
+   Vigilance et placements
+   =========================================================================== */
+
+.tr-alert,
+.tr-placement {
+  display: flex;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.tr-alert:last-child,
+.tr-placement:last-child {
+  border-bottom: 0;
+}
+
+.tr-alert {
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.tr-alert-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+}
+
+.tr-alert-texts,
+.tr-placement-texts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tr-alert-title,
+.tr-placement-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tr-alert-detail,
+.tr-placement-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.tr-placement {
+  align-items: center;
+}
+
+.tr-placement-texts {
+  flex: 1;
+  gap: 1px;
+}
+
+.tr-placement-figures {
+  flex: none;
+  text-align: right;
+}
+
+.tr-placement-rate {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-placement-horizon {
+  display: block;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+/* ===========================================================================
+   Nouvelle instruction
+   =========================================================================== */
+
+.tr-entry-body {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 20px 24px;
+}
+
+/* La carte de saisie porte le bleu de la marque : c'est la seule de l'écran qui attend une
+   action, les autres rendent compte. */
+.tr-entry-card {
+  max-width: 560px;
+  border-color: var(--ds-brand-fill, var(--field-brand));
+}
+
+.tr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.tr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.tr-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.tr-input:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.34), 0 0 0 3px rgba(0, 61, 165, 0.10);
+}
+
+.tr-input-date {
+  width: 170px;
+}
+
+.tr-select {
+  --pm-sel-h: 32px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 10px;
+  width: 100%;
+}
+
+.tr-amount-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tr-amount-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.tr-currency {
+  flex: none;
+  width: 88px;
+}
+
+.tr-impact {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.tr-submit {
+  --mat-button-filled-container-height: 30px;
+  align-self: stretch;
+}
+
+/* ===========================================================================
+   Icones du formulaire d'instruction
+   =========================================================================== */
+
+/* Icone devant le libelle du champ : elle donne la nature de la donnee attendue avant meme
+   qu'on lise l'intitule. */
+.tr-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 11px, la taille du libelle qu'elles accompagnent : une icone plus grande que son texte
+   attire l'oeil sur elle plutot que sur le champ. */
+.tr-field-icon {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  font-size: 11px;
+  line-height: 11px;
+  color: var(--color-neutral-600);
+}
+
+/* `.mdc-list-item__primary-text`, ou Material projette le contenu d'une option, n'est pas un
+   conteneur flexible : sans cette mise en ligne, l'icone se pose sur la ligne de base du texte
+   et deborde vers le bas (meme correction que le statut du titulaire, dans Parametres). */
+.tr-kind-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tr-kind-icon {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  font-size: 11px;
+  line-height: 11px;
+  color: var(--color-neutral-600);
+}

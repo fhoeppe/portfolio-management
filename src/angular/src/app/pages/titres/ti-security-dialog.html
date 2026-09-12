@@ -1,0 +1,127 @@
+<app-side-panel [title]="sheet().title" [subtitle]="sheet().subtitle" accent="var(--ink-brand)" [icon]="icon" [footer]="true" cancelLabel="Fermer" cancelKind="ok" (closed)="close()" (pinnedChange)="onPinnedChange($event)">
+  <nav mat-tab-nav-bar class="ti-sec-tabs pm-tabnav" [tabPanel]="tiSecTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    <button type="button" mat-tab-link class="ti-sec-tab" [active]="secTab() === 'sheet'"
+      [class.ti-sec-tab-active]="secTab() === 'sheet'" (click)="setSecTab('sheet')">
+      <mat-icon svgIcon="file-text" style="font-size:15px"></mat-icon>
+      Fiche du titre
+    </button>
+    <button type="button" mat-tab-link class="ti-sec-tab" [active]="secTab() === 'eval'"
+      [class.ti-sec-tab-active]="secTab() === 'eval'" (click)="setSecTab('eval')">
+      <mat-icon svgIcon="verified" style="font-size:15px"></mat-icon>
+      Évaluation du titre
+    </button>
+  </nav>
+
+  <mat-tab-nav-panel #tiSecTabPanel>
+  @if (secTab() === 'sheet') {
+    <div class="ti-sec-body">
+      <div class="ti-sec-id-row">
+        <span class="ti-sec-id-name">{{ sheet().name }}</span>
+        <span class="ti-sec-id-chip ti-sec-id-isin">{{ sheet().isin }}</span>
+        <span class="ti-sec-id-chip ti-sec-id-symbol">{{ sheet().symbol }}</span>
+        <span class="ti-sec-id-chip ti-sec-id-currency">{{ sheet().currency }}</span>
+        <span class="ti-sec-id-chip ti-sec-id-index">{{ sheet().index }}</span>
+        <span class="ti-sec-id-market">{{ sheet().market }}</span>
+      </div>
+
+      <div class="ti-sec-price-card">
+        <div class="ti-sec-price-head">
+          <span class="ti-sec-price-label">Évolution du cours</span>
+          <mat-button-toggle-group class="ti-sec-price-tabs" aria-label="Période du cours"
+            hideSingleSelectionIndicator [value]="pricePeriod()" (change)="setPricePeriod($event.value)">
+            @for (t of priceTabs; track t.key) {
+              <mat-button-toggle [value]="t.key">{{ t.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+        <div class="ti-sec-price-value-row">
+          <span class="ti-sec-price-value">{{ priceLast() }}</span>
+          <span class="ti-sec-price-change" [style.color]="priceGeo().up ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)'">{{ priceGeo().change }}</span>
+          <span class="ti-sec-price-note">{{ priceNote() }}</span>
+        </div>
+        <svg viewBox="0 0 320 96" preserveAspectRatio="none" class="ti-sec-price-svg">
+          <line x1="0" y1="90" x2="320" y2="90" stroke="rgba(0,0,0,0.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="48" x2="320" y2="48" stroke="rgba(0,0,0,0.08)" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"></line>
+          <path [attr.d]="priceGeo().area" [attr.fill]="priceGeo().up ? 'rgba(15,118,110,0.10)' : 'rgba(180,83,9,0.10)'" stroke="none"></path>
+          <path [attr.d]="priceGeo().line" fill="none" [attr.stroke]="priceGeo().up ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)'" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+        </svg>
+        <div class="ti-sec-price-ticks">
+          @for (k of priceGeo().ticks; track $index) {
+            <span class="ti-sec-price-tick">{{ k.label }}</span>
+          }
+        </div>
+        <div class="ti-sec-price-stats">
+          @for (k of priceGeo().stats; track k.label) {
+            <span class="ti-sec-price-stat">
+              <span class="ti-sec-price-stat-label">{{ k.label }}</span>
+              <span class="ti-sec-price-stat-value">{{ k.value }}</span>
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="ti-sec-cards">
+        @for (c of sheet().cards; track $index) {
+          <div class="ti-sec-card">
+            @for (f of c.fields; track f.label) {
+              <span class="ti-sec-card-field">
+                <span class="ti-sec-card-field-label">{{ f.label }}</span>
+                <span class="ti-sec-card-field-value">{{ f.value }}</span>
+              </span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="ti-sec-activity">
+        <span class="ti-sec-activity-title">Activité</span>
+        <span class="ti-sec-activity-row">
+          <span class="ti-sec-activity-tag">Titre</span>
+          <span class="ti-sec-activity-text">
+            <span>{{ sheet().activity }}</span>
+            <span class="ti-sec-activity-note">{{ sheet().activityNote }}</span>
+          </span>
+        </span>
+      </div>
+
+      <div class="ti-sec-detail">
+        @for (d of sheet().rows; track d.label) {
+          <div class="ti-sec-detail-row">
+            <span class="ti-sec-detail-label">{{ d.label }}</span>
+            <span class="ti-sec-detail-value">{{ d.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="ti-sec-body">
+      <div class="ti-sec-panel">
+        <div class="ti-sec-panel-head">
+          <h3 class="ti-sec-panel-title">Critères d'éligibilité</h3>
+        </div>
+        @for (c of criteria(); track c.label) {
+          <div class="ti-sec-criterion-row">
+            <span class="ti-sec-criterion-dot" [style.background]="c.color"></span>
+            <span class="ti-sec-criterion-text">
+              <span class="ti-sec-criterion-label">{{ c.label }}</span>
+              <span class="ti-sec-criterion-detail">{{ c.detail }}</span>
+            </span>
+            <span class="ti-sec-criterion-verdict" [style.color]="c.color">{{ c.verdict }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="ti-sec-panel">
+        <div class="ti-sec-panel-head">
+          <h3 class="ti-sec-panel-title">Décision d'autorisation</h3>
+        </div>
+        <div class="ti-sec-decision">
+          <p class="ti-sec-decision-note">{{ cur.note }}</p>
+          <button type="button" mat-flat-button class="ti-sec-authorize-btn" (click)="authorize()">Retenir</button>
+          <span class="ti-sec-status">{{ status() }}</span>
+        </div>
+      </div>
+    </div>
+  }
+</mat-tab-nav-panel>
+</app-side-panel>

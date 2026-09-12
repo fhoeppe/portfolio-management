@@ -1,0 +1,612 @@
+/* Le prototype pose `box-sizing: border-box` sur tout le sous-arbre, et déclare ses propres
+   encres : la coque n'expose ni --ink-ok-2 ni --ink-warn-2, et une `var()` non résolue invalide
+   la déclaration qui la porte. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-ok-2: #0f766e;
+  --ink-warn-2: #b45309;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok-2: #4fd1c5;
+  --ink-warn-2: #f3b782;
+}
+
+/* ===========================================================================
+   En-tête et onglets
+   =========================================================================== */
+
+.ct-head {
+  flex: none;
+  padding: 14px 20px 0;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.ct-head-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ct-head-titles {
+  min-width: 0;
+}
+
+.ct-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.ct-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ct-head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ct-period {
+  --pm-sel-h: 28px;
+  --pm-sel-fs: 12px;
+  --pm-sel-pad: 0 8px;
+  flex: none;
+  width: 168px;
+}
+
+.ct-close-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ct-close-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.ct-tabs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 12px;
+}
+
+.ct-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--ds-brand-fill, var(--field-brand));
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ct-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.ct-page-tab-active {
+  height: 40px;
+  padding: 0 18px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ct-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+/* ===========================================================================
+   Cartes
+   =========================================================================== */
+
+.ct-card {
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.ct-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ct-toolbar-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ct-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 220px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  color: var(--color-neutral-500);
+}
+
+.ct-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+/* `flex: none` : `mat-select` est un élément de bloc, sans quoi il occupe toute la ligne. */
+.ct-filter {
+  --pm-sel-h: 28px;
+  --pm-sel-fs: 12px;
+  --pm-sel-pad: 0 8px;
+  flex: none;
+  width: 210px;
+}
+
+.ct-section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ct-section-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.ct-section-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Tableaux
+   =========================================================================== */
+
+.ct-table-scroll {
+  overflow-x: auto;
+}
+
+.ct-table {
+  width: 100%;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.ct-table-journal {
+  min-width: 780px;
+}
+
+.ct-table-balance {
+  min-width: 700px;
+}
+
+.ct-header-row {
+  height: 30px;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.ct-th`, qui ne pèse que 0-2-0 une fois encapsulé. Seul
+   le fond est remonté — remonter toute la règle la ferait aussi passer devant `.ct-th-num`. */
+.ct-th.ct-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.ct-th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.ct-th-num {
+  text-align: right;
+}
+
+.ct-th:first-of-type,
+.ct-td:first-of-type {
+  padding-left: 16px;
+}
+
+.ct-row {
+  height: 42px;
+}
+
+.ct-row-click {
+  cursor: pointer;
+}
+
+.ct-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.ct-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.ct-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-td-strong {
+  font-weight: 600;
+}
+
+.ct-td-ref {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-td-state {
+  text-align: right;
+}
+
+.ct-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-nowrap {
+  white-space: nowrap;
+}
+
+.ct-col-ref { width: 128px; }
+.ct-col-date { width: 74px; }
+.ct-col-journal { width: 80px; }
+.ct-col-amount { width: 128px; }
+.ct-col-state { width: 118px; }
+
+.ct-entry-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ct-entry-origin {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ct-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ===========================================================================
+   Détail d'une écriture
+   =========================================================================== */
+
+/* `:first-child` n'est pas décoratif : la cellule pleine largeur est la première de sa rangée,
+   et la gouttière de 16px des premières colonnes s'y appliquerait sinon (voir la même
+   correction dans le registre des transactions). */
+.ct-detail-row td.ct-detail-cell,
+.ct-detail-cell:first-child {
+  padding: 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.ct-detail-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 16px 7px 32px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.ct-detail-account {
+  flex: none;
+  width: 74px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-detail-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--color-neutral-800, var(--color-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ct-detail-amount {
+  flex: none;
+  width: 110px;
+  text-align: right;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================================================
+   Pied du journal
+   =========================================================================== */
+
+/* Une rangée à part et non un `<tfoot>` : MatTable réserve son pied à un `matFooterRowDef`
+   dont les colonnes sont celles du tableau, ce qui interdit la fusion des quatre premières. */
+.ct-journal-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.ct-foot-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.ct-foot-amount {
+  flex: none;
+  width: 128px;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-foot-balance {
+  flex: none;
+  width: 118px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ===========================================================================
+   Balance
+   =========================================================================== */
+
+.ct-account {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ct-account-no {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-account-name {
+  min-width: 0;
+  color: var(--color-neutral-800, var(--color-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===========================================================================
+   Compte de résultat
+   =========================================================================== */
+
+.ct-result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ct-result-row:last-child {
+  border-bottom: 0;
+}
+
+.ct-result-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.ct-result-amount {
+  flex: none;
+  width: 130px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-result-share {
+  flex: none;
+  width: 74px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================================================
+   Clôture
+   =========================================================================== */
+
+.ct-close-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .ct-close-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ct-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ct-checkbox {
+  --mat-checkbox-state-layer-size: 24px;
+  flex: none;
+  margin-top: -2px;
+}
+
+.ct-task-texts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ct-task-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Un travail fait se barre : l'état se lit sans avoir à comparer la case à son voisin. */
+.ct-task-done {
+  text-decoration: line-through;
+}
+
+.ct-task-meta {
+  font-size: 11px;
+}
+
+.ct-close-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--color-neutral-100);
+}
+
+.ct-close-hint {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.ct-close-btn {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-disabled-container-color: var(--color-neutral-500);
+  --mat-button-filled-disabled-label-text-color: #ffffff;
+  margin-left: auto;
+  flex: none;
+}
+
+.ct-close-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ct-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.ct-check:last-child {
+  border-bottom: 0;
+}
+
+.ct-check-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+}
+
+.ct-check-texts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ct-check-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ct-check-detail {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}

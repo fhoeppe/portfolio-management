@@ -1,0 +1,86 @@
+<div class="ci-dialog">
+  <header class="ci-head" [style.border-top-color]="kind().color">
+    <mat-icon class="ci-kind-icon" [svgIcon]="kind().icon" [style.color]="kind().color"></mat-icon>
+    <span class="ci-head-text">
+      <h2 class="ci-title" [style.color]="kind().color">{{ title() }}</h2>
+      <span class="ci-head-hint">{{ kind().hint }}</span>
+    </span>
+    <button type="button" matIconButton class="ci-close" matTooltip="Fermer" (click)="close()">
+      <mat-icon svgIcon="close" style="font-size:14px"></mat-icon>
+    </button>
+  </header>
+
+  <div class="ci-grid">
+    <label class="ci-field ci-field-wide">
+      Intitulé
+      <input class="ci-input" placeholder="Comité d'investissement"
+        [value]="draft().title" (input)="patch({ title: $any($event.target).value })" />
+    </label>
+
+    <div class="ci-field">
+      Type
+      <mat-button-toggle-group class="ci-seg" hideSingleSelectionIndicator
+        [value]="draft().kind" (change)="patch({ kind: $event.value })">
+        @for (k of kindOptions; track k.value) {
+          <mat-button-toggle [value]="k.value">{{ k.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </div>
+
+    <label class="ci-field">
+      Catégorie
+      <mat-select class="pm-sel-trigger ci-select" [panelWidth]="null" panelClass="pm-sel-panel pm-unfold"
+        [value]="draft().cat" (valueChange)="patch({ cat: $event })">
+        @for (o of catOptions; track o.value) {
+          <mat-option [value]="o.value">
+            <span class="ci-cat-option">
+              <span class="ci-cat-swatch" [style.background]="o.color"></span>
+              {{ o.label }}
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+    </label>
+
+    <label class="ci-field">
+      Date
+      <input type="date" class="ci-input" [value]="draft().date" (input)="patch({ date: $any($event.target).value })" />
+    </label>
+
+    <mat-checkbox class="ci-checkbox ci-checkbox-inline" [checked]="draft().allDay"
+      (change)="patch({ allDay: $event.checked })">Toute la journée</mat-checkbox>
+
+    @if (showTimes()) {
+      <label class="ci-field">
+        Début
+        <input type="time" step="900" class="ci-input" [value]="draft().start" (input)="patch({ start: $any($event.target).value })" />
+      </label>
+      <label class="ci-field">
+        Fin
+        <input type="time" step="900" class="ci-input" [value]="draft().end" (input)="patch({ end: $any($event.target).value })" />
+      </label>
+    }
+
+    @if (isTask()) {
+      <mat-checkbox class="ci-checkbox ci-field-wide" [checked]="draft().done"
+        (change)="patch({ done: $event.checked })">Tâche terminée</mat-checkbox>
+    }
+
+    <label class="ci-field ci-field-wide">
+      Note
+      <textarea class="ci-textarea" rows="3" placeholder="Ordre du jour, participants, référence dossier…"
+        [value]="draft().notes" (input)="patch({ notes: $any($event.target).value })"></textarea>
+    </label>
+  </div>
+
+  <footer class="ci-foot">
+    @if (editing()) {
+      <button type="button" matButton="outlined" class="ci-btn ci-btn-danger" (click)="remove()">
+        <mat-icon svgIcon="close" style="font-size:13px"></mat-icon>
+        Supprimer
+      </button>
+    }
+    <button type="button" matButton="outlined" class="ci-btn ci-btn-push" (click)="close()">Annuler</button>
+    <button type="button" matButton="filled" class="ci-btn-save" (click)="save()">Enregistrer</button>
+  </footer>
+</div>

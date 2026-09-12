@@ -1,0 +1,273 @@
+.tx-msel {
+  position: relative;
+  display: flex;
+}
+
+.tx-msel-trigger {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 6px;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  padding: 0 5px 0 8px !important;
+  border: 1px solid var(--color-neutral-300) !important;
+  border-radius: 6px !important;
+  background: var(--surface) !important;
+  color: var(--color-text);
+  font-family: inherit !important;
+  /* 11px : aligné sur le reste de la ligne de filtres et du tableau du registre, seul endroit
+     où ce composant est employé (les quatre colonnes Nature, Type, Compte, Titre). */
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  line-height: normal !important;
+  cursor: pointer;
+}
+
+.tx-msel-trigger:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.tx-msel-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-neutral-700);
+}
+
+.tx-msel-badge {
+  /* `0 1 auto` et non `none` : la pastille doit céder avant le « +N » et le chevron, qui sont
+     l'information la plus utile quand la place manque. En `none` elle les poussait hors du
+     bouton — 110px de contenu pour 80 disponibles dans la colonne Nature. */
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-msel-more {
+  flex: none;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+
+.tx-msel-chevron {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-brand-2);
+  transition: transform 160ms ease;
+}
+
+.tx-msel-chevron-open {
+  transform: rotate(180deg);
+}
+
+/* La case à cocher de Material emporte une couche d'état et une zone tactile de 40px, bien
+   plus hautes que la ligne elle-même : elles imposaient 50px par option là où la maquette en
+   montre moins de 30. Les deux se règlent par jeton — noms en `--mat-checkbox-*` et non
+   `--mdc-checkbox-*`, seuls ces derniers étant exposés. */
+.tx-msel-row {
+  --mat-checkbox-state-layer-size: 12px;
+  --mat-checkbox-touch-target-size: 12px;
+  /* Trait léger : le contour par défaut est un 2px gris foncé, très présent en regard des
+     pastilles qu'il précède. Un filet fin et clair suffit à marquer la case sans lui donner
+     plus de poids que l'option qu'elle coche.
+     Valeurs littérales et non `var(--color-neutral-*)` : le panneau vit dans le
+     cdk-overlay-container, où les jetons de la page ne sont pas définis — la variable
+     retomberait sur le gris foncé de Material. */
+  /* Le libellé « Tout sélectionner » est rendu par mat-checkbox, qui le peint à sa taille M3
+     (14px) : il se règle par jeton, pas par une règle sur la ligne. */
+  --mat-checkbox-label-text-size: 11px;
+  /* Interligne resserré sur la taille du texte : Material laisse 20px de hauteur de ligne pour
+     11px de glyphes, si bien que le libellé, bien que sa boîte soit centrée, se lisait haut
+     dans la rangée. Une boîte qui épouse le texte laisse le centrage flexible faire son office. */
+  --mat-checkbox-label-text-line-height: 13px;
+  --mat-checkbox-unselected-icon-color: #b9bec9;
+  --mat-checkbox-unselected-hover-icon-color: #8fa6c8;
+  --mat-checkbox-unselected-focus-icon-color: #8fa6c8;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--menu-item-radius, 6px);
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 11px;
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* --menu-item-hover-bg : jeton consolidé (styles.scss), partagé avec .pm-nav-item et le menu
+   compte plutôt qu'une teinte réglée indépendamment ici. */
+.tx-msel-row:hover {
+  background: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.18));
+}
+
+.tx-msel-all {
+  /* Filet de séparation entre « Tout sélectionner » et les options. Couleur littérale : le
+     panneau est monté dans le cdk-overlay-container, où `--color-neutral-200` n'est pas défini.
+     Une `var()` non résolue invalide la déclaration entière — la bordure tombait alors à
+     `0px none` et le trait n'apparaissait pas. Pendant sombre dans styles.scss. */
+  /* Hauteur fixe plutôt qu'un remplissage : la ligne doit mesurer 30px quel que soit ce que
+     contient son libellé, et se distinguer nettement des options resserrées en dessous. */
+  height: 30px;
+  border-bottom: 1px solid #e6e9ef;
+  border-radius: 4px 4px 0 0;
+  font-weight: 400;
+  font-size: 11px;
+  color: #45403d;
+}
+
+/* Options resserrées au minimum : elles forment une liste continue et se lisent mieux groupées.
+   « Tout sélectionner » garde son espacement d'origine, il joue le rôle d'en-tête au-dessus du
+   filet. Les pastilles se touchaient presque une fois l'en-tête passé à 30px : quelques pixels
+   rendus à chaque option suffisent à les détacher, sans perdre la densité recherchée. */
+.tx-msel-item {
+  /* 20px : à 12px les glyphes de 11px occupaient toute la hauteur de ligne et les pastilles se
+     touchaient, rendant la liste illisible. L'interligne de 15px donne de l'air au texte, le
+     remplissage détache les pastilles les unes des autres. */
+  padding-block: 3px;
+  line-height: 15px;
+}
+
+.tx-msel-item .tx-msel-item-badge {
+  padding-block: 1px;
+  line-height: 13px;
+}
+
+.tx-msel-item-active {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.tx-msel-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Case à 13px. Ni sa dimension ni l'épaisseur de son
+   contour n'ont de jeton : les deux sont écrites dans le gabarit de `mat-checkbox`, hors de
+   portée d'une règle scopée — d'où `::ng-deep`. La coche est rentrée d'un pixel pour rester
+   dans la boîte réduite. */
+/* La case porte, autour de son carré, une couche d'état et un conteneur qui lui rendaient 14px
+   de haut et fixaient d'autant la hauteur de la ligne : tous deux sont ramenés au carré. */
+/* Seul `.mdc-checkbox`, le conteneur du carré, est ramené à sa taille. `mat-checkbox` et
+   `.mdc-form-field` enveloppent aussi le libellé (« Tout sélectionner ») : les brider à 13px
+   avec un centrage faisait déborder ce libellé à gauche de la ligne, centré sur la case au lieu
+   de la suivre. Ils gardent donc leur largeur propre, et seule la hauteur est neutralisée pour
+   que la ligne ne soit pas gonflée. */
+.tx-msel-row ::ng-deep mat-checkbox,
+.tx-msel-row ::ng-deep .mdc-form-field {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+
+.tx-msel-row ::ng-deep .mdc-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+
+.tx-msel-row ::ng-deep .mdc-checkbox__background {
+  box-sizing: border-box;
+  /* Sorti du positionnement absolu : Material y décale le carré de -3px pour le recentrer dans
+     son conteneur d'origine, plus grand que lui de son remplissage. Ce conteneur étant ramené
+     ici à la taille exacte du carré, l'offset le sortait du centre — et remettre `top: 0` ne
+     réglait que les lignes sans libellé, les deux structures n'ayant pas la même hauteur
+     interne. En flux normal dans un conteneur centré, le carré est centré dans tous les cas. */
+  position: relative;
+  top: auto;
+  left: auto;
+  width: 13px;
+  height: 13px;
+  border-width: 1px;
+}
+
+/* Retrait en pourcentage et non en pixels : la coche suit ainsi toute modification de la taille
+   de la case, au lieu de rester calée sur une valeur écrite pour 11px. */
+.tx-msel-row ::ng-deep .mdc-checkbox__checkmark {
+  /* Retrait de 20 % de chaque côté : la coche occupe donc 60 % de la case, soit un dessin de
+     ~6px pour une case de 13 — le glyphe reste ainsi en deçà du texte de 11px qu'il précède,
+     au lieu de peser plus lourd que lui. Exprimé en pourcentage pour qu'elle suive toute
+     modification de la taille.
+     `box-sizing: border-box` est indispensable : la coche est positionnée en absolu sur toute
+     la case, et sans lui le retrait s'ajoutait à sa boîte au lieu de la rétrécir — il la
+     poussait donc vers le bas à droite au lieu de la centrer. */
+  box-sizing: border-box;
+  padding: 20%;
+}
+
+/* Le trait de la coche est dessiné par un `stroke-width` du SVG : il est épaissi à mesure que
+   la coche rétrécit, faute de quoi elle s'effacerait — mais assez peu pour qu'elle garde le
+   poids d'un texte de 11px et non celui d'un caractère gras. */
+.tx-msel-row ::ng-deep .mdc-checkbox__checkmark-path {
+  stroke-width: 2.7;
+}
+
+/* Encre renforcée, identique à celle des pastilles du tableau (voir transactions.css) : les
+   couleurs arrivent en ligne sous la forme `var(--ink-*)`, il suffit donc de redéfinir ces
+   jetons sur la pastille pour que liste et tableau se lisent de la même façon. */
+.tx-msel-item-badge,
+.tx-msel-trigger-badge {
+  --ink-brand-2: #002259;
+  --ink-magenta: #5c0f6a;
+  --ink-ok: #05342f;
+  --ink-ok-2: #084a45;
+  --ink-warn: #522503;
+  --ink-warn-2: #703205;
+  --ink-info: #032e42;
+  --ink-code: #1c1759;
+}
+
+/* Le pendant sombre de ces jetons ne peut pas vivre ici : le contenu du menu est rendu dans le
+   cdk-overlay-container, hors de l'arbre du composant, donc `:host-context([data-theme])` n'y
+   matche jamais. Il est posé globalement dans styles.scss, via le [data-theme] que ThemeService
+   recopie sur <body>. */
+
+.tx-msel-item-badge {
+  display: inline-flex;
+  align-items: center;
+  /* 2px 11px : la maquette donne une pastille de ~51px de large pour TRADE et 14,5px de haut,
+     contre 41 × 13 avec le remplissage précédent. */
+  padding: 2px 11px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* Le décompte est poussé contre le bord droit du panneau, la pastille gardant sa largeur
+   propre — c'est ce qui donne à la liste sa colonne de chiffres alignée. */
+.tx-msel-item-count {
+  margin-left: auto;
+  font-size: 11px;
+  /* Littéral : var() non résolue dans l'overlay (voir plus haut). */
+  color: #7a746f;
+  font-variant-numeric: tabular-nums;
+}

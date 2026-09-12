@@ -1,5 +1,6 @@
 import { Component, input, model } from '@angular/core';
-import { IconGlyph } from '../../shell/icon-glyph';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import type { Icon } from '../../shell/icon-shapes';
 
 /**
@@ -11,7 +12,7 @@ import type { Icon } from '../../shell/icon-shapes';
  */
 @Component({
   selector: 'app-panel-card',
-  imports: [IconGlyph],
+  imports: [MatIconModule, MatExpansionModule],
   templateUrl: './panel-card.html',
   styleUrl: './panel-card.css',
 })

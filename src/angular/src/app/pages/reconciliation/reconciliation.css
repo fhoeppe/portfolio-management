@@ -1,0 +1,507 @@
+/**
+ * Jetons locaux portés du bloc `[data-component="ReconPage"]` de la source — pas fournis par
+ * les jetons globaux de la coque (--ink-brand-2/--ink-warn-2 le sont déjà, voir app-shell.css).
+ */
+:host {
+  --ink-ok-2: #0f766e;
+  --ink-ok: #0b5f57;
+  --band-ok: #f2faf9;
+  --band-warn: #fdf6ef;
+  display: block;
+  /* `body` fixe sa couleur sur le jeton M3 statique `--mat-sys-on-surface` (styles.scss),
+     insensible au `[data-theme]` de l'appli — voir la même recette dans titres.css. */
+  color: var(--color-text);
+}
+
+:host-context([data-theme='dark']) {
+  --ink-ok-2: #4fd1c5;
+  --ink-ok: #5fd6c4;
+  --band-ok: #152a28;
+  --band-warn: #2c1f14;
+}
+
+.rc-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.rc-head-row {
+  padding: 14px 20px 0;
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.rc-head-top {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rc-head-titles {
+  min-width: 0;
+}
+
+.rc-h1 {
+  font-size: 18px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.rc-subtitle {
+  font-size: 11px;
+  margin: 3px 0 0;
+  color: var(--color-neutral-700);
+}
+
+.rc-head-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rc-scope-select {
+  height: 28px;
+  min-width: 140px;
+  padding: 0 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.rc-run-btn {
+  --mat-button-filled-container-height: 28px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-horizontal-padding: 12px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-state-layer-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Filet bleu de base : les onglets sont dessinés en chemise — bordure sur trois côtés, ouverte
+   en bas — et ont besoin d'une ligne qui ferme la rangée, faute de quoi les onglets inactifs
+   flottent. Même filet que Transactions, Opérations et Performance. */
+.rc-tabs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 12px 0 0;
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.rc-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--field-brand);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  font-family: inherit;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rc-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.rc-page-tab-active {
+  font-weight: 700;
+}
+
+.rc-tab-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rc-kpi-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--field-brand);
+  border-bottom: 1px solid var(--field-brand);
+}
+
+.rc-kpi-card {
+  min-width: 0;
+  padding: 13px 18px 15px;
+}
+
+.rc-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rc-kpi-value {
+  margin-top: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.rc-kpi-note {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rc-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+  gap: 16px;
+  padding: 16px 20px 24px;
+  overflow-y: auto;
+  align-items: start;
+}
+
+@container (max-width: 1000px) {
+  .rc-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rc-left,
+.rc-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.rc-card {
+  flex: none;
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-card-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.rc-card-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rc-filter-tabs {
+  margin-left: auto;
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rc-filter-tab {
+  height: 26px;
+  padding: 0 11px;
+  border: 0;
+  font-family: inherit;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rc-filter-tab:hover {
+  filter: brightness(0.96);
+}
+
+.rc-table-scroll {
+  overflow-x: auto;
+}
+
+.rc-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.rc-thead-row {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.rc-th {
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-th-left {
+  text-align: left;
+  padding-left: 16px;
+}
+
+.rc-th-right {
+  text-align: right;
+}
+
+.rc-th-state {
+  width: 150px;
+}
+
+.rc-row {
+  cursor: pointer;
+}
+
+.rc-td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+/* MatTable pose `border-bottom: none` sur les cellules de la dernière ligne du corps
+   (`.mdc-data-table__row:last-child > .mat-mdc-cell`, 0-3-0) — une convention de liste
+   Material que la règle ci-dessus, à 0-2-0, ne peut pas dépasser. Ici cette bordure ferme
+   le tableau : on la repose à spécificité suffisante. */
+.rc-table tr:last-child > .rc-td {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-td:first-child {
+  padding-left: 16px;
+}
+
+.rc-td-right {
+  text-align: right;
+}
+
+.rc-td-strong {
+  font-weight: 600;
+}
+
+.rc-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.rc-cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rc-cell-strong {
+  font-weight: 600;
+}
+
+.rc-cell-sub {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rc-cell-cause {
+  color: var(--color-neutral-700);
+}
+
+.rc-state-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rc-state-pill-flex {
+  flex: none;
+}
+
+.rc-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.rc-tfoot-row {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.rc-tfoot-note {
+  padding: 9px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.rc-tfoot-diff {
+  padding: 9px 16px 9px 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rc-detail-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-detail-titles {
+  min-width: 0;
+}
+
+.rc-detail-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rc-detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-detail-label {
+  flex: none;
+  width: 130px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.rc-detail-value {
+  min-width: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.rc-action-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 16px;
+  background: var(--color-neutral-100);
+}
+
+.rc-note-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.rc-note-input {
+  padding: 8px 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  resize: vertical;
+  outline: none;
+}
+
+.rc-action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rc-escalate-btn {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-horizontal-padding: 12px;
+  --mat-button-outlined-label-text-size: 11px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: #c53030;
+  --mat-button-outlined-outline-color: rgba(197, 48, 48, 0.4);
+  --mat-button-outlined-state-layer-color: #c53030;
+}
+
+.rc-justify-btn {
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-horizontal-padding: 12px;
+  --mat-button-outlined-label-text-size: 11px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800);
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  --mat-button-outlined-state-layer-color: var(--ink-brand);
+}
+
+.rc-resolve-btn {
+  --mat-button-filled-container-height: 28px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-horizontal-padding: 12px;
+  --mat-button-filled-label-text-size: 11px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-state-layer-color: #ffffff;
+  margin-left: auto;
+}
+
+.rc-log-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-log-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rc-log-time {
+  flex: none;
+  width: 52px;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.rc-log-actor {
+  flex: none;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}

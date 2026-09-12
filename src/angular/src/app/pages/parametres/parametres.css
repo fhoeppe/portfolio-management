@@ -1,0 +1,1448 @@
+/* Le prototype pose `box-sizing: border-box` sur tout le sous-arbre de l'écran ; les bordures
+   des champs et des cartes sont dimensionnées en conséquence. */
+:host {
+  display: block;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  /* Le prototype pose ces deux encres sur l'écran lui-même : la coque ne les définit pas, et
+     une `var()` non résolue invalide la déclaration qui la porte — la retenue appliquée, les
+     devises du référentiel et la pastille de cycle retombaient sur la couleur héritée. */
+  --ink-ok: #0b5f57;
+  --ink-alt: #5b3ea8;
+  --ink-info: #075985;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+/* ===========================================================================
+   En-tête et onglets
+   =========================================================================== */
+
+.pr-head {
+  padding: 14px 20px 0;
+}
+
+.pr-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.pr-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* Onglets en chemise, fermés par le filet bleu de base — même dessin que Transactions,
+   Titres et Opérations. */
+.pr-tabs-row {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 4px 2px;
+  padding: 12px 20px 0;
+  border-bottom: 1px solid var(--ink-brand);
+}
+
+.pr-page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--ink-brand-2);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: rgba(0, 61, 165, 0.08);
+  color: var(--ink-brand);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pr-page-tab:hover {
+  filter: brightness(0.97);
+}
+
+.pr-page-tab-active {
+  height: 40px;
+  padding: 0 16px;
+  background: var(--ds-brand-fill, #003da5);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ===========================================================================
+   Cartes
+   =========================================================================== */
+
+.pr-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 24px;
+}
+
+/* Les préférences tiennent en une colonne étroite : leurs quatre lignes n'ont rien à gagner
+   à s'étaler sur toute la largeur d'un écran de bureau. */
+.pr-body-narrow {
+  max-width: 760px;
+}
+
+.pr-card {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.pr-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.pr-card-title {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-brand);
+}
+
+.pr-card-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.pr-card-note-push {
+  margin-left: auto;
+}
+
+.pr-card-edits {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand-2);
+}
+
+.pr-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+}
+
+.pr-card-note-foot {
+  display: block;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-neutral-200);
+  background: rgba(0, 61, 165, 0.04);
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.pr-btn-cancel {
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  --mat-button-outlined-container-height: 30px;
+  --mat-button-outlined-label-text-size: 12px;
+  --mat-button-outlined-label-text-weight: 600;
+}
+
+.pr-btn-save {
+  --mat-button-filled-container-color: var(--field-brand);
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 30px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+}
+
+/* ===========================================================================
+   Préférences de session
+   =========================================================================== */
+
+.pr-pref-list {
+  padding: 6px 20px 12px;
+}
+
+.pr-pref-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pr-pref-row-last {
+  border-bottom: 0;
+}
+
+.pr-pref-label {
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+/* Contrôle segmenté : même recette que les groupes de Transactions — la bordure du groupe est
+   reposée par-dessus celle de Material, le reste passe par les jetons. */
+.pr-seg {
+  --mat-button-toggle-height: 26px;
+  --mat-button-toggle-label-text-size: 11px;
+  --mat-button-toggle-background-color: var(--surface);
+  --mat-button-toggle-text-color: var(--color-neutral-700);
+  --mat-button-toggle-selected-state-background-color: var(--color-neutral-200);
+  --mat-button-toggle-selected-state-text-color: var(--color-text);
+  --mat-button-toggle-divider-color: var(--color-neutral-300);
+  flex: none;
+  display: inline-flex;
+  border: 1px solid var(--color-neutral-300) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Jetons `--mat-slide-toggle-*` et non `--mat-switch-*` : le gabarit emploie les classes
+   `.mdc-switch`, mais le nom du composant Angular donne celui des jetons (voir titres.css). */
+.pr-switch {
+  --mat-slide-toggle-track-width: 34px;
+  --mat-slide-toggle-track-height: 18px;
+  --mat-slide-toggle-track-shape: 999px;
+  --mat-slide-toggle-handle-width: 14px;
+  --mat-slide-toggle-handle-height: 14px;
+  --mat-slide-toggle-handle-shape: 999px;
+  --mat-slide-toggle-unselected-handle-size: 14px;
+  --mat-slide-toggle-selected-handle-size: 14px;
+  --mat-slide-toggle-pressed-handle-size: 14px;
+  --mat-slide-toggle-with-icon-handle-size: 14px;
+  --mat-slide-toggle-touch-target-size: 18px;
+  --mat-slide-toggle-state-layer-size: 22px;
+  --mat-slide-toggle-unselected-track-color: var(--color-neutral-400);
+  --mat-slide-toggle-unselected-hover-track-color: var(--color-neutral-400);
+  --mat-slide-toggle-unselected-focus-track-color: var(--color-neutral-400);
+  --mat-slide-toggle-unselected-pressed-track-color: var(--color-neutral-400);
+  --mat-slide-toggle-selected-track-color: var(--field-brand);
+  --mat-slide-toggle-selected-hover-track-color: var(--field-brand);
+  --mat-slide-toggle-selected-focus-track-color: var(--field-brand);
+  --mat-slide-toggle-selected-pressed-track-color: var(--field-brand);
+  --mat-slide-toggle-unselected-handle-color: #ffffff;
+  --mat-slide-toggle-unselected-hover-handle-color: #ffffff;
+  --mat-slide-toggle-unselected-focus-handle-color: #ffffff;
+  --mat-slide-toggle-selected-handle-color: #ffffff;
+  --mat-slide-toggle-selected-hover-handle-color: #ffffff;
+  --mat-slide-toggle-selected-focus-handle-color: #ffffff;
+  flex: none;
+}
+
+/* `.pm-sel-trigger` (styles.scss) porte tout l'habillage du déclencheur ; seules les cotes
+   propres à cet écran sont posées ici, par les jetons `--pm-sel-*` de la recette. */
+.pr-home-select {
+  --pm-sel-h: 28px;
+  --pm-sel-fs: 11px;
+  --pm-sel-pad: 0 8px;
+  flex: none;
+  width: 230px;
+}
+
+/* ===========================================================================
+   Champs
+   =========================================================================== */
+
+.pr-regime-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+}
+
+.pr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.pr-field-select {
+  --pm-sel-h: 32px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 10px;
+}
+
+.pr-field-hint {
+  min-height: 15px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+}
+
+.pr-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.pr-input-sm {
+  width: 100%;
+  height: 28px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+
+.pr-input:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.34), 0 0 0 3px rgba(0, 61, 165, 0.10);
+}
+
+/* ===========================================================================
+   Tableaux
+   =========================================================================== */
+
+.pr-table-scroll {
+  overflow-x: auto;
+}
+
+.pr-table {
+  width: 100%;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.pr-table-tax {
+  min-width: 1170px;
+  table-layout: fixed;
+}
+
+.pr-table-settle {
+  min-width: 820px;
+}
+
+.pr-table-venue {
+  min-width: 1140px;
+  table-layout: fixed;
+}
+
+.pr-header-row {
+  height: 32px;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.pr-th`, qui ne pèse que 0-2-0 une fois encapsulé. */
+.pr-th.pr-th {
+  background: var(--surface);
+}
+
+.pr-th {
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-neutral-300);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.pr-row {
+  height: 44px;
+}
+
+.pr-td {
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-text);
+}
+
+.pr-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-muted {
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+
+.pr-num-note {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sous-en-tête de continent. Il occupe toute la largeur par `colspan` : MatTable n'a qu'un
+   seul corps de tableau, les sections sont donc aplaties dans la même liste et distinguées
+   par un `when:` (même montage que le registre des transactions). */
+.pr-group-row {
+  height: 32px;
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.pr-group-cell {
+  padding: 0 16px;
+  border-top: 1px solid rgba(0, 61, 165, 0.28);
+  border-bottom: 1px solid rgba(0, 61, 165, 0.28);
+}
+
+.pr-group-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-brand);
+}
+
+.pr-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-brand);
+}
+
+.pr-group-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+}
+
+.pr-country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pr-flag {
+  flex: none;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pr-country-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Code pays / MIC : la fonte à chasse fixe aligne les quatre caractères d'une ligne à l'autre. */
+.pr-code {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.pr-code-neutral {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.pr-mic {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-brand);
+}
+
+.pr-col-country { width: 230px; }
+.pr-col-places { width: 250px; }
+.pr-col-rate { width: 170px; }
+.pr-col-applied { width: 120px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.pr-col-recovery { width: 230px; }
+.pr-col-mic { width: 96px; }
+.pr-col-cycle { width: 86px; }
+.pr-col-shift { width: 170px; white-space: nowrap; }
+.pr-col-csd { width: 160px; }
+.pr-col-penalty { width: 200px; }
+.pr-col-vcountry { width: 176px; }
+.pr-col-vplaces { width: 262px; }
+.pr-col-vvenues { width: 190px; }
+.pr-col-vindices { width: 160px; }
+.pr-col-vcur { width: 84px; }
+.pr-col-vzone { width: 148px; }
+.pr-col-vsession { width: 120px; }
+
+/* ===========================================================================
+   Champ à pastilles (places rattachées à un pays)
+   =========================================================================== */
+
+.pr-chip-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 30px;
+  padding: 3px 5px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+/* Pastilles de places. Les cotes M3 (32px de haut, 16px de rayon, libellé de 14px) sont
+   ramenées à celles de la maquette par jetons ; l'encre du libellé en est un elle aussi, le
+   texte étant peint par le gabarit de Material et non par l'hôte. */
+.pr-place-set {
+  /* Le fond passe par le jeton et non par `background` : Material peint le conteneur d'une
+     pastille avec sa propre règle `.mat-mdc-standard-chip`, injectée à l'exécution et donc
+     gagnante à spécificité égale — la pastille restait transparente. */
+  --mat-chip-elevated-container-color: rgba(0, 61, 165, 0.14);
+  --mat-chip-container-height: 22px;
+  --mat-chip-container-shape-radius: 999px;
+  --mat-chip-label-text-size: 10px;
+  --mat-chip-label-text-color: var(--ink-brand);
+  --mat-chip-with-trailing-icon-trailing-icon-color: var(--ink-brand);
+  --mat-chip-with-trailing-icon-trailing-icon-size: 11px;
+  --mat-chip-trailing-action-state-layer-color: rgba(0, 61, 165, 0.22);
+  --mat-chip-trailing-action-opacity: 1;
+  display: contents;
+}
+
+/* `display: contents` sur l'ensemble *et* sur son conteneur interne : sans la seconde règle,
+   les pastilles restent groupées dans une boîte unique et le sélecteur « + », qui suit dans le
+   champ, bascule à la ligne au lieu de se poser à leur suite. */
+.pr-place-set ::ng-deep .mdc-evolution-chip-set__chips {
+  display: contents;
+}
+
+/* Les marges internes d'une pastille M3 (8px de chaque côté, plus l'aire de l'action de
+   retrait) la rendent d'un tiers plus large que celle de la maquette. Aucune ne s'expose en
+   jeton, d'où `::ng-deep` sur les deux éléments concernés. */
+.pr-place-chip ::ng-deep .mdc-evolution-chip__action--primary {
+  padding-left: 8px;
+  padding-right: 2px;
+}
+
+.pr-place-chip ::ng-deep .mdc-evolution-chip__cell--trailing .mdc-evolution-chip__action {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+
+.pr-place-chip {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.pr-chip-restore {
+  --mat-icon-button-state-layer-size: 20px;
+  --mat-icon-button-icon-size: 12px;
+  flex: none;
+  border-radius: 999px;
+  color: var(--ink-brand);
+}
+
+.pr-chip-restore:hover {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+/* Le sélecteur d'ajout garde le dessin de la maquette — une pastille en pointillés — plutôt
+   que l'habillage partagé `.pm-sel-trigger`, qui en ferait un champ de filtre. */
+.pr-chip-add {
+  --mat-select-placeholder-text-color: var(--color-neutral-700);
+  --mat-select-trigger-text-size: 10px;
+  flex: 1 1 60px;
+  min-width: 0;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px dashed var(--color-neutral-400);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pr-chip-add ::ng-deep .mat-mdc-select-arrow-wrapper {
+  display: none;
+}
+
+.pr-venue-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pr-venue-cell .pr-chip-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pr-venue-reset {
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-icon-size: 13px;
+  --mat-icon-button-disabled-icon-color: var(--color-neutral-400);
+  flex: none;
+  width: 26px;
+  height: 30px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-brand);
+}
+
+.pr-venue-reset:disabled {
+  cursor: not-allowed;
+}
+
+.pr-venue-reset:hover:not(:disabled) {
+  background: rgba(0, 61, 165, 0.09);
+}
+
+/* ===========================================================================
+   Champ numérique à pas (taux légal / conventionnel)
+   =========================================================================== */
+
+.pr-num {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.pr-num-prefix {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 9px;
+  border-right: 1px solid var(--color-neutral-300);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pr-num-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 9px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  outline: none;
+}
+
+.pr-num-steps {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-left: 1px solid var(--color-neutral-300);
+}
+
+.pr-num-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  padding: 0;
+  border: 0;
+  background: var(--color-neutral-100);
+  color: var(--ink-brand);
+  cursor: pointer;
+}
+
+.pr-num-step:first-child {
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.pr-num-step:hover {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+/* ===========================================================================
+   Cycle de dénouement
+   =========================================================================== */
+
+/* Le déclencheur est la pastille elle-même : `mat-select-trigger` remplace la valeur textuelle
+   par le badge coloré de la maquette, la flèche restant à droite. */
+.pr-cycle-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 6px 0 3px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+/* Pastille purement décorative : elle sert d'affichage à la valeur retenue dans le sélecteur,
+   pas de commande. `pointer-events: none` renvoie donc le clic au déclencheur qui l'entoure —
+   sans quoi le clic tombe sur la pastille et le panneau ne s'ouvre pas. Les couleurs varient
+   d'une ligne à l'autre : elles arrivent en ligne, par jeton, le libellé étant peint par le
+   gabarit de Material. */
+.pr-cycle-chip {
+  --mat-chip-container-height: 20px;
+  --mat-chip-container-shape-radius: 999px;
+  --mat-chip-label-text-size: 11px;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+}
+
+/* Les 12px de marge interne d'une pastille M3 l'élargissent d'un tiers ; elles ne s'exposent
+   pas en jeton. */
+.pr-cycle-chip ::ng-deep .mdc-evolution-chip__action--primary {
+  padding: 0 9px;
+}
+
+/* ===========================================================================
+   Règles (suspens, ISO)
+   =========================================================================== */
+
+.pr-rule-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pr-rule-row:last-child {
+  border-bottom: 0;
+}
+
+.pr-rule-row-top {
+  border-bottom: 0;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.pr-rule-label {
+  flex: 0 1 220px;
+  min-width: 140px;
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+  text-wrap: pretty;
+}
+
+.pr-rule-value {
+  flex: 0 1 180px;
+  min-width: 110px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-brand);
+  text-wrap: pretty;
+}
+
+.pr-rule-value-plain {
+  flex: 0 1 200px;
+  min-width: 130px;
+  color: var(--color-text);
+}
+
+.pr-rule-hint {
+  flex: 1 1 200px;
+  min-width: 180px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+/* ===========================================================================
+   Panneaux dépliants (Places boursières)
+   =========================================================================== */
+
+/* mat-expansion-panel. Le composant arrive avec son propre habillage de carte — ombre portée,
+   coins arrondis, marge qui s'ajoute à l'ouverture, en-tête de 48/64px et remplissage de corps
+   de 24px : tout est neutralisé ici pour retrouver la carte plate de la maquette, la mécanique
+   d'ouverture et l'accessibilité du composant restant acquises.
+   `hideToggle` retire la flèche Material : la maquette a son propre chevron, à gauche. */
+.pr-panel {
+  --mat-expansion-container-shape: 6px;
+  --mat-expansion-container-elevation-shadow: none;
+  --mat-expansion-container-background-color: var(--surface);
+  --mat-expansion-container-text-color: var(--color-text);
+  --mat-expansion-header-collapsed-state-height: auto;
+  --mat-expansion-header-expanded-state-height: auto;
+  --mat-expansion-header-hover-state-layer-color: rgba(0, 61, 165, 0.12);
+  --mat-expansion-header-focus-state-layer-color: rgba(0, 61, 165, 0.12);
+  --mat-expansion-header-text-color: var(--ink-brand);
+  border: 1px solid var(--color-neutral-300);
+}
+
+/* Material ajoute 16px au-dessus et au-dessous d'un panneau ouvert dans un accordéon ; les
+   deux panneaux d'ici sont indépendants et portent déjà l'écart du conteneur. */
+.pr-panel.mat-expanded {
+  margin: 0;
+}
+
+.pr-panel ::ng-deep .mat-expansion-panel-body {
+  padding: 0;
+}
+
+.pr-panel-head {
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(0, 61, 165, 0.06);
+}
+
+/* L'en-tête du référentiel porte un champ de recherche et un bouton : il lui faut la largeur
+   entière, là où Material réserve un tiers au titre. */
+.pr-panel-head-rich {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pr-panel-title-wrap {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 0;
+}
+
+.pr-panel-desc-rich {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 0;
+  color: inherit;
+}
+
+.pr-panel-chevron {
+  flex: none;
+  color: var(--ink-brand);
+  transition: transform 160ms ease;
+}
+
+.pr-panel-chevron-open {
+  transform: rotate(180deg);
+}
+
+.pr-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-brand);
+}
+
+.pr-panel-desc {
+  flex: 1;
+  min-width: 180px;
+  margin-right: 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.pr-panel-body {
+  border-top: 1px solid var(--color-neutral-200);
+  animation: pr-panel 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes pr-panel {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pr-prose {
+  margin: 0;
+  padding: 14px 16px 12px;
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+  text-wrap: pretty;
+}
+
+.pr-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 220px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-neutral-600);
+}
+
+.pr-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+/* ===========================================================================
+   Codes MIC
+   =========================================================================== */
+
+.pr-mic-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 16px 14px;
+}
+
+.pr-mic-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.pr-mic-note {
+  font-weight: 400;
+  color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-mic-edits {
+  font-weight: 600;
+  color: var(--ink-brand-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-mic-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+/* Les cotes M3 d'une pastille (32px de haut, 16px de rayon) sont deux fois celles de la
+   maquette : ramenées par jetons, la géométrie du composant restant intacte.
+   L'encre du libellé passe elle aussi par un jeton, posé en ligne sur chaque pastille : le
+   libellé est peint par le gabarit de Material, qui lui donne sa propre couleur — un `color`
+   sur l'hôte ne l'atteint pas, et le code sélectionné restait gris foncé sur bleu nuit. */
+.pr-mic-set {
+  --mat-chip-container-height: 24px;
+  --mat-chip-container-shape-radius: 999px;
+  --mat-chip-label-text-size: 11px;
+  --mat-chip-with-trailing-icon-trailing-icon-size: 12px;
+  --mat-chip-trailing-action-state-layer-color: transparent;
+  min-height: 80px;
+  align-content: flex-start;
+}
+
+.pr-mic-chip {
+  border: 1px solid transparent;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.pr-mic-flag {
+  margin-right: 5px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.pr-mic-input {
+  width: 100%;
+  height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-top: 1px solid var(--color-neutral-200);
+  background: transparent;
+  color: var(--color-text);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  outline: none;
+}
+
+.pr-mic-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 16px 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink-brand-2);
+  border-radius: 6px;
+  background: rgba(0, 61, 165, 0.06);
+}
+
+.pr-mic-cards-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pr-mic-cards-head .pr-icon-btn {
+  margin-left: auto;
+}
+
+.pr-mic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.pr-mic-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pr-mic-card-name {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-wrap: pretty;
+}
+
+.pr-mic-type {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pr-mic-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 14px;
+}
+
+.pr-mic-field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pr-mic-field-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.pr-mic-field-value {
+  font-size: 12px;
+  color: var(--color-text);
+  text-wrap: pretty;
+}
+
+/* ===========================================================================
+   Cellules empilées du référentiel des places
+   =========================================================================== */
+
+.pr-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pr-stack-start {
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.pr-stack-line {
+  font-size: 11px;
+  color: var(--color-neutral-800, var(--color-text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-index-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(124, 92, 191, 0.16);
+  color: var(--ink-alt);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pr-cur-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pr-cur-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: rgba(15, 118, 110, 0.14);
+  color: var(--ink-ok);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ===========================================================================
+   Boutons d'icône
+   =========================================================================== */
+
+.pr-icon-btn {
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-icon-size: 14px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-brand);
+}
+
+.pr-icon-btn:hover {
+  background: rgba(0, 61, 165, 0.09);
+}
+
+/* Le bouton de fermeture d'une fiche flotte sur le fond bleuté du bloc : la bordure l'y
+   ferait ressortir comme une commande à part entière, qu'il n'est pas. */
+.pr-icon-btn-flat {
+  --mat-icon-button-state-layer-size: 22px;
+  --mat-icon-button-icon-size: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+
+/* ===========================================================================
+   Thème sombre
+   =========================================================================== */
+
+:host-context([data-theme='dark']) {
+  --ink-ok: #5fd6c4;
+  --ink-alt: #c4b5fd;
+  --ink-info: #8ecae6;
+}
+
+/* ===========================================================================
+   Barème fiscal : un panneau par continent
+   =========================================================================== */
+
+/* Les panneaux s'empilent à l'intérieur de la carte « Taux par pays de source » : ils n'ont
+   donc ni bordure ni coins propres, seulement le filet qui les sépare les uns des autres. */
+.pr-tax-panel {
+  border: 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+  border-radius: 0;
+}
+
+.pr-tax-panel:last-of-type {
+  border-bottom: 0;
+}
+
+/* Le bandeau reprend le bleu des anciens sous-en-têtes de continent, plus soutenu que celui
+   d'un en-tête de carte : c'est lui qui découpe la liste. */
+.pr-tax-panel-head {
+  padding: 0 16px;
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.pr-tax-panel .mat-expansion-panel-header {
+  height: 32px;
+}
+
+/* Le décompte est poussé contre le bord droit, comme il l'était dans le sous-en-tête. */
+.pr-panel-desc-count {
+  flex: 1;
+  justify-content: flex-end;
+  margin-right: 0;
+}
+
+/* ===========================================================================
+   Gestion des rôles
+   =========================================================================== */
+
+.pr-role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.pr-role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 13px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.pr-role-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pr-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pr-role-lock {
+  flex: none;
+  color: var(--color-neutral-600);
+}
+
+.pr-role-users {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-role-hint {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.pr-role-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pr-role-stat {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800, var(--color-text));
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-role-stat-ok {
+  background: rgba(15, 118, 110, 0.16);
+  color: var(--ink-ok);
+}
+
+/* Matrice : écrans en lignes, rôles en colonnes. Tableau natif et non `mat-table` — les
+   colonnes y sont engendrées par une boucle sur les rôles, là où `matColumnDef` exige une
+   définition écrite pour chacune. */
+.pr-table-perm {
+  min-width: 760px;
+  table-layout: fixed;
+}
+
+.pr-col-area { width: 210px; }
+.pr-col-role { width: 108px; }
+
+.pr-area-icon {
+  flex: none;
+  color: var(--color-neutral-600);
+}
+
+/* Le déclencheur se réduit à la pastille : ni bordure ni fond, la couleur du degré porte à
+   elle seule l'information. Le liseré n'apparaît que sur un droit retouché. */
+.pr-perm-select {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.pr-perm-select-edited {
+  border-color: var(--ink-brand-2);
+}
+
+.pr-perm-chip {
+  --mat-chip-container-height: 18px;
+  --mat-chip-container-shape-radius: 4px;
+  --mat-chip-label-text-size: 10px;
+  pointer-events: none;
+  font-weight: 700;
+}
+
+.pr-perm-chip ::ng-deep .mdc-evolution-chip__action--primary {
+  padding: 0 8px;
+}
+
+/* Une pastille verrouillée n'a pas de sélecteur autour d'elle : elle reprend la hauteur du
+   déclencheur pour que la ligne ne se tasse pas. */
+.pr-perm-chip-locked {
+  opacity: 0.75;
+}
+
+.pr-perm-option {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pr-perm-option-hint {
+  margin-left: 8px;
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+/* Utilisateurs */
+.pr-table-users {
+  min-width: 760px;
+  table-layout: fixed;
+}
+
+.pr-col-user { width: 280px; }
+.pr-col-userrole { width: 180px; }
+.pr-col-userstatus { width: 110px; }
+.pr-col-userseen { width: 190px; }
+
+.pr-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pr-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.14);
+  color: var(--ink-brand);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.pr-user-ids {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pr-user-name {
+  font-size: 12px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-user-mail {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pr-role-select {
+  height: 24px;
+}
+
+.pr-status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Statut du titulaire : icône devant le libellé, dans la liste comme dans le déclencheur.
+   `.mdc-list-item__primary-text`, où Material projette le contenu d'une option, n'est pas un
+   conteneur flexible — sans cette mise en ligne, l'icône se pose sur la ligne de base du texte
+   et déborde vers le bas (même correction que les items d'Affichage, dans tx-select.css). */
+.pr-status-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pr-status-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+  line-height: 14px;
+  color: var(--color-neutral-600);
+}

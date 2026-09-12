@@ -1,0 +1,592 @@
+<div class="pf-page">
+  <div class="pf-head">
+    <div class="pf-head-row">
+      <div class="pf-titles">
+        <h1>Analyse de la performance</h1>
+        <p>{{ subtitle }}</p>
+      </div>
+      <span class="pf-head-tools">
+        <span class="pf-scope pm-sel">
+          <mat-select class="pm-sel-trigger" [panelWidth]="null" panelClass="pm-sel-panel"
+            [value]="scope()" (valueChange)="scope.set($event)" matTooltip="Périmètre analysé">
+            @for (o of scopeOptions; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </span>
+        <mat-button-toggle-group class="pf-period" hideSingleSelectionIndicator aria-label="Période"
+          [value]="period()" (change)="period.set($event.value)">
+          @for (p of periodOptions(); track p.key) {
+            <mat-button-toggle [value]="p.key">{{ p.label }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </span>
+    </div>
+
+    <nav mat-tab-nav-bar class="pf-tabs pm-tabnav" [tabPanel]="pfTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      @for (t of pageTabs(); track t.key) {
+        <button type="button" mat-tab-link class="pf-tab" [active]="t.on" (click)="setTab(t.key)"
+          [style.height]="t.height" [style.padding]="t.padding" [style.background]="t.bg"
+          [style.color]="t.fg" [style.font-size]="t.size" [style.font-weight]="t.weight">
+          <mat-icon [svgIcon]="t.icon" style="font-size:16px"></mat-icon>
+          {{ t.label }}
+        </button>
+      }
+    </nav>
+  </div>
+
+  <mat-tab-nav-panel #pfTabPanel>
+
+  @if (showKpis()) {
+    <div class="pf-kpi-grid">
+      @for (k of kpis(); track k.label) {
+        <div class="pf-kpi" [style.background]="k.bg">
+          <div class="pf-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+          <div class="pf-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+          <div class="pf-kpi-note">{{ k.note }}</div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ------------------------------------------------------------- Vue d'ensemble -->
+  @if (tab() === 'overview') {
+    <div class="pf-body">
+      <div class="pf-card">
+        <div class="pf-card-head pf-card-head-dark">
+          <mat-icon svgIcon="chart-line" style="font-size:17px;color:#ffffff"></mat-icon>
+          <h2>Performance cumulée</h2>
+          <span class="pf-card-note">{{ chart().note }}</span>
+        </div>
+        <div class="pf-chart-body">
+          <svg viewBox="0 0 720 240" preserveAspectRatio="none" role="img"
+            aria-label="Performance cumulée du portefeuille contre son indice de référence" class="pf-chart">
+            @for (g of gridLines; track g.y) {
+              <line x1="0" [attr.y1]="g.y" x2="720" [attr.y2]="g.y" stroke="var(--color-neutral-300)" stroke-width="1"></line>
+            }
+            <line x1="0" [attr.y1]="chart().zeroY" x2="720" [attr.y2]="chart().zeroY"
+              stroke="var(--color-neutral-600)" stroke-width="1.5" stroke-dasharray="4 3"></line>
+            <path [attr.d]="chart().benchArea" fill="rgba(91,62,168,0.10)"></path>
+            <path [attr.d]="chart().benchPath" fill="none" stroke="var(--ink-alt)" stroke-width="2"
+              stroke-linejoin="round" stroke-dasharray="5 4"></path>
+            <path [attr.d]="chart().portArea" fill="rgba(0,61,165,0.12)"></path>
+            <path [attr.d]="chart().portPath" fill="none" stroke="var(--ink-brand-2)" stroke-width="2.6"
+              stroke-linejoin="round"></path>
+          </svg>
+          <span class="pf-ticks">
+            @for (tk of ticks(); track $index) {
+              <span class="pf-tick" [style.text-align]="tk.align">{{ tk.label }}</span>
+            }
+          </span>
+        </div>
+        <div class="pf-card-foot">
+          @for (l of chartLegend(); track l.label) {
+            <span class="pf-legend">
+              <span class="pf-legend-line" [style.background]="l.color"></span>
+              {{ l.label }}
+              <span class="pf-legend-value" [style.color]="l.valueColor">{{ l.value }}</span>
+            </span>
+          }
+          <span class="pf-foot-note">{{ chart().footnote }}</span>
+        </div>
+      </div>
+
+      <div class="pf-split pf-split-wide">
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <h2>Performance par période</h2>
+            <span class="pf-card-note">Net de frais</span>
+          </div>
+          <div class="pf-table-scroll">
+            <table mat-table [dataSource]="periodRows()" class="pf-table pf-table-period">
+              <ng-container matColumnDef="period">
+                <th mat-header-cell *matHeaderCellDef class="pf-col-period">Période</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-strong">{{ r.label }}</td>
+              </ng-container>
+              <ng-container matColumnDef="port">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num">Portefeuille</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num pf-td-strong" [style.color]="r.portColor">{{ r.port }}</td>
+              </ng-container>
+              <ng-container matColumnDef="bench">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num">Référence</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num pf-td-muted">{{ r.bench }}</td>
+              </ng-container>
+              <ng-container matColumnDef="delta">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num">Écart</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num pf-td-strong" [style.color]="r.deltaColor">{{ r.delta }}</td>
+              </ng-container>
+              <ng-container matColumnDef="contrib">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-contrib">Contribution</th>
+                <td mat-cell *matCellDef="let r" class="pf-col-contrib">
+                  <span class="pf-bar-row">
+                    <span class="pf-bar-track">
+                      <span class="pf-bar-fill" [style.width]="r.barWidth" [style.background]="r.barColor"></span>
+                    </span>
+                    <span class="pf-bar-value">{{ r.contrib }}</span>
+                  </span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="periodColumns" class="pf-header-row"></tr>
+              <tr mat-row *matRowDef="let r; columns: periodColumns" [style.background]="r.bg"></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <h2>Mesures de performance</h2>
+          </div>
+          @for (m of measures; track m.label) {
+            <div class="pf-measure">
+              <span class="pf-measure-label" [matTooltip]="m.hint">{{ m.label }}</span>
+              <span class="pf-measure-value" [style.color]="m.color">{{ m.value }}</span>
+            </div>
+          }
+          <p class="pf-card-text">Les rendements passés ne préjugent pas des rendements futurs.</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ------------------------------------------------------------- Analyse détaillée -->
+  @if (tab() === 'detail') {
+    <div class="pf-body">
+      <p class="pf-intro">Le détail mois par mois puis ligne à ligne : ce qui a produit la performance, avec le poids et le risque porté par chaque position.</p>
+
+      <div class="pf-card">
+        <div class="pf-card-head pf-card-head-dark">
+          <mat-icon svgIcon="chart-bar" style="font-size:17px;color:#ffffff"></mat-icon>
+          <h2>{{ freqTitle() }}</h2>
+          <mat-button-toggle-group class="pf-freq" hideSingleSelectionIndicator aria-label="Fréquence d'observation"
+            [value]="freq()" (change)="freq.set($event.value)">
+            @for (f of freqModes; track f.key) {
+              <mat-button-toggle [value]="f.key" [matTooltip]="f.hint">{{ f.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+          <span class="pf-card-note">{{ monthlyNote() }}</span>
+        </div>
+        <div class="pf-bars">
+          @for (m of monthly(); track m.label) {
+            <span class="pf-bar-col">
+              <span class="pf-bar-col-value" [style.color]="m.color">{{ m.value }}</span>
+              <span class="pf-bar-col-box" [style.justify-content]="m.justify">
+                <span class="pf-bar-pair" [style.align-items]="m.align" [style.height]="m.height">
+                  <span class="pf-bar-port" [style.background]="m.barColor"></span>
+                  <span class="pf-bar-bench" [style.height]="m.benchHeight"></span>
+                </span>
+              </span>
+              <span class="pf-bar-col-label">{{ m.label }}</span>
+            </span>
+          }
+        </div>
+        <div class="pf-card-foot">
+          <span class="pf-legend"><span class="pf-legend-chip pf-legend-chip-ok"></span>Portefeuille</span>
+          <span class="pf-legend"><span class="pf-legend-chip pf-legend-chip-bench"></span>Référence</span>
+          <span class="pf-foot-note">{{ monthlyFootnote() }}</span>
+        </div>
+      </div>
+
+      <div class="pf-card">
+        <div class="pf-card-head">
+          <h2>Détail par ligne</h2>
+          <mat-button-toggle-group class="pf-sort" hideSingleSelectionIndicator aria-label="Tri"
+            [value]="sortBy()" (change)="sortBy.set($event.value)">
+            @for (s of sortModes; track s.key) {
+              <mat-button-toggle [value]="s.key">{{ s.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+          <span class="pf-card-note">{{ holdingsNote }}</span>
+        </div>
+        <div class="pf-table-scroll">
+          <table mat-table [dataSource]="holdings()" class="pf-table pf-table-holdings">
+            <ng-container matColumnDef="ticker">
+              <th mat-header-cell *matHeaderCellDef class="pf-col-ticker">Ticker</th>
+              <td mat-cell *matCellDef="let h"><span class="pf-ticker">{{ h.ticker }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Ligne</th>
+              <td mat-cell *matCellDef="let h" class="pf-td-ellipsis">{{ h.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="cls">
+              <th mat-header-cell *matHeaderCellDef class="pf-col-cls">Classe</th>
+              <td mat-cell *matCellDef="let h">
+                <span class="pf-cls" [style.background]="h.clsBg" [style.color]="h.clsFg">{{ h.cls }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="weight">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-num">Poids</th>
+              <td mat-cell *matCellDef="let h" class="pf-td-num pf-td-muted">{{ h.weight }}</td>
+            </ng-container>
+            <ng-container matColumnDef="perf">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-perf">Performance</th>
+              <td mat-cell *matCellDef="let h" class="pf-td-num pf-td-strong" [style.color]="h.perfColor">{{ h.perf }}</td>
+            </ng-container>
+            <ng-container matColumnDef="contrib">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-contrib">Contribution</th>
+              <td mat-cell *matCellDef="let h" class="pf-col-contrib">
+                <span class="pf-bar-row">
+                  <span class="pf-bar-signed" [style.justify-content]="h.justify">
+                    <span class="pf-bar-signed-fill" [style.width]="h.barWidth" [style.background]="h.barColor"></span>
+                  </span>
+                  <span class="pf-bar-value pf-bar-value-wide" [style.color]="h.contribColor">{{ h.contrib }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="vol">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-num">Volatilité</th>
+              <td mat-cell *matCellDef="let h" class="pf-td-num pf-td-muted">{{ h.vol }}</td>
+            </ng-container>
+            <ng-container matColumnDef="beta">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-beta">Bêta</th>
+              <td mat-cell *matCellDef="let h" class="pf-td-num pf-td-muted">{{ h.beta }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="holdingsColumns" class="pf-header-row"></tr>
+            <tr mat-row *matRowDef="let h; columns: holdingsColumns" [style.background]="h.bg"></tr>
+          </table>
+          <table class="pf-table pf-table-holdings pf-total-table">
+            <tr class="pf-total-row">
+              <td colspan="3" class="pf-total-label pf-col-ticker">Total portefeuille</td>
+              <td class="pf-td-num pf-col-num">{{ holdingsTotals.weight }}</td>
+              <td class="pf-td-num pf-col-perf" [style.color]="holdingsTotals.perfColor">{{ holdingsTotals.perf }}</td>
+              <td class="pf-td-num pf-col-contrib" [style.color]="holdingsTotals.contribColor">{{ holdingsTotals.contrib }}</td>
+              <td class="pf-td-num pf-col-num">{{ holdingsTotals.vol }}</td>
+              <td class="pf-td-num pf-col-beta">{{ holdingsTotals.beta }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ------------------------------------------------------------- Attribution -->
+  @if (tab() === 'attrib') {
+    <div class="pf-body">
+      <p class="pf-intro">L'écart avec la référence se décompose en effet d'allocation — le poids donné à chaque poche — et en effet de sélection — le choix des titres à l'intérieur de la poche.</p>
+
+      @for (b of attribBlocks; track b.title) {
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <h2>{{ b.title }}</h2>
+            <span class="pf-card-note">{{ b.note }}</span>
+          </div>
+          <div class="pf-table-scroll">
+            <table mat-table [dataSource]="b.rows" class="pf-table pf-table-attrib">
+              <ng-container matColumnDef="label">
+                <th mat-header-cell *matHeaderCellDef>{{ b.dimension }}</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-ellipsis">{{ r.label }}</td>
+              </ng-container>
+              <ng-container matColumnDef="weight">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-perf">Poids</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num pf-td-muted">{{ r.weight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="benchWeight">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-perf">Réf.</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num pf-td-dim">{{ r.benchWeight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="alloc">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-attrib">Allocation</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num" [style.color]="r.allocColor">{{ r.alloc }}</td>
+              </ng-container>
+              <ng-container matColumnDef="sel">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-attrib">Sélection</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num" [style.color]="r.selColor">{{ r.sel }}</td>
+              </ng-container>
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-attrib">Total</th>
+                <td mat-cell *matCellDef="let r" class="pf-td-num pf-td-strong" [style.color]="r.totalColor">{{ r.total }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="attribColumns" class="pf-header-row"></tr>
+              <tr mat-row *matRowDef="let r; columns: attribColumns" [style.background]="r.bg"></tr>
+            </table>
+            <table class="pf-table pf-table-attrib pf-total-table">
+              <tr class="pf-total-row">
+                <td class="pf-total-label">Total</td>
+                <td class="pf-td-num pf-col-perf">{{ b.totalWeight }}</td>
+                <td class="pf-td-num pf-col-perf pf-td-dim">{{ b.totalBench }}</td>
+                <td class="pf-td-num pf-col-attrib" [style.color]="b.allocColor">{{ b.totalAlloc }}</td>
+                <td class="pf-td-num pf-col-attrib" [style.color]="b.selColor">{{ b.totalSel }}</td>
+                <td class="pf-td-num pf-col-attrib" [style.color]="b.totalColor">{{ b.total }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      }
+
+      <div class="pf-card">
+        <div class="pf-card-head">
+          <h2>Principaux contributeurs</h2>
+          <span class="pf-card-note">{{ contribNote }}</span>
+        </div>
+        @for (c of contributors; track c.ticker) {
+          <div class="pf-contrib-row">
+            <span class="pf-ticker">{{ c.ticker }}</span>
+            <span class="pf-contrib-name">{{ c.name }}</span>
+            <span class="pf-contrib-bar">
+              <span class="pf-bar-signed" [style.justify-content]="c.justify">
+                <span class="pf-bar-signed-fill" [style.width]="c.barWidth" [style.background]="c.barColor"></span>
+              </span>
+            </span>
+            <span class="pf-contrib-value" [style.color]="c.color">{{ c.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ------------------------------------------------------------- Risque et pertes -->
+  @if (tab() === 'risk') {
+    <div class="pf-body">
+      <p class="pf-intro">La performance ne se lit qu'au regard du risque pris pour l'obtenir : volatilité, pertes maximales et rendement par unité de risque.</p>
+
+      <div class="pf-split">
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <h2>Indicateurs de risque</h2>
+          </div>
+          @for (r of riskRows; track r.label) {
+            <div class="pf-measure">
+              <span class="pf-measure-label" [matTooltip]="r.hint">{{ r.label }}</span>
+              <span class="pf-measure-bench">réf. {{ r.bench }}</span>
+              <span class="pf-measure-value pf-measure-value-fixed" [style.color]="r.color">{{ r.value }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <h2>Périodes de perte</h2>
+            <span class="pf-card-note">{{ drawdownNote }}</span>
+          </div>
+          @for (d of drawdowns; track d.label) {
+            <div class="pf-dd">
+              <span class="pf-dd-head">
+                <span class="pf-dd-label">{{ d.label }}</span>
+                <span class="pf-dd-depth">{{ d.depth }}</span>
+              </span>
+              <span class="pf-bar-track">
+                <span class="pf-bar-fill pf-bar-fill-warn" [style.width]="d.barWidth"></span>
+              </span>
+              <span class="pf-dd-detail">{{ d.detail }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="pf-card">
+        <div class="pf-card-head">
+          <h2>Rendement par année civile</h2>
+        </div>
+        <div class="pf-year-bars">
+          @for (y of years; track y.label) {
+            <span class="pf-year-col">
+              <span class="pf-year-value" [style.color]="y.color">{{ y.value }}</span>
+              <span class="pf-year-box" [style.justify-content]="y.justify">
+                <span class="pf-year-bar" [style.height]="y.height" [style.background]="y.barColor"></span>
+              </span>
+              <span class="pf-year-label">{{ y.label }}</span>
+              <span class="pf-year-bench">réf. {{ y.bench }}</span>
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ------------------------------------------------------------- Historique détaillé -->
+  @if (tab() === 'history') {
+    <div class="pf-body">
+      <p class="pf-intro">Le résultat cumulé décomposé par nature : plus-values réalisées, dividendes encaissés, frais et taxes. Chaque zone de la barre ouvre son détail ligne à ligne.</p>
+
+      <div class="pf-split pf-split-narrow">
+        <div class="pf-card">
+          <div class="pf-card-head pf-card-head-dark">
+            <mat-icon svgIcon="pie-split" style="font-size:17px;color:#ffffff"></mat-icon>
+            <h2>Composition du résultat</h2>
+          </div>
+          <div class="pf-bands">
+            <span class="pf-net">
+              <span class="pf-net-label">Résultat net cumulé</span>
+              <span class="pf-net-value" [style.color]="netColor">{{ netTotal }}</span>
+            </span>
+            <span class="pf-band-strip">
+              @for (b of bands(); track b.key) {
+                <button type="button" class="pf-band-seg" [style.width]="b.width" [style.background]="b.color"
+                  [style.opacity]="b.opacity" [attr.aria-pressed]="b.on" [matTooltip]="b.hint"
+                  (click)="band.set(b.key)"></button>
+              }
+            </span>
+            @for (b of bands(); track b.key) {
+              <button type="button" class="pf-band-row" [style.border-color]="b.border" [style.background]="b.rowBg"
+                [attr.aria-pressed]="b.on" (click)="band.set(b.key)">
+                <span class="pf-band-dot" [style.background]="b.color"></span>
+                <span class="pf-band-label" [style.font-weight]="b.weight">{{ b.label }}</span>
+                <span class="pf-band-share">{{ b.share }}</span>
+                <span class="pf-band-value" [style.color]="b.valueColor">{{ b.value }}</span>
+              </button>
+            }
+            <span class="pf-card-text pf-card-text-flat">Parts calculées sur la somme des flux en valeur absolue, montants en milliers d'euros.</span>
+          </div>
+        </div>
+
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <span class="pf-band-dot" [style.background]="detail().color"></span>
+            <h2>{{ detail().title }}</h2>
+            <span class="pf-card-note">{{ detail().note }}</span>
+          </div>
+          <div class="pf-table-scroll">
+            <table mat-table [dataSource]="detail().rows" class="pf-table pf-table-detail">
+              @for (c of detail().cols; track $index; let i = $index) {
+                <ng-container [matColumnDef]="detailColumns[i]">
+                  <th mat-header-cell *matHeaderCellDef [style.width]="c.width" [style.text-align]="c.align" [style.padding]="c.pad">{{ c.label }}</th>
+                  <td mat-cell *matCellDef="let r" [style.text-align]="c.align" [style.padding]="c.pad"
+                    [class.pf-td-num]="c.align === 'right'" [class.pf-td-ellipsis]="i === 0"
+                    [class.pf-td-strong]="i === detailColumns.length - 1"
+                    [style.color]="i === detailColumns.length - 1 ? r.color : null">{{ r[detailColumns[i]] }}</td>
+                </ng-container>
+              }
+              <tr mat-header-row *matHeaderRowDef="detailColumns" class="pf-header-row"></tr>
+              <tr mat-row *matRowDef="let r; columns: detailColumns" [style.background]="r.bg"></tr>
+            </table>
+            <table class="pf-table pf-table-detail pf-total-table">
+              <tr class="pf-total-row">
+                <td colspan="5" class="pf-total-label">{{ detail().totalLabel }}</td>
+                <td class="pf-td-num" [style.color]="detail().totalColor">{{ detail().total }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-card">
+        <div class="pf-card-head">
+          <h2>Résultat par année civile</h2>
+          <span class="pf-fill-ctl">
+            <span class="pf-fill-label">Opacité</span>
+            <mat-slider class="pf-slider" min="20" max="100" step="5" discrete>
+              <input matSliderThumb [value]="fill()" (valueChange)="fill.set($event)"
+                matTooltip="Opacité du remplissage des barres" aria-label="Opacité du remplissage des barres" />
+            </mat-slider>
+            <span class="pf-fill-value">{{ fillLabel() }}</span>
+          </span>
+          <span class="pf-card-note">{{ yearsNote }}</span>
+        </div>
+
+        <div class="pf-year-chart-scroll">
+          <div class="pf-year-chart">
+            <div class="pf-half">
+              <span aria-hidden="true" class="pf-levels">
+                @for (lv of chartLevels; track $index) {
+                  <span class="pf-level"><span class="pf-level-label">{{ lv.label }}</span></span>
+                }
+              </span>
+              <div class="pf-stack-row pf-stack-up">
+                @for (y of resultYears(); track y.year) {
+                  <span class="pf-stack">
+                    @for (u of y.up; track $index) {
+                      <span class="pf-seg pf-seg-up" [matTooltip]="u.hint" [style.height]="u.height"
+                        [style.background]="u.color" [style.border-color]="u.border"
+                        [style.border-width]="u.weight" [style.opacity]="u.opacity"></span>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="pf-axis"></div>
+            <div class="pf-half">
+              <span aria-hidden="true" class="pf-levels">
+                @for (lv of chartLevelsDown; track $index) {
+                  <span class="pf-level"><span class="pf-level-label">{{ lv.label }}</span></span>
+                }
+              </span>
+              <div class="pf-stack-row pf-stack-down">
+                @for (y of resultYears(); track y.year) {
+                  <span class="pf-stack pf-stack-top">
+                    @for (d of y.down; track $index) {
+                      <span class="pf-seg pf-seg-down" [matTooltip]="d.hint" [style.height]="d.height"
+                        [style.background]="d.color" [style.border-color]="d.border"
+                        [style.border-width]="d.weight" [style.opacity]="d.opacity"></span>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pf-year-axis-scroll">
+          <div class="pf-year-axis">
+            @for (y of resultYears(); track y.year) {
+              <button type="button" class="pf-year-btn" [style.background]="y.labelBg" [attr.aria-pressed]="y.on"
+                (click)="toggleYear(y.year)">
+                <span class="pf-year-net" [style.color]="y.netColor" [style.opacity]="y.labelOpacity">{{ y.net }}</span>
+                <span class="pf-year-tag" [style.font-weight]="y.labelWeight" [style.opacity]="y.labelOpacity">{{ y.year }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="pf-card-foot">
+          @for (l of yearsLegend; track l.label) {
+            <span class="pf-legend">
+              <span class="pf-legend-chip" [style.background]="l.color"></span>
+              {{ l.label }}
+              <span class="pf-legend-value" [style.color]="l.valueColor">{{ l.value }}</span>
+            </span>
+          }
+          <span class="pf-foot-note">Apports au résultat au-dessus de l'axe, prélèvements en dessous.</span>
+        </div>
+
+        <div class="pf-table-scroll pf-table-scroll-top">
+          <table mat-table [dataSource]="yearRows()" class="pf-table pf-table-years">
+            <ng-container matColumnDef="year">
+              <th mat-header-cell *matHeaderCellDef class="pf-col-ticker">Année</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num-left" [style.border-left-color]="y.mark"
+                [style.font-weight]="y.weight">{{ y.year }}</td>
+            </ng-container>
+            <ng-container matColumnDef="gain">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num">Plus-values</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num" [style.color]="y.gainColor">{{ y.gain }}</td>
+            </ng-container>
+            <ng-container matColumnDef="loss">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num">Moins-values</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num" [style.color]="y.lossColor">{{ y.loss }}</td>
+            </ng-container>
+            <ng-container matColumnDef="div">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num">Dividendes</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num" [style.color]="y.divColor">{{ y.div }}</td>
+            </ng-container>
+            <ng-container matColumnDef="fees">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num">Frais</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num" [style.color]="y.feesColor">{{ y.fees }}</td>
+            </ng-container>
+            <ng-container matColumnDef="tax">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num">Taxes</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num" [style.color]="y.taxColor">{{ y.tax }}</td>
+            </ng-container>
+            <ng-container matColumnDef="net">
+              <th mat-header-cell *matHeaderCellDef class="pf-td-num pf-col-net">Résultat net</th>
+              <td mat-cell *matCellDef="let y" class="pf-td-num pf-td-strong" [style.color]="y.netColor">{{ y.net }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="yearColumns" class="pf-header-row"></tr>
+            <tr mat-row *matRowDef="let y; columns: yearColumns" class="pf-year-row" [style.background]="y.bg"
+              [attr.aria-selected]="y.on" [matTooltip]="y.hint" (click)="toggleYear(y.year)"></tr>
+          </table>
+          <table class="pf-table pf-table-years pf-total-table">
+            <tr class="pf-total-row">
+              <td class="pf-total-label pf-col-ticker">Cumul</td>
+              <td class="pf-td-num" [style.color]="sums.gainColor">{{ sums.gain }}</td>
+              <td class="pf-td-num" [style.color]="sums.lossColor">{{ sums.loss }}</td>
+              <td class="pf-td-num" [style.color]="sums.divColor">{{ sums.div }}</td>
+              <td class="pf-td-num" [style.color]="sums.feesColor">{{ sums.fees }}</td>
+              <td class="pf-td-num" [style.color]="sums.taxColor">{{ sums.tax }}</td>
+              <td class="pf-td-num pf-col-net" [style.color]="sums.netColor">{{ sums.net }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  </mat-tab-nav-panel>
+</div>

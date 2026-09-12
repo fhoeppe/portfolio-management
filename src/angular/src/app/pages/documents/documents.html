@@ -1,0 +1,664 @@
+<div class="dc-page">
+  <div class="dc-head">
+    <div class="dc-head-row">
+      <div class="dc-head-titles">
+        <h1 class="dc-h1">GESTION DOCUMENTAIRE</h1>
+        <p class="dc-subtitle">{{ subtitle() }}</p>
+      </div>
+      <span class="dc-head-stat">{{ headerStat() }}</span>
+    </div>
+
+    <nav mat-tab-nav-bar class="dc-tabs-row pm-tabnav" [tabPanel]="dcTabPanel" [mat-stretch-tabs]="false" disableRipple>
+      @for (t of pageTabs(); track t.key) {
+        <button type="button" mat-tab-link class="dc-page-tab" [active]="tab() === t.key"
+          [class.dc-page-tab-active]="tab() === t.key" (click)="setTab(t.key)">
+          <mat-icon [svgIcon]="t.icon" style="font-size:15px"></mat-icon>
+          {{ t.label }}
+          @if (t.badge) {
+            <span class="dc-tab-badge">{{ t.badge }}</span>
+          }
+        </button>
+      }
+    </nav>
+  </div>
+
+  <mat-tab-nav-panel #dcTabPanel class="dc-body">
+
+    <!-- ───────────────────────────── Bibliothèque ───────────────────────────── -->
+    @if (tab() === 'library') {
+      <section class="dc-card">
+        <header class="dc-toolbar">
+          <span class="dc-search">
+            <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+            <input class="dc-search-input" placeholder="Rechercher un document"
+              [value]="query()" (input)="query.set($any($event.target).value)" />
+          </span>
+
+          <mat-select class="pm-sel-trigger dc-filter" [panelWidth]="null" panelClass="pm-sel-panel"
+            [value]="filterType()" (valueChange)="filterType.set($event)">
+            <mat-option value="all">Toutes les natures</mat-option>
+            @for (o of typeOptions; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+
+          <mat-select class="pm-sel-trigger dc-filter" [panelWidth]="null" panelClass="pm-sel-panel"
+            [value]="filterState()" (valueChange)="filterState.set($event)">
+            @for (o of stateFilterOptions; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+
+          <button type="button" matButton="filled" class="dc-primary-btn dc-toolbar-push" (click)="goCapture()">
+            <mat-icon svgIcon="plus" style="font-size:14px"></mat-icon>
+            Nouveau document
+          </button>
+        </header>
+
+        <div class="dc-table-scroll">
+          <table mat-table [dataSource]="rows()" class="dc-table dc-table-library">
+            <ng-container matColumnDef="doc">
+              <th mat-header-cell *matHeaderCellDef class="dc-th">Document</th>
+              <td mat-cell *matCellDef="let d" class="dc-td">
+                <span class="dc-doc">
+                  <span class="dc-ext">{{ d.ext }}</span>
+                  <span class="dc-doc-ids">
+                    <span class="dc-doc-name">{{ d.name }}</span>
+                    <span class="dc-doc-meta">{{ d.meta }}</span>
+                  </span>
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef class="dc-th">Type</th>
+              <td mat-cell *matCellDef="let d" class="dc-td dc-td-muted">{{ d.type }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="folder">
+              <th mat-header-cell *matHeaderCellDef class="dc-th dc-col-folder">Dossier</th>
+              <td mat-cell *matCellDef="let d" class="dc-td dc-td-muted">{{ d.folder }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="version">
+              <th mat-header-cell *matHeaderCellDef class="dc-th dc-col-version">Version</th>
+              <td mat-cell *matCellDef="let d" class="dc-td">
+                <span class="dc-version">
+                  <span class="dc-version-tag">{{ d.version }}</span>
+                  <span class="dc-version-meta">{{ d.versionMeta }}</span>
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef class="dc-th dc-col-state">État</th>
+              <td mat-cell *matCellDef="let d" class="dc-td">
+                <span class="dc-state" [style.background]="d.stateBg" [style.color]="d.stateFg">
+                  <span class="dc-state-dot" [style.background]="d.stateFg"></span>
+                  {{ d.stateLabel }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="dc-th dc-col-actions"></th>
+              <td mat-cell *matCellDef="let d" class="dc-td dc-td-actions">
+                <button type="button" matButton="outlined" class="dc-row-btn" (click)="newVersionOf(d.id)">
+                  <mat-icon svgIcon="plus" style="font-size:12px"></mat-icon>
+                  Nouvelle version
+                </button>
+                <button type="button" matButton="outlined" class="dc-row-btn" (click)="openReview(d.id)">
+                  <mat-icon svgIcon="list-dots" style="font-size:12px"></mat-icon>
+                  Métadonnées
+                </button>
+                <button type="button" matIconButton class="dc-icon-btn dc-icon-btn-danger" matTooltip="Supprimer" (click)="removeDoc(d.id)">
+                  <mat-icon svgIcon="close" style="font-size:12px"></mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="libraryColumns" class="dc-header-row"></tr>
+            <tr mat-row *matRowDef="let d; columns: libraryColumns" class="dc-row"></tr>
+          </table>
+        </div>
+
+        @if (!rows().length) {
+          <p class="dc-empty">Aucun document ne correspond aux critères.</p>
+        }
+      </section>
+    }
+
+    <!-- ───────────────────────────── Nouveau document ───────────────────────────── -->
+    @if (tab() === 'capture') {
+      <section class="dc-card">
+        <div class="dc-stepper">
+          @for (s of steps(); track s.index) {
+            <div class="dc-step">
+              <button type="button" class="dc-step-btn" [disabled]="s.disabled" (click)="goToStep(s.index)">
+                <span class="dc-step-badge" [style.background]="s.badgeBg" [style.color]="s.badgeFg">
+                  @if (s.done) {
+                    <mat-icon svgIcon="check" style="font-size:15px"></mat-icon>
+                  } @else {
+                    {{ s.badge }}
+                  }
+                </span>
+                <span class="dc-step-texts">
+                  <span class="dc-step-title" [style.color]="s.fg" [style.font-weight]="s.weight">{{ s.title }}</span>
+                  <span class="dc-step-hint">{{ s.hint }}</span>
+                </span>
+              </button>
+              @if (s.hasLine) {
+                <span class="dc-step-line"></span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="dc-step-body">
+
+          <!-- Étape 1 — Fichier -->
+          @if (stepKey() === 'file') {
+            <div class="dc-stack">
+              <div class="dc-field-block">
+                <span class="dc-field-label">Mode de saisie</span>
+                <mat-button-toggle-group class="dc-mode-group" hideSingleSelectionIndicator
+                  [value]="draft().mode" (change)="setMode($event.value)">
+                  <mat-button-toggle value="file">Dépôt de fichier</mat-button-toggle>
+                  <mat-button-toggle value="manual">Saisie manuelle</mat-button-toggle>
+                </mat-button-toggle-group>
+                <span class="dc-field-hint">{{ modeHint() }}</span>
+              </div>
+
+              @if (draft().mode === 'file') {
+                <div class="dc-dropzone">
+                  <mat-icon svgIcon="export" style="font-size:22px" class="dc-dropzone-icon"></mat-icon>
+                  <span class="dc-dropzone-texts">
+                    <span class="dc-dropzone-title">Déposer un fichier</span>
+                    <span class="dc-dropzone-hint">PDF, DOCX, XLSX ou image — 25 Mo maximum.</span>
+                  </span>
+                  <button type="button" matButton="outlined" class="dc-row-btn dc-dropzone-btn" (click)="pickFile()">Parcourir</button>
+                </div>
+
+                <div class="dc-grid2">
+                  <label class="dc-field">
+                    {{ fileFieldLabel() }}
+                    <input class="dc-input" placeholder="convention-mandat-bgm-004.pdf"
+                      [value]="draft().file" (input)="patch({ file: $any($event.target).value })" />
+                  </label>
+                  <label class="dc-field">
+                    Source
+                    <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                      [value]="draft().source" (valueChange)="patch({ source: $event })">
+                      @for (o of sourceOptions; track o.value) {
+                        <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </label>
+                </div>
+              } @else {
+                <div class="dc-manual-grid">
+                  <!-- Aperçu manipulable -->
+                  <div class="dc-preview">
+                    <div class="dc-preview-head">
+                      <mat-icon svgIcon="file-text" style="font-size:14px" class="dc-preview-icon"></mat-icon>
+                      <span class="dc-preview-name">{{ preview().name }}</span>
+                      <button type="button" matIconButton class="dc-mini-btn" matTooltip="Page précédente" (click)="prevPage()">
+                        <mat-icon svgIcon="chevron-left" style="font-size:11px"></mat-icon>
+                      </button>
+                      <span class="dc-preview-page">{{ preview().pageLabel }}</span>
+                      <button type="button" matIconButton class="dc-mini-btn" matTooltip="Page suivante" (click)="nextPage()">
+                        <mat-icon svgIcon="chevron-right" style="font-size:11px"></mat-icon>
+                      </button>
+                    </div>
+
+                    <div class="dc-preview-stage" [style.cursor]="view.cursor"
+                      (pointerdown)="view.onPointerDown($event)" (pointermove)="view.onPointerMove($event)"
+                      (pointerup)="view.onPointerUp()" (pointercancel)="view.onPointerUp()"
+                      (wheel)="view.onWheel($event)">
+                      <app-doc-page class="dc-preview-sheet" [style.transform]="view.transform"
+                        [kicker]="preview().kicker" [title]="preview().title"
+                        [footer]="preview().footer" [lines]="previewLines"></app-doc-page>
+                    </div>
+
+                    <div class="dc-preview-foot">
+                      <button type="button" matIconButton class="dc-mini-btn" matTooltip="Réduire" (click)="view.zoomOut()">
+                        <mat-icon svgIcon="minus" style="font-size:12px"></mat-icon>
+                      </button>
+                      <span class="dc-preview-zoom">{{ view.zoomLabel }}</span>
+                      <button type="button" matIconButton class="dc-mini-btn" matTooltip="Agrandir" (click)="view.zoomIn()">
+                        <mat-icon svgIcon="plus" style="font-size:12px"></mat-icon>
+                      </button>
+                      <button type="button" matButton="outlined" class="dc-row-btn dc-preview-fit" (click)="view.reset()">Ajuster</button>
+                      <button type="button" matButton="outlined" class="dc-row-btn" matTooltip="Ouvrir dans une nouvelle fenêtre" (click)="openViewer()">
+                        <mat-icon svgIcon="external-link" style="font-size:12px"></mat-icon>
+                        Ouvrir dans une fenêtre
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Saisie manuelle des champs -->
+                  <div class="dc-grid2">
+                    <label class="dc-field dc-field-wide">
+                      Intitulé du document
+                      <input class="dc-input" placeholder="Convention de mandat BGM-004"
+                        [value]="draft().title" (input)="patch({ title: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field">
+                      Nature du document
+                      <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                        [value]="draft().type" (valueChange)="patch({ type: $event })">
+                        @for (o of typeOptions; track o.value) {
+                          <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </label>
+                    <label class="dc-field">
+                      Type de document
+                      <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                        [value]="draft().form" (valueChange)="patch({ form: $event })">
+                        @for (o of formOptions; track o.value) {
+                          <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </label>
+                    <label class="dc-field dc-field-wide">
+                      Dossier de rattachement
+                      <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                        [value]="draft().folder" (valueChange)="patch({ folder: $event })">
+                        @for (o of folderOptions; track o.value) {
+                          <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </label>
+                    <label class="dc-field">
+                      Référence document
+                      <input class="dc-input" placeholder="DOC-BGM-004-0012"
+                        [value]="draft().reference" (input)="patch({ reference: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field">
+                      Émetteur
+                      <input class="dc-input" placeholder="Client, dépositaire, autorité…"
+                        [value]="draft().issuer" (input)="patch({ issuer: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field">
+                      Date d'émission
+                      <input type="date" class="dc-input" [value]="draft().date" (input)="patch({ date: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field">
+                      Date de réception
+                      <input type="date" class="dc-input" [value]="draft().received" (input)="patch({ received: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field">
+                      Échéance
+                      <input type="date" class="dc-input" [value]="draft().due" (input)="patch({ due: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field">
+                      Nombre de pages
+                      <input class="dc-input" placeholder="9" [value]="draft().pages" (input)="patch({ pages: $any($event.target).value })" />
+                    </label>
+                    <label class="dc-field dc-field-wide">
+                      Mots-clés
+                      <input class="dc-input" placeholder="mandat, kyc, 2026"
+                        [value]="draft().tags" (input)="patch({ tags: $any($event.target).value })" />
+                    </label>
+                  </div>
+                </div>
+              }
+
+              <div class="dc-version-block">
+                <mat-checkbox class="dc-checkbox" [checked]="draft().isNewVersion"
+                  (change)="patch({ isNewVersion: $event.checked })">Nouvelle version d'un document existant</mat-checkbox>
+                @if (draft().isNewVersion) {
+                  <div class="dc-grid2">
+                    <label class="dc-field">
+                      Document d'origine
+                      <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                        [value]="draft().parentId" (valueChange)="patch({ parentId: $event })">
+                        @for (o of docOptions(); track o.value) {
+                          <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </label>
+                    <label class="dc-field">
+                      Motif de la révision
+                      <input class="dc-input" placeholder="Avenant signé, correction d'annexe…"
+                        [value]="draft().versionNote" (input)="patch({ versionNote: $any($event.target).value })" />
+                    </label>
+                  </div>
+                  <span class="dc-field-hint">{{ versionPreview() }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Étape 2 — OCR -->
+          @if (stepKey() === 'ocr') {
+            <div class="dc-stack">
+              <div class="dc-run-row">
+                <span class="dc-run-dot" [style.background]="ocr().dotBg" [style.color]="ocr().dotFg">
+                  <mat-icon svgIcon="search-check" style="font-size:15px"></mat-icon>
+                </span>
+                <span class="dc-run-texts">
+                  <span class="dc-run-title">{{ ocr().title }}</span>
+                  <span class="dc-run-hint">{{ ocr().hint }}</span>
+                </span>
+                <button type="button" matButton="outlined" class="dc-row-btn dc-run-btn" (click)="runOcr()">{{ ocr().action }}</button>
+              </div>
+
+              @if (ocr().done) {
+                <div class="dc-stats-grid">
+                  @for (s of ocrStats; track s.label) {
+                    <div class="dc-stat">
+                      <span class="dc-stat-label">{{ s.label }}</span>
+                      <span class="dc-stat-value">{{ s.value }}</span>
+                    </div>
+                  }
+                </div>
+                <label class="dc-field">
+                  Texte reconnu (extrait)
+                  <textarea class="dc-textarea dc-textarea-ro" rows="4" readonly>{{ ocrText }}</textarea>
+                </label>
+              }
+            </div>
+          }
+
+          <!-- Étape 3 — Analyse IA -->
+          @if (stepKey() === 'ia') {
+            <div class="dc-stack">
+              <div class="dc-run-row">
+                <span class="dc-run-dot" [style.background]="ia().dotBg" [style.color]="ia().dotFg">
+                  <mat-icon svgIcon="sun" style="font-size:15px"></mat-icon>
+                </span>
+                <span class="dc-run-texts">
+                  <span class="dc-run-title">{{ ia().title }}</span>
+                  <span class="dc-run-hint">{{ ia().hint }}</span>
+                </span>
+                <button type="button" matButton="outlined" class="dc-row-btn dc-run-btn" (click)="runIa()">{{ ia().action }}</button>
+              </div>
+
+              @if (ia().done) {
+                <div class="dc-ia-list">
+                  @for (f of ia().fields; track f.label) {
+                    <div class="dc-ia-row">
+                      <span class="dc-ia-label">{{ f.label }}</span>
+                      <span class="dc-ia-value">{{ f.value }}</span>
+                      <span class="dc-ia-conf" [style.background]="f.bg" [style.color]="f.fg">{{ f.conf }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="dc-apply-row">
+                  <button type="button" matButton="filled" class="dc-primary-btn" (click)="applyIa()">Appliquer au classement</button>
+                  <span class="dc-field-hint">{{ ia().applied }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Étape 4 — Classement -->
+          @if (stepKey() === 'class') {
+            <div class="dc-grid2">
+              <label class="dc-field">
+                Nature du document
+                <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                  [value]="draft().type" (valueChange)="patch({ type: $event })">
+                  @for (o of typeOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </label>
+              <label class="dc-field">
+                Type de document
+                <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                  [value]="draft().form" (valueChange)="patch({ form: $event })">
+                  @for (o of formOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </label>
+              <label class="dc-field">
+                Dossier de rattachement
+                <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                  [value]="draft().folder" (valueChange)="patch({ folder: $event })">
+                  @for (o of folderOptions; track o.value) {
+                    <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                  }
+                </mat-select>
+              </label>
+              <label class="dc-field">
+                Date du document
+                <input type="date" class="dc-input dc-input-date" [value]="draft().date" (input)="patch({ date: $any($event.target).value })" />
+              </label>
+              <label class="dc-field">
+                Émetteur
+                <input class="dc-input" placeholder="Dépositaire, client, autorité…"
+                  [value]="draft().issuer" (input)="patch({ issuer: $any($event.target).value })" />
+              </label>
+              <label class="dc-field dc-field-wide">
+                Mots-clés
+                <input class="dc-input" placeholder="mandat, kyc, 2026"
+                  [value]="draft().tags" (input)="patch({ tags: $any($event.target).value })" />
+              </label>
+            </div>
+          }
+
+          <!-- Étape 5 — Diffusion -->
+          @if (stepKey() === 'diff') {
+            <div class="dc-stack">
+              <div class="dc-grid2">
+                <label class="dc-field">
+                  Confidentialité
+                  <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="draft().access" (valueChange)="patch({ access: $event })">
+                    @for (o of accessOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </label>
+                <label class="dc-field">
+                  Durée de conservation
+                  <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="draft().retention" (valueChange)="patch({ retention: $event })">
+                    @for (o of retentionOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </label>
+              </div>
+              <mat-checkbox class="dc-checkbox" [checked]="draft().needsReview"
+                (change)="patch({ needsReview: $event.checked })">Soumettre à revue avant validation</mat-checkbox>
+              <label class="dc-field">
+                Note interne
+                <textarea class="dc-textarea" rows="3" placeholder="Contexte, pièces liées, points à vérifier…"
+                  [value]="draft().notes" (input)="patch({ notes: $any($event.target).value })"></textarea>
+              </label>
+            </div>
+          }
+
+          <!-- Étape 6 — Contrôle -->
+          @if (stepKey() === 'check') {
+            <div class="dc-stack">
+              <p class="dc-check-intro">Vérifiez les informations avant enregistrement.</p>
+              <div class="dc-recap">
+                @for (r of recap(); track r.label) {
+                  <div class="dc-recap-row">
+                    <span class="dc-recap-label">{{ r.label }}</span>
+                    <span class="dc-recap-value">{{ r.value }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <footer class="dc-step-foot">
+          <span class="dc-step-status">{{ stepLabel() }}</span>
+          <button type="button" matButton="outlined" class="dc-row-btn dc-step-prev" (click)="jump(-1)">Précédent</button>
+          @if (isLastStep()) {
+            <button type="button" matButton="filled" class="dc-primary-btn" (click)="submit()">{{ submitLabel() }}</button>
+          } @else {
+            <button type="button" matButton="filled" class="dc-primary-btn" (click)="jump(1)">Suivant</button>
+          }
+        </footer>
+      </section>
+    }
+
+    <!-- ───────────────────────────── Revue ───────────────────────────── -->
+    @if (tab() === 'review') {
+      <div class="dc-review-grid">
+        <section class="dc-card dc-queue">
+          <header class="dc-queue-head">File de revue</header>
+          @for (q of queue(); track q.id) {
+            <button type="button" class="dc-queue-item" [style.background]="q.bg" [style.border-left-color]="q.mark"
+              (click)="select(q.id)">
+              <span class="dc-queue-line">
+                <span class="dc-queue-name" [style.font-weight]="q.weight">{{ q.name }}</span>
+                <span class="dc-queue-version">{{ q.version }}</span>
+              </span>
+              <span class="dc-queue-meta">{{ q.meta }}</span>
+            </button>
+          }
+        </section>
+
+        <div class="dc-review-col">
+          @if (current(); as c) {
+            <section class="dc-card">
+              <header class="dc-review-head">
+                <div class="dc-review-titles">
+                  <h2 class="dc-review-name">{{ c.name }}</h2>
+                  <p class="dc-review-meta">{{ c.meta }}</p>
+                </div>
+                <span class="dc-state" [style.background]="c.stateBg" [style.color]="c.stateFg">
+                  <span class="dc-state-dot" [style.background]="c.stateFg"></span>
+                  {{ c.stateLabel }}
+                </span>
+              </header>
+
+              <div class="dc-grid2 dc-review-fields">
+                <label class="dc-field">
+                  Intitulé
+                  <input class="dc-input" [value]="c.name" (input)="editCurrent({ name: $any($event.target).value })" />
+                </label>
+                <label class="dc-field">
+                  Nature du document
+                  <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="c.type" (valueChange)="editCurrent({ type: $event })">
+                    @for (o of typeOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </label>
+                <label class="dc-field">
+                  Type de document
+                  <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="c.form" (valueChange)="editCurrent({ form: $event })">
+                    @for (o of formOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </label>
+                <label class="dc-field">
+                  Dossier
+                  <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="c.folder" (valueChange)="editCurrent({ folder: $event })">
+                    @for (o of folderOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </label>
+                <label class="dc-field">
+                  Confidentialité
+                  <mat-select class="pm-sel-trigger dc-select" [panelWidth]="null" panelClass="pm-sel-panel"
+                    [value]="c.access" (valueChange)="editCurrent({ access: $event })">
+                    @for (o of accessOptions; track o.value) {
+                      <mat-option [value]="o.value">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </label>
+                <label class="dc-field dc-field-wide">
+                  Mots-clés
+                  <input class="dc-input" [value]="c.tags" (input)="editCurrent({ tags: $any($event.target).value })" />
+                </label>
+              </div>
+
+              <footer class="dc-review-foot">
+                <button type="button" matButton="outlined" class="dc-row-btn dc-btn-danger" (click)="reject()">Renvoyer en brouillon</button>
+                <button type="button" matButton="outlined" class="dc-row-btn" (click)="archive()">Archiver</button>
+                <button type="button" matButton="filled" class="dc-primary-btn dc-review-validate" (click)="validate()">Valider le document</button>
+              </footer>
+            </section>
+
+            <section class="dc-card">
+              <header class="dc-section-head">
+                <h3 class="dc-section-title">Métadonnées du document</h3>
+                <span class="dc-section-note">{{ metaCount() }}</span>
+              </header>
+              <div class="dc-meta-grid">
+                @for (m of metaList(); track m.label) {
+                  <div class="dc-meta-row">
+                    <span class="dc-meta-label">{{ m.label }}</span>
+                    <span class="dc-meta-value">{{ m.value }}</span>
+                  </div>
+                }
+              </div>
+            </section>
+
+            <section class="dc-card">
+              <header class="dc-section-head">
+                <h3 class="dc-section-title">Historique des versions</h3>
+                <button type="button" matButton="outlined" class="dc-row-btn" (click)="addVersion()">
+                  <mat-icon svgIcon="plus" style="font-size:12px"></mat-icon>
+                  Déposer une version
+                </button>
+              </header>
+
+              <div class="dc-table-scroll">
+                <table mat-table [dataSource]="versions()" class="dc-table dc-table-versions">
+                  <ng-container matColumnDef="version">
+                    <th mat-header-cell *matHeaderCellDef class="dc-th">Version</th>
+                    <td mat-cell *matCellDef="let v" class="dc-td">
+                      <span class="dc-version">
+                        <span class="dc-version-tag">{{ v.label }}</span>
+                        @if (v.isCurrent) {
+                          <span class="dc-current-tag">Courante</span>
+                        }
+                      </span>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef class="dc-th">Déposée le</th>
+                    <td mat-cell *matCellDef="let v" class="dc-td dc-td-muted dc-num">{{ v.date }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="author">
+                    <th mat-header-cell *matHeaderCellDef class="dc-th">Auteur</th>
+                    <td mat-cell *matCellDef="let v" class="dc-td dc-td-muted">{{ v.author }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="note">
+                    <th mat-header-cell *matHeaderCellDef class="dc-th">Motif</th>
+                    <td mat-cell *matCellDef="let v" class="dc-td dc-td-muted">{{ v.note }}</td>
+                  </ng-container>
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="dc-th dc-col-actions"></th>
+                    <td mat-cell *matCellDef="let v" class="dc-td dc-td-actions">
+                      @if (v.canRestore) {
+                        <button type="button" matButton="outlined" class="dc-row-btn" (click)="restoreVersion(v.n, v.size)">Restaurer</button>
+                      }
+                      <button type="button" matButton="outlined" class="dc-row-btn" (click)="showCompare(v.compareText)">{{ v.compareLabel }}</button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="versionColumns" class="dc-header-row"></tr>
+                  <tr mat-row *matRowDef="let v; columns: versionColumns" class="dc-row"></tr>
+                </table>
+              </div>
+
+              @if (compareText()) {
+                <p class="dc-compare">{{ compareText() }}</p>
+              }
+            </section>
+          }
+        </div>
+      </div>
+    }
+
+  </mat-tab-nav-panel>
+</div>

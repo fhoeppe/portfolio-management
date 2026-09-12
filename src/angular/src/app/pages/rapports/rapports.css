@@ -1,0 +1,451 @@
+/* Le prototype déclare ses propres encres et fonds de vignette : la coque n'expose ni
+   --ink-ok-2, ni --ink-brand-2, ni --band-ok. Une `var()` non résolue invalide la déclaration
+   entière, donc on les reporte ici. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--color-text);
+
+  --ink-brand-2: #003da5;
+  --ink-ok-2: #0f766e;
+  --band-ok: rgba(15, 118, 110, 0.10);
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host-context([data-theme='dark']) {
+  --ink-brand-2: #8fb4ee;
+  --ink-ok-2: #4fd1c5;
+  --band-ok: rgba(79, 209, 197, 0.12);
+}
+
+.rp-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  /* La grille de paramètres repasse sur une colonne selon la largeur du contenu, pas celle de
+     la fenêtre : le menu latéral peut être replié ou non. */
+  container-type: inline-size;
+}
+
+/* ===========================================================================
+   En-tête
+   =========================================================================== */
+
+.rp-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--field-brand);
+  background: var(--surface);
+}
+
+.rp-head-titles {
+  min-width: 0;
+}
+
+.rp-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink-brand);
+}
+
+.rp-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rp-head-field {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  width: 420px;
+}
+
+.rp-report-select {
+  width: 100%;
+}
+
+/* ===========================================================================
+   Cartes
+   =========================================================================== */
+
+.rp-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+}
+
+.rp-card {
+  background: var(--surface);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rp-card + .rp-card {
+  margin-top: 16px;
+}
+
+.rp-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.rp-card-head-row {
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+}
+
+.rp-card-titles {
+  min-width: 0;
+}
+
+.rp-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-brand);
+}
+
+.rp-card-desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
+.rp-card-note {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rp-freq {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+/* ===========================================================================
+   Paramètres
+   =========================================================================== */
+
+.rp-config {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+@container (max-width: 720px) {
+  .rp-config {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.rp-field-wide {
+  grid-column: 1 / -1;
+}
+
+.rp-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.rp-select {
+  --pm-sel-h: 32px;
+  --pm-sel-fs: 13px;
+  --pm-sel-pad: 0 8px;
+  width: 100%;
+}
+
+.rp-select-narrow {
+  width: 150px;
+  max-width: 100%;
+}
+
+.rp-seg {
+  --mat-button-toggle-height: 30px;
+  --mat-button-toggle-label-text-size: 12px;
+  --mat-button-toggle-background-color: rgba(0, 61, 165, 0.08);
+  --mat-button-toggle-text-color: var(--ink-brand);
+  --mat-button-toggle-selected-state-background-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-toggle-selected-state-text-color: #ffffff;
+  --mat-button-toggle-divider-color: rgba(0, 61, 165, 0.30);
+  align-self: flex-start;
+  display: inline-flex;
+  border: 1px solid rgba(0, 61, 165, 0.35) !important;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rp-dates {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Le champ et le bouton calendrier partagent un même cadre, sans <mat-form-field> : celui-ci
+   imposerait son gabarit M3 (hauteur ~56px, libellé flottant) et casserait la compacité des
+   champs du prototype. */
+.rp-datepicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+/* `::ng-deep` est nécessaire : le bouton appartient au gabarit de `mat-datepicker-toggle`, il
+   ne porte donc pas l'attribut d'encapsulation de cette page et une règle scopée ne l'atteint
+   pas. */
+.rp-datepicker ::ng-deep .mat-mdc-icon-button {
+  --mat-icon-button-state-layer-size: 24px;
+  --mat-icon-button-icon-size: 16px;
+  flex: none;
+  padding: 4px;
+}
+
+.rp-date-input {
+  width: 100px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.rp-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+
+@container (max-width: 720px) {
+  .rp-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rp-checkbox {
+  --mat-checkbox-label-text-size: 12px;
+  --mat-checkbox-state-layer-size: 26px;
+  --mat-checkbox-selected-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-checkbox-selected-focus-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-checkbox-selected-hover-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-checkbox-selected-pressed-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
+}
+
+.rp-config-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.rp-recap {
+  flex: 1;
+  min-width: 120px;
+  padding-bottom: 8px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+.rp-primary-btn {
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--field-brand));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-height: 32px;
+  --mat-button-filled-container-shape: 6px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-label-text-weight: 600;
+  --mat-button-filled-icon-spacing: 8px;
+  flex: none;
+}
+
+/* ===========================================================================
+   Générations récentes
+   =========================================================================== */
+
+.rp-table-scroll {
+  overflow-x: auto;
+}
+
+.rp-table {
+  width: 100%;
+  min-width: 620px;
+  background: transparent;
+}
+
+.rp-header-row {
+  height: auto;
+}
+
+.rp-row {
+  height: auto;
+}
+
+/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
+   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
+   pèse 0-2-2 et emporterait un simple `.rp-th`, qui ne pèse que 0-2-0 une fois encapsulé. Seul
+   le fond est remonté — toute la règle passerait sinon devant `.rp-cell-name` & co. */
+.rp-th.rp-th {
+  background: rgba(0, 61, 165, 0.14);
+}
+
+.rp-th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+  text-align: left;
+}
+
+.rp-td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+/* Gouttières de bord alignées sur l'en-tête de carte (18px), pas sur les 12px inter-colonnes. */
+.rp-th.rp-cell-name,
+.rp-td.rp-cell-name {
+  padding-left: 18px;
+}
+
+.rp-th.rp-cell-actions,
+.rp-td.rp-cell-actions {
+  padding-right: 18px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rp-td-muted {
+  color: var(--color-neutral-700);
+}
+
+.rp-td-strong {
+  font-weight: 600;
+}
+
+.rp-td-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.rp-job-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rp-format {
+  flex: none;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--color-neutral-200);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-800);
+}
+
+.rp-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rp-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.rp-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rp-ghost-btn {
+  --mat-button-outlined-container-height: 26px;
+  --mat-button-outlined-container-shape: 6px;
+  --mat-button-outlined-label-text-size: 11px;
+  --mat-button-outlined-label-text-weight: 600;
+  --mat-button-outlined-label-text-color: var(--color-neutral-800, var(--color-text));
+  --mat-button-outlined-outline-color: var(--color-neutral-300);
+  --mat-button-outlined-icon-spacing: 6px;
+  --mat-button-outlined-horizontal-padding: 10px;
+  flex: none;
+}
+
+.rp-ghost-btn:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
+.rp-remove-btn {
+  --mat-icon-button-state-layer-size: 26px;
+  --mat-icon-button-icon-size: 12px;
+  flex: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  color: var(--color-neutral-700);
+}
+
+.rp-remove-btn:hover {
+  background: var(--color-accent-100);
+  color: var(--color-accent-700);
+}
+
+.rp-empty {
+  margin: 0;
+  padding: 22px 18px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}

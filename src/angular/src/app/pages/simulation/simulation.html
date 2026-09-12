@@ -1,0 +1,161 @@
+<div class="sim-page">
+  <div class="sim-head">
+    <div class="sim-head-titles">
+      <h1 class="sim-h1">Gestion du risque</h1>
+      <p class="sim-subtitle">{{ subtitle }}</p>
+    </div>
+    <span class="sim-head-tools">
+      <mat-select class="pm-sel-trigger sim-scope" [panelWidth]="null" panelClass="pm-sel-panel"
+        [value]="scope()" (valueChange)="scope.set($event)">
+        @for (o of scopes; track o.value) {
+          <mat-option [value]="o.value">{{ o.label }}</mat-option>
+        }
+      </mat-select>
+      <button type="button" matIconButton class="sim-reset" matTooltip="Réinitialiser la simulation" (click)="resetSim()">
+        <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+      </button>
+    </span>
+  </div>
+
+  @if (ran()) {
+    <div class="sim-kpi-grid">
+      @for (k of kpis(); track k.label) {
+        <div class="sim-kpi" [style.background]="k.bg">
+          <div class="sim-kpi-label" [style.color]="k.labelColor">{{ k.label }}</div>
+          <div class="sim-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+          <div class="sim-kpi-note">{{ k.note }}</div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="sim-grid">
+    <!-- ─────────────────────────── Colonne de gauche ─────────────────────────── -->
+    <div class="sim-col">
+      <section class="sim-card">
+        <header class="sim-card-head">
+          <h2 class="sim-card-title">Modèles de choc</h2>
+        </header>
+
+        <mat-action-list class="sim-model-list">
+          @for (m of models(); track m.key) {
+            <button mat-list-item class="sim-model" [class.sim-model-on]="m.selected"
+              [style.border-left-color]="m.mark" [style.background]="m.bg"
+              (click)="selectModel(m.key)">
+              <span matListItemIcon class="sim-model-icon" [style.background]="m.iconBg" [style.color]="m.iconFg">
+                <mat-icon svgIcon="chart-trend" style="font-size:16px"></mat-icon>
+              </span>
+              <span matListItemTitle class="sim-model-title">{{ m.title }}</span>
+              <span matListItemLine class="sim-model-detail">{{ m.detail }}</span>
+            </button>
+          }
+        </mat-action-list>
+      </section>
+
+      @if (isCustom()) {
+        <section class="sim-card">
+          <header class="sim-card-head">
+            <h2 class="sim-card-title">Paramètres du choc personnalisé</h2>
+          </header>
+          <div class="sim-custom-fields">
+            @for (f of customFields; track f.key) {
+              <label class="sim-field">
+                {{ f.label }}
+                <input class="sim-input" [placeholder]="f.placeholder" [value]="custom()[f.key]"
+                  (input)="setCustom(f.key, $any($event.target).value)" />
+              </label>
+            }
+          </div>
+        </section>
+      }
+
+      <button type="button" matButton="filled" class="sim-run" (click)="runSim()">
+        <mat-icon svgIcon="chart-trend" style="font-size:16px"></mat-icon>
+        Lancer la simulation
+      </button>
+    </div>
+
+    <!-- ─────────────────────────── Colonne de droite ─────────────────────────── -->
+    <div class="sim-col">
+      @if (ran()) {
+        <section class="sim-card">
+          <header class="sim-card-head">
+            <h2 class="sim-card-title">{{ result().title }}</h2>
+            <span class="sim-card-note">{{ result().scopeNote }}</span>
+          </header>
+
+          <div class="sim-chart-body">
+            <svg viewBox="0 0 320 110" preserveAspectRatio="none" class="sim-chart">
+              <line x1="0" y1="103" x2="320" y2="103" stroke="var(--color-neutral-300)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+              <path [attr.d]="result().pathBase" fill="none" stroke="var(--color-neutral-400)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></path>
+              <path [attr.d]="result().pathShock" fill="none" [attr.stroke]="result().lineColor" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+            </svg>
+            <div class="sim-ticks">
+              @for (t of ticks; track t) {
+                <span class="sim-tick">{{ t }}</span>
+              }
+            </div>
+          </div>
+
+          <footer class="sim-legend">
+            <span class="sim-legend-item"><span class="sim-legend-line sim-legend-line-base"></span>Avant choc</span>
+            <span class="sim-legend-item"><span class="sim-legend-line" [style.background]="result().lineColor"></span>Après choc</span>
+            <span class="sim-legend-impact" [style.color]="result().lineColor">{{ result().impactLabel }}</span>
+          </footer>
+        </section>
+
+        <section class="sim-card">
+          <header class="sim-card-head">
+            <h2 class="sim-card-title">Impact par classe d'actifs</h2>
+          </header>
+
+          <div class="sim-table-scroll">
+            <table mat-table [dataSource]="impactRows()" class="sim-table">
+              <ng-container matColumnDef="label">
+                <th mat-header-cell *matHeaderCellDef class="sim-th">Classe</th>
+                <td mat-cell *matCellDef="let r" class="sim-td sim-td-label">{{ r.label }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="before">
+                <th mat-header-cell *matHeaderCellDef class="sim-th sim-th-num">Valeur avant</th>
+                <td mat-cell *matCellDef="let r" class="sim-td sim-td-num">{{ r.before }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="after">
+                <th mat-header-cell *matHeaderCellDef class="sim-th sim-th-num">Valeur après</th>
+                <td mat-cell *matCellDef="let r" class="sim-td sim-td-num">{{ r.after }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="delta">
+                <th mat-header-cell *matHeaderCellDef class="sim-th sim-th-num">Écart</th>
+                <td mat-cell *matCellDef="let r" class="sim-td sim-td-num sim-td-delta" [style.color]="r.color">{{ r.delta }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="impactColumns" class="sim-header-row"></tr>
+              <tr mat-row *matRowDef="let r; columns: impactColumns" class="sim-row" [class.sim-row-div]="r.label === result().divRow.label"></tr>
+            </table>
+          </div>
+        </section>
+
+        <section class="sim-card">
+          <header class="sim-card-head">
+            <h2 class="sim-card-title">Points de vigilance</h2>
+          </header>
+          @for (fl of result().flags; track fl.title) {
+            <div class="sim-flag">
+              <span class="sim-flag-dot" [style.background]="fl.color"></span>
+              <span class="sim-flag-body">
+                <span class="sim-flag-title">{{ fl.title }}</span>
+                <span class="sim-flag-detail">{{ fl.detail }}</span>
+              </span>
+            </div>
+          }
+        </section>
+      } @else {
+        <div class="sim-empty">
+          Choisissez un modèle de choc à gauche, puis lancez la simulation pour voir son impact sur le portefeuille.
+        </div>
+      }
+    </div>
+  </div>
+</div>

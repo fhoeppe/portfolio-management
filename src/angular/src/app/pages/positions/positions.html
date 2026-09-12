@@ -1,0 +1,732 @@
+<div class="pm-page">
+  <div class="pm-page-header">
+    <div class="pm-page-title">
+      <h1>Positions</h1>
+      <p>{{ subtitle() }}</p>
+    </div>
+    <div class="pm-page-header-actions">
+      <button class="pm-scope-btn" mat-stroked-button [matMenuTriggerFor]="scopeMenu" #scopeTrigger="matMenuTrigger">
+        <mat-icon [svgIcon]="icons.scope" [style.font-size.px]="14"></mat-icon>
+        <span class="pm-scope-label">{{ scopeLabel() }}</span>
+        <mat-icon iconPositionEnd svgIcon="chevron-down" style="font-size:14px" [style.transform]="scopeTrigger.menuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></mat-icon>
+      </button>
+      <mat-menu #scopeMenu="matMenu">
+        @for (o of scopeOptions(); track o.id) {
+          <button mat-menu-item [class.pm-scope-item-active]="o.id === chartAccount()" (click)="setScope(o.id)">
+            <span class="pm-scope-swatch" [style.background]="o.color"></span>
+            <span class="pm-scope-item-label">{{ o.label }}</span>
+            <span class="pm-scope-item-note">{{ o.note }}</span>
+          </button>
+        }
+      </mat-menu>
+
+      <label class="pm-search">
+        <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+        <input type="text" placeholder="Titre, code, ISIN" [ngModel]="query()" (ngModelChange)="setQuery($event)" />
+      </label>
+    </div>
+  </div>
+
+  <nav mat-tab-nav-bar class="pm-page-tabs pm-tabnav" [tabPanel]="posTabPanel" [mat-stretch-tabs]="false" disableRipple>
+    @for (t of tabs; track t.key) {
+      <button type="button" mat-tab-link class="pm-page-tab" [active]="tab() === t.key"
+        [class.pm-page-tab-active]="tab() === t.key" (click)="tab.set(t.key)">
+        @switch (t.key) {
+          @case ('detail') { <mat-icon [svgIcon]="icons.tabInventaire" [style.font-size.px]="15"></mat-icon> }
+          @case ('break') { <mat-icon [svgIcon]="icons.tabBreak" [style.font-size.px]="15"></mat-icon> }
+          @case ('pnl') { <mat-icon [svgIcon]="icons.tabPnl" [style.font-size.px]="15"></mat-icon> }
+          @case ('dash') { <mat-icon [svgIcon]="icons.tabDash" [style.font-size.px]="15"></mat-icon> }
+        }
+        {{ t.label }}
+      </button>
+    }
+  </nav>
+
+  <mat-tab-nav-panel #posTabPanel>
+  <div class="pm-kpi-band">
+    @for (k of kpis(); track k.label) {
+      <div class="pm-kpi">
+        <div class="pm-kpi-label">{{ k.label }}</div>
+        <div class="pm-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+        <div class="pm-kpi-note">{{ k.note }}</div>
+      </div>
+    }
+  </div>
+
+  @if (tab() === 'detail') {
+    <div class="pm-chart-section">
+      <div class="pm-chart-heading">
+        <span class="pm-chart-rule"></span>
+        <h2>Évolution du portefeuille</h2>
+        <span class="pm-chart-rule pm-chart-rule-grow"></span>
+        <button type="button" class="pm-chart-toggle" [matTooltip]="chartOpen() ? 'Replier le graphique' : 'Déplier le graphique'" (click)="toggleChart()">
+          <mat-icon svgIcon="chevron-down" style="font-size:15px" [style.transform]="chartOpen() ? 'rotate(180deg)' : 'rotate(0deg)'"></mat-icon>
+        </button>
+      </div>
+
+      @if (chartOpen()) {
+        <div class="pm-chart-body">
+          <div class="pm-chart-controls">
+            <mat-button-toggle-group class="pm-chart-ranges" hideSingleSelectionIndicator [value]="chartRange()" (change)="setChartRange($event.value)">
+              @for (r of chartRangeOptions; track r.key) {
+                <mat-button-toggle [value]="r.key">{{ r.label }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+
+            <button class="pm-metric-btn" mat-stroked-button [matMenuTriggerFor]="metricMenu" #metricTrigger="matMenuTrigger">
+              {{ metricLabel() }}
+              <mat-icon iconPositionEnd svgIcon="chevron-down" style="font-size:14px" [style.transform]="metricTrigger.menuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></mat-icon>
+            </button>
+            <mat-menu #metricMenu="matMenu">
+              @for (m of metricOptions; track m.key) {
+                <button mat-menu-item [class.pm-scope-item-active]="m.key === chartMetric()" (click)="setChartMetric(m.key)">{{ m.label }}</button>
+              }
+            </mat-menu>
+          </div>
+
+          <div class="pm-chart-frame">
+            <div class="pm-chart-area" (mousemove)="onChartMove($event)" (mouseleave)="onChartLeave()">
+              <svg viewBox="0 0 1000 290" preserveAspectRatio="none" class="pm-chart-svg">
+                <defs>
+                  @for (l of chart().lines; track l.gradId) {
+                    <linearGradient [attr.id]="l.gradId" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" [attr.stop-color]="l.color" stop-opacity="0.22"></stop>
+                      <stop offset="100%" [attr.stop-color]="l.color" stop-opacity="0"></stop>
+                    </linearGradient>
+                  }
+                </defs>
+                @for (g of chart().grid; track $index) {
+                  <line x1="0" [attr.y1]="g.top" x2="1000" [attr.y2]="g.top" [attr.stroke]="g.stroke" stroke-width="1" [attr.stroke-dasharray]="g.dash" vector-effect="non-scaling-stroke"></line>
+                }
+                @for (l of chart().lines; track l.gradId) {
+                  <path [attr.d]="l.area" [attr.fill]="l.fill" stroke="none"></path>
+                }
+                @for (l of chart().lines; track l.gradId) {
+                  <path [attr.d]="l.path" fill="none" [attr.stroke]="l.color" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+                }
+              </svg>
+
+              @if (hover().on) {
+                <span class="pm-chart-hover-line" [style.left]="hover().left"></span>
+              }
+              @for (p of hover().points; track $index) {
+                <span class="pm-chart-hover-dot" [style.left]="p.left" [style.top]="p.top" [style.background]="p.color"></span>
+              }
+              @for (l of chart().lines; track l.gradId) {
+                <span class="pm-chart-last" [style.top]="l.top" [style.background]="l.color">{{ l.last }}</span>
+              }
+              @if (hover().on) {
+                <span class="pm-chart-tip" [style.left]="hover().tipLeft" [style.transform]="'translateX(' + hover().tipShift + ')'">
+                  <span class="pm-chart-tip-date">{{ hover().date }}</span>
+                  @for (r of hover().rows; track r.label) {
+                    <span class="pm-chart-tip-row">
+                      <span class="pm-chart-tip-dot" [style.background]="r.color"></span>
+                      <span class="pm-chart-tip-label">{{ r.label }}</span>
+                      <span class="pm-chart-tip-value">{{ r.value }}</span>
+                    </span>
+                  }
+                  <span class="pm-chart-tip-total">
+                    <span class="pm-chart-tip-total-label">{{ chartMetric() === 'growth' ? 'Moyenne' : 'Total' }}</span>
+                    <span class="pm-chart-tip-value">{{ hover().total }}</span>
+                  </span>
+                </span>
+              }
+              @for (g of chart().grid; track $index) {
+                <span class="pm-chart-grid-label" [style.top]="g.top">{{ g.label }}</span>
+              }
+            </div>
+            <div class="pm-chart-ticks">
+              @for (t of chart().ticks; track $index) {
+                <span>{{ t.label }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="pm-chart-footer">
+            <div class="pm-chart-legend">
+              <span class="pm-chart-legend-caption">Légende</span>
+              @for (l of chartLegend(); track l.id) {
+                <button type="button" class="pm-legend-pill" (click)="toggleLegend(l.id)">
+                  <span class="pm-legend-switch" [style.background]="l.trackBg">
+                    <span class="pm-legend-knob" [style.transform]="'translateX(' + l.knob + ')'"></span>
+                  </span>
+                  <span class="pm-legend-swatch" [style.background]="l.color" [style.opacity]="l.opacity"></span>
+                  <span [style.color]="l.fg">{{ l.label }} · {{ l.value }} · <span [style.color]="l.growthColor">{{ l.growth }}</span></span>
+                </button>
+              }
+            </div>
+            <span class="pm-chart-footnote">{{ chart().footnote }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="pm-inv-section">
+      <mat-button-toggle-group class="pm-inv-views" hideSingleSelectionIndicator [value]="invView()" (change)="setInvView($event.value)">
+        <mat-button-toggle value="account">Par portefeuille</mat-button-toggle>
+        <mat-button-toggle value="position">Par positions</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      @if (invView() === 'account') {
+        <div class="pm-inv-scroll">
+          <div class="pm-inv-table">
+            <div class="pm-inv-head">
+              <span>Compte</span>
+              <span class="pm-num">Titres</span>
+              <span class="pm-num">Prix de revient</span>
+              <span class="pm-num">Valeur de marché</span>
+              <span class="pm-num">Variation du jour</span>
+              <span class="pm-num">P/L latent</span>
+              <span class="pm-num">P/L réalisé</span>
+              <span></span>
+            </div>
+
+            <div cdkDropList class="pm-inv-list" (cdkDropListDropped)="dropAccount($event)">
+              @for (a of invAccounts(); track a.id) {
+                <div cdkDrag class="pm-inv-account" [class.pm-inv-account-open]="a.open">
+                  <div class="pm-inv-account-head" (click)="toggleAccountOpen(a.id)">
+                    <span class="pm-inv-account-name">
+                      <span cdkDragHandle class="pm-drag-handle" matTooltip="Glisser pour réorganiser les comptes" (click)="$event.stopPropagation()">
+                        <mat-icon [svgIcon]="icons.drag" [style.font-size.px]="12"></mat-icon>
+                      </span>
+                      <mat-icon [svgIcon]="icons.scope" [style.font-size.px]="16" class="pm-inv-account-icon"></mat-icon>
+                      <span class="pm-inv-account-label">{{ a.label }}</span>
+                    </span>
+                    <span class="pm-num pm-inv-account-value">{{ a.symbols }}</span>
+                    <span class="pm-num pm-inv-account-value">{{ a.cost }}</span>
+                    <span class="pm-num pm-inv-account-value">{{ a.market }}</span>
+                    <span class="pm-inv-account-dual" [style.color]="a.dayColor">
+                      <span class="pm-inv-account-dual-main">{{ a.day }}</span>
+                      <span class="pm-inv-account-dual-sub">{{ a.dayPct }}</span>
+                    </span>
+                    <span class="pm-inv-account-dual" [style.color]="a.unrColor">
+                      <span class="pm-inv-account-dual-main">{{ a.unrealized }}</span>
+                      <span class="pm-inv-account-dual-sub">{{ a.unrealizedPct }}</span>
+                    </span>
+                    <span class="pm-inv-account-dual" [style.color]="a.realColor">
+                      <span class="pm-inv-account-dual-main">{{ a.realized }}</span>
+                      <span class="pm-inv-account-dual-sub">{{ a.realizedPct }}</span>
+                    </span>
+                    <span class="pm-inv-account-chev">
+                      <mat-icon svgIcon="chevron-down" style="font-size:16px;color:#ffffff" [style.transform]="a.open ? 'rotate(180deg)' : 'rotate(0deg)'"></mat-icon>
+                    </span>
+                  </div>
+
+                  @if (a.open) {
+                    <div class="pm-inv-account-body pm-unfold-block" animate.leave="pm-fold-block">
+                      <span class="pm-inv-account-badge">Détail des positions</span>
+                      @if (a.empty) {
+                        <span class="pm-inv-empty">Aucune position en portefeuille : les titres ont été cédés et la liquidité rapatriée.</span>
+                      }
+                      <div class="pm-table-scroll">
+                        <table mat-table [dataSource]="a.tableRows" [trackBy]="accountRowTrackBy" class="pm-table">
+                          <ng-container matColumnDef="isin">
+                            <th mat-header-cell *matHeaderCellDef>
+                              <button type="button" class="pm-sort-btn" [style.color]="sortHeader('isin').color" [style.font-weight]="sortHeader('isin').weight" [matTooltip]="sortHeader('isin').title" (click)="onSort('isin')">
+                                ISIN <span class="pm-sort-chev" [style.opacity]="sortHeader('isin').opacity" [style.transform]="'rotate(' + sortHeader('isin').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-muted">{{ row.r.isin }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="ticker">
+                            <th mat-header-cell *matHeaderCellDef>
+                              <button type="button" class="pm-sort-btn" [style.color]="sortHeader('ticker').color" [style.font-weight]="sortHeader('ticker').weight" [matTooltip]="sortHeader('ticker').title" (click)="onSort('ticker')">
+                                Code <span class="pm-sort-chev" [style.opacity]="sortHeader('ticker').opacity" [style.transform]="'rotate(' + sortHeader('ticker').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-ticker">{{ row.r.ticker }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef>
+                              <button type="button" class="pm-sort-btn" [style.color]="sortHeader('name').color" [style.font-weight]="sortHeader('name').weight" [matTooltip]="sortHeader('name').title" (click)="onSort('name')">
+                                Nom <span class="pm-sort-chev" [style.opacity]="sortHeader('name').opacity" [style.transform]="'rotate(' + sortHeader('name').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row">{{ row.r.name }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="lot">
+                            <th mat-header-cell *matHeaderCellDef class="pm-center">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-center" [style.color]="sortHeader('lot').color" [style.font-weight]="sortHeader('lot').weight" [matTooltip]="sortHeader('lot').title" (click)="onSort('lot')">
+                                Lot <span class="pm-sort-chev" [style.opacity]="sortHeader('lot').opacity" [style.transform]="'rotate(' + sortHeader('lot').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-center pm-lot" [matTooltip]="'Position ouverte ' + row.r.lot + ' fois sur ce compte'">{{ row.r.lot }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="currency">
+                            <th mat-header-cell *matHeaderCellDef>
+                              <button type="button" class="pm-sort-btn" [style.color]="sortHeader('currency').color" [style.font-weight]="sortHeader('currency').weight" [matTooltip]="sortHeader('currency').title" (click)="onSort('currency')">
+                                Devise <span class="pm-sort-chev" [style.opacity]="sortHeader('currency').opacity" [style.transform]="'rotate(' + sortHeader('currency').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-muted">{{ row.r.currency }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="quantity">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('quantity').color" [style.font-weight]="sortHeader('quantity').weight" [matTooltip]="sortHeader('quantity').title" (click)="onSort('quantity')">
+                                Quantité <span class="pm-sort-chev" [style.opacity]="sortHeader('quantity').opacity" [style.transform]="'rotate(' + sortHeader('quantity').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num">{{ row.r.qty }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="pru">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('pru').color" [style.font-weight]="sortHeader('pru').weight" [matTooltip]="sortHeader('pru').title" (click)="onSort('pru')">
+                                PRU <span class="pm-sort-chev" [style.opacity]="sortHeader('pru').opacity" [style.transform]="'rotate(' + sortHeader('pru').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num">{{ row.r.pru }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="costValue">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('costValue').color" [style.font-weight]="sortHeader('costValue').weight" [matTooltip]="sortHeader('costValue').title" (click)="onSort('costValue')">
+                                Valeur d'achat <span class="pm-sort-chev" [style.opacity]="sortHeader('costValue').opacity" [style.transform]="'rotate(' + sortHeader('costValue').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num">{{ row.r.buyValue }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="price">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('price').color" [style.font-weight]="sortHeader('price').weight" [matTooltip]="sortHeader('price').title" (click)="onSort('price')">
+                                Cours <span class="pm-sort-chev" [style.opacity]="sortHeader('price').opacity" [style.transform]="'rotate(' + sortHeader('price').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num">{{ row.r.price }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="marketValue">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('marketValue').color" [style.font-weight]="sortHeader('marketValue').weight" [matTooltip]="sortHeader('marketValue').title" (click)="onSort('marketValue')">
+                                Valeur de marché <span class="pm-sort-chev" [style.opacity]="sortHeader('marketValue').opacity" [style.transform]="'rotate(' + sortHeader('marketValue').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num pm-strong">{{ row.r.marketValue }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="unrealized">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('unrealized').color" [style.font-weight]="sortHeader('unrealized').weight" [matTooltip]="sortHeader('unrealized').title" (click)="onSort('unrealized')">
+                                P/L latent <span class="pm-sort-chev" [style.opacity]="sortHeader('unrealized').opacity" [style.transform]="'rotate(' + sortHeader('unrealized').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num pm-strong" [style.color]="row.r.pnlColor">{{ row.r.pnl }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="unrealizedPct">
+                            <th mat-header-cell *matHeaderCellDef class="pm-num">
+                              <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('unrealizedPct').color" [style.font-weight]="sortHeader('unrealizedPct').weight" [matTooltip]="sortHeader('unrealizedPct').title" (click)="onSort('unrealizedPct')">
+                                P/L latent % <span class="pm-sort-chev" [style.opacity]="sortHeader('unrealizedPct').opacity" [style.transform]="'rotate(' + sortHeader('unrealizedPct').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                              </button>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="pm-num pm-strong" [style.color]="row.r.pnlColor">{{ row.r.pnlPct }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef class="pm-actions-col"></th>
+                            <td mat-cell *matCellDef="let row" class="pm-num">
+                              <button matIconButton class="pm-hist-btn" matTooltip="Historique de la position" (click)="openHistory(a.id, row.r.ticker)">
+                                <mat-icon [svgIcon]="icons.history" [style.font-size.px]="14"></mat-icon>
+                              </button>
+                            </td>
+                          </ng-container>
+
+                          <!-- Ligne « Trésorerie » du bas : sa propre suite de colonnes, dont deux
+                               portent un colspan, d'où des cellules dédiées plutôt qu'un pied. -->
+                          <ng-container matColumnDef="cashLabel">
+                            <td mat-cell *matCellDef="let row" class="pm-strong">Trésorerie</td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashBlank1">
+                            <td mat-cell *matCellDef="let row"></td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashBlank2">
+                            <td mat-cell *matCellDef="let row"></td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashBlank3">
+                            <td mat-cell *matCellDef="let row"></td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashCurrency">
+                            <td mat-cell *matCellDef="let row" class="pm-strong">{{ a.cash.split(' ')[1] }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashSpan4">
+                            <td mat-cell *matCellDef="let row" colspan="4"></td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashAmount">
+                            <td mat-cell *matCellDef="let row" class="pm-num pm-strong">{{ a.cash }}</td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashSpan2">
+                            <td mat-cell *matCellDef="let row" colspan="2"></td>
+                          </ng-container>
+                          <ng-container matColumnDef="cashActions">
+                            <td mat-cell *matCellDef="let row" class="pm-num">
+                              <button matIconButton class="pm-hist-btn" matTooltip="Historique du compte de liquidité" (click)="openHistory(a.id, '__cash')">
+                                <mat-icon [svgIcon]="icons.history" [style.font-size.px]="14"></mat-icon>
+                              </button>
+                            </td>
+                          </ng-container>
+
+                          <tr mat-header-row *matHeaderRowDef="accountColumns; sticky: true"></tr>
+                          <tr mat-row *matRowDef="let row; columns: accountCashColumns; when: isCashRow" class="pm-inv-cash-row"></tr>
+                          <tr mat-row *matRowDef="let row; columns: accountColumns" [style.background]="row.r.zebra"></tr>
+                        </table>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="pm-inv-scroll">
+          <table mat-table [dataSource]="invFlat()" class="pm-table pm-flat-table">
+            <ng-container matColumnDef="ticker">
+              <th mat-header-cell *matHeaderCellDef>
+                <button type="button" class="pm-sort-btn" [style.color]="sortHeader('ticker').color" [style.font-weight]="sortHeader('ticker').weight" [matTooltip]="sortHeader('ticker').title" (click)="onSort('ticker')">
+                  Code <span class="pm-sort-chev" [style.opacity]="sortHeader('ticker').opacity" [style.transform]="'rotate(' + sortHeader('ticker').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-ticker">{{ r.ticker }}</td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>
+                <button type="button" class="pm-sort-btn" [style.color]="sortHeader('name').color" [style.font-weight]="sortHeader('name').weight" [matTooltip]="sortHeader('name').title" (click)="onSort('name')">
+                  Nom <span class="pm-sort-chev" [style.opacity]="sortHeader('name').opacity" [style.transform]="'rotate(' + sortHeader('name').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r">{{ r.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="isin">
+              <th mat-header-cell *matHeaderCellDef>
+                <button type="button" class="pm-sort-btn" [style.color]="sortHeader('isin').color" [style.font-weight]="sortHeader('isin').weight" [matTooltip]="sortHeader('isin').title" (click)="onSort('isin')">
+                  ISIN <span class="pm-sort-chev" [style.opacity]="sortHeader('isin').opacity" [style.transform]="'rotate(' + sortHeader('isin').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-muted">{{ r.isin }}</td>
+            </ng-container>
+            <ng-container matColumnDef="account">
+              <th mat-header-cell *matHeaderCellDef>
+                <button type="button" class="pm-sort-btn" [style.color]="sortHeader('account').color" [style.font-weight]="sortHeader('account').weight" [matTooltip]="sortHeader('account').title" (click)="onSort('account')">
+                  Compte <span class="pm-sort-chev" [style.opacity]="sortHeader('account').opacity" [style.transform]="'rotate(' + sortHeader('account').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r">
+                <span class="pm-flat-account">
+                  <span class="pm-flat-account-broker">{{ r.accountBroker }}</span>
+                  <span class="pm-flat-account-name">{{ r.accountName }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="lot">
+              <th mat-header-cell *matHeaderCellDef class="pm-center">
+                <button type="button" class="pm-sort-btn pm-sort-btn-center" [style.color]="sortHeader('lot').color" [style.font-weight]="sortHeader('lot').weight" [matTooltip]="sortHeader('lot').title" (click)="onSort('lot')">
+                  Lot <span class="pm-sort-chev" [style.opacity]="sortHeader('lot').opacity" [style.transform]="'rotate(' + sortHeader('lot').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-center pm-lot">{{ r.lot }}</td>
+            </ng-container>
+            <ng-container matColumnDef="currency">
+              <th mat-header-cell *matHeaderCellDef>
+                <button type="button" class="pm-sort-btn" [style.color]="sortHeader('currency').color" [style.font-weight]="sortHeader('currency').weight" [matTooltip]="sortHeader('currency').title" (click)="onSort('currency')">
+                  Devise <span class="pm-sort-chev" [style.opacity]="sortHeader('currency').opacity" [style.transform]="'rotate(' + sortHeader('currency').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-muted">{{ r.currency }}</td>
+            </ng-container>
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('quantity').color" [style.font-weight]="sortHeader('quantity').weight" [matTooltip]="sortHeader('quantity').title" (click)="onSort('quantity')">
+                  Quantité <span class="pm-sort-chev" [style.opacity]="sortHeader('quantity').opacity" [style.transform]="'rotate(' + sortHeader('quantity').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-num">{{ r.qty }}</td>
+            </ng-container>
+            <ng-container matColumnDef="pru">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('pru').color" [style.font-weight]="sortHeader('pru').weight" [matTooltip]="sortHeader('pru').title" (click)="onSort('pru')">
+                  PRU <span class="pm-sort-chev" [style.opacity]="sortHeader('pru').opacity" [style.transform]="'rotate(' + sortHeader('pru').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-num">{{ r.pru }}</td>
+            </ng-container>
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('price').color" [style.font-weight]="sortHeader('price').weight" [matTooltip]="sortHeader('price').title" (click)="onSort('price')">
+                  Cours <span class="pm-sort-chev" [style.opacity]="sortHeader('price').opacity" [style.transform]="'rotate(' + sortHeader('price').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-num">{{ r.price }}</td>
+            </ng-container>
+            <ng-container matColumnDef="marketValue">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('marketValue').color" [style.font-weight]="sortHeader('marketValue').weight" [matTooltip]="sortHeader('marketValue').title" (click)="onSort('marketValue')">
+                  Valeur de marché <span class="pm-sort-chev" [style.opacity]="sortHeader('marketValue').opacity" [style.transform]="'rotate(' + sortHeader('marketValue').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-num pm-strong">{{ r.marketValue }}</td>
+            </ng-container>
+            <ng-container matColumnDef="unrealized">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('unrealized').color" [style.font-weight]="sortHeader('unrealized').weight" [matTooltip]="sortHeader('unrealized').title" (click)="onSort('unrealized')">
+                  P/L latent <span class="pm-sort-chev" [style.opacity]="sortHeader('unrealized').opacity" [style.transform]="'rotate(' + sortHeader('unrealized').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-num pm-strong" [style.color]="r.pnlColor">{{ r.pnl }}</td>
+            </ng-container>
+            <ng-container matColumnDef="unrealizedPct">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('unrealizedPct').color" [style.font-weight]="sortHeader('unrealizedPct').weight" [matTooltip]="sortHeader('unrealizedPct').title" (click)="onSort('unrealizedPct')">
+                  P/L latent % <span class="pm-sort-chev" [style.opacity]="sortHeader('unrealizedPct').opacity" [style.transform]="'rotate(' + sortHeader('unrealizedPct').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let r" class="pm-num pm-strong" [style.color]="r.pnlColor">{{ r.pnlPct }}</td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="pm-actions-col"></th>
+              <td mat-cell *matCellDef="let r" class="pm-num">
+                <button matIconButton class="pm-hist-btn" matTooltip="Historique de la position" (click)="openHistory(r.pfId, r.ticker)">
+                  <mat-icon [svgIcon]="icons.history" [style.font-size.px]="14"></mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="flatColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let r; columns: flatColumns" [style.background]="r.zebra"></tr>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'break') {
+    <div class="pm-break-grid">
+      @for (b of breakdowns; track b.title) {
+        <div class="pm-card">
+          <div class="pm-card-head">
+            <h2>{{ b.title }}</h2>
+            <span class="pm-card-sub">{{ b.note }}</span>
+          </div>
+          <div class="pm-break-stack-wrap">
+            <span class="pm-break-stack">
+              @for (p of b.stack; track p.label) {
+                <span [style.width]="p.width" [style.background]="p.color" [matTooltip]="p.title"></span>
+              }
+            </span>
+            <span class="pm-break-legend">
+              @for (p of b.stack; track p.label) {
+                <span class="pm-break-legend-item">
+                  <span class="pm-break-legend-dot" [style.background]="p.color"></span>
+                  {{ p.label }} · {{ p.share }}
+                </span>
+              }
+            </span>
+          </div>
+          <div class="pm-break-rows">
+            @for (r of b.rows; track r.label) {
+              <div class="pm-break-row">
+                <span class="pm-break-row-label">{{ r.label }}</span>
+                <span class="pm-break-row-bar"><span [style.width]="r.width"></span></span>
+                <span class="pm-break-row-value">{{ r.value }}</span>
+                <span class="pm-break-row-share">{{ r.share }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'pnl') {
+    <div class="pm-pnl-wrap">
+      <div class="pm-card">
+        <div class="pm-card-head">
+          <h2>Résultat par position</h2>
+          <span class="pm-card-sub">{{ pnlNote }}</span>
+        </div>
+        <div class="pm-table-scroll">
+          <table mat-table [dataSource]="pnlRows()" class="pm-table pm-pnl-table">
+            <ng-container matColumnDef="security">
+              <th mat-header-cell *matHeaderCellDef>
+                <button type="button" class="pm-sort-btn" [style.color]="sortHeader('security').color" [style.font-weight]="sortHeader('security').weight" [matTooltip]="sortHeader('security').title" (click)="onSort('security')">
+                  Titre <span class="pm-sort-chev" [style.opacity]="sortHeader('security').opacity" [style.transform]="'rotate(' + sortHeader('security').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p">
+                <span class="pm-pnl-security">
+                  <span class="pm-strong">{{ p.ticker }}</span>
+                  <span class="pm-pnl-name">{{ p.name }}</span>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="costBasis">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('costBasis').color" [style.font-weight]="sortHeader('costBasis').weight" [matTooltip]="sortHeader('costBasis').title" (click)="onSort('costBasis')">
+                  Prix de revient <span class="pm-sort-chev" [style.opacity]="sortHeader('costBasis').opacity" [style.transform]="'rotate(' + sortHeader('costBasis').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p" class="pm-num pm-muted">{{ p.cost }}</td>
+            </ng-container>
+            <ng-container matColumnDef="valuation">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('valuation').color" [style.font-weight]="sortHeader('valuation').weight" [matTooltip]="sortHeader('valuation').title" (click)="onSort('valuation')">
+                  Valorisation <span class="pm-sort-chev" [style.opacity]="sortHeader('valuation').opacity" [style.transform]="'rotate(' + sortHeader('valuation').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p" class="pm-num">{{ p.value }}</td>
+            </ng-container>
+            <ng-container matColumnDef="unrealized">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('unrealized').color" [style.font-weight]="sortHeader('unrealized').weight" [matTooltip]="sortHeader('unrealized').title" (click)="onSort('unrealized')">
+                  Latent <span class="pm-sort-chev" [style.opacity]="sortHeader('unrealized').opacity" [style.transform]="'rotate(' + sortHeader('unrealized').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p" class="pm-num pm-strong" [style.color]="p.latentColor">{{ p.latent }}</td>
+            </ng-container>
+            <ng-container matColumnDef="realized">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('realized').color" [style.font-weight]="sortHeader('realized').weight" [matTooltip]="sortHeader('realized').title" (click)="onSort('realized')">
+                  Réalisé <span class="pm-sort-chev" [style.opacity]="sortHeader('realized').opacity" [style.transform]="'rotate(' + sortHeader('realized').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p" class="pm-num" [style.color]="p.realizedColor">{{ p.realized }}</td>
+            </ng-container>
+            <ng-container matColumnDef="income">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('income').color" [style.font-weight]="sortHeader('income').weight" [matTooltip]="sortHeader('income').title" (click)="onSort('income')">
+                  Revenus <span class="pm-sort-chev" [style.opacity]="sortHeader('income').opacity" [style.transform]="'rotate(' + sortHeader('income').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p" class="pm-num">{{ p.income }}</td>
+            </ng-container>
+            <ng-container matColumnDef="yield">
+              <th mat-header-cell *matHeaderCellDef class="pm-num">
+                <button type="button" class="pm-sort-btn pm-sort-btn-end" [style.color]="sortHeader('yield').color" [style.font-weight]="sortHeader('yield').weight" [matTooltip]="sortHeader('yield').title" (click)="onSort('yield')">
+                  Rendement <span class="pm-sort-chev" [style.opacity]="sortHeader('yield').opacity" [style.transform]="'rotate(' + sortHeader('yield').rotate + ')'"><mat-icon svgIcon="sort" style="font-size:14px"></mat-icon></span>
+                </button>
+              </th>
+              <td mat-cell *matCellDef="let p" class="pm-num pm-strong" [style.color]="p.yieldColor">{{ p.yield }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="pnlColumns"></tr>
+            <tr mat-row *matRowDef="let p; columns: pnlColumns" [style.background]="p.zebra"></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'dash') {
+    <div class="pm-dash-grid">
+      <div class="pm-card pm-dash-span2">
+        <div class="pm-card-head">
+          <mat-icon [svgIcon]="icons.gainLoss" [style.font-size.px]="16" class="pm-brand-icon"></mat-icon>
+          <h2>Total Holdings Gain/Loss</h2>
+          <span class="pm-card-sub">{{ dash().gainNote }}</span>
+        </div>
+        <div class="pm-dash-kpis">
+          @for (k of dash().gainKpis; track k.label) {
+            <div class="pm-dash-kpi">
+              <div class="pm-kpi-label">{{ k.label }}</div>
+              <div class="pm-dash-kpi-value" [style.color]="k.color">{{ k.value }}</div>
+              <div class="pm-kpi-note">{{ k.note }}</div>
+            </div>
+          }
+        </div>
+        <div class="pm-dash-gain-rows">
+          @for (r of dash().gainRows; track r.ticker) {
+            <div class="pm-dash-gain-row">
+              <span class="pm-dash-gain-ticker">{{ r.ticker }}</span>
+              <span class="pm-dash-gain-bar">
+                <span class="pm-dash-gain-fill" [style.left]="r.left" [style.width]="r.width" [style.background]="r.color"></span>
+                <span class="pm-dash-gain-mid"></span>
+              </span>
+              <span class="pm-dash-gain-value" [style.color]="r.color">{{ r.value }}</span>
+              <span class="pm-dash-gain-pct" [style.color]="r.color">{{ r.pct }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <div class="pm-card-head">
+          <mat-icon [svgIcon]="icons.dividend" [style.font-size.px]="16" class="pm-brand-icon"></mat-icon>
+          <h2>Dividend Payouts</h2>
+          <span class="pm-card-sub">{{ dash().divNote }}</span>
+        </div>
+        <div class="pm-dash-bars">
+          @for (m of dash().divMonths; track $index) {
+            <span class="pm-dash-bar-col">
+              <span class="pm-dash-bar-amount">{{ m.amount }}</span>
+              <span class="pm-dash-bar" [style.height]="m.height" [style.background]="m.color" [matTooltip]="m.title"></span>
+              <span class="pm-dash-bar-label">{{ m.label }}</span>
+            </span>
+          }
+        </div>
+        @for (d of dash().divRows; track d.ticker + d.detail) {
+          <div class="pm-dash-div-row">
+            <span class="pm-dash-div-ticker">{{ d.ticker }}</span>
+            <span class="pm-dash-div-detail">{{ d.detail }}</span>
+            <span class="pm-dash-div-amount">{{ d.amount }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="pm-card">
+        <div class="pm-card-head">
+          <mat-icon [svgIcon]="icons.assetAlloc" [style.font-size.px]="16" class="pm-brand-icon"></mat-icon>
+          <h2>Asset Allocation</h2>
+          <span class="pm-card-sub">{{ dash().assetNote }}</span>
+        </div>
+        <div class="pm-dash-alloc">
+          <span class="pm-dash-alloc-bar">
+            @for (a of dash().assets; track a.label) {
+              <span [style.width]="a.width" [style.background]="a.color" [matTooltip]="a.title"></span>
+            }
+          </span>
+          @for (a of dash().assets; track a.label) {
+            <div class="pm-dash-alloc-row">
+              <span class="pm-dash-alloc-dot" [style.background]="a.color"></span>
+              <span class="pm-dash-alloc-label">{{ a.label }}</span>
+              <span class="pm-dash-alloc-value">{{ a.value }}</span>
+              <span class="pm-dash-alloc-share">{{ a.share }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <div class="pm-card-head">
+          <mat-icon [svgIcon]="icons.sectorAlloc" [style.font-size.px]="16" class="pm-brand-icon"></mat-icon>
+          <h2>Sector Allocation</h2>
+          <span class="pm-card-sub">{{ dash().sectorNote }}</span>
+        </div>
+        <div class="pm-dash-sectors">
+          @for (s of dash().sectors; track s.label) {
+            <div class="pm-dash-sector-row">
+              <span class="pm-dash-sector-label">{{ s.label }}</span>
+              <span class="pm-dash-sector-bar"><span [style.width]="s.width" [style.background]="s.color"></span></span>
+              <span class="pm-dash-sector-share">{{ s.share }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="pm-card">
+        <div class="pm-card-head">
+          <mat-icon [svgIcon]="icons.trending" [style.font-size.px]="16" class="pm-brand-icon"></mat-icon>
+          <h2>Trending Stocks</h2>
+          <span class="pm-card-sub">{{ dash().trendNote }}</span>
+        </div>
+        @for (t of dash().trending; track t.ticker) {
+          <div class="pm-dash-trend-row">
+            <span class="pm-dash-trend-rank" [style.background]="t.rankBg" [style.color]="t.rankFg">{{ t.rank }}</span>
+            <span class="pm-dash-trend-name">
+              <span class="pm-dash-trend-ticker">{{ t.ticker }}</span>
+              <span class="pm-dash-trend-full">{{ t.name }}</span>
+            </span>
+            <svg viewBox="0 0 100 28" preserveAspectRatio="none" class="pm-dash-spark">
+              <path [attr.d]="t.spark" fill="none" [attr.stroke]="t.color" stroke-width="1.6" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+            </svg>
+            <span class="pm-dash-trend-price">
+              <span class="pm-strong">{{ t.price }}</span>
+              <span [style.color]="t.color">{{ t.change }}</span>
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</mat-tab-nav-panel>
+</div>

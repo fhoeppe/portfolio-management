@@ -1,26 +1,29 @@
 <mat-toolbar class="pm-topbar">
   <span class="pm-brand">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+    <mat-icon svgIcon="book-open" style="font-size:26px"></mat-icon>
     <span class="pm-brand-name">Portfolio Management</span>
   </span>
 
   <span class="pm-spacer"></span>
 
   <label class="pm-search">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+    <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
     <input type="search" placeholder="Rechercher un dossier, un client, une facture">
   </label>
 
-  <button class="pm-topbar-icon-btn" matIconButton matTooltip="Aide" matTooltipShowDelay="0" aria-label="Aide">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+  <button class="pm-topbar-icon-btn" matIconButton matTooltip="Aide" aria-label="Aide">
+    <mat-icon svgIcon="help-circle" style="font-size:14px"></mat-icon>
   </button>
 
-  <button class="pm-topbar-icon-btn" matIconButton matTooltip="Guide" matTooltipShowDelay="0" aria-label="Guide" (click)="openGuide()">
+  <!-- Lien classique (pas routerLink) : la documentation ouvre dans un nouvel onglet, en dehors
+       de la coque applicative (voir app.routes.ts et app/standalone/guide/guide.ts) — un vrai
+       changement de page, pas une navigation SPA à l'intérieur du menu/bandeau actuels. -->
+  <a class="pm-topbar-icon-btn" matIconButton matTooltip="Guide" aria-label="Guide" href="/guide" target="_blank" rel="noopener">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1.25 2C.56 2 0 2.56 0 3.25v8.5C0 12.44.56 13 1.25 13H5c.896 0 1.475.205 1.809.448.317.23.441.51.441.802a.75.75 0 001.5 0c0-.292.124-.572.441-.802.334-.243.913-.448 1.809-.448h3.75c.69 0 1.25-.56 1.25-1.25v-8.5C16 2.56 15.44 2 14.75 2H11c-1.154 0-2.106.354-2.772 1-.081.08-.157.161-.228.246A3.131 3.131 0 007.772 3C7.106 2.354 6.154 2 5 2H1.25zm7.5 9.967c.61-.309 1.372-.467 2.25-.467h3.5v-8H11c-.846 0-1.394.253-1.728.577-.335.325-.522.787-.522 1.34v6.55zm-1.5 0v-6.55c0-.553-.187-1.015-.522-1.34C6.394 3.753 5.846 3.5 5 3.5H1.5v8H5c.878 0 1.64.158 2.25.467z" clip-rule="evenodd"></path></svg>
-  </button>
+  </a>
 
-  <button class="pm-topbar-icon-btn" matIconButton matTooltip="Notifications" matTooltipShowDelay="0" aria-label="Notifications avec 3 non lues" matBadge="3" matBadgeSize="small">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+  <button class="pm-topbar-icon-btn" matIconButton matTooltip="Notifications" aria-label="Notifications avec 3 non lues" matBadge="3" matBadgeSize="small">
+    <mat-icon svgIcon="bell" style="font-size:14px"></mat-icon>
   </button>
 
   <span class="pm-vsep"></span>
@@ -31,24 +34,55 @@
       <span class="pm-account-name">HOEPPE, Fabrice</span>
       <span class="pm-account-role">Administrateur</span>
     </span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="m6 9 6 6 6-6"></path></svg>
+    <mat-icon svgIcon="chevron-down" style="font-size:14px"></mat-icon>
   </button>
-  <mat-menu #accountMenu="matMenu">
-    <button mat-menu-item (click)="openProfile()">Mon profil</button>
-    <button mat-menu-item (click)="openPreferences()">Préférences</button>
-    <button mat-menu-item disabled>Notifications</button>
-    <button mat-menu-item disabled>Aide et support</button>
-    <button mat-menu-item (click)="logout()">Se déconnecter</button>
+  <mat-menu #accountMenu="matMenu" class="pm-account-menu pm-unfold">
+    <div class="pm-account-menu-header" (click)="$event.stopPropagation()">
+      <span class="pm-avatar pm-avatar-lg">FH</span>
+      <span class="pm-account-menu-id">
+        <span class="pm-account-menu-name">HOEPPE, Fabrice</span>
+        <span class="pm-account-menu-email">fabrice.hoeppe&#64;atelier.lu</span>
+      </span>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item class="pm-account-menu-item" (click)="openProfile()">
+      <mat-icon svgIcon="user" style="font-size:21px"></mat-icon>
+      Mon profil
+    </button>
+    <button mat-menu-item class="pm-account-menu-item" (click)="openPreferences()">
+      <mat-icon svgIcon="settings" style="font-size:21px"></mat-icon>
+      Préférences
+    </button>
+    <button mat-menu-item class="pm-account-menu-item">
+      <mat-icon svgIcon="bell" style="font-size:21px"></mat-icon>
+      Notifications
+    </button>
+    <button mat-menu-item class="pm-account-menu-item">
+      <mat-icon svgIcon="help-circle" style="font-size:21px"></mat-icon>
+      Aide et support
+    </button>
+    <div class="pm-account-menu-lang" (click)="$event.stopPropagation()">
+      <span class="pm-account-menu-lang-label">Langue</span>
+      <mat-button-toggle-group class="pm-lang-toggle" [value]="lang()" (change)="setLang($event.value)" hideSingleSelectionIndicator>
+        <mat-button-toggle value="fr">FR</mat-button-toggle>
+        <mat-button-toggle value="en">EN</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item class="pm-account-menu-item pm-account-menu-logout" (click)="logout()">
+      <mat-icon svgIcon="log-out" style="font-size:21px"></mat-icon>
+      Se déconnecter
+    </button>
   </mat-menu>
 </mat-toolbar>
 
 <button class="pm-collapse-toggle" [style.left.px]="navWidth() - 14" matIconButton
-  matTooltip="Réduire ou déployer le menu" matTooltipShowDelay="0" aria-label="Réduire ou déployer le menu"
+  matTooltip="Réduire ou déployer le menu" aria-label="Réduire ou déployer le menu"
   (click)="toggleCollapsed()">
   @if (collapsed()) {
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path><path d="M5.5 8h1.5"></path><path d="M5.5 12h1.5"></path><path d="M5.5 16h1.5"></path></svg>
+    <mat-icon svgIcon="panel-left" style="font-size:16px"></mat-icon>
   } @else {
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M6 3v18"></path></svg>
+    <mat-icon svgIcon="columns-2" style="font-size:16px"></mat-icon>
   }
 </button>
 
@@ -56,8 +90,8 @@
   <mat-sidenav mode="side" [opened]="true" disableClose class="pm-sidenav" [style.width.px]="navWidth()">
     <nav class="pm-nav-list">
       <a class="pm-nav-item" [routerLink]="homeItem.route" routerLinkActive="pm-active"
-        [matTooltip]="homeItem.label" matTooltipShowDelay="0">
-        <app-icon [shapes]="homeItem.icon" [size]="21" />
+        [matTooltip]="homeItem.hint" [matTooltipShowDelay]="navTooltipDelay">
+        <mat-icon [svgIcon]="homeItem.icon" [style.font-size.px]="21"></mat-icon>
         @if (!collapsed()) {
           <span class="pm-nav-item-label">{{ homeItem.label }}</span>
         }
@@ -65,27 +99,27 @@
 
       @for (section of sections; track section.id) {
         <div class="pm-nav-section" [class.pm-collapsed-marker]="isSectionCollapsed(section.id)"
-          [matTooltip]="collapsed() ? section.label : ''" matTooltipShowDelay="0"
+          [matTooltip]="collapsed() ? section.label : ''" [matTooltipShowDelay]="navTooltipDelay"
           (click)="toggleSection(section.id)">
           @if (!collapsed()) {
             <span class="pm-nav-section-label">{{ section.label }}</span>
           }
           <span class="pm-nav-section-line"></span>
           <span class="pm-nav-section-chev" [class.pm-rotated]="isSectionCollapsed(section.id)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            <mat-icon svgIcon="chevron-down" style="font-size:14px"></mat-icon>
           </span>
         </div>
 
         @if (!isSectionCollapsed(section.id)) {
           @for (item of section.items; track item.id) {
             <a class="pm-nav-item" [routerLink]="item.route" routerLinkActive="pm-active"
-              [matTooltip]="item.label" matTooltipShowDelay="0">
-              <app-icon [shapes]="item.icon" [size]="21" />
+              [matTooltip]="item.hint" [matTooltipShowDelay]="navTooltipDelay">
+              <mat-icon [svgIcon]="item.icon" [style.font-size.px]="21"></mat-icon>
               @if (!collapsed()) {
                 <span class="pm-nav-item-label">{{ item.label }}</span>
                 @for (badge of item.badges; track badge.label) {
                   <span class="pm-nav-badge" [class.pm-nav-badge-warn]="badge.tone === 'warn'"
-                    [matTooltip]="badge.label" matTooltipShowDelay="0">{{ badge.count }}</span>
+                    [matTooltip]="badge.label" [matTooltipShowDelay]="navTooltipDelay">{{ badge.count }}</span>
                 }
               }
             </a>
@@ -95,11 +129,12 @@
     </nav>
 
     <div class="pm-nav-footer">
-      <button class="pm-nav-item" [matTooltip]="theme.mode() === 'dark' ? 'Mode clair' : 'Mode sombre'" matTooltipShowDelay="0" (click)="theme.toggle()">
+      <button class="pm-nav-item" [matTooltip]="theme.mode() === 'dark' ? 'Mode clair' : 'Mode sombre'"
+        [matTooltipShowDelay]="navTooltipDelay" (click)="theme.toggle()">
         @if (theme.mode() === 'dark') {
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+          <mat-icon svgIcon="sun" style="font-size:14px"></mat-icon>
         } @else {
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"></path></svg>
+          <mat-icon svgIcon="moon" style="font-size:14px"></mat-icon>
         }
         @if (!collapsed()) {
           <span class="pm-nav-item-label">{{ theme.mode() === 'dark' ? 'Mode clair' : 'Mode sombre' }}</span>
@@ -112,7 +147,7 @@
     <div class="pm-context-bar">
       <nav class="pm-breadcrumb" aria-label="Fil d'Ariane">
         <a [routerLink]="homeItem.route" aria-label="Accueil">
-          <app-icon [shapes]="homeItem.icon" [size]="16" />
+          <mat-icon [svgIcon]="homeItem.icon" [style.font-size.px]="16"></mat-icon>
         </a>
         @if (breadcrumb().section && breadcrumb().section !== breadcrumb().crumb) {
           <span aria-hidden="true">/</span>
@@ -127,22 +162,22 @@
 
       <div class="pm-context-actions">
         <button class="pm-date">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+          <mat-icon svgIcon="calendar" style="font-size:14px"></mat-icon>
           <span>{{ today() }}</span>
         </button>
         <span class="pm-ctx-vsep"></span>
-        <button class="pm-action-btn" matIconButton matTooltip="Rafraîchir les données" matTooltipShowDelay="0" (click)="refresh()">
-          <app-icon [shapes]="icons.refresh" [size]="12" />
+        <button class="pm-action-btn" matIconButton matTooltip="Rafraîchir les données" (click)="refresh()">
+          <mat-icon [svgIcon]="icons.refresh" [style.font-size.px]="12"></mat-icon>
         </button>
-        <button class="pm-action-btn" matIconButton matTooltip="Exporter" matTooltipShowDelay="0">
-          <app-icon [shapes]="icons.export" [size]="12" />
+        <button class="pm-action-btn" matIconButton matTooltip="Exporter">
+          <mat-icon [svgIcon]="icons.export" [style.font-size.px]="12"></mat-icon>
         </button>
         <span class="pm-ctx-vsep"></span>
-        <button class="pm-action-btn" matIconButton [matTooltip]="masking.hidden() ? 'Afficher les montants' : 'Masquer les montants'" matTooltipShowDelay="0" (click)="masking.toggle()">
-          <app-icon [shapes]="masking.hidden() ? icons.eyeOff : icons.eye" [size]="12" />
+        <button class="pm-action-btn" matIconButton [matTooltip]="masking.hidden() ? 'Afficher les montants' : 'Masquer les montants'" (click)="masking.toggle()">
+          <mat-icon [svgIcon]="masking.hidden() ? icons.eyeOff : icons.eye" [style.font-size.px]="12"></mat-icon>
         </button>
-        <button class="pm-action-btn" matIconButton matTooltip="Se déconnecter" matTooltipShowDelay="0" (click)="logout()">
-          <app-icon [shapes]="icons.logout" [size]="12" />
+        <button class="pm-action-btn" matIconButton matTooltip="Se déconnecter" (click)="logout()">
+          <mat-icon [svgIcon]="icons.logout" [style.font-size.px]="12"></mat-icon>
         </button>
       </div>
     </div>

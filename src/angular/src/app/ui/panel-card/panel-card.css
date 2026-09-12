@@ -6,16 +6,50 @@
   overflow: hidden;
 }
 
-.pm-card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+/* MatExpansionPanel apporte son ombrage M3, ses coins arrondis et sa propre surface : c'est
+   l'hôte ci-dessus qui porte déjà la bordure et le rayon du prototype, le panneau doit donc
+   se faire oublier et n'apporter que le mécanisme de dépliage. */
+.pm-card.mat-expansion-panel {
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* Le bandeau Material impose une hauteur fixe (48px replié, 64px déplié) et un rembourrage de
+   24px, là où le prototype est en 12px/16px et laisse la hauteur suivre le contenu. */
+.pm-card-header.mat-expansion-panel-header {
+  height: auto;
   padding: 12px 16px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.pm-card-header.mat-expansion-panel-header:hover,
+.pm-card-header.mat-expansion-panel-header:focus {
+  background: transparent;
 }
 
 .pm-card-header.pm-card-header-open {
   border-bottom: 1px solid var(--color-neutral-200);
+}
+
+/* `.mat-content` est le conteneur que Material interpose entre le bandeau et son contenu :
+   sans ces règles il centre et tronque, au lieu de laisser la rangée s'étaler. */
+.pm-card-header ::ng-deep .mat-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+/* Le corps porte son propre rembourrage dans chaque écran appelant ; celui de Material (0 24px
+   24px) s'y ajouterait. */
+.pm-card ::ng-deep .mat-expansion-panel-body {
+  padding: 0;
 }
 
 .pm-card-toggle {
@@ -24,39 +58,37 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  padding: 0;
-  border: 0;
+  flex: none;
   border-radius: 4px;
-  background: transparent;
   color: var(--ink-brand-2);
-  cursor: pointer;
-}
-
-.pm-card-toggle:hover {
-  background: rgba(0, 61, 165, 0.1);
-}
-
-.pm-card-toggle svg {
-  transition: transform 150ms ease;
-}
-
-.pm-card-toggle svg.pm-card-chev-closed {
-  transform: rotate(-90deg);
 }
 
 .pm-card-icon {
   display: flex;
+  flex: none;
   color: var(--ink-brand-2);
 }
 
 .pm-card-title {
   margin: 0;
   font-size: 15px;
-  cursor: pointer;
 }
 
 .pm-card-note {
   margin-left: auto;
   font-size: 11px;
   color: var(--color-neutral-700);
+}
+
+.pm-card-actions {
+  display: flex;
+  align-items: center;
+}
+
+.pm-card-toggle mat-icon {
+  transition: transform 150ms ease;
+}
+
+.pm-card-toggle mat-icon.pm-card-chev-closed {
+  transform: rotate(-90deg);
 }

@@ -1,0 +1,2007 @@
+openapi: 3.1.0
+
+info:
+  title: Portfolio Management API
+  version: 0.1.0
+  description: |
+    Contrat de l'API qui alimente le front Angular.
+
+    ## État
+
+    Première tranche. Elle couvre le socle dont dépendent le plus d'écrans — comptes, titres,
+    positions, transactions, places et calendriers — et sert surtout à **fixer les conventions**
+    (pagination, erreurs, concurrence, représentation des montants et des dates) avant
+    d'étendre. Les ressources restantes sont listées en fin de fichier.
+
+    ## Conventions CRUD
+
+    Chaque ressource qui a une existence propre expose les cinq opérations :
+
+    | Verbe               | Attendu                                                        |
+    |---------------------|----------------------------------------------------------------|
+    | `GET` collection    | page filtrée et triée                                          |
+    | `POST` collection   | création — `201` + `Location` + corps créé                     |
+    | `GET` élément       | représentation complète + `ETag`                               |
+    | `PUT` élément       | remplacement intégral — les champs omis reprennent leur défaut  |
+    | `PATCH` élément     | modification partielle en JSON Merge Patch — `null` efface      |
+    | `DELETE` élément    | retrait — `204`, ou `409` si la ressource est encore référencée |
+
+    `PUT` et `PATCH` coexistent parce qu'ils ne disent pas la même chose : le premier affirme
+    l'état complet voulu, le second ne touche qu'aux champs cités. Les deux exigent `If-Match`.
+
+    **Deux ressources n'ont volontairement pas d'écriture** et le disent sur leur opération :
+
+    - `/positions` est **dérivée** des transactions et de la valorisation. Écrire une position
+      directement la désolidariserait des écritures qui la justifient, et la piste d'audit ne
+      tiendrait plus. Elle se modifie en saisissant une transaction.
+    - `/calendars/zones/{zoneId}/non-working-days` est **calculée** à partir des règles de la zone.
+      C'est `/calendars/zones/{zoneId}/holidays` qui porte le CRUD : on édite la règle, pas ses
+      occurrences.
+
+    Si vous voulez malgré tout un point d'entrée en écriture sur l'une des deux, il faut le
+    décider explicitement — ce n'est pas un oubli.
+
+    ## Point d'attention repris de l'existant
+
+    Le front désigne aujourd'hui un compte et un titre par leur **libellé** — `"Degiro — CTO
+    Degiro"`, `"AAPL — Apple Inc."` — parce que les jeux d'essai n'ont pas d'identifiant. Le
+    contrat expose donc systématiquement un couple `id` + `label` : l'`id` est la clé, le
+    `label` n'est qu'un affichage. C'est le principal travail d'adaptation côté front, et il
+    vaut mieux le faire maintenant qu'après avoir multiplié les écrans.
+
+  contact:
+    name: Portfolio Management
+  license:
+    name: Propriétaire
+    identifier: LicenseRef-Proprietary
+
+servers:
+  - url: https://api.portfolio-management.example/v1
+    description: Production
+  - url: '{scheme}://{host}/v1'
+    description: Environnement local ou de recette
+    variables:
+      scheme:
+        default: http
+        enum: [http, https]
+      host:
+        default: localhost:8080
+
+# Jeton porteur sur toutes les opérations : les données sont nominatives et le périmètre
+# visible dépend du rôle. Une opération qui s'en affranchirait devrait le déclarer
+# explicitement par un `security: []` local.
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Comptes
+    description: Comptes gérés, leurs titulaires et leur cycle de vie.
+  - name: Titres
+    description: Référentiel des instruments négociables.
+  - name: Positions
+    description: Inventaire valorisé, par compte et par ligne.
+  - name: Transactions
+    description: Registre des faits de gestion et de leurs opérations.
+  - name: Marché
+    description: Places de négociation et cours.
+  - name: Calendriers
+    description: Jours chômés par zone et calcul de dénouement.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Chemins
+# ═══════════════════════════════════════════════════════════════════════════════
+
+paths:
+  # ─────────────────────────────── Comptes ───────────────────────────────
+  /accounts:
+    get:
+      tags: [Comptes]
+      summary: Lister les comptes gérés
+      operationId: listAccounts
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Query'
+        - name: state
+          in: query
+          description: Filtre sur l'état du compte. Répétable.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AccountState'
+          style: form
+          explode: false
+        - name: manager
+          in: query
+          schema: { type: string }
+        - name: sort
+          in: query
+          description: Champ de tri, préfixé de `-` pour l'ordre descendant.
+          schema:
+            type: string
+            enum: [client, -client, aum, -aum, perf, -perf, opened, -opened]
+            default: client
+      responses:
+        '200':
+          description: Page de comptes.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/AccountSummary' }
+              # Exemple porté par la réponse, et non déduit du schéma : c'est lui que sert le
+              # mock (`prism mock`). Sans exemple, Prism fabrique des valeurs à partir des types
+              # — « string », des dates à 1970, des nombres au maximum du double — inexploitables
+              # pour développer un écran.
+              example:
+                page: 1
+                pageSize: 50
+                total: 6
+                items:
+                  - id: BGM-004
+                    client: Balanced Growth
+                    state: active
+                    profile: Équilibré
+                    aum: { amount: 42350000, currency: EUR }
+                    performance: 0.0742
+                    currency: EUR
+                    manager: F. Hoeppe
+                    openedOn: '2019-03-14'
+                  - id: INP-011
+                    client: Income & Preservation
+                    state: active
+                    profile: Revenu
+                    aum: { amount: 18720000, currency: EUR }
+                    performance: 0.0316
+                    currency: EUR
+                    manager: A. Meyer
+                    openedOn: '2021-09-01'
+                  - id: GLG-002
+                    client: Global Growth
+                    state: onboarding
+                    profile: Croissance
+                    aum: { amount: 9450000, currency: USD }
+                    performance: -0.0128
+                    currency: USD
+                    manager: C. Berger
+                    openedOn: '2026-07-22'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Comptes]
+      summary: Ouvrir un compte
+      description: |
+        Le compte naît en `onboarding` : un compte n'est `active` qu'une fois ouvert chez le
+        dépositaire, ce que l'API ne peut pas constater elle-même.
+      operationId: createAccount
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountInput' }
+      responses:
+        '201': { $ref: '#/components/responses/AccountCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+
+  /accounts/{accountId}:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    get:
+      tags: [Comptes]
+      summary: Détail d'un compte
+      description: |
+        Renvoie le compte avec ses titulaires, ses règles de gestion et son historique — tout ce
+        que le panneau latéral de l'écran Comptes affiche d'un seul tenant.
+      operationId: getAccount
+      responses:
+        '200':
+          description: Le compte.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Comptes]
+      summary: Remplacer un compte
+      description: Remplacement intégral. Les champs omis reprennent leur valeur par défaut.
+      operationId: replaceAccount
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountInput' }
+      responses:
+        '200': { $ref: '#/components/responses/AccountUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    patch:
+      tags: [Comptes]
+      summary: Modifier un compte
+      operationId: patchAccount
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/AccountPatch' }
+      responses:
+        '200': { $ref: '#/components/responses/AccountUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    delete:
+      tags: [Comptes]
+      summary: Clôturer un compte
+      description: |
+        Clôture, et non effacement : un compte géré laisse une piste d'audit que rien
+        n'autorise à supprimer. Le compte passe en `closing` puis disparaît des listes, ses
+        transactions restent consultables. Refusé tant qu'il porte des positions ou des
+        espèces — la clôture suppose un solde nul.
+      operationId: closeAccount
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204': { description: Compte clôturé. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+
+  # ─────────────────────────────── Titres ───────────────────────────────
+  /securities:
+    get:
+      tags: [Titres]
+      summary: Lister les titres du référentiel
+      operationId: listSecurities
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Query'
+        - name: mic
+          in: query
+          description: Restreint à une place de négociation (code MIC).
+          schema: { $ref: '#/components/schemas/Mic' }
+        - name: tradable
+          in: query
+          description: Ne renvoyer que les titres ouverts à la négociation.
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Page de titres.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/Security' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Titres]
+      summary: Inscrire un titre au référentiel
+      operationId: createSecurity
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SecurityInput' }
+      responses:
+        '201': { $ref: '#/components/responses/SecurityCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Un titre porte déjà cet ISIN sur cette place.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+
+  /securities/{securityId}:
+    parameters:
+      - $ref: '#/components/parameters/SecurityId'
+    get:
+      tags: [Titres]
+      summary: Détail d'un titre
+      operationId: getSecurity
+      responses:
+        '200':
+          description: Le titre.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Security' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Titres]
+      summary: Remplacer un titre
+      operationId: replaceSecurity
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SecurityInput' }
+      responses:
+        '200': { $ref: '#/components/responses/SecurityUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    patch:
+      tags: [Titres]
+      summary: Modifier un titre
+      operationId: patchSecurity
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/SecurityPatch' }
+      responses:
+        '200': { $ref: '#/components/responses/SecurityUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    delete:
+      tags: [Titres]
+      summary: Retirer un titre du référentiel
+      description: |
+        Refusé — `409` — si une position ou une transaction le référence encore : le titre
+        cesserait d'être résoluble dans des écritures passées. Pour un titre qu'on ne veut plus
+        négocier sans rompre l'historique, passer `tradable` à `false`.
+      operationId: deleteSecurity
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204': { description: Titre retiré. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+
+  # ────────────────────────────── Positions ──────────────────────────────
+  /positions:
+    get:
+      tags: [Positions]
+      summary: Inventaire valorisé
+      description: |
+        Une ligne par couple (compte, titre). La valorisation est celle de `asOf` ; sans ce
+        paramètre, c'est la dernière disponible — que la réponse renvoie explicitement, pour que
+        le front n'ait jamais à deviner à quelle date il regarde.
+
+        **Ressource dérivée, en lecture seule.** Une position est le résultat des transactions
+        et de la valorisation ; l'écrire directement la désolidariserait des écritures qui la
+        justifient. Elle se modifie en saisissant une transaction — voir `POST /transactions`.
+      operationId: listPositions
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: accountId
+          in: query
+          description: Restreint à un ou plusieurs comptes. Répétable.
+          schema:
+            type: array
+            items: { type: string }
+          style: form
+          explode: false
+        - name: asOf
+          in: query
+          description: Date de valorisation.
+          schema: { type: string, format: date }
+        - name: reportingCurrency
+          in: query
+          description: Devise de restitution des contre-valeurs.
+          schema: { $ref: '#/components/schemas/CurrencyCode' }
+      responses:
+        '200':
+          description: Page de positions.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    required: [items, asOf, reportingCurrency]
+                    properties:
+                      asOf:
+                        type: string
+                        format: date
+                        description: Date de valorisation effectivement retenue.
+                      reportingCurrency: { $ref: '#/components/schemas/CurrencyCode' }
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/Position' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ──────────────────────────── Transactions ────────────────────────────
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: Registre des transactions
+      operationId: listTransactions
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Query'
+        - name: accountId
+          in: query
+          schema:
+            type: array
+            items: { type: string }
+          style: form
+          explode: false
+        - name: nature
+          in: query
+          schema:
+            type: array
+            items: { $ref: '#/components/schemas/TransactionNature' }
+          style: form
+          explode: false
+        - name: from
+          in: query
+          description: Borne basse sur la date du fait, incluse.
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          description: Borne haute sur la date du fait, incluse.
+          schema: { type: string, format: date }
+        - name: settlementState
+          in: query
+          schema: { $ref: '#/components/schemas/SettlementState' }
+      responses:
+        '200':
+          description: Page de transactions.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/Transaction' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Transactions]
+      summary: Enregistrer une transaction
+      description: |
+        Le serveur engendre les opérations (« jambes ») à partir de la nature et du type : le
+        front les affiche pour contrôle mais ne les compose pas lui-même, faute de quoi la règle
+        de composition existerait en deux exemplaires.
+      operationId: createTransaction
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransactionInput' }
+      responses:
+        '201':
+          description: Transaction enregistrée.
+          headers:
+            Location:
+              description: URL de la transaction créée.
+              schema: { type: string, format: uri-reference }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+
+  /transactions/{ref}:
+    parameters:
+      - name: ref
+        in: path
+        required: true
+        description: Référence de la transaction.
+        schema: { type: string }
+        example: TXN000041
+    get:
+      tags: [Transactions]
+      summary: Détail d'une transaction
+      operationId: getTransaction
+      responses:
+        '200':
+          description: La transaction, avec ses opérations.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Transactions]
+      summary: Corriger une transaction
+      description: |
+        Correction partielle. `If-Match` est exigé : deux gestionnaires peuvent travailler le
+        même registre, et une écriture aveugle effacerait silencieusement la correction de
+        l'autre.
+      operationId: patchTransaction
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/TransactionPatch' }
+      responses:
+        '200':
+          description: Transaction corrigée.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    put:
+      tags: [Transactions]
+      summary: Remplacer une transaction
+      description: |
+        Remplacement intégral, jambes recomposées. La nature et le type doivent rester ceux de
+        la transaction existante : en changer revient à enregistrer un autre fait, ce qui passe
+        par une annulation suivie d'une saisie.
+      operationId: replaceTransaction
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransactionInput' }
+      responses:
+        '200':
+          description: Transaction remplacée.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    delete:
+      tags: [Transactions]
+      summary: Annuler une transaction
+      description: |
+        Annulation par contre-passation, pas effacement : le registre est une piste d'audit. La
+        transaction reste consultable, marquée annulée, et une écriture inverse est enregistrée
+        — c'est elle que renvoie l'en-tête `Location`.
+
+        Refusé — `409` — sur une transaction déjà dénouée ou rapprochée : il faut alors passer
+        par une opération de correction, qui relève du métier et non d'un `DELETE`.
+      operationId: cancelTransaction
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+        - name: reason
+          in: query
+          required: true
+          description: Motif d'annulation, porté à la piste d'audit.
+          schema: { type: string, minLength: 3 }
+      responses:
+        '204':
+          description: Transaction annulée.
+          headers:
+            Location:
+              description: URL de l'écriture de contre-passation.
+              schema: { type: string, format: uri-reference }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+
+  # ─────────────────────────────── Marché ───────────────────────────────
+  /market/places:
+    get:
+      tags: [Marché]
+      summary: Places de négociation
+      description: |
+        Référentiel des places, enrichi de leur état d'ouverture à l'instant de l'appel. C'est le
+        serveur qui tranche l'ouverture : lui seul connaît l'heure de référence, et deux postes
+        mal réglés donneraient deux réponses.
+      operationId: listPlaces
+      responses:
+        '200':
+          description: Les places.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, at]
+                properties:
+                  at:
+                    type: string
+                    format: date-time
+                    description: Instant auquel l'état d'ouverture a été évalué.
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Place' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Marché]
+      summary: Inscrire une place au référentiel
+      operationId: createPlace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlaceInput' }
+      responses:
+        '201': { $ref: '#/components/responses/PlaceCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Ce code MIC est déjà inscrit.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /market/places/{mic}:
+    parameters:
+      - $ref: '#/components/parameters/MicPath'
+    get:
+      tags: [Marché]
+      summary: Détail d'une place
+      operationId: getPlace
+      responses:
+        '200':
+          description: La place.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Place' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Marché]
+      summary: Remplacer une place
+      operationId: replacePlace
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlaceInput' }
+      responses:
+        '200': { $ref: '#/components/responses/PlaceUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    patch:
+      tags: [Marché]
+      summary: Modifier une place
+      description: |
+        C'est par ici que passe le réglage du cycle de dénouement — l'écran Paramètres l'édite
+        place par place, et `/calendars/settlement-date` s'en sert aussitôt.
+      operationId: patchPlace
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/PlacePatch' }
+      responses:
+        '200': { $ref: '#/components/responses/PlaceUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    delete:
+      tags: [Marché]
+      summary: Retirer une place
+      description: Refusé si un titre du référentiel s'y négocie encore.
+      operationId: deletePlace
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204': { description: Place retirée. }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+
+  /market/quotes:
+    get:
+      tags: [Marché]
+      summary: Cours des instruments
+      operationId: listQuotes
+      parameters:
+        - name: securityId
+          in: query
+          description: Restreint à un ou plusieurs titres. Répétable.
+          schema:
+            type: array
+            items: { type: string }
+          style: form
+          explode: false
+        - name: mic
+          in: query
+          schema: { $ref: '#/components/schemas/Mic' }
+      responses:
+        '200':
+          description: Les cours.
+          headers:
+            Cache-Control:
+              description: Durée de fraîcheur, courte par nature sur des cours.
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, at]
+                properties:
+                  at: { type: string, format: date-time }
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Quote' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Marché]
+      summary: Verser des cours
+      description: |
+        Alimentation par lot, depuis un flux de marché ou une saisie manuelle de valeur
+        liquidative. Un cours déjà connu pour le même titre au même horodatage est remplacé —
+        l'opération est donc rejouable sans produire de doublon.
+      operationId: publishQuotes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  items: { $ref: '#/components/schemas/QuoteInput' }
+      responses:
+        '200':
+          description: Cours enregistrés.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [accepted, rejected]
+                properties:
+                  accepted: { type: integer }
+                  rejected:
+                    type: array
+                    description: Lignes refusées, avec leur motif — le lot n'est pas rejeté en bloc.
+                    items:
+                      type: object
+                      required: [index, message]
+                      properties:
+                        index: { type: integer }
+                        securityId: { type: string }
+                        message: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+
+  /market/quotes/{securityId}:
+    parameters:
+      - $ref: '#/components/parameters/SecurityId'
+    get:
+      tags: [Marché]
+      summary: Dernier cours d'un titre
+      operationId: getQuote
+      responses:
+        '200':
+          description: Le cours.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Quote' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Marché]
+      summary: Fixer le cours d'un titre
+      operationId: replaceQuote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuoteInput' }
+      responses:
+        '200':
+          description: Cours enregistré.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Quote' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    delete:
+      tags: [Marché]
+      summary: Retirer le cours d'un titre
+      description: |
+        Retire la cotation du jour — un cours erroné qu'on préfère absent plutôt que faux. Les
+        valorisations déjà arrêtées ne sont pas recalculées.
+      operationId: deleteQuote
+      responses:
+        '204': { description: Cours retiré. }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── Calendriers ─────────────────────────────
+  /calendars/zones:
+    get:
+      tags: [Calendriers]
+      summary: Zones de calendrier
+      description: |
+        Zones dont l'API sait dire les jours chômés — calendriers nationaux et calendrier de
+        règlement TARGET2.
+      operationId: listCalendarZones
+      responses:
+        '200':
+          description: Les zones.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/CalendarZone' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Calendriers]
+      summary: Créer une zone de calendrier
+      operationId: createCalendarZone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarZoneInput' }
+      responses:
+        '201': { $ref: '#/components/responses/CalendarZoneCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Cet identifiant de zone existe déjà.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /calendars/zones/{zoneId}:
+    parameters:
+      - $ref: '#/components/parameters/ZoneId'
+    get:
+      tags: [Calendriers]
+      summary: Détail d'une zone
+      operationId: getCalendarZone
+      responses:
+        '200':
+          description: La zone, avec ses règles de fériés.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarZone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Calendriers]
+      summary: Remplacer une zone
+      operationId: replaceCalendarZone
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarZoneInput' }
+      responses:
+        '200': { $ref: '#/components/responses/CalendarZoneUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    patch:
+      tags: [Calendriers]
+      summary: Modifier une zone
+      operationId: patchCalendarZone
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/CalendarZonePatch' }
+      responses:
+        '200': { $ref: '#/components/responses/CalendarZoneUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    delete:
+      tags: [Calendriers]
+      summary: Supprimer une zone
+      description: Refusé si une place s'appuie encore sur cette zone pour son dénouement.
+      operationId: deleteCalendarZone
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204': { description: Zone supprimée. }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+
+  /calendars/zones/{zoneId}/holidays:
+    parameters:
+      - $ref: '#/components/parameters/ZoneId'
+    get:
+      tags: [Calendriers]
+      summary: Règles de fériés d'une zone
+      description: |
+        Les **règles**, non leurs occurrences : « lundi de Pâques » et non « 6 avril 2026 ». Une
+        table année par année se périmerait chaque 31 décembre, alors que la règle, elle, tient.
+      operationId: listHolidayRules
+      responses:
+        '200':
+          description: Les règles, dans l'ordre du calendrier.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [zoneId, items]
+                properties:
+                  zoneId: { type: string }
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/HolidayRule' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Calendriers]
+      summary: Ajouter une règle de férié
+      operationId: createHolidayRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HolidayRuleInput' }
+      responses:
+        '201': { $ref: '#/components/responses/HolidayRuleCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /calendars/zones/{zoneId}/holidays/{ruleId}:
+    parameters:
+      - $ref: '#/components/parameters/ZoneId'
+      - name: ruleId
+        in: path
+        required: true
+        schema: { type: string }
+        example: fr-easter-monday
+    get:
+      tags: [Calendriers]
+      summary: Détail d'une règle de férié
+      operationId: getHolidayRule
+      responses:
+        '200':
+          description: La règle.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HolidayRule' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Calendriers]
+      summary: Remplacer une règle de férié
+      operationId: replaceHolidayRule
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HolidayRuleInput' }
+      responses:
+        '200': { $ref: '#/components/responses/HolidayRuleUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    patch:
+      tags: [Calendriers]
+      summary: Modifier une règle de férié
+      operationId: patchHolidayRule
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/HolidayRulePatch' }
+      responses:
+        '200': { $ref: '#/components/responses/HolidayRuleUpdated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    delete:
+      tags: [Calendriers]
+      summary: Supprimer une règle de férié
+      operationId: deleteHolidayRule
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204': { description: Règle supprimée. }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+
+  /calendars/zones/{zoneId}/non-working-days:
+    parameters:
+      - $ref: '#/components/parameters/ZoneId'
+    get:
+      tags: [Calendriers]
+      summary: Jours chômés d'une zone
+      description: |
+        Fins de semaine et jours fériés d'un intervalle fermé. Le front en a besoin en bloc — une
+        grille de mois interroge quarante-deux jours — d'où un intervalle plutôt qu'un appel par
+        date.
+
+        **Ressource calculée, en lecture seule.** Ce sont les occurrences des règles de la zone ;
+        le CRUD porte sur les règles — voir `/calendars/zones/{zoneId}/holidays`.
+      operationId: listNonWorkingDays
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: kind
+          in: query
+          description: Ne renvoyer qu'un type de jour chômé.
+          schema:
+            type: string
+            enum: [weekend, holiday]
+      responses:
+        '200':
+          description: Les jours chômés de l'intervalle, dans l'ordre.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [zoneId, from, to, items]
+                properties:
+                  zoneId: { type: string }
+                  from: { type: string, format: date }
+                  to: { type: string, format: date }
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/NonWorkingDay' }
+              example:
+                zoneId: FR
+                from: '2026-11-01'
+                to: '2026-11-15'
+                items:
+                  - { date: '2026-11-01', kind: holiday, name: Toussaint }
+                  - { date: '2026-11-07', kind: weekend }
+                  - { date: '2026-11-08', kind: weekend }
+                  - { date: '2026-11-11', kind: holiday, name: Armistice 1918 }
+                  - { date: '2026-11-14', kind: weekend }
+                  - { date: '2026-11-15', kind: weekend }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /calendars/settlement-date:
+    get:
+      tags: [Calendriers]
+      summary: Date de dénouement théorique
+      description: |
+        Applique le cycle de la place à une date d'exécution, en jours **ouvrés de cette place**.
+        Exposé côté serveur parce que le cycle et le calendrier sont des données de référentiel :
+        les recopier dans le front les ferait diverger au premier changement.
+      operationId: computeSettlementDate
+      parameters:
+        - name: tradeDate
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: mic
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Mic' }
+        - name: cycle
+          in: query
+          description: Force le cycle au lieu de prendre celui de la place.
+          schema: { type: integer, minimum: 0, maximum: 10 }
+      responses:
+        '200':
+          description: La date de dénouement.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tradeDate, settlementDate, cycle, zoneId]
+                properties:
+                  tradeDate: { type: string, format: date }
+                  settlementDate: { type: string, format: date }
+                  cycle:
+                    type: integer
+                    description: Nombre de jours ouvrés appliqués.
+                  zoneId:
+                    type: string
+                    description: Calendrier retenu pour le décompte.
+              # Le cas qui justifie l'endpoint : exécution le jeudi 2 juillet 2026, T+1 à New
+              # York, dénouement le lundi 6 — le 4 juillet tombant un samedi est chômé le
+              # vendredi 3, puis vient la fin de semaine. Trois jours calendaires pour un T+1.
+              example:
+                tradeDate: '2026-07-02'
+                settlementDate: '2026-07-06'
+                cycle: 1
+                zoneId: US
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Composants
+# ═══════════════════════════════════════════════════════════════════════════════
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ─────────────────────────── Paramètres communs ───────────────────────────
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Numéro de page, à partir de 1.
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      description: Taille de page.
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    Query:
+      name: q
+      in: query
+      description: Recherche plein texte, portée décrite sur chaque opération.
+      schema: { type: string }
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema: { type: string }
+      example: BGM-004
+    SecurityId:
+      name: securityId
+      in: path
+      required: true
+      schema: { type: string }
+      example: SEC-AAPL
+    MicPath:
+      name: mic
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Mic' }
+      example: XPAR
+    ZoneId:
+      name: zoneId
+      in: path
+      required: true
+      schema: { type: string }
+      example: FR
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: ETag de la version que le client croit modifier.
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: |
+        Clé fournie par le client pour qu'un renvoi après coupure réseau ne crée pas un doublon.
+        Le serveur rejoue la réponse d'origine si la clé a déjà été vue.
+      schema: { type: string, format: uuid }
+
+  headers:
+    ETag:
+      description: Version de la ressource, à renvoyer en `If-Match` lors d'une modification.
+      schema: { type: string }
+    Location:
+      description: URL de la ressource créée.
+      schema: { type: string, format: uri-reference }
+
+  # ──────────────────────── Réponses de création et de mise à jour ────────────────────────
+  # Facteur commun des `201`/`200` d'écriture : même en-têtes, même corps que la lecture. Les
+  # décrire une fois évite qu'ils divergent d'un verbe à l'autre.
+  responses:
+    AccountCreated:
+      description: Compte ouvert.
+      headers:
+        Location: { $ref: '#/components/headers/Location' }
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Account' }
+    AccountUpdated:
+      description: Compte mis à jour.
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Account' }
+    SecurityCreated:
+      description: Titre inscrit.
+      headers:
+        Location: { $ref: '#/components/headers/Location' }
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Security' }
+    SecurityUpdated:
+      description: Titre mis à jour.
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Security' }
+    PlaceCreated:
+      description: Place inscrite.
+      headers:
+        Location: { $ref: '#/components/headers/Location' }
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Place' }
+    PlaceUpdated:
+      description: Place mise à jour.
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Place' }
+    CalendarZoneCreated:
+      description: Zone créée.
+      headers:
+        Location: { $ref: '#/components/headers/Location' }
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/CalendarZone' }
+    CalendarZoneUpdated:
+      description: Zone mise à jour.
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/CalendarZone' }
+    HolidayRuleCreated:
+      description: Règle ajoutée.
+      headers:
+        Location: { $ref: '#/components/headers/Location' }
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/HolidayRule' }
+    HolidayRuleUpdated:
+      description: Règle mise à jour.
+      headers:
+        ETag: { $ref: '#/components/headers/ETag' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/HolidayRule' }
+
+    # ──────────────────────────── Réponses d'erreur ────────────────────────────
+    BadRequest:
+      description: Requête mal formée.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/invalid-parameter'
+            title: Paramètre invalide
+            status: 400
+            detail: "`from` n'est pas une date au format aaaa-mm-jj."
+            errors:
+              - pointer: /from
+                message: Format de date attendu — aaaa-mm-jj.
+    Unauthorized:
+      description: Authentification absente ou invalide.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/unauthorized'
+            title: Authentification requise
+            status: 401
+    NotFound:
+      description: Ressource inconnue.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/not-found'
+            title: Ressource inconnue
+            status: 404
+            instance: /accounts/BGM-999
+    Conflict:
+      description: Conflit avec l'état courant de la ressource.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/still-referenced'
+            title: Clôture impossible
+            status: 409
+            detail: Le compte porte encore 12 positions et un solde espèces non nul.
+    PreconditionFailed:
+      description: L'`If-Match` fourni ne correspond plus à la version courante.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/stale-version'
+            title: Version périmée
+            status: 412
+            detail: La ressource a été modifiée depuis votre lecture. Rechargez avant de réessayer.
+    UnprocessableEntity:
+      description: Requête bien formée mais refusée par une règle métier.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/business-rule'
+            title: Dénouement antérieur à l'exécution
+            status: 422
+            errors:
+              - pointer: /executions/0/settlementDate
+                message: La date de dénouement ne peut précéder la date d'exécution.
+
+  # ───────────────────────────────── Schémas ─────────────────────────────────
+  schemas:
+
+    # -- Transverses ------------------------------------------------------
+    Problem:
+      description: |
+        Erreur au format RFC 9457. `errors` porte le détail champ par champ, ce dont les
+        formulaires de saisie ont besoin pour placer le message au bon endroit.
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri, default: 'about:blank' }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri-reference }
+        errors:
+          type: array
+          items:
+            type: object
+            required: [pointer, message]
+            properties:
+              pointer:
+                type: string
+                description: Pointeur JSON vers le champ fautif.
+                example: /executions/0/settlementDate
+              message: { type: string }
+
+    Page:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total:
+          type: integer
+          description: Nombre total d'éléments, tous filtres appliqués.
+
+    CurrencyCode:
+      type: string
+      description: Code ISO 4217.
+      pattern: '^[A-Z]{3}$'
+      example: EUR
+
+    Mic:
+      type: string
+      description: Code ISO 10383 de la place. `OTC` pour le gré à gré.
+      example: XPAR
+
+    Money:
+      description: |
+        Montant et sa devise. **Toujours les deux** : un montant nu a déjà provoqué des additions
+        entre devises dans les jeux d'essai du front. `amount` est un nombre à deux décimales
+        significatives pour les devises courantes ; si la précision décimale devient critique
+        côté comptabilité, ce champ passera en chaîne — c'est le seul changement de rupture
+        anticipé sur ce contrat.
+      type: object
+      required: [amount, currency]
+      properties:
+        amount: { type: number, format: double, example: 3013.80 }
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+
+    Ref:
+      description: Renvoi vers une autre ressource — la clé, plus de quoi l'afficher sans second appel.
+      type: object
+      required: [id, label]
+      properties:
+        id: { type: string }
+        label: { type: string }
+
+    # -- Comptes ----------------------------------------------------------
+    AccountState:
+      type: string
+      enum: [active, onboarding, frozen, closing]
+
+    AccountSummary:
+      type: object
+      required: [id, client, state, currency, aum]
+      properties:
+        id: { type: string, example: BGM-004 }
+        client: { type: string, example: Balanced Growth }
+        state: { $ref: '#/components/schemas/AccountState' }
+        profile: { type: string, example: Équilibré }
+        aum: { $ref: '#/components/schemas/Money' }
+        performance:
+          type: number
+          format: double
+          description: Performance de l'exercice, en fraction — 0.0742 pour 7,42 %.
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        manager: { type: string }
+        openedOn: { type: string, format: date }
+
+    Account:
+      allOf:
+        - $ref: '#/components/schemas/AccountSummary'
+        - type: object
+          properties:
+            type: { type: string, example: Mandat discrétionnaire }
+            domicile: { type: string }
+            custodian: { type: string }
+            feeSchedule: { type: string }
+            horizon: { type: string }
+            nextReviewOn: { type: string, format: date }
+            riskProfile: { type: string }
+            mifidCategory: { type: string }
+            taxRegime: { type: string }
+            holders:
+              type: array
+              items: { $ref: '#/components/schemas/AccountHolder' }
+            rules:
+              type: array
+              items: { $ref: '#/components/schemas/AccountRule' }
+            flags:
+              type: array
+              description: Signalements ouverts — pièce manquante, dépassement, contrôle en retard.
+              items:
+                type: object
+                required: [code, label, severity]
+                properties:
+                  code: { type: string }
+                  label: { type: string }
+                  severity: { type: string, enum: [info, warning, blocking] }
+
+    AccountInput:
+      description: |
+        Corps de création et de remplacement. L'identifiant, l'encours et la performance n'y
+        figurent pas : le premier est attribué par le serveur, les deux autres se constatent.
+      type: object
+      required: [client, currency, manager]
+      properties:
+        client: { type: string, example: Balanced Growth }
+        profile: { type: string, example: Équilibré }
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        manager: { type: string }
+        type: { type: string, example: Mandat discrétionnaire }
+        domicile: { type: string }
+        custodian: { type: string }
+        feeSchedule: { type: string }
+        horizon: { type: string }
+        nextReviewOn: { type: string, format: date }
+        riskProfile: { type: string }
+        mifidCategory: { type: string }
+        taxRegime: { type: string }
+        holders:
+          type: array
+          items: { $ref: '#/components/schemas/AccountHolder' }
+        rules:
+          type: array
+          items: { $ref: '#/components/schemas/AccountRule' }
+
+    AccountPatch:
+      description: |
+        Modification partielle. `state` n'y est pas : la vie du compte suit son propre cycle —
+        ouverture chez le dépositaire, clôture — et non un champ libre.
+      type: object
+      properties:
+        client: { type: string }
+        profile: { type: ['string', 'null'] }
+        manager: { type: string }
+        custodian: { type: ['string', 'null'] }
+        feeSchedule: { type: ['string', 'null'] }
+        horizon: { type: ['string', 'null'] }
+        nextReviewOn: { type: ['string', 'null'], format: date }
+        riskProfile: { type: ['string', 'null'] }
+        mifidCategory: { type: ['string', 'null'] }
+        taxRegime: { type: ['string', 'null'] }
+        holders:
+          type: array
+          items: { $ref: '#/components/schemas/AccountHolder' }
+        rules:
+          type: array
+          items: { $ref: '#/components/schemas/AccountRule' }
+
+    AccountHolder:
+      type: object
+      required: [name, role]
+      properties:
+        name: { type: string }
+        role: { type: string, example: Titulaire }
+        kind: { type: string, enum: [physique, morale] }
+        status: { type: string }
+        since: { type: string, format: date }
+
+    AccountRule:
+      description: Contrainte de gestion opposable — bande d'allocation, limite, interdiction.
+      type: object
+      required: [label]
+      properties:
+        label: { type: string }
+        target: { type: number, format: double }
+        tolerance: { type: number, format: double }
+        current: { type: number, format: double }
+        breached: { type: boolean }
+
+    # -- Titres -----------------------------------------------------------
+    Security:
+      type: object
+      required: [id, ticker, name, mic, currency]
+      properties:
+        id: { type: string, example: SEC-AAPL }
+        ticker: { type: string, example: AAPL }
+        name: { type: string, example: Apple Inc. }
+        isin:
+          type: string
+          pattern: '^[A-Z]{2}[A-Z0-9]{9}[0-9]$'
+          example: US0378331005
+        mic: { $ref: '#/components/schemas/Mic' }
+        place: { type: string, example: Nasdaq }
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        assetClass: { type: string, example: Actions }
+        region: { type: string, example: Amérique du Nord }
+        tradable: { type: boolean }
+        quoted:
+          type: boolean
+          description: |
+            Faux pour un instrument non coté en continu — fonds fermé, co-investissement — dont
+            la valeur est une valeur liquidative publiée, non un cours.
+
+    SecurityInput:
+      type: object
+      required: [ticker, name, mic, currency]
+      properties:
+        ticker: { type: string, example: AAPL }
+        name: { type: string, example: Apple Inc. }
+        isin:
+          type: string
+          pattern: '^[A-Z]{2}[A-Z0-9]{9}[0-9]$'
+        mic: { $ref: '#/components/schemas/Mic' }
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        assetClass: { type: string }
+        region: { type: string }
+        tradable: { type: boolean, default: true }
+        quoted: { type: boolean, default: true }
+
+    SecurityPatch:
+      type: object
+      properties:
+        name: { type: string }
+        isin: { type: ['string', 'null'] }
+        assetClass: { type: ['string', 'null'] }
+        region: { type: ['string', 'null'] }
+        tradable: { type: boolean }
+        quoted: { type: boolean }
+
+    # -- Positions --------------------------------------------------------
+    Position:
+      type: object
+      required: [account, security, quantity, price, marketValue]
+      properties:
+        account: { $ref: '#/components/schemas/Ref' }
+        security: { $ref: '#/components/schemas/Ref' }
+        quantity: { type: number, format: double }
+        price: { $ref: '#/components/schemas/Money' }
+        costPrice: { $ref: '#/components/schemas/Money' }
+        marketValue:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: Contre-valeur dans la devise de restitution.
+        unrealizedPnl: { $ref: '#/components/schemas/Money' }
+        realizedPnl: { $ref: '#/components/schemas/Money' }
+        income:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: Revenus encaissés sur la ligne depuis l'entrée en position.
+        weight:
+          type: number
+          format: double
+          description: Poids dans l'actif total du compte, en fraction.
+        heldSince: { type: string, format: date }
+        custodian: { type: string }
+
+    # -- Transactions -----------------------------------------------------
+    TransactionNature:
+      type: string
+      description: Nature du fait de gestion.
+      enum: [TRADE, TRANSFER, CORPORATE, CASHFLOW]
+
+    Sense:
+      type: string
+      description: Sens de l'effet sur les espèces du compte.
+      enum: [debit, credit, none]
+
+    SettlementState:
+      type: string
+      enum: [pending, settled, failed]
+
+    Operation:
+      description: |
+        Une jambe : le mouvement réel de titres ou d'espèces sur une ligne. Engendrée par le
+        serveur à partir de la nature et du type ; le front l'affiche, il ne la compose pas.
+      type: object
+      required: [sequence, type, account, sense, amount]
+      properties:
+        sequence: { type: integer }
+        type: { type: string, example: BUY }
+        account: { $ref: '#/components/schemas/Ref' }
+        security: { $ref: '#/components/schemas/Ref' }
+        quantity: { type: number, format: double }
+        price: { $ref: '#/components/schemas/Money' }
+        fees: { $ref: '#/components/schemas/Money' }
+        taxes: { $ref: '#/components/schemas/Money' }
+        amount: { $ref: '#/components/schemas/Money' }
+        sense: { $ref: '#/components/schemas/Sense' }
+        settlementDate: { type: string, format: date }
+
+    Execution:
+      description: Une exécution d'un ordre — un ordre à cours limité peut en produire plusieurs.
+      type: object
+      required: [executedOn, quantity, price]
+      properties:
+        executedOn: { type: string, format: date }
+        quantity: { type: number, format: double }
+        price: { $ref: '#/components/schemas/Money' }
+        settlementDate:
+          type: string
+          format: date
+          description: |
+            Omise à la création, le serveur applique le cycle de la place en jours ouvrés — voir
+            `/calendars/settlement-date`. Fournie, elle est retenue telle quelle et signalée si
+            elle tombe un jour chômé.
+
+    Transaction:
+      type: object
+      required: [ref, nature, tradeDate, account, amount, sense]
+      properties:
+        ref: { type: string, example: TXN000041 }
+        nature: { $ref: '#/components/schemas/TransactionNature' }
+        type: { type: string, example: BUY }
+        tradeDate: { type: string, format: date }
+        tradeTime: { type: string, example: '09:41' }
+        recordedBy: { type: string }
+        modifiedAt: { type: string, format: date-time }
+        comment: { type: string }
+        account: { $ref: '#/components/schemas/Ref' }
+        security: { $ref: '#/components/schemas/Ref' }
+        amount: { $ref: '#/components/schemas/Money' }
+        sense: { $ref: '#/components/schemas/Sense' }
+        settlementDate: { type: string, format: date }
+        settlementState: { $ref: '#/components/schemas/SettlementState' }
+        reconciliationState:
+          type: string
+          enum: [matched, pending, discrepancy, unmatched, forced]
+        operations:
+          type: array
+          items: { $ref: '#/components/schemas/Operation' }
+
+    TransactionInput:
+      type: object
+      required: [nature, type, tradeDate, accountId]
+      properties:
+        nature: { $ref: '#/components/schemas/TransactionNature' }
+        type: { type: string, example: BUY }
+        tradeDate: { type: string, format: date }
+        accountId: { type: string }
+        securityId: { type: string }
+        mic:
+          allOf: [{ $ref: '#/components/schemas/Mic' }]
+          description: Place d'exécution, si elle diffère de la place de cotation du titre.
+        quantity: { type: number, format: double }
+        limitPrice: { $ref: '#/components/schemas/Money' }
+        fees: { $ref: '#/components/schemas/Money' }
+        taxes: { $ref: '#/components/schemas/Money' }
+        comment: { type: string }
+        executions:
+          type: array
+          items: { $ref: '#/components/schemas/Execution' }
+
+    TransactionPatch:
+      description: |
+        Correction partielle, au format JSON Merge Patch. Les champs absents sont inchangés ;
+        `null` efface. La nature et le type ne sont pas modifiables — changer la nature change la
+        composition en jambes, ce qui relève d'une annulation suivie d'une ressaisie.
+      type: object
+      properties:
+        comment: { type: ['string', 'null'] }
+        settlementDate: { type: ['string', 'null'], format: date }
+        fees: { $ref: '#/components/schemas/Money' }
+        taxes: { $ref: '#/components/schemas/Money' }
+
+    # -- Marché -----------------------------------------------------------
+    PlaceStatus:
+      type: string
+      description: |
+        `untracked` vaut pour une place hors référentiel, dont les horaires sont inconnus : c'est
+        un aveu d'ignorance, à ne pas confondre avec une fermeture.
+      enum: [open, closed, holiday, untracked]
+
+    Place:
+      type: object
+      required: [mic, name, status]
+      properties:
+        mic: { $ref: '#/components/schemas/Mic' }
+        name: { type: string, example: Euronext Paris }
+        countryCode: { type: string, pattern: '^[A-Z]{2}$' }
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        timezone: { type: string, example: Europe/Paris }
+        sessionOpen: { type: string, example: '09:00' }
+        sessionClose: { type: string, example: '17:30' }
+        benchmarkIndex: { type: string, example: CAC 40 }
+        settlementCycle:
+          type: integer
+          description: Jours ouvrés entre exécution et dénouement.
+          example: 2
+        centralSecuritiesDepository: { type: string, example: Euroclear France }
+        status: { $ref: '#/components/schemas/PlaceStatus' }
+        statusReason:
+          type: string
+          description: Motif lisible — « Fermée — Assomption », « Séance close depuis 17:30 ».
+
+    PlaceInput:
+      type: object
+      required: [mic, name, timezone, currency]
+      properties:
+        mic: { $ref: '#/components/schemas/Mic' }
+        name: { type: string }
+        countryCode: { type: string, pattern: '^[A-Z]{2}$' }
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        timezone:
+          type: string
+          description: Identifiant IANA. C'est lui qui rend l'ouverture juste des deux côtés d'un changement d'heure.
+          example: Europe/Paris
+        sessionOpen: { type: string, pattern: '^\d{2}:\d{2}$', example: '09:00' }
+        sessionClose: { type: string, pattern: '^\d{2}:\d{2}$', example: '17:30' }
+        benchmarkIndex: { type: string }
+        settlementCycle: { type: integer, minimum: 0, maximum: 10, default: 2 }
+        centralSecuritiesDepository: { type: string }
+        calendarZoneId:
+          type: string
+          description: Zone dont le calendrier fait foi. À défaut, celle du pays, sinon TARGET2.
+
+    PlacePatch:
+      type: object
+      properties:
+        name: { type: string }
+        sessionOpen: { type: ['string', 'null'] }
+        sessionClose: { type: ['string', 'null'] }
+        benchmarkIndex: { type: ['string', 'null'] }
+        settlementCycle: { type: integer }
+        centralSecuritiesDepository: { type: ['string', 'null'] }
+        calendarZoneId: { type: ['string', 'null'] }
+
+    QuoteInput:
+      type: object
+      required: [securityId, last]
+      properties:
+        securityId: { type: string }
+        last: { $ref: '#/components/schemas/Money' }
+        previousClose: { $ref: '#/components/schemas/Money' }
+        open: { $ref: '#/components/schemas/Money' }
+        high: { $ref: '#/components/schemas/Money' }
+        low: { $ref: '#/components/schemas/Money' }
+        volume: { type: integer, minimum: 0 }
+        quotedAt:
+          type: string
+          format: date-time
+          description: Horodatage de l'échange. À défaut, l'instant de réception.
+
+    Quote:
+      type: object
+      required: [security, last, previousClose]
+      properties:
+        security: { $ref: '#/components/schemas/Ref' }
+        mic: { $ref: '#/components/schemas/Mic' }
+        last: { $ref: '#/components/schemas/Money' }
+        previousClose:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: Clôture de la veille — c'est d'elle que se compte la variation du jour.
+        open: { $ref: '#/components/schemas/Money' }
+        high: { $ref: '#/components/schemas/Money' }
+        low: { $ref: '#/components/schemas/Money' }
+        volume: { type: integer }
+        quotedAt:
+          type: string
+          format: date-time
+          description: Horodatage du dernier échange. Absent pour une valeur liquidative.
+        navBased:
+          type: boolean
+          description: Vrai pour un instrument valorisé par valeur liquidative, non coté en continu.
+
+    # -- Calendriers ------------------------------------------------------
+    CalendarZone:
+      type: object
+      required: [id, label, weekend]
+      properties:
+        id: { type: string, example: FR }
+        label: { type: string, example: France }
+        area: { type: string, example: Europe }
+        countryCode: { type: ['string', 'null'], pattern: '^[A-Z]{2}$' }
+        weekend:
+          type: array
+          description: |
+            Jours de fin de semaine, au sens de `Date.getDay()` — 0 pour dimanche. Le champ
+            existe parce que ce n'est pas universel : les places du Golfe chôment vendredi et
+            samedi.
+          items: { type: integer, minimum: 0, maximum: 6 }
+          example: [6, 0]
+        substitution: { $ref: '#/components/schemas/SubstitutionPolicy' }
+        rules:
+          type: array
+          description: Règles de fériés. Présentes sur le détail, omises sur la liste.
+          items: { $ref: '#/components/schemas/HolidayRule' }
+
+    CalendarZoneInput:
+      type: object
+      required: [id, label, weekend]
+      properties:
+        id: { type: string, example: FR }
+        label: { type: string, example: France }
+        area: { type: string, example: Europe }
+        countryCode: { type: ['string', 'null'], pattern: '^[A-Z]{2}$' }
+        weekend:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 6 }
+          default: [6, 0]
+        substitution: { $ref: '#/components/schemas/SubstitutionPolicy' }
+
+    CalendarZonePatch:
+      type: object
+      properties:
+        label: { type: string }
+        area: { type: string }
+        countryCode: { type: ['string', 'null'] }
+        weekend:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 6 }
+        substitution: { $ref: '#/components/schemas/SubstitutionPolicy' }
+
+    SubstitutionPolicy:
+      type: string
+      description: |
+        Report d'un férié qui tombe un jour chômé.
+
+        - `none` : aucun report, usage continental.
+        - `nextWeekday` : premier jour ouvré suivant encore libre — c'est ce qui pousse le Boxing
+          Day au mardi quand Noël a déjà pris le lundi.
+        - `nearestWeekday` : samedi vers le vendredi, dimanche vers le lundi, usage américain.
+        - `sundayToMonday` : seul le dimanche est reporté, usage japonais.
+      enum: [none, nextWeekday, nearestWeekday, sundayToMonday]
+      default: none
+
+    HolidayRuleInput:
+      description: |
+        Règle de férié. Cinq familles suffisent aux calendriers modélisés — date fixe, décalage
+        par rapport à Pâques, n-ième jour de la semaine d'un mois, dernier jour de la semaine
+        avant une date, et les deux équinoxes du calendrier japonais, qui sont astronomiques.
+
+        Les champs attendus dépendent de `kind` : `month`/`day` pour `fixed` et `before`,
+        `offset` pour `easter`, `month`/`weekday`/`nth` pour `nth`, `season` pour `equinox`.
+      type: object
+      required: [kind, name]
+      properties:
+        kind:
+          type: string
+          enum: [fixed, easter, nth, before, equinox]
+        name: { type: string, example: Lundi de Pâques }
+        month: { type: integer, minimum: 1, maximum: 12 }
+        day: { type: integer, minimum: 1, maximum: 31 }
+        offset:
+          type: integer
+          description: Jours par rapport au dimanche de Pâques, négatif avant.
+          example: 1
+        weekday:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: Au sens de `Date.getDay()` — 0 pour dimanche.
+        nth:
+          type: integer
+          description: N-ième occurrence dans le mois ; négatif compte depuis la fin, -1 pour la dernière.
+        season:
+          type: string
+          enum: [spring, autumn]
+
+    HolidayRulePatch:
+      type: object
+      properties:
+        name: { type: string }
+        month: { type: ['integer', 'null'] }
+        day: { type: ['integer', 'null'] }
+        offset: { type: ['integer', 'null'] }
+        weekday: { type: ['integer', 'null'] }
+        nth: { type: ['integer', 'null'] }
+
+    HolidayRule:
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string, example: fr-easter-monday }
+        - $ref: '#/components/schemas/HolidayRuleInput'
+
+    NonWorkingDay:
+      type: object
+      required: [date, kind]
+      properties:
+        date: { type: string, format: date }
+        kind: { type: string, enum: [weekend, holiday] }
+        name:
+          type: string
+          description: Nom du férié. Absent pour une fin de semaine.
+          example: Assomption
+        observedFrom:
+          type: string
+          format: date
+          description: |
+            Date de la règle, lorsque le férié a été reporté — Noël tombant un samedi et chômé le
+            lundi suivant au Royaume-Uni.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Reste à couvrir
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+#  Ordres           /orders                     cycle de vie, validation, transmission
+#  Réconciliation   /reconciliation/*           rapprochements, écarts, forçages
+#  Performance      /performance/*              séries, contributions, attribution
+#  Trésorerie       /cash/*                     soldes, prévisionnel, instructions
+#  Comptabilité     /accounting/*               journal, balance, résultat, clôture
+#  Documents        /documents/*                dépôt, versions, métadonnées
+#  Risque           /risk/scenarios, /risk/runs  modèles de choc et résultats
+#  Rapports         /reports, /reports/jobs     catalogue et générations
+#  Échéances        /deadlines                  agrégat multi-écrans, report, traitement
+#  Calendrier       /calendar/items             événements et tâches
+#  Référentiels     /reference/*                MIC, retenues à la source, rôles
+#  Identité         /me, /users, /roles         session, permissions
