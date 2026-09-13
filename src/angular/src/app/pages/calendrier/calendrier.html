@@ -36,29 +36,44 @@
         [matMenuTriggerFor]="clSettings">
         <mat-icon svgIcon="settings" style="font-size:20px"></mat-icon>
       </button>
-      <mat-menu #clSettings="matMenu" class="cl-settings-menu" xPosition="before">
+      <mat-menu #clSettings="matMenu" class="cl-settings-menu pm-unfold" xPosition="before">
         <div class="cl-settings" (click)="$event.stopPropagation()">
+          <!-- Rangées reprises du filtre à sélection multiple du registre (voir
+               transactions/tx-multiselect.ts) : un <button> qui porte la ligne entière, la case
+               à l'intérieur. La case arrête la propagation de son clic pour que la bascule ne
+               soit pas jouée deux fois — une par la case, une par la ligne. Pas de
+               `mat-menu-item` : la directive referme le menu au clic, ce qui interdirait de
+               cocher plusieurs zones d'affilée. -->
           <h3 class="cl-settings-title">Affichage</h3>
-          <mat-checkbox class="cl-settings-check" [checked]="tintWeekends()"
-            (change)="tintWeekends.set($event.checked)">Teinter les fins de semaine</mat-checkbox>
+          <button type="button" class="cl-settings-row" (click)="toggleTint($event)">
+            <mat-checkbox [checked]="tintWeekends()" (click)="$event.stopPropagation()"
+              (change)="tintWeekends.set($event.checked)"></mat-checkbox>
+            <span class="cl-settings-row-label">Teinter les fins de semaine</span>
+          </button>
 
           <h3 class="cl-settings-title">Plage horaire</h3>
           @for (r of dayRanges; track r.key) {
-            <button type="button" class="cl-settings-option" [class.cl-settings-option-on]="dayRange() === r.key"
-              (click)="setDayRange(r.key)">
+            <button type="button" class="cl-settings-row cl-settings-option"
+              [class.cl-settings-option-on]="dayRange() === r.key" (click)="setDayRange(r.key)">
               <mat-icon class="cl-settings-tick" svgIcon="check"></mat-icon>
-              {{ r.label }}
+              <span class="cl-settings-row-label">{{ r.label }}</span>
             </button>
           }
 
-          <h3 class="cl-settings-title">Zone — fins de semaine et jours fériés</h3>
+          <h3 class="cl-settings-title">Zones — jours chômés et éléments affichés</h3>
           @for (g of zoneGroups; track g.area) {
-            <span class="cl-settings-sub">{{ g.area }}</span>
+            <button type="button" class="cl-settings-row cl-settings-area" (click)="onAreaClick($event, g.area)">
+              <mat-checkbox [checked]="areaOn(g.area)" [indeterminate]="areaPartial(g.area)"
+                (click)="$event.stopPropagation()" (change)="toggleArea(g.area, $event.checked)"></mat-checkbox>
+              <span class="cl-settings-row-label">{{ g.area }}</span>
+            </button>
             @for (z of g.zones; track z.id) {
-              <button type="button" class="cl-settings-option" [class.cl-settings-option-on]="zone() === z.id"
-                (click)="setZone(z.id)">
-                <mat-icon class="cl-settings-tick" svgIcon="check"></mat-icon>
-                {{ z.label }}
+              <button type="button" class="cl-settings-row cl-settings-zone"
+                [class.cl-settings-row-active]="zoneOn(z.id)" (click)="onZoneClick($event, z.id)">
+                <mat-checkbox [checked]="zoneOn(z.id)" (click)="$event.stopPropagation()"
+                  (change)="toggleZone(z.id, $event.checked)"></mat-checkbox>
+                <span class="cl-settings-flag">{{ z.flag }}</span>
+                <span class="cl-settings-row-label">{{ z.label }}</span>
               </button>
             }
           }
@@ -167,6 +182,9 @@
               @for (ev of d.allDay; track ev.item.id) {
                 <button type="button" class="cl-chip" [style.border-left-color]="ev.color" [style.background]="ev.tint"
                   [matTooltip]="ev.tooltip" matTooltipClass="pm-tooltip-multiline" (dblclick)="openEdit(ev.item, $event)">
+                  @if (ev.flag) {
+                    <span class="cl-chip-flag">{{ ev.flag }}</span>
+                  }
                   <span class="cl-chip-title" [class.cl-struck]="ev.struck">{{ ev.title }}</span>
                 </button>
               }
@@ -192,7 +210,10 @@
                   @if (ev.compact) {
                     <span class="cl-event-start">{{ ev.item.start }}</span>
                   }
-                  <span class="cl-event-title" [class.cl-struck]="ev.struck">{{ ev.title }}</span>
+                  <span class="cl-event-title" [class.cl-struck]="ev.struck">
+                    @if (ev.flag) {
+                      <span class="cl-chip-flag">{{ ev.flag }}</span>
+                    }{{ ev.title }}</span>
                   @if (!ev.compact) {
                     <span class="cl-event-time">{{ ev.timeLabel }}</span>
                   }
@@ -229,6 +250,9 @@
                 <button type="button" class="cl-chip" [style.border-left-color]="ev.color" [style.background]="ev.tint"
                   [matTooltip]="ev.tooltip" matTooltipClass="pm-tooltip-multiline" (dblclick)="openEdit(ev.item, $event)">
                   <span class="cl-chip-time">{{ ev.shortTime }}</span>
+                  @if (ev.flag) {
+                    <span class="cl-chip-flag">{{ ev.flag }}</span>
+                  }
                   <span class="cl-chip-title" [class.cl-struck]="ev.struck">{{ ev.title }}</span>
                 </button>
               }

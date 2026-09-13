@@ -1,3 +1,5 @@
+import { PLACES, countryFlag } from '../parametres/places-data';
+
 /**
  * Référentiels et arithmétique de dates du calendrier — portés de `Calendrier.dc.html`.
  *
@@ -71,6 +73,33 @@ export const KIND_DEFS: Readonly<Record<ItemKind, KindDef>> = {
 
 export const KIND_KEYS = Object.keys(KIND_DEFS) as ItemKind[];
 
+/**
+ * Entités supranationales proposées à côté des pays : une décision de la BCE ou une estimation
+ * d'Eurostat se tient en zone euro, pas dans le pays qui les héberge — les rattacher à
+ * l'Allemagne parce que Francfort s'y trouve serait un contresens. Elles vivent ici, et non dans
+ * le référentiel des places, qui ne décrit que des places de négociation réelles.
+ */
+const SUPRANATIONAL: Readonly<Record<string, { readonly label: string; readonly flag: string; readonly region: string }>> = {
+  EU: { label: 'Zone euro', flag: '🇪🇺', region: 'Europe' },
+};
+
+/** Drapeau d'un pays ou d'une entité supranationale, vide si le code est inconnu. */
+export function calFlag(code: string): string {
+  return SUPRANATIONAL[code]?.flag ?? countryFlag(code);
+}
+
+/** Libellé correspondant, le code lui-même à défaut. */
+export function calCountryLabel(code: string): string {
+  return SUPRANATIONAL[code]?.label ?? PLACES.find((p) => p.code === code)?.country ?? code;
+}
+
+/** Entités supranationales d'une région, à présenter en tête de son groupe. */
+export function supranationalOf(region: string): readonly { readonly code: string; readonly label: string; readonly flag: string }[] {
+  return Object.entries(SUPRANATIONAL)
+    .filter(([, v]) => v.region === region)
+    .map(([code, v]) => ({ code, label: v.label, flag: v.flag }));
+}
+
 export interface CalItem {
   readonly id: string;
   readonly kind: ItemKind;
@@ -83,6 +112,12 @@ export interface CalItem {
   readonly notes: string;
   /** N'a de sens que pour une tâche. */
   readonly done: boolean;
+  /**
+   * Pays où se tient l'élément, en code ISO 3166 alpha-2 (référentiel des places, voir
+   * `parametres/places-data`), ou code d'une entité supranationale (`EU`). Vide tant qu'il n'est
+   * pas renseigné : tout n'a pas de lieu — une tâche interne, une échéance de reporting.
+   */
+  readonly country: string;
 }
 
 // -- Arithmétique de dates ------------------------------------------------------------------
@@ -151,6 +186,7 @@ function mk(o: Partial<CalItem> & { title: string; date: string; cat: CatKey }):
     allDay: false,
     done: false,
     notes: '',
+    country: '',
     start: '09:00',
     end: '10:00',
     ...o,
@@ -184,13 +220,13 @@ export function seedItems(today = new Date()): readonly CalItem[] {
     mk({ title: 'Assemblée générale — Infrastructure Fund II', date: M(19), start: '14:00', end: '17:00', cat: 'echeance' }),
 
     // Publications macroéconomiques d'ici la fin de l'année.
-    mk({ title: 'BCE — décision de taux', date: '2026-09-10', start: '14:15', end: '15:00', cat: 'indicateur', notes: 'Conseil des gouverneurs, conférence de presse à 14:45.' }),
+    mk({ title: 'BCE — décision de taux', date: '2026-09-10', start: '14:15', end: '15:00', cat: 'indicateur', country: 'EU', notes: 'Conseil des gouverneurs, conférence de presse à 14:45.' }),
     mk({ title: 'Inflation zone euro — estimation rapide', date: '2026-09-16', start: '11:00', end: '11:15', cat: 'indicateur', notes: 'Eurostat, IPCH de septembre.' }),
-    mk({ title: 'Fed — décision de taux (FOMC)', date: '2026-09-16', start: '20:00', end: '20:45', cat: 'indicateur', notes: 'Communiqué et projections trimestrielles.' }),
-    mk({ title: 'Emploi américain — rapport mensuel', date: '2026-10-02', start: '14:30', end: '14:45', cat: 'indicateur', notes: "Créations d'emplois non agricoles et taux de chômage." }),
+    mk({ title: 'Fed — décision de taux (FOMC)', date: '2026-09-16', start: '20:00', end: '20:45', cat: 'indicateur', country: 'US', notes: 'Communiqué et projections trimestrielles.' }),
+    mk({ title: 'Emploi américain — rapport mensuel', date: '2026-10-02', start: '14:30', end: '14:45', cat: 'indicateur', country: 'US', notes: "Créations d'emplois non agricoles et taux de chômage." }),
     mk({ title: 'PMI composite zone euro', date: '2026-10-05', start: '10:00', end: '10:15', cat: 'indicateur' }),
-    mk({ title: 'Inflation américaine — CPI', date: '2026-10-13', start: '14:30', end: '14:45', cat: 'indicateur', notes: 'Indice des prix à la consommation de septembre.' }),
-    mk({ title: 'BCE — décision de taux', date: '2026-10-29', start: '14:15', end: '15:00', cat: 'indicateur' }),
+    mk({ title: 'Inflation américaine — CPI', date: '2026-10-13', start: '14:30', end: '14:45', cat: 'indicateur', country: 'US', notes: 'Indice des prix à la consommation de septembre.' }),
+    mk({ title: 'BCE — décision de taux', date: '2026-10-29', start: '14:15', end: '15:00', cat: 'indicateur', country: 'EU' }),
     mk({ title: 'Fed — décision de taux (FOMC)', date: '2026-10-28', start: '20:00', end: '20:45', cat: 'indicateur' }),
     mk({ title: 'PIB zone euro — première estimation', date: '2026-10-30', start: '11:00', end: '11:15', cat: 'indicateur', notes: 'Croissance du troisième trimestre.' }),
     mk({ title: 'Emploi américain — rapport mensuel', date: '2026-11-06', start: '14:30', end: '14:45', cat: 'indicateur' }),
@@ -224,5 +260,6 @@ export function blankItem(date: string, start = '09:00'): Omit<CalItem, 'id'> {
     cat: 'client',
     notes: '',
     done: false,
+    country: '',
   };
 }

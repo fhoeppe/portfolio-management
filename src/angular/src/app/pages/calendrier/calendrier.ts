@@ -9,6 +9,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { NonWorkingDaysService } from '../../domain/non-working-days.service';
+import { ZONES, zoneFlag } from '../../domain/holiday-rules';
+import { ViewStateService } from '../../shell/view-state.service';
 import { CalItemDialog, type CalItemDialogData, type CalItemDialogResult } from './cal-item-dialog';
 import {
   CATS,
@@ -22,6 +24,7 @@ import {
   MONTHS,
   MONTH_CHIP_LIMIT,
   addDays,
+  calFlag,
   blankItem,
   fromMin,
   iso,
@@ -44,6 +47,29 @@ type View = 'week' | 'month' | 'year';
  * trois vues, chacune l'interprétant à sa maille. Passer de l'année au mois puis à la semaine
  * ne perd donc jamais le jour visé.
  */
+/* Pays de l'élément → zone du sélecteur d'affichage. La zone euro TARGET2 n'a pas de pays dans
+   le référentiel des jours fériés : elle répond au code supranational `EU` porté par les
+   éléments (voir `calendrier-data`). */
+const ZONE_BY_COUNTRY = new Map<string, string>(ZONES.map((z) => [z.country ?? 'EU', z.id]));
+
+/**
+ * Le choix de zones filtre aussi les éléments, et pas seulement les jours chômés : on coche
+ * l'Amérique du Nord pour suivre une séance américaine, pas pour voir les rendez-vous européens
+ * à côté.
+ *
+ * Deux cas échappent au filtre plutôt que d'être masqués : l'élément sans pays — une tâche
+ * interne, une échéance de reporting n'ont pas de lieu — et celui dont le pays n'est représenté
+ * par aucune zone du référentiel, qui n'en compte que neuf là où celui des places en couvre
+ * dix-neuf. Masquer un événement italien parce que le sélecteur ne sait pas dire « Italie » le
+ * rendrait introuvable, sans qu'aucune case puisse le ramener.
+ */
+function inSelectedZones(item: CalItem, zones: readonly string[]): boolean {
+  if (!item.country) return true;
+  const zoneId = ZONE_BY_COUNTRY.get(item.country);
+  if (!zoneId) return true;
+  return zones.includes(zoneId);
+}
+
 @Component({
   selector: 'app-calendrier',
   imports: [
@@ -61,23 +87,94 @@ type View = 'week' | 'month' | 'year';
 export class Calendrier {
   private readonly dialog = inject(MatDialog);
   private readonly nonWorking = inject(NonWorkingDaysService);
+  /* Le routeur détruit cette page à chaque navigation : ce qui relève du réglage d'affichage —
+     panneau replié, zone, teinte des fins de semaine — est emprunté au service plutôt que déclaré
+     ici, sans quoi il repartirait à sa valeur initiale au retour sur la page. */
+  private readonly viewState = inject(ViewStateService);
 
-  protected readonly zoneGroups = this.nonWorking.zonesByArea();
-  /** Zone dont on affiche les fins de semaine et les jours fériés. */
-  protected readonly zone = signal('FR');
+  /* Le drapeau est calculé ici plutôt que stocké : `zoneFlag` le dérive du code ISO de la zone,
+     rien à tenir à jour quand le référentiel s'enrichit. */
+  protected readonly zoneGroups = this.nonWorking
+    .zonesByArea()
+    .map((g) => ({ area: g.area, zones: g.zones.map((z) => ({ id: z.id, label: z.label, flag: zoneFlag(z) })) }));
 
-  protected readonly zoneLabel = computed(() => this.nonWorking.zone(this.zone()).label);
+  /**
+   * Pays dont on affiche les fins de semaine et les jours fériés — plusieurs à la fois : un
+   * gestionnaire suit des portefeuilles de plusieurs places, et devoir rebasculer de zone en zone
+   * pour savoir si un jour est ouvré des deux côtés revient à comparer deux écrans de mémoire.
+   * Une aire géographique n'est pas une valeur à part : la cocher revient à cocher les pays
+   * qu'elle contient, la décocher à les retirer.
+   */
+  protected readonly zones = this.viewState.remember<readonly string[]>('calendrier.zones', ['FR']);
 
-  protected setZone(id: string): void {
-    this.zone.set(id);
+  protected readonly zoneLabel = computed(() => {
+    const ids = this.zones();
+    if (!ids.length) return 'aucune zone';
+    if (ids.length === 1) return this.nonWorking.zone(ids[0]).label;
+    const full = this.zoneGroups.find((g) => g.zones.every((z) => ids.includes(z.id)) && g.zones.length === ids.length);
+    return full ? full.area : ids.length + ' zones';
+  });
+
+  protected zoneOn(id: string): boolean {
+    return this.zones().includes(id);
   }
+
+  /* La ligne entière est cliquable, la case aussi : chacune arrête la propagation de son clic
+     pour que la bascule ne soit pas jouée deux fois. Même montage que les filtres du registre
+     (transactions/tx-multiselect.ts). */
+  protected toggleTint(ev: Event): void {
+    ev.stopPropagation();
+    this.tintWeekends.update((v) => !v);
+  }
+
+  protected onZoneClick(ev: Event, id: string): void {
+    ev.stopPropagation();
+    this.toggleZone(id, !this.zoneOn(id));
+  }
+
+  protected onAreaClick(ev: Event, area: string): void {
+    ev.stopPropagation();
+    this.toggleArea(area, !this.areaOn(area));
+  }
+
+  protected toggleZone(id: string, on: boolean): void {
+    this.zones.update((ids) => (on ? (ids.includes(id) ? ids : [...ids, id]) : ids.filter((x) => x !== id)));
+  }
+
+  /** Toutes les zones de l'aire retenues — la case de l'aire est pleine. */
+  protected areaOn(area: string): boolean {
+    const g = this.zoneGroups.find((x) => x.area === area);
+    return !!g && g.zones.every((z) => this.zoneOn(z.id));
+  }
+
+  /** Certaines seulement — la case de l'aire passe à l'état intermédiaire. */
+  protected areaPartial(area: string): boolean {
+    const g = this.zoneGroups.find((x) => x.area === area);
+    if (!g) return false;
+    const on = g.zones.filter((z) => this.zoneOn(z.id)).length;
+    return on > 0 && on < g.zones.length;
+  }
+
+  protected toggleArea(area: string, on: boolean): void {
+    const g = this.zoneGroups.find((x) => x.area === area);
+    if (!g) return;
+    const ids = g.zones.map((z) => z.id);
+    this.zones.update((cur) => (on ? [...cur, ...ids.filter((id) => !cur.includes(id))] : cur.filter((id) => !ids.includes(id))));
+  }
+
+  /** Jours de fin de semaine de l'ensemble des zones retenues. */
+  private readonly weekendDays = computed(() => {
+    const days = new Set<number>();
+    for (const id of this.zones()) for (const d of this.nonWorking.zone(id).weekend) days.add(d);
+    return days;
+  });
 
   /**
    * Panneau latéral déployé ou replié. Le bouton qui bascule l'état est posé hors du panneau,
    * à côté du combo « Créer » : s'il vivait à l'intérieur, il disparaîtrait avec lui et rien ne
    * permettrait plus de le rouvrir. Il se décale vers le bord gauche au repli.
    */
-  protected readonly panelOpen = signal(true);
+  protected readonly panelOpen = this.viewState.remember('calendrier.panelOpen', true);
 
   protected togglePanel(): void {
     this.panelOpen.update((v) => !v);
@@ -89,9 +186,14 @@ export class Calendrier {
 
   private readonly today = iso(new Date());
   /* Le mois est la maille d'ouverture : c'est celle qui donne la charge d'ensemble, la semaine
-     répondant à une question plus fine qu'on pose une fois le mois consulté. */
-  protected readonly view = signal<View>('month');
-  protected readonly cursor = signal(this.today);
+     répondant à une question plus fine qu'on pose une fois le mois consulté. Ce n'est toutefois
+     qu'un point de départ : la maille choisie tient ensuite pour toute la session, on ne rebascule
+     pas sur le mois à chaque retour sur la page. */
+  protected readonly view = this.viewState.remember<View>('calendrier.view', 'month');
+  /* Période consultée, mémorisée elle aussi : on revient sur la page pour poursuivre la lecture
+     d'un mois donné, pas pour être ramené au mois courant. Le bouton « Aujourd'hui » reste là
+     pour y revenir d'un geste. */
+  protected readonly cursor = this.viewState.remember('calendrier.cursor', this.today);
   protected readonly items = signal<readonly CalItem[]>(seedItems());
   /** Case du mois dépliée pour montrer tous ses éléments. */
   private readonly expanded = signal<string | null>(null);
@@ -127,7 +229,7 @@ export class Calendrier {
   protected readonly searchOpen = signal(false);
   protected readonly search = signal('');
   /** Teinte de fin de semaine, réglable depuis le menu des paramètres. */
-  protected readonly tintWeekends = signal(true);
+  protected readonly tintWeekends = this.viewState.remember('calendrier.tintWeekends', true);
   protected readonly dayRange = signal<RangeKey>('work');
 
   private readonly range = computed(() => DAY_RANGES.find((r) => r.key === this.dayRange()) ?? DAY_RANGES[0]);
@@ -150,10 +252,14 @@ export class Calendrier {
    * férié tombant un samedi garde son nom au lieu d'être noyé dans la fin de semaine.
    */
   private dayMarks(d: Date): { weekend: boolean; holiday: string | null } {
-    const zone = this.zone();
+    const zones = this.zones();
+    /* Un même jour peut être férié sous plusieurs noms — 1er mai en France, Tag der Arbeit en
+       Allemagne : on les garde tous, dédoublonnés, plutôt que de retenir arbitrairement le
+       premier de la liste. */
+    const names = [...new Set(zones.map((z) => this.nonWorking.holidayOn(d, z)?.name).filter((n): n is string => !!n))];
     return {
-      weekend: this.tintWeekends() && this.nonWorking.isWeekend(d, zone),
-      holiday: this.nonWorking.holidayOn(d, zone)?.name ?? null,
+      weekend: this.tintWeekends() && zones.some((z) => this.nonWorking.isWeekend(d, z)),
+      holiday: names.length ? names.join(' · ') : null,
     };
   }
 
@@ -165,11 +271,17 @@ export class Calendrier {
    */
   private readonly visibleItems = computed(() => {
     const q = this.search().trim().toLowerCase();
-    if (!q) return this.items();
-    return this.items().filter(
-      (i) => i.title.toLowerCase().includes(q) || i.notes.toLowerCase().includes(q) || CATS[i.cat].label.toLowerCase().includes(q),
-    );
+    /* Lu ici et passé au filtre plutôt que relu dans la boucle : la dépendance du calcul au
+       choix de zones doit exister même quand la liste d'éléments est vide. */
+    const zones = this.zones();
+    return this.items().filter((i) => {
+      if (!inSelectedZones(i, zones)) return false;
+      if (!q) return true;
+      return i.title.toLowerCase().includes(q) || i.notes.toLowerCase().includes(q) || CATS[i.cat].label.toLowerCase().includes(q);
+    });
   });
+
+
 
   private itemsOn(date: string): readonly CalItem[] {
     return this.visibleItems()
@@ -190,13 +302,20 @@ export class Calendrier {
          hexadécimal, les couleurs arrivant sous forme de `var(--ink-*)`. */
       tint: `color-mix(in srgb, ${c.color} 8%, transparent)`,
       struck: item.kind === 'task' && item.done,
+      /* Vide quand le pays n'est pas renseigné : le gabarit n'affiche alors rien, plutôt qu'un
+         espace réservé qui décalerait les vignettes les unes par rapport aux autres. */
+      flag: item.country ? calFlag(item.country) : '',
       shortTime: item.allDay ? 'jour' : item.start,
       timeLabel,
       /* L'info-bulle reprend l'intitulé — tronqué sur les vignettes étroites —, le créneau puis
          la note. Les lignes sont jointes par `\n`, que `white-space: pre-line` rend visibles
          (voir `.cl-tooltip` dans le CSS) ; sans ce réglage Material les replierait en une seule
-         ligne. Les segments vides sont écartés pour ne pas laisser de ligne blanche. */
-      tooltip: [item.title, timeLabel, item.notes].filter(Boolean).join('\n'),
+         ligne. Les segments vides sont écartés pour ne pas laisser de ligne blanche.
+         Le drapeau du pays, quand il est renseigné, ouvre la première ligne : c'est le repère
+         qui se lit sans être lu, avant même l'intitulé. */
+      tooltip: [(item.country ? calFlag(item.country) + ' ' : '') + item.title, timeLabel, item.notes]
+        .filter(Boolean)
+        .join('\n'),
     };
   }
 
@@ -252,9 +371,9 @@ export class Calendrier {
      sens de `Date.getDay()`. On interroge la zone plutôt que de supposer samedi et dimanche —
      toutes les zones du référentiel chôment ces deux jours, mais ce n'est pas une constante. */
   protected readonly dowNames = computed(() => {
-    const weekend = this.nonWorking.zone(this.zone()).weekend;
+    const weekend = this.weekendDays();
     const tint = this.tintWeekends();
-    return DOW.map((label, i) => ({ label, weekend: tint && weekend.includes(((i + 1) % 7) as 0 | 1 | 2 | 3 | 4 | 5 | 6) }));
+    return DOW.map((label, i) => ({ label, weekend: tint && weekend.has((i + 1) % 7) }));
   });
 
   protected readonly monthCells = computed(() => {
@@ -290,9 +409,9 @@ export class Calendrier {
 
   // -- Vue année ----------------------------------------------------------------------------
   protected readonly dow1 = computed(() => {
-    const weekend = this.nonWorking.zone(this.zone()).weekend;
+    const weekend = this.weekendDays();
     const tint = this.tintWeekends();
-    return DOW1.map((label, i) => ({ label, weekend: tint && weekend.includes(((i + 1) % 7) as 0 | 1 | 2 | 3 | 4 | 5 | 6) }));
+    return DOW1.map((label, i) => ({ label, weekend: tint && weekend.has((i + 1) % 7) }));
   });
 
   protected readonly yearMonths = computed(() => {

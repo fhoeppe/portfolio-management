@@ -69,6 +69,13 @@ export function continentOf(code: string): string {
   return CONTINENT[code] ?? 'Europe';
 }
 
+const FLAG_BY_CODE = new Map<string, string>(PLACES.map((p) => [p.code, p.flag]));
+
+/** Drapeau d'un pays du référentiel, ou chaîne vide si le code n'y figure pas. */
+export function countryFlag(code: string): string {
+  return FLAG_BY_CODE.get(code) ?? '';
+}
+
 export function placeOf(mic: string): Place | null {
   return BY_MIC.get(String(mic).toUpperCase()) ?? null;
 }

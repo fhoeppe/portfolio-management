@@ -3,11 +3,15 @@
   width: 100%;
 }
 
+/* `box-sizing: border-box` : sans lui, le `min-height` s'applique à la boîte de contenu et les
+   8px de retrait plus les 2px de bordure s'y ajoutent — le sélecteur multiple mesurait 42px de
+   haut au milieu de champs de 32px. */
 .ac-chips-trigger {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  box-sizing: border-box;
   min-height: 32px;
   width: 100%;
   padding: 4px 8px;

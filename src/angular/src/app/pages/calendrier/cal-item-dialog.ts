@@ -7,8 +7,21 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import { CONTINENT_ORDER, PLACES, continentOf } from '../parametres/places-data';
 import { ThemeService } from '../../shell/theme.service';
-import { CATS, CAT_KEYS, KIND_DEFS, KIND_KEYS, fromMin, toMin, type CalItem, type CatKey } from './calendrier-data';
+import {
+  CATS,
+  CAT_KEYS,
+  KIND_DEFS,
+  KIND_KEYS,
+  calCountryLabel,
+  calFlag,
+  fromMin,
+  supranationalOf,
+  toMin,
+  type CalItem,
+  type CatKey,
+} from './calendrier-data';
 
 export interface CalItemDialogData {
   /** Élément existant à modifier, ou brouillon vierge à créer. */
@@ -53,6 +66,41 @@ export class CalItemDialog {
   }
 
   protected readonly catOptions = CAT_KEYS.map((k) => ({ value: k, label: CATS[k].label, color: CATS[k].color }));
+
+  /**
+   * Pays de l'élément, groupés par région. La liste est déduite du référentiel des places
+   * (`parametres/places-data`) plutôt que saisie à part : c'est déjà lui qui fournit pays,
+   * drapeau et continent partout ailleurs dans l'application, et une seconde table finirait par
+   * en diverger. Plusieurs places partagent un même pays (Nasdaq et NYSE), d'où le
+   * dédoublonnage par code.
+   */
+  protected readonly countryGroups = CONTINENT_ORDER.map((region) => ({
+    region,
+    /* Les entités supranationales ouvrent leur région : « Zone euro » n'est pas un pays parmi
+       les autres, et la chercher au milieu de la liste alphabétique n'aurait pas de sens. */
+    countries: [
+      ...supranationalOf(region),
+      ...[...new Map(PLACES.map((p) => [p.code, p])).values()]
+        .filter((p) => continentOf(p.code) === region)
+        .map((p) => ({ code: p.code, label: p.country, flag: p.flag }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'fr')),
+    ],
+  })).filter((g) => g.countries.length > 0);
+
+  /* « Aucun pays » et non une chaîne vide : l'option du même nom porte la valeur vide, donc le
+     sélecteur la considère comme retenue et rend son déclencheur — un `placeholder` ne s'y
+     afficherait jamais, et la case restait muette. */
+  /* Le libellé du champ suit la nature de ce qui est saisi, comme le titre de la boîte : une
+     tâche n'a pas de lieu où elle « se tient », elle se rapporte à un pays. */
+  protected readonly countryFieldLabel = computed(() =>
+    this.isTask() ? 'Tâche relative au pays' : "Pays de l'événement",
+  );
+
+  protected readonly countryLabel = computed(() => {
+    const code = this.draft().country;
+    if (!code) return 'Aucun pays';
+    return calFlag(code) + ' ' + calCountryLabel(code);
+  });
 
   protected readonly draft = signal({ ...this.data.item });
 

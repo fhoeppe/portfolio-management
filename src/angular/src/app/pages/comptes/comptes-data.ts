@@ -454,6 +454,32 @@ export interface HintedOption {
   readonly hint: string;
 }
 
+/**
+ * Civilités proposées à l'ouverture d'un compte. « Autre » n'est pas un fourre-tout : un titulaire
+ * peut ne se reconnaître dans aucune des deux premières, et une personne morale n'a pas de
+ * civilité du tout — la case existe pour ces deux cas.
+ */
+export interface CivilityOption {
+  readonly value: string;
+  readonly label: string;
+  readonly icon: string;
+}
+
+export const CIVILITIES: readonly CivilityOption[] = [
+  { value: 'Madame', label: 'Madame', icon: 'civility-mrs' },
+  { value: 'Monsieur', label: 'Monsieur', icon: 'civility-mr' },
+  { value: 'Autre', label: 'Autre', icon: 'civility-other' },
+];
+
+/**
+ * Types de voie de l'adresse postale. Liste volontairement courte : les formes rares — hameau,
+ * lieu-dit, quai — s'écrivent dans le libellé de la voie plutôt que d'allonger un menu qu'on
+ * parcourt à chaque saisie.
+ */
+export const STREET_TYPES: readonly string[] = [
+  'Rue', 'Avenue', 'Boulevard', 'Allée', 'Chemin', 'Impasse', 'Place', 'Route', 'Square', 'Voie',
+];
+
 export const ID_DOC_TYPES: readonly HintedOption[] = [
   { label: '—', hint: 'Aucun document renseigné' },
   { label: 'Passeport', hint: 'Document de voyage en cours de validité' },
@@ -461,6 +487,23 @@ export const ID_DOC_TYPES: readonly HintedOption[] = [
   { label: 'Titre de séjour', hint: 'Carte de résident ou permis de séjour' },
   { label: 'Permis de conduire', hint: 'Accepté en complément, non seul' },
   { label: 'Extrait RCS', hint: 'Personne morale : immatriculation' },
+];
+
+/* Le justificatif de domicile est une pièce normée au même titre que la pièce d'identité : la
+   liste ferme les libellés acceptés par la conformité, là où un champ libre laissait passer
+   « facture » sans dire de quoi ni de quand. */
+export const ADDRESS_PROOF_TYPES: readonly HintedOption[] = [
+  { label: '—', hint: 'Aucun justificatif renseigné' },
+  { label: "Facture d'électricité ou de gaz", hint: 'De moins de trois mois' },
+  { label: "Facture d'eau", hint: 'De moins de trois mois' },
+  { label: 'Facture de téléphone fixe ou internet', hint: 'De moins de trois mois — mobile exclu' },
+  { label: 'Certificat de résidence', hint: 'Délivré par la commune' },
+  { label: 'Quittance de loyer', hint: 'Émise par un bailleur professionnel' },
+  { label: 'Contrat de bail', hint: 'En cours de validité, signé des deux parties' },
+  { label: "Avis d'imposition", hint: 'Dernier avis reçu' },
+  { label: 'Attestation d\'assurance habitation', hint: 'En cours de validité' },
+  { label: 'Relevé bancaire', hint: 'De moins de trois mois, adresse visible' },
+  { label: 'Acte de propriété', hint: 'Pour un titulaire propriétaire de sa résidence' },
 ];
 
 export const ACCOUNT_TYPES: readonly HintedOption[] = [
@@ -516,15 +559,48 @@ export const FIELD_LABELS: Record<string, string> = {
   broker: 'Broker', jurisdiction: 'Juridiction', url: 'URL',
   accountType: 'Type de compte', currency: 'Devise de tenue', number: 'Numéro de compte',
   alias: 'Libellé du compte', opened: "Date d'ouverture",
-  lastName: 'Nom du titulaire', firstName: 'Prénom du titulaire',
+  civility: 'Civilité',
+  lastName: 'Nom de famille', firstName: 'Prénom',
+  streetNo: 'Numéro', streetType: 'Type de voie', street: 'Adresse',
+  postalCode: 'Code postal', city: 'Ville', country: 'Pays',
   idDocType: "Pièce d'identité",
-  clientRef: "Numéro d'identité", domicile: 'Domiciliation', taxRegime: 'Régime fiscal',
-  kycId: "Pièce d'identité", kycIdExpiry: 'Validité de la pièce', kycAddress: 'Justificatif de domicile',
-  kycOrigin: 'Origine des fonds', kycPep: 'Personne politiquement exposée', kycLevel: 'Niveau de vigilance',
+  clientRef: 'Référence client', domicile: 'Domiciliation', taxRegime: 'Régime fiscal',
+  /* Les deux pièces du dossier portent les mêmes attributs — numéro, émetteur, date d'émission,
+     date de validité. Les libellés sont donc volontairement identiques d'une rangée à l'autre :
+     c'est la nature du document, à gauche de la rangée, qui les désambiguïse. */
+  kycId: 'Numéro', idIssuer: 'Émetteur', idIssueDate: "Date d'émission", kycIdExpiry: 'Date de validité',
+  kycAddress: 'Justificatif de domicile',
+  addrRef: 'Numéro', addrIssuer: 'Émetteur', addrIssueDate: "Date d'émission", addrExpiry: 'Date de validité',
+  kycOrigin: 'Origine des fonds', fundsAmount: 'Montant approximatif',
+  kycPep: 'Personne politiquement exposée', kycLevel: 'Niveau de vigilance',
   closed: 'Date de fermeture', status: 'Statut',
   profile: 'Profil de risque', horizon: 'Horizon', fee: 'Tarification',
   dotation: 'Compte de dotation ou de destination', reason: 'Motif',
   target: 'Élément concerné', effect: "Date d'effet",
+};
+
+/* Icônes de repérage : un champ qui ouvre un bloc de sens en porte une, les champs qui ne font que
+   le détailler n'en portent pas. Le nom et le prénom ne sont ainsi pas illustrés — ils précisent
+   l'identité annoncée par la civilité — pas plus que la voie, la ville ou le pays, qui détaillent
+   l'adresse. Illustrer chaque champ reviendrait à n'en distinguer aucun. */
+export const FIELD_ICONS: Record<string, string> = {
+  // Titulaires
+  civility: 'user',
+  streetNo: 'home',
+  postalCode: 'pin',
+  domicile: 'globe',
+  taxRegime: 'receipt',
+  clientRef: 'id-card',
+  // Compte titre
+  broker: 'library',
+  accountType: 'ledger',
+  alias: 'ticket',
+  // KYC
+  idDocType: 'id-card',
+  kycAddress: 'home',
+  kycOrigin: 'banknote',
+  kycPep: 'user',
+  kycLevel: 'shield',
 };
 
 export const FIELD_HINTS: Record<string, string> = {
@@ -532,10 +608,16 @@ export const FIELD_HINTS: Record<string, string> = {
   accountType: 'CTO, PEA, assurance-vie…', currency: 'EUR, USD, CHF',
   number: "Chiffres uniquement, tel qu'ouvert chez le broker", alias: 'Unique pour le client',
   opened: 'Date du jour par défaut, pas de date future', closed: 'Vide tant que le compte est ouvert',
+  civility: '',
   lastName: 'Nom de famille', firstName: 'Prénom',
+  streetNo: '12 bis', streetType: 'Rue, avenue, boulevard…', street: 'Nom de la voie',
+  postalCode: 'L-1855', city: 'Luxembourg', country: 'Pays de résidence',
   idDocType: 'Type de document',
-  clientRef: "Numéro d'identité", domicile: 'Luxembourg', taxRegime: 'Résident Luxembourg',
-  kycId: 'Passeport LU-2019-448210', kycIdExpiry: 'AAAA-MM-JJ', kycAddress: 'Facture de moins de 3 mois',
+  clientRef: 'CLI-2026-0148', domicile: 'Luxembourg', taxRegime: 'Résident Luxembourg',
+  kycId: 'LU-2019-448210', idIssuer: 'Autorité de délivrance', idIssueDate: 'AAAA-MM-JJ',
+  kycIdExpiry: 'AAAA-MM-JJ', kycAddress: 'Type de justificatif',
+  addrRef: 'Référence du document', addrIssuer: 'Fournisseur, commune, bailleur…',
+  addrIssueDate: 'AAAA-MM-JJ', addrExpiry: 'AAAA-MM-JJ', fundsAmount: 'Ex. 250 000 €',
   kycOrigin: "Salaires, cession d'actifs, succession…", kycPep: 'Non', kycLevel: 'Standard',
   dotation: 'IBAN ou référence du compte', reason: 'Motif invoqué',
   target: 'Profil, tarification, titulaires, broker…', effect: 'JJ/MM/AAAA',

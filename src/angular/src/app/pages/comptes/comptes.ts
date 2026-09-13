@@ -4,6 +4,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -13,6 +14,7 @@ import {
   ACCOUNTS,
   ACCOUNT_CASH,
   BROKERS,
+  FIELD_ICONS,
   QUALITIES,
   STAGES,
   STATES,
@@ -38,6 +40,7 @@ import {
   cashCurrencyGroups,
   opCols,
   opDefs,
+  opRowGap,
 } from './comptes-form';
 import { dateToIso, isoToDate } from '../../shell/date-bridge';
 import {
@@ -71,7 +74,7 @@ type Tab = 'list' | 'ops' | 'entry';
  */
 @Component({
   selector: 'app-comptes',
-  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, MatStepperModule, MatTableModule, NgTemplateOutlet, AcSelect, AcChips],
+  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatButtonToggleModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, MatStepperModule, MatTableModule, NgTemplateOutlet, AcSelect, AcChips],
   templateUrl: './comptes.html',
   styleUrl: './comptes.css',
 })
@@ -292,6 +295,10 @@ export class Comptes {
     this.currentStep().title === 'Compte de liquidité' ? buildField('status', this.fieldCtx()) : null,
   );
   protected readonly opColsValue = computed(() => opCols(this.currentStep().fields));
+  protected readonly opRowGapValue = computed(() => opRowGap(this.currentStep().fields));
+  protected labelIcon(key: string): string {
+    return FIELD_ICONS[key] || '';
+  }
   protected readonly opStepTitle = computed(() => this.currentStep().title + ' — ' + this.currentStep().hint.toLowerCase());
 
   protected readonly opSteps = computed(() =>

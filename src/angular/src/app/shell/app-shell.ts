@@ -104,6 +104,15 @@ export class AppShell {
     return this.theme.mode();
   }
 
+  /* Une seule source pour la largeur du panneau, exposée en propriété CSS sur la coque : le
+     panneau la lit pour se dimensionner, le bouton de repli pour se poser sur son bord. Elle
+     remplace deux styles en ligne (`[style.width.px]` sur le mat-sidenav, `[style.left.px]` sur
+     le bouton) qui obligeaient à recopier la même valeur à deux endroits, et dispensait le
+     bouton d'un ancrage CSS Anchor Positioning réservé aux navigateurs récents. */
+  @HostBinding('style.--pm-nav-w') get navWidthVar() {
+    return this.navWidth() + 'px';
+  }
+
   private deepestRouteData(): { section: string; crumb: string } {
     let snap = this.router.routerState.snapshot.root;
     while (snap.firstChild) snap = snap.firstChild;

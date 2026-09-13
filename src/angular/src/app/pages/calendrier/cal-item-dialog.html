@@ -43,11 +43,41 @@
     </label>
 
     <label class="ci-field">
+      {{ countryFieldLabel() }}
+      <!-- `mat-select-trigger` : sans lui, le déclencheur rendrait le gabarit complet de l'option
+           retenue, drapeau et libellé empilés dans leur `<span>` — il n'affiche ici que la ligne
+           « drapeau + pays ». Le premier choix, vide, permet de revenir à « aucun pays » : tout
+           élément n'a pas de lieu, une échéance de reporting n'en a pas. -->
+      <mat-select class="pm-sel-trigger ci-select" [panelWidth]="null" panelClass="pm-sel-panel pm-unfold"
+        [value]="draft().country" (valueChange)="patch({ country: $event })">
+        <mat-select-trigger>
+          <span class="ci-country-trigger" [class.ci-country-none]="!draft().country">{{ countryLabel() }}</span>
+        </mat-select-trigger>
+        <mat-option value="">Aucun pays</mat-option>
+        @for (g of countryGroups; track g.region) {
+          <mat-optgroup [label]="g.region">
+            @for (c of g.countries; track c.code) {
+              <mat-option [value]="c.code">
+                <span class="ci-country-option">
+                  <span class="ci-country-flag">{{ c.flag }}</span>
+                  {{ c.label }}
+                </span>
+              </mat-option>
+            }
+          </mat-optgroup>
+        }
+      </mat-select>
+    </label>
+
+    <label class="ci-field">
       Date
       <input type="date" class="ci-input" [value]="draft().date" (input)="patch({ date: $any($event.target).value })" />
     </label>
 
-    <mat-checkbox class="ci-checkbox ci-checkbox-inline" [checked]="draft().allDay"
+    <!-- La case commande les deux horaires qui la suivent : elle est donc au-dessus d'eux, sur sa
+         propre ligne, et non à côté de la date comme auparavant — le début se retrouvait alors
+         face à elle et la fin seule sur la ligne suivante, la paire coupée en deux. -->
+    <mat-checkbox class="ci-checkbox ci-field-wide" [checked]="draft().allDay"
       (change)="patch({ allDay: $event.checked })">Toute la journée</mat-checkbox>
 
     @if (showTimes()) {

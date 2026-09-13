@@ -177,13 +177,18 @@
               </div>
             }
 
-            <div class="ac-fields-grid" [style.grid-template-columns]="opColsValue()">
+            <div class="ac-fields-grid" [style.--ac-cols]="opColsValue()" [style.--ac-rowgap]="opRowGapValue()">
               @for (f of opFields(); track f.key) {
-                <label class="ac-field" [style.grid-column]="f.span">
-                  <span class="ac-field-label">{{ f.label }}</span>
+                <label class="ac-field" [attr.data-field]="f.key" [style.--ac-span]="f.span">
+                  <span class="ac-field-label">
+                    @if (labelIcon(f.key)) {
+                      <mat-icon class="ac-field-label-icon" [svgIcon]="labelIcon(f.key)"></mat-icon>
+                    }
+                    <span class="ac-field-label-text">{{ f.label }}</span>
+                  </span>
                   @switch (f.kind) {
                     @case ('combo') {
-                      <app-ac-select [groups]="f.groups" [value]="f.value" [leadFlag]="f.leadFlag" [place]="f.place" [asBadge]="f.asBadge" [badgeBg]="f.badgeBg" [badgeFg]="f.badgeFg" [checkOk]="f.checkOk" [checkBad]="f.checkBad" [checkMessage]="f.checkMessage" (valueChange)="setField(f.key, $event)" />
+                      <app-ac-select [groups]="f.groups" [value]="f.value" [leadFlag]="f.leadFlag" [leadIcon]="f.leadIcon || ''" [place]="f.place" [asBadge]="f.asBadge" [badgeBg]="f.badgeBg" [badgeFg]="f.badgeFg" [checkOk]="f.checkOk" [checkBad]="f.checkBad" [checkMessage]="f.checkMessage" (valueChange)="setField(f.key, $event)" />
                     }
                     @case ('chips') {
                       <app-ac-chips [options]="f.options" [chips]="f.chips" placeholder="Sélectionner une ou plusieurs origines" (toggle)="toggleKycOrigin($event)" />

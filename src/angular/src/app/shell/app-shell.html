@@ -76,7 +76,7 @@
   </mat-menu>
 </mat-toolbar>
 
-<button class="pm-collapse-toggle" [style.left.px]="navWidth() - 14" matIconButton
+<button class="pm-collapse-toggle" matIconButton
   matTooltip="Réduire ou déployer le menu" aria-label="Réduire ou déployer le menu"
   (click)="toggleCollapsed()">
   @if (collapsed()) {
@@ -87,7 +87,7 @@
 </button>
 
 <mat-sidenav-container class="pm-body" autosize>
-  <mat-sidenav mode="side" [opened]="true" disableClose class="pm-sidenav" [style.width.px]="navWidth()">
+  <mat-sidenav mode="side" [opened]="true" disableClose class="pm-sidenav">
     <nav class="pm-nav-list">
       <a class="pm-nav-item" [routerLink]="homeItem.route" routerLinkActive="pm-active"
         [matTooltip]="homeItem.hint" [matTooltipShowDelay]="navTooltipDelay">

@@ -39,6 +39,9 @@ import type { AcSelectGroup } from './comptes-form';
             @if (leadFlag()) {
               <span class="ac-sel-flag">{{ leadFlag() }}</span>
             }
+            @if (leadIcon()) {
+              <mat-icon class="ac-sel-lead-icon" [svgIcon]="leadIcon()"></mat-icon>
+            }
             @if (asBadge()) {
               <span class="ac-sel-badge" [style.background]="badgeBg()" [style.color]="badgeFg()">
                 <span class="ac-sel-dot" [style.background]="badgeFg()"></span>{{ triggerLabel() }}
@@ -89,6 +92,9 @@ import type { AcSelectGroup } from './comptes-form';
         @if (o.flag) {
           <span class="ac-sel-item-flag">{{ o.flag }}</span>
         }
+        @if (o.icon) {
+          <mat-icon class="ac-sel-item-icon" [svgIcon]="o.icon"></mat-icon>
+        }
         @if (o.asBadge) {
           <span class="ac-sel-item-badge" [style.background]="o.badgeBg" [style.color]="o.badgeFg">{{ o.label }}</span>
         } @else {
@@ -110,6 +116,8 @@ export class AcSelect {
   readonly placeholder = input('Aucun');
   readonly disabled = input(false);
   readonly leadFlag = input('');
+  /** Icône du choix retenu, montrée dans le déclencheur — pendant de `leadFlag`. */
+  readonly leadIcon = input('');
   readonly place = input('');
   readonly asBadge = input(false);
   readonly badgeBg = input('');

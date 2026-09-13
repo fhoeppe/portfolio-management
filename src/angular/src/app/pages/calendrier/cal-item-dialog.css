@@ -121,18 +121,63 @@
   grid-column: 1 / -1;
 }
 
-/* La case « toute la journée » s'aligne sur le bas des champs voisins plutôt que sur leur
-   haut : elle répond à la date qu'elle accompagne. */
-.ci-checkbox-inline {
-  align-self: end;
-  height: 32px;
+/* Même case que celles des menus déroulants de l'application (voir le menu d'affichage du
+   calendrier et les filtres du registre) : carré de 13px à filet fin, couche d'état et cible
+   tactile ramenées à sa taille, coche rentrée de 12 % et trait épaissi pour rester lisible une
+   fois réduite. Ni la dimension du carré ni l'épaisseur du contour n'ont de jeton — elles sont
+   écrites dans le gabarit de `mat-checkbox` —, d'où `::ng-deep`. */
+.ci-checkbox {
+  --mat-checkbox-label-text-size: 11px;
+  --mat-checkbox-label-text-line-height: 13px;
+  --mat-checkbox-state-layer-size: 12px;
+  --mat-checkbox-touch-target-size: 12px;
+  --mat-checkbox-unselected-icon-color: #b9bec9;
+  --mat-checkbox-unselected-hover-icon-color: #8fa6c8;
+  --mat-checkbox-unselected-focus-icon-color: #8fa6c8;
   display: flex;
   align-items: center;
+  height: 30px;
 }
 
-.ci-checkbox {
-  --mat-checkbox-label-text-size: 12px;
-  --mat-checkbox-state-layer-size: 24px;
+.ci-checkbox ::ng-deep .mdc-form-field {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+}
+
+.ci-checkbox ::ng-deep .mdc-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+  margin-right: 9px;
+}
+
+.ci-checkbox ::ng-deep .mdc-checkbox__background {
+  box-sizing: border-box;
+  /* Material décale le carré en absolu de -3px pour le recentrer dans son conteneur d'origine,
+     plus grand que lui ; ce conteneur étant ici ramené à la taille exacte du carré, l'offset le
+     sortirait du centre. */
+  position: relative;
+  top: auto;
+  left: auto;
+  width: 13px;
+  height: 13px;
+  border-width: 1px;
+}
+
+.ci-checkbox ::ng-deep .mdc-checkbox__checkmark {
+  box-sizing: border-box;
+  padding: 12%;
+}
+
+.ci-checkbox ::ng-deep .mdc-checkbox__checkmark-path {
+  stroke-width: 2.7;
 }
 
 .ci-input {
@@ -248,4 +293,25 @@
   --mat-button-filled-label-text-size: 12px;
   --mat-button-filled-label-text-weight: 600;
   flex: none;
+}
+
+/* Option pays du sélecteur : même dessin que les listes de pays des autres écrans — drapeau de
+   14px, 8px avant le libellé (voir comptes/ac-select.css). */
+.ci-country-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ci-country-flag {
+  flex: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Pays non renseigné : le libellé du déclencheur prend la teinte d'un texte indicatif, pour se
+   lire comme l'absence de choix et non comme un choix nommé « Aucun pays ». */
+.ci-country-none {
+  color: var(--color-neutral-600);
 }

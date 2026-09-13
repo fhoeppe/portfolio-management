@@ -5,6 +5,10 @@
  * illisible en thème sombre.
  */
 :host {
+  /* Valeur de repli : la coque écrase cette propriété à chaque rendu (@HostBinding
+     `style.--pm-nav-w`). Elle garantit que le panneau et le bouton restent dimensionnés même si
+     la liaison ne s'est pas encore appliquée. */
+  --pm-nav-w: 269px;
   --ink-brand: #002a6e;
   --ink-brand-2: #003da5;
   --ink-warn: #8f3f06;
@@ -40,7 +44,7 @@
 }
 
 /* Sans ça, un élément avec padding et une largeur posée en px (ex. .pm-rail, calée sur
-   navWidth()) rend plus large que prévu — la marge tombait hors alignement avec le filet de
+   --pm-nav-w) rend plus large que prévu — la marge tombait hors alignement avec le filet de
    la coque juste en dessous, qui lui (mat-sidenav) est déjà en border-box par défaut. */
 :host,
 :host * {
@@ -403,6 +407,10 @@ svg {
 .pm-collapse-toggle {
   position: absolute;
   top: 84px;
+  /* Le bord du panneau, moins la moitié de la boîte de 28px : le bouton reste à cheval dessus.
+     La transition ci-dessous, de même durée et même courbe que celle de la largeur du panneau,
+     les fait glisser ensemble. */
+  left: calc(var(--pm-nav-w) - 14px);
   z-index: 5;
   transform: translateY(-50%);
   transition: left 180ms cubic-bezier(0.2, 0.6, 0.2, 1);
@@ -415,17 +423,6 @@ svg {
   --mat-icon-button-state-layer-size: 28px;
   --mat-icon-button-icon-size: 16px;
   --mat-icon-button-touch-target-size: 28px;
-}
-
-/* Ancrage réel du bouton sur le bord droit du panneau, via CSS Anchor Positioning (Chrome/
-   Edge 125+) : le navigateur suit lui-même le bord animé de .pm-sidenav, au lieu de recopier
-   à la main `navWidth() - 14` à chaque frame. Le binding Angular [style.left.px] reste actif
-   comme filet de sécurité — cette règle ne s'applique qu'aux navigateurs qui savent résoudre
-   `anchor-name`, et l'!important l'emporte sur le style inline uniquement dans ce cas. */
-@supports (anchor-name: --pm-sidenav-edge) {
-  .pm-collapse-toggle {
-    left: calc(anchor(--pm-sidenav-edge right) - 14px) !important;
-  }
 }
 
 .pm-breadcrumb {
@@ -497,8 +494,8 @@ svg {
 }
 
 .pm-sidenav {
-  anchor-name: --pm-sidenav-edge;
   --mat-sidenav-container-shape: 0;
+  width: var(--pm-nav-w);
   display: flex;
   flex-direction: column;
   background: var(--surface);

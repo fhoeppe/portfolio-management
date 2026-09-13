@@ -619,17 +619,49 @@
   gap: 8px;
 }
 
+/* Le gabarit et les portées de colonne arrivent en propriétés personnalisées plutôt qu'en style
+   en ligne : un style en ligne l'emporte sur toute règle de feuille, y compris une requête de
+   conteneur, et la grille resterait figée à quatre colonnes dans un panneau étroit. */
 .ac-fields-grid {
   display: grid;
   gap: 10px 14px;
   align-items: stretch;
   grid-auto-rows: min-content;
+  grid-template-columns: var(--ac-cols, repeat(2, minmax(0, 1fr)));
+  row-gap: var(--ac-rowgap, 10px);
 }
+
+/* Sous 1100px de conteneur, deux colonnes ; sous 700px, une seule. Les portées explicites —
+   « nom sur deux colonnes », « statut sur deux » — n'ont plus de sens à cette largeur et sont
+   remises à `auto`, sans quoi un champ réclamerait une colonne 4 qui n'existe plus. */
+@container (max-width: 1100px) {
+  .ac-fields-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ac-field {
+    grid-column: auto !important;
+  }
+}
+
+@container (max-width: 700px) {
+  .ac-fields-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Alignement par le haut, et non par le bas : dans une rangée où un seul champ porte une note
+   d'aide sous son contrôle (« Aucun document renseigné » sous la pièce d'identité), `flex-end`
+   collait cette note au niveau des autres contrôles et remontait le contrôle concerné d'une
+   ligne entière — libellés et contrôles décalés de 18px sur toute l'étape KYC. Par le haut, les
+   libellés et les contrôles d'une même rangée sont sur la même ligne et la note déborde en bas,
+   là où elle ne gêne personne. */
 .ac-field {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 5px;
+  grid-column: var(--ac-span, auto);
+  min-width: 0;
   font-size: 11px;
   font-weight: 600;
   color: var(--color-neutral-700);
@@ -637,14 +669,70 @@
 .ac-field-standalone {
   max-width: 420px;
 }
+
+/* La civilité tient en un mot : lui laisser toute une colonne dilate un contrôle qui n'affiche
+   jamais plus de « Monsieur ». Le repère est un attribut (`data-field`) et non une classe : une
+   liaison `[class]` dynamique cohabite mal avec la classe statique du même élément — l'une
+   écrase l'autre selon l'ordre, ce que l'attribut évite. */
+.ac-field[data-field='civility'] {
+  max-width: 190px;
+}
+/* Le libellé porte maintenant une icône facultative : il devient une ligne flexible, et c'est le
+   texte — et non le libellé entier — qui reçoit la troncature, sans quoi l'icône serait comptée
+   dans l'ellipse et disparaîtrait avant le mot qu'elle annonce. */
 .ac-field-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  /* Hauteur plancher égale à celle de l'icône : sans elle, un libellé illustré mesure 14px et un
+     libellé nu 13,75px, et le contrôle de la rangée illustrée descend d'un pixel. */
+  min-height: 14px;
   line-height: 1.25;
+}
+.ac-field-label-text {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.ac-field-label-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+  color: var(--ink-brand-2);
+}
+/* `.ac-field-input` était rattaché à la règle du datepicker ci-dessous, qui ne lui apportait
+   rien — un `display: flex` sur un `<input>` est sans effet. Les champs de texte sortaient donc
+   bruts du navigateur : bordure creusée de 2px, Arial 13,33px, 22px de haut, coins droits, à
+   côté de sélecteurs de 32px à coins arrondis. Ils partagent désormais le cadre commun. */
 .ac-field-input,
+.ac-field-date {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  outline: none;
+}
+
+.ac-field-input::placeholder {
+  color: var(--color-neutral-600);
+}
+
+.ac-field-input:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.28);
+}
+
 /* Le bouton calendrier de MatDatepicker se place à côté du champ, dans le même cadre visuel
    que celui-ci — sans <mat-form-field>, qui imposerait son propre cadre (hauteur ~56px et
    libellé flottant) et casserait la compacité des champs du prototype. */
@@ -654,32 +742,31 @@
   gap: 2px;
 }
 
-.ac-field-datepicker .mat-mdc-icon-button {
+/* `::ng-deep` est nécessaire : le bouton appartient au gabarit de `mat-datepicker-toggle`, il ne
+   porte donc pas l'attribut d'encapsulation de cette page et une règle scopée ne l'atteint pas —
+   les 28px demandés restaient lettre morte et le cadre du datepicker mesurait 40px de haut au
+   milieu de champs de 32px. La taille se règle par `--mat-icon-button-state-layer-size`, seul
+   jeton que Material 3 consulte pour dimensionner un bouton icône. */
+.ac-field-datepicker ::ng-deep .mat-mdc-icon-button {
   --mat-icon-button-icon-size: 16px;
+  --mat-icon-button-state-layer-size: 28px;
+  /* Material peint l'icône du calendrier en gris foncé quel que soit le fond : mesurée à
+     rgb(68,71,78) sur le fond sombre de l'application, elle y était presque invisible. */
+  --mat-icon-button-icon-color: var(--color-neutral-700);
+  color: var(--color-neutral-700);
   flex: none;
-  width: 28px;
-  height: 28px;
-  padding: 6px;
+  padding: 4px;
 }
 
-.ac-field-date {
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--color-neutral-300);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--color-text);
-  font-size: 13px;
-  font-weight: 400;
-  font-family: inherit;
-  outline: none;
-}
-
+/* `box-sizing: border-box` : la bordure et les 20px de retrait s'ajoutaient aux 100 % de la
+   cellule, et le bandeau débordait d'autant. */
 .ac-field-badge-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
+  box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   height: 32px;
   padding: 0 10px;
   border: 1px solid var(--color-neutral-300);
@@ -712,9 +799,12 @@
   white-space: nowrap;
 }
 
+/* `box-sizing: border-box` : sans lui la bordure s'ajoute aux 32px et le cadre de l'URL dépasse
+   de 2px ceux qui l'entourent sur la même rangée. */
 .ac-field-url {
   display: flex;
   align-items: center;
+  box-sizing: border-box;
   height: 32px;
   border: 1px solid var(--color-neutral-300);
   border-radius: 6px;

@@ -190,16 +190,23 @@
 /* Le contenu du menu est projeté depuis ce gabarit : il porte l'attribut d'encapsulation de la
    page, donc ces règles l'atteignent malgré le montage dans l'overlay CDK. Toute règle qui
    passerait par le `panelClass` en ancêtre, elle, ne matcherait jamais. */
+/* Aucun interligne entre les rangées : chacune porte sa propre hauteur de 30px, et un écart
+   supplémentaire dilaterait la liste sans rien y séparer — ce sont les intertitres, avec leur
+   marge propre, qui découpent le menu en rubriques. */
 .cl-settings {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px 12px 8px;
-  min-width: 236px;
+  gap: 0;
+  padding: 4px 4px 8px;
+  /* Assez large pour que « Zones — fins de semaine et jours fériés » tienne sur une ligne : un
+     intertitre qui se coupe en deux se lit comme deux rubriques. */
+  min-width: 335px;
 }
 
 .cl-settings-title {
   margin: 8px 0 2px;
+  padding: 0 12px;
+  white-space: nowrap;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -207,43 +214,121 @@
   color: var(--color-neutral-700);
 }
 
-.cl-settings-check {
-  --mat-checkbox-label-text-size: 12px;
-  --mat-checkbox-state-layer-size: 26px;
-  --mat-checkbox-selected-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
-  --mat-checkbox-selected-focus-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
-  --mat-checkbox-selected-hover-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
-  --mat-checkbox-selected-pressed-icon-color: var(--ds-brand-fill, var(--ink-brand-2));
-  margin-left: -8px;
-}
-
-/* Intertitre d'aire dans la liste des zones : plus discret que `.cl-settings-title`, qui sépare
-   les rubriques du menu. */
-.cl-settings-sub {
-  margin: 4px 0 0 8px;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--color-neutral-600);
-}
-
-.cl-settings-option {
+/* Rangées du menu calées sur les filtres à sélection multiple du registre
+   (transactions/tx-multiselect.css) : mêmes 30px de hauteur, même retrait, même rayon, même
+   teinte de survol tirée du jeton partagé `--menu-item-hover-bg`, même texte de 11px dans la
+   police de l'application. Deux listes à cocher du même produit n'ont pas à se lire
+   différemment.
+   Les jetons de case reprennent aussi cette recette : Material lui donne une couche d'état et
+   une cible tactile de 40px, bien plus hautes que la ligne, toutes deux ramenées à la taille du
+   carré. Le contour gris foncé par défaut est remplacé par un filet clair, en valeurs
+   littérales : le panneau vit dans le cdk-overlay-container, où les jetons `--color-*` de la
+   page ne sont pas définis — une `var()` non résolue invaliderait la déclaration entière. */
+.cl-settings-row {
+  --mat-checkbox-state-layer-size: 12px;
+  --mat-checkbox-touch-target-size: 12px;
+  --mat-checkbox-label-text-size: 11px;
+  --mat-checkbox-label-text-line-height: 13px;
+  --mat-checkbox-unselected-icon-color: #b9bec9;
+  --mat-checkbox-unselected-hover-icon-color: #8fa6c8;
+  --mat-checkbox-unselected-focus-icon-color: #8fa6c8;
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 28px;
-  padding: 0 8px;
+  gap: 9px;
+  width: 100%;
+  height: 30px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--menu-item-radius, 6px);
   background: transparent;
   color: var(--color-text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
+  white-space: nowrap;
   text-align: left;
   cursor: pointer;
 }
 
-.cl-settings-option:hover {
-  background: rgba(0, 61, 165, 0.08);
+.cl-settings-row:hover {
+  background: var(--menu-item-hover-bg, rgba(0, 61, 165, 0.18));
+}
+
+.cl-settings-row-active {
+  background: rgba(0, 61, 165, 0.10);
+}
+
+.cl-settings-row-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Case et coche : ni leur dimension ni l'épaisseur du contour n'ont de jeton, elles sont écrites
+   dans le gabarit de `mat-checkbox`, hors de portée d'une règle scopée — d'où `::ng-deep`. Le
+   conteneur du carré est ramené à sa taille, sinon il impose sa hauteur à la rangée. */
+.cl-settings-row ::ng-deep mat-checkbox,
+.cl-settings-row ::ng-deep .mdc-form-field {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+
+.cl-settings-row ::ng-deep .mdc-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+}
+
+.cl-settings-row ::ng-deep .mdc-checkbox__background {
+  box-sizing: border-box;
+  /* Sorti du positionnement absolu : Material y décale le carré de -3px pour le recentrer dans
+     son conteneur d'origine, plus grand que lui. Ce conteneur étant ramené ici à la taille exacte
+     du carré, l'offset le sortait du centre. */
+  position: relative;
+  top: auto;
+  left: auto;
+  width: 13px;
+  height: 13px;
+  border-width: 1px;
+}
+
+/* Retrait de 12 % de chaque côté : la coche occupe 76 % de la case, soit ~9,9px pour une case de
+   13 — deux pixels de plus que les 20 % du registre, le glyphe y était maigre à côté du libellé.
+   En pourcentage pour suivre toute modification de la taille de la case ; `border-box` parce que
+   la coche est positionnée en absolu sur toute la case et que le retrait doit la rétrécir, non
+   l'agrandir. */
+.cl-settings-row ::ng-deep .mdc-checkbox__checkmark {
+  box-sizing: border-box;
+  padding: 12%;
+}
+
+/* Le trait est dessiné par un `stroke-width` du SVG : épaissi à mesure que la coche rétrécit,
+   mais assez peu pour garder le poids d'un texte de 11px. */
+.cl-settings-row ::ng-deep .mdc-checkbox__checkmark-path {
+  stroke-width: 2.7;
+}
+
+.cl-settings-flag {
+  flex: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* L'aire coiffe ses pays : elle seule est en gras, eux sont décalés sous elle. */
+.cl-settings-area {
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.cl-settings-zone {
+  padding-left: 24px;
 }
 
 /* La coche occupe sa place même quand l'option n'est pas retenue : sans cela, les libellés se
@@ -253,7 +338,10 @@
   width: 13px;
   height: 13px;
   font-size: 13px;
-  color: var(--ds-brand-fill, var(--ink-brand-2));
+  /* Repli littéral : le panneau vit dans le cdk-overlay-container, où `--ink-brand-2` n'est pas
+     défini — une `var()` non résolue invaliderait la déclaration et la coche prendrait la couleur
+     du texte. `--ink-brand` est redéclaré pour le panneau sombre dans styles.scss. */
+  color: var(--ds-brand-fill, var(--ink-brand, #003da5));
   visibility: hidden;
 }
 
@@ -839,6 +927,16 @@
   color: var(--color-neutral-700);
 }
 
+/* Drapeau du pays sur la vignette : posé juste avant l'intitulé, à la taille du texte qu'il
+   précède — il doit se lire comme un repère, pas peser plus que le titre. `flex: none` pour qu'il
+   ne soit jamais rogné par la troncature de l'intitulé. */
+.cl-chip-flag {
+  flex: none;
+  margin-right: 4px;
+  font-size: 11px;
+  line-height: 1;
+}
+
 .cl-chip-title {
   flex: 1;
   min-width: 0;
@@ -886,6 +984,16 @@
   border-bottom: 1px solid var(--color-neutral-200);
   background: var(--surface);
   cursor: pointer;
+}
+
+/* Voile de fin de semaine dans la grille du mois. Deux classes et non `.cl-weekend` seul : la
+   règle commune aux trois vues (0-1-0) est écrite plus haut dans le fichier que `.cl-month-cell`,
+   qui repeint son fond à la même spécificité et l'emportait donc par l'ordre — les samedis et
+   dimanches du mois restaient blancs alors que l'en-tête de colonne, lui, était bien teinté.
+   Les cases des mois voisins ne sont jamais concernées : le gabarit ne leur pose pas la classe
+   (`weekend: marks.weekend && !other`). */
+.cl-month-cell.cl-weekend {
+  background-color: var(--band-weekend);
 }
 
 /* Les jours des mois voisins restent visibles mais en retrait : ils complètent la grille sans

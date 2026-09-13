@@ -57,6 +57,19 @@ export interface Zone {
   readonly rules: readonly HolidayRule[];
 }
 
+/**
+ * Drapeau d'une zone, dérivé de son code ISO plutôt que saisi à la main : les indicateurs
+ * régionaux Unicode sont exactement les deux lettres du code décalées dans leur bloc, il n'y a
+ * donc rien à tenir à jour et rien à désynchroniser. Les zones sans pays — la zone euro TARGET2 —
+ * reçoivent le drapeau européen, faute de code ISO à convertir.
+ */
+export function zoneFlag(zone: Zone): string {
+  if (!zone.country) return '🇪🇺';
+  return String.fromCodePoint(
+    ...[...zone.country.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65),
+  );
+}
+
 const SAT_SUN: readonly WeekdayIndex[] = [6, 0];
 
 /* Règles communes aux calendriers chrétiens d'Europe occidentale, reprises telles quelles par
