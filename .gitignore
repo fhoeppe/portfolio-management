@@ -1,0 +1,28 @@
+# Artefacts du système de fichiers macOS. Créés et modifiés par le Finder au simple fait
+# d'ouvrir un dossier : ils n'apportent rien au dépôt et polluent chaque `git status`.
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Éditeurs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*~
+
+# Sorties de construction et dépendances — le détail par projet reste dans le .gitignore
+# du sous-dossier concerné (voir src/angular/.gitignore).
+node_modules/
+dist/
+
+# Journaux
+*.log
+npm-debug.log*
+yarn-error.log*
