@@ -5,6 +5,8 @@
  * devise de règlement, fuseau, séance, indice de référence et cycle de dénouement. Le MIC est
  * la clé de rattachement entre les deux.
  */
+import { countryFlag, countryName } from '../../domain/countries';
+
 export interface Settlement {
   readonly cycle: string;
   /** Date de bascule vers le cycle courant, ou la mention de son entrée en vigueur. */
@@ -14,12 +16,19 @@ export interface Settlement {
   readonly penalty: string;
 }
 
-export interface Place {
+/**
+ * Ce qui est saisi ici, place par place. Le pays de rattachement s'y réduit à son code ISO : son
+ * nom et son drapeau sont dérivés du référentiel mondial (`domain/countries`), seule table de
+ * l'application à les porter. Les recopier ici les aurait laissés diverger au premier ajout.
+ *
+ * La devise et le fuseau restent saisis : une place ne cote pas nécessairement dans la monnaie de
+ * son pays, et un pays peut abriter des places dans plusieurs fuseaux — Chicago et New York.
+ */
+interface PlaceEntry {
   readonly mic: string;
   readonly place: string;
+  /** ISO 3166-1 alpha-2 du pays de la place. */
   readonly code: string;
-  readonly flag: string;
-  readonly country: string;
   readonly currency: string;
   readonly tz: string;
   readonly hours: string;
@@ -28,29 +37,44 @@ export interface Place {
   readonly settlement: Settlement | null;
 }
 
-export const PLACES: readonly Place[] = [
-  {"mic":"XPAR","place":"Euronext Paris","code":"FR","flag":"🇫🇷","country":"France","currency":"EUR","tz":"Europe/Paris","hours":"09:00 – 17:30","index":"CAC 40","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Euroclear France","penalty":"CSDR — pénalités quotidiennes"}},
-  {"mic":"XAMS","place":"Euronext Amsterdam","code":"NL","flag":"🇳🇱","country":"Pays-Bas","currency":"EUR","tz":"Europe/Amsterdam","hours":"09:00 – 17:40","index":"AEX","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Euroclear Nederland","penalty":"CSDR — pénalités quotidiennes"}},
-  {"mic":"XBRU","place":"Euronext Brussels","code":"BE","flag":"🇧🇪","country":"Belgique","currency":"EUR","tz":"Europe/Brussels","hours":"09:00 – 17:30","index":"BEL 20","settlement":null},
-  {"mic":"XLIS","place":"Euronext Lisbon","code":"PT","flag":"🇵🇹","country":"Portugal","currency":"EUR","tz":"Europe/Lisbon","hours":"08:00 – 16:30","index":"PSI 20","settlement":null},
-  {"mic":"XDUB","place":"Euronext Dublin","code":"IE","flag":"🇮🇪","country":"Irlande","currency":"EUR","tz":"Europe/Dublin","hours":"08:00 – 16:30","index":"ISEQ 20","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Euroclear Bank","penalty":"CSDR — pénalités quotidiennes"}},
-  {"mic":"XETR","place":"Xetra Francfort","code":"DE","flag":"🇩🇪","country":"Allemagne","currency":"EUR","tz":"Europe/Berlin","hours":"09:00 – 17:30","index":"DAX 40","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Clearstream","penalty":"CSDR — pénalités quotidiennes"}},
-  {"mic":"XMIL","place":"Borsa Italiana","code":"IT","flag":"🇮🇹","country":"Italie","currency":"EUR","tz":"Europe/Rome","hours":"09:00 – 17:30","index":"FTSE MIB","settlement":null},
-  {"mic":"XMAD","place":"Bolsa de Madrid","code":"ES","flag":"🇪🇸","country":"Espagne","currency":"EUR","tz":"Europe/Madrid","hours":"09:00 – 17:30","index":"IBEX 35","settlement":null},
-  {"mic":"XLUX","place":"Bourse de Luxembourg","code":"LU","flag":"🇱🇺","country":"Luxembourg","currency":"EUR","tz":"Europe/Luxembourg","hours":"09:00 – 17:35","index":"LuxX","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Clearstream","penalty":"CSDR — pénalités quotidiennes"}},
-  {"mic":"XWBO","place":"Wiener Börse","code":"AT","flag":"🇦🇹","country":"Autriche","currency":"EUR","tz":"Europe/Vienna","hours":"09:00 – 17:35","index":"ATX","settlement":null},
-  {"mic":"XLON","place":"London Stock Exchange","code":"GB","flag":"🇬🇧","country":"Royaume-Uni","currency":"GBP","tz":"Europe/London","hours":"08:00 – 16:30","index":"FTSE 100","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"CREST","penalty":"Régime britannique"}},
-  {"mic":"XSWX","place":"SIX Swiss Exchange","code":"CH","flag":"🇨🇭","country":"Suisse","currency":"CHF","tz":"Europe/Zurich","hours":"09:00 – 17:20","index":"SMI","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"SIX SIS","penalty":"Régime suisse"}},
-  {"mic":"XSTO","place":"Nasdaq Stockholm","code":"SE","flag":"🇸🇪","country":"Suède","currency":"SEK","tz":"Europe/Stockholm","hours":"09:00 – 17:25","index":"OMXS30","settlement":null},
-  {"mic":"XCSE","place":"Nasdaq Copenhague","code":"DK","flag":"🇩🇰","country":"Danemark","currency":"DKK","tz":"Europe/Copenhagen","hours":"09:00 – 16:55","index":"OMXC25","settlement":null},
-  {"mic":"XOSL","place":"Oslo Børs","code":"NO","flag":"🇳🇴","country":"Norvège","currency":"NOK","tz":"Europe/Oslo","hours":"09:00 – 16:20","index":"OBX","settlement":null},
-  {"mic":"XHEL","place":"Nasdaq Helsinki","code":"FI","flag":"🇫🇮","country":"Finlande","currency":"EUR","tz":"Europe/Helsinki","hours":"10:00 – 18:25","index":"OMXH25","settlement":null},
-  {"mic":"XNAS","place":"Nasdaq","code":"US","flag":"🇺🇸","country":"États-Unis","currency":"USD","tz":"America/New_York","hours":"09:30 – 16:00","index":"Nasdaq 100","settlement":{"cycle":"T+1","shift":"Depuis le 27/05/2024","csd":"DTCC","penalty":"SEC 15c6-1"}},
-  {"mic":"XNYS","place":"New York Stock Exchange","code":"US","flag":"🇺🇸","country":"États-Unis","currency":"USD","tz":"America/New_York","hours":"09:30 – 16:00","index":"S&P 500","settlement":{"cycle":"T+1","shift":"Depuis le 27/05/2024","csd":"DTCC","penalty":"SEC 15c6-1"}},
-  {"mic":"XTSE","place":"Toronto Stock Exchange","code":"CA","flag":"🇨🇦","country":"Canada","currency":"CAD","tz":"America/Toronto","hours":"09:30 – 16:00","index":"S&P/TSX 60","settlement":{"cycle":"T+1","shift":"Depuis le 27/05/2024","csd":"CDS","penalty":"Régime canadien"}},
-  {"mic":"XTKS","place":"Tokyo Stock Exchange","code":"JP","flag":"🇯🇵","country":"Japon","currency":"JPY","tz":"Asia/Tokyo","hours":"09:00 – 15:00","index":"Nikkei 225","settlement":null},
-  {"mic":"XASX","place":"Australian Securities Exchange","code":"AU","flag":"🇦🇺","country":"Australie","currency":"AUD","tz":"Australia/Sydney","hours":"10:00 – 16:00","index":"S&P/ASX 200","settlement":null},
+export interface Place extends PlaceEntry {
+  /** Dérivé de `code` : nom français du pays. */
+  readonly country: string;
+  /** Dérivé de `code` : drapeau du pays. */
+  readonly flag: string;
+}
+
+const ENTRIES: readonly PlaceEntry[] = [
+  {"mic":"XPAR","place":"Euronext Paris","code":"FR","currency":"EUR","tz":"Europe/Paris","hours":"09:00 – 17:30","index":"CAC 40","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Euroclear France","penalty":"CSDR — pénalités quotidiennes"}},
+  {"mic":"XAMS","place":"Euronext Amsterdam","code":"NL","currency":"EUR","tz":"Europe/Amsterdam","hours":"09:00 – 17:40","index":"AEX","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Euroclear Nederland","penalty":"CSDR — pénalités quotidiennes"}},
+  {"mic":"XBRU","place":"Euronext Brussels","code":"BE","currency":"EUR","tz":"Europe/Brussels","hours":"09:00 – 17:30","index":"BEL 20","settlement":null},
+  {"mic":"XLIS","place":"Euronext Lisbon","code":"PT","currency":"EUR","tz":"Europe/Lisbon","hours":"08:00 – 16:30","index":"PSI 20","settlement":null},
+  {"mic":"XDUB","place":"Euronext Dublin","code":"IE","currency":"EUR","tz":"Europe/Dublin","hours":"08:00 – 16:30","index":"ISEQ 20","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Euroclear Bank","penalty":"CSDR — pénalités quotidiennes"}},
+  {"mic":"XETR","place":"Xetra Francfort","code":"DE","currency":"EUR","tz":"Europe/Berlin","hours":"09:00 – 17:30","index":"DAX 40","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Clearstream","penalty":"CSDR — pénalités quotidiennes"}},
+  {"mic":"XMIL","place":"Borsa Italiana","code":"IT","currency":"EUR","tz":"Europe/Rome","hours":"09:00 – 17:30","index":"FTSE MIB","settlement":null},
+  {"mic":"XMAD","place":"Bolsa de Madrid","code":"ES","currency":"EUR","tz":"Europe/Madrid","hours":"09:00 – 17:30","index":"IBEX 35","settlement":null},
+  {"mic":"XLUX","place":"Bourse de Luxembourg","code":"LU","currency":"EUR","tz":"Europe/Luxembourg","hours":"09:00 – 17:35","index":"LuxX","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"Clearstream","penalty":"CSDR — pénalités quotidiennes"}},
+  {"mic":"XWBO","place":"Wiener Börse","code":"AT","currency":"EUR","tz":"Europe/Vienna","hours":"09:00 – 17:35","index":"ATX","settlement":null},
+  {"mic":"XLON","place":"London Stock Exchange","code":"GB","currency":"GBP","tz":"Europe/London","hours":"08:00 – 16:30","index":"FTSE 100","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"CREST","penalty":"Régime britannique"}},
+  {"mic":"XSWX","place":"SIX Swiss Exchange","code":"CH","currency":"CHF","tz":"Europe/Zurich","hours":"09:00 – 17:20","index":"SMI","settlement":{"cycle":"T+2","shift":"11/10/2027","csd":"SIX SIS","penalty":"Régime suisse"}},
+  {"mic":"XSTO","place":"Nasdaq Stockholm","code":"SE","currency":"SEK","tz":"Europe/Stockholm","hours":"09:00 – 17:25","index":"OMXS30","settlement":null},
+  {"mic":"XCSE","place":"Nasdaq Copenhague","code":"DK","currency":"DKK","tz":"Europe/Copenhagen","hours":"09:00 – 16:55","index":"OMXC25","settlement":null},
+  {"mic":"XOSL","place":"Oslo Børs","code":"NO","currency":"NOK","tz":"Europe/Oslo","hours":"09:00 – 16:20","index":"OBX","settlement":null},
+  {"mic":"XHEL","place":"Nasdaq Helsinki","code":"FI","currency":"EUR","tz":"Europe/Helsinki","hours":"10:00 – 18:25","index":"OMXH25","settlement":null},
+  {"mic":"XNAS","place":"Nasdaq","code":"US","currency":"USD","tz":"America/New_York","hours":"09:30 – 16:00","index":"Nasdaq 100","settlement":{"cycle":"T+1","shift":"Depuis le 27/05/2024","csd":"DTCC","penalty":"SEC 15c6-1"}},
+  {"mic":"XNYS","place":"New York Stock Exchange","code":"US","currency":"USD","tz":"America/New_York","hours":"09:30 – 16:00","index":"S&P 500","settlement":{"cycle":"T+1","shift":"Depuis le 27/05/2024","csd":"DTCC","penalty":"SEC 15c6-1"}},
+  {"mic":"XTSE","place":"Toronto Stock Exchange","code":"CA","currency":"CAD","tz":"America/Toronto","hours":"09:30 – 16:00","index":"S&P/TSX 60","settlement":{"cycle":"T+1","shift":"Depuis le 27/05/2024","csd":"CDS","penalty":"Régime canadien"}},
+  {"mic":"XTKS","place":"Tokyo Stock Exchange","code":"JP","currency":"JPY","tz":"Asia/Tokyo","hours":"09:00 – 15:00","index":"Nikkei 225","settlement":null},
+  {"mic":"XASX","place":"Australian Securities Exchange","code":"AU","currency":"AUD","tz":"Australia/Sydney","hours":"10:00 – 16:00","index":"S&P/ASX 200","settlement":null},
 ];
+
+/* Le nom et le drapeau du pays sont recomposés une fois, au chargement du module : les écrans
+   continuent de lire `place.country` et `place.flag` sans savoir d'où ils viennent. */
+export const PLACES: readonly Place[] = ENTRIES.map((e) => ({
+  ...e,
+  country: countryName(e.code),
+  flag: countryFlag(e.code),
+}));
 
 const BY_MIC = new Map<string, Place>(PLACES.map((p) => [p.mic, p]));
 
@@ -69,12 +93,8 @@ export function continentOf(code: string): string {
   return CONTINENT[code] ?? 'Europe';
 }
 
-const FLAG_BY_CODE = new Map<string, string>(PLACES.map((p) => [p.code, p.flag]));
-
-/** Drapeau d'un pays du référentiel, ou chaîne vide si le code n'y figure pas. */
-export function countryFlag(code: string): string {
-  return FLAG_BY_CODE.get(code) ?? '';
-}
+/* Réexporté pour les appelants qui raisonnent en places plutôt qu'en pays. */
+export { countryFlag } from '../../domain/countries';
 
 export function placeOf(mic: string): Place | null {
   return BY_MIC.get(String(mic).toUpperCase()) ?? null;

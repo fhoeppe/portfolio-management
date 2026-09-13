@@ -4,6 +4,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -125,7 +126,7 @@ function initialTradeForm(): TradeForm {
  */
 @Component({
   selector: 'app-operation-form-dialog',
-  imports: [MatTabsModule, MatIconModule, SidePanel, MatButtonModule, MatButtonToggleModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, OpsSelect, OpsStepperInput],
+  imports: [MatTabsModule, MatIconModule, SidePanel, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, OpsSelect, OpsStepperInput],
   templateUrl: './operation-form-dialog.html',
   styleUrl: './operation-form-dialog.css',
 })
@@ -327,6 +328,14 @@ export class OperationFormDialog {
 
   protected setFillPartial(): void {
     this.tradeFill.set('partial');
+  }
+
+  /* L'exécution n'a que deux états : la case cochée vaut « totale », décochée « partielle ». La
+     bascule passe par les deux méthodes existantes, `setFillFull` réamorçant la ligne d'exécution
+     à la quantité de l'ordre — ce que la case seule ne ferait pas. */
+  protected setFill(full: boolean): void {
+    if (full) this.setFillFull();
+    else this.setFillPartial();
   }
 
   protected setExecRow(i: number, patch: Partial<ExecRow>): void {

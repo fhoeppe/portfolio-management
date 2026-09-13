@@ -194,9 +194,11 @@ export class Calendrier {
      d'un mois donné, pas pour être ramené au mois courant. Le bouton « Aujourd'hui » reste là
      pour y revenir d'un geste. */
   protected readonly cursor = this.viewState.remember('calendrier.cursor', this.today);
-  protected readonly items = signal<readonly CalItem[]>(seedItems());
+  /* Les éléments créés ou modifiés dans la session sont mémorisés avec le reste : un rendez-vous
+     saisi puis perdu en allant vérifier une position serait à ressaisir. */
+  protected readonly items = this.viewState.remember<readonly CalItem[]>('calendrier.items', seedItems());
   /** Case du mois dépliée pour montrer tous ses éléments. */
-  private readonly expanded = signal<string | null>(null);
+  private readonly expanded = this.viewState.remember<string | null>('calendrier.expanded', null);
 
   protected readonly views = [
     { key: 'week' as const, label: 'Semaine', icon: 'columns-3' },
@@ -226,11 +228,11 @@ export class Calendrier {
   }
 
   // -- Recherche et paramètres d'affichage ----------------------------------------------------
-  protected readonly searchOpen = signal(false);
-  protected readonly search = signal('');
+  protected readonly searchOpen = this.viewState.remember('calendrier.searchOpen', false);
+  protected readonly search = this.viewState.remember('calendrier.search', '');
   /** Teinte de fin de semaine, réglable depuis le menu des paramètres. */
   protected readonly tintWeekends = this.viewState.remember('calendrier.tintWeekends', true);
-  protected readonly dayRange = signal<RangeKey>('work');
+  protected readonly dayRange = this.viewState.remember<RangeKey>('calendrier.dayRange', 'work');
 
   private readonly range = computed(() => DAY_RANGES.find((r) => r.key === this.dayRange()) ?? DAY_RANGES[0]);
 
@@ -500,7 +502,7 @@ export class Calendrier {
    * vue principale le déplace — mais peut aussi s'en écarter : feuilleter les mois dans le
    * panneau ne doit pas faire bouger la grille tant qu'aucun jour n'est choisi.
    */
-  private readonly miniOffset = signal(0);
+  private readonly miniOffset = this.viewState.remember('calendrier.miniOffset', 0);
 
   private readonly miniAnchor = computed(() => {
     const c = parse(this.cursor());

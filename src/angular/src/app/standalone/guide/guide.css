@@ -356,6 +356,79 @@ h1, h2, h3 {
   text-wrap: pretty;
 }
 
+/* Tableaux rédactionnels — écritures comptables et synthèses */
+
+/* Le tableau défile dans sa propre boîte : sur un écran étroit, c'est lui qui se coupe, pas la
+   page — un guide dont le corps de texte glisse horizontalement devient illisible. */
+.gd-table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.gd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.gd-table-caption {
+  padding-bottom: 6px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.gd-table th {
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--color-neutral-300);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.gd-table td {
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-neutral-800);
+  vertical-align: top;
+}
+
+/* Montants alignés à droite et chiffres de même chasse : deux lignes ne se comparent qu'à cette
+   condition, sinon il faut les relire. */
+.gd-table .gd-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Une écriture se lit par blocs : la date ne se répète pas d'une ligne à l'autre, c'est la
+   cellule vide qui rattache la ligne à celle du dessus. */
+.gd-table td:first-child {
+  white-space: nowrap;
+  color: var(--color-neutral-700);
+}
+
+.gd-table-total td {
+  border-top: 1px solid var(--color-neutral-400);
+  border-bottom: 0;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.gd-table-note {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+  text-wrap: pretty;
+}
+
 /* FAQ */
 
 /* Même neutralisation que pour panel-card : le panneau Material apporte ombrage, coins

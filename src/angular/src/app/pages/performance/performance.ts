@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -6,6 +6,8 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+
+import { ViewStateService } from '../../shell/view-state.service';
 
 import {
   ATTRIB_CLASS, ATTRIB_GEO, AttribRow, BANDS, BAND_COLOR, BY_FREQ, BandKey, CLASS_TINT,
@@ -49,15 +51,21 @@ const CHART = { w: 720, h: 240, pad: 16 } as const;
 export class Performance {
   /* ---------------------------------------------------------------- État */
 
-  protected readonly tab = signal<Tab>('overview');
-  protected readonly period = signal<PeriodKey>('ytd');
-  protected readonly scope = signal('all');
-  protected readonly sortBy = signal<SortKey>('contrib');
-  protected readonly freq = signal<FreqKey>('monthly');
-  protected readonly band = signal<BandKey>('pnl');
-  protected readonly selYear = signal<string | null>(null);
+  /* Le routeur détruit la page à chaque navigation : tout ce que l'utilisateur y choisit — onglet,
+     période, périmètre, tri, fréquence, bande, année mise en avant, opacité des barres — est
+     emprunté au service plutôt que déclaré ici, sans quoi on retrouverait l'écran d'ouverture au
+     retour d'une autre page. */
+  private readonly viewState = inject(ViewStateService);
+
+  protected readonly tab = this.viewState.remember<Tab>('performance.tab', 'overview');
+  protected readonly period = this.viewState.remember<PeriodKey>('performance.period', 'ytd');
+  protected readonly scope = this.viewState.remember('performance.scope', 'all');
+  protected readonly sortBy = this.viewState.remember<SortKey>('performance.sortBy', 'contrib');
+  protected readonly freq = this.viewState.remember<FreqKey>('performance.freq', 'monthly');
+  protected readonly band = this.viewState.remember<BandKey>('performance.band', 'pnl');
+  protected readonly selYear = this.viewState.remember<string | null>('performance.selYear', null);
   /** Opacité du remplissage des barres du graphique annuel, en pourcentage. */
-  protected readonly fill = signal(25);
+  protected readonly fill = this.viewState.remember('performance.fill', 25);
 
   protected readonly scopeOptions = SCOPES;
   protected readonly measures = MEASURES;

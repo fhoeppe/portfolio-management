@@ -1,7 +1,23 @@
+/**
+ * Tableau d'une section : une écriture comptable ou une synthèse chiffrée se lit en colonnes, pas
+ * en phrases. `align` est donné colonne par colonne — les montants se lisent alignés à droite,
+ * chiffres sur chiffres, sans quoi comparer deux lignes revient à les relire.
+ */
+export interface GuideTable {
+  readonly caption?: string;
+  readonly columns: readonly string[];
+  readonly align?: readonly ('left' | 'right')[];
+  readonly rows: readonly (readonly string[])[];
+  /** Dernière ligne mise en avant — un total, un solde. */
+  readonly totalRow?: boolean;
+  readonly note?: string;
+}
+
 export interface GuideSection {
   readonly heading: string;
   readonly body: string;
   readonly steps?: readonly string[];
+  readonly table?: GuideTable;
 }
 
 export interface GuideFaqEntry {
@@ -82,6 +98,104 @@ const ACCOUNTING_TOPIC: GuideTopic = {
         'États-Unis et Canada (XNAS, XNYS, XTSE) : T+1 depuis le 27 mai 2024.',
         'Zone euro, Royaume-Uni, Suisse : T+2, passage à T+1 le 11 octobre 2027.',
       ],
+    },
+    {
+      heading: 'Trois événements sur un même client — ce que vous saisissez, ce qui s’écrit',
+      body:
+        "Vous êtes administrateur : le client est bénéficiaire des opérations, vous en êtes le teneur de compte. Vous saisissez l’événement, l’application en déduit les écritures, le suspens et la date de dénouement ; vous contrôlez, puis vous rapprochez le relevé du dépositaire. Les trois exemples qui suivent reprennent des opérations du registre — une vente, un achat, un dividende — et sont chiffrés aux montants qui y figurent. Chaque événement se lit en deux temps : ce qui est acquis à la négociation, ce qui est encaissé au règlement.",
+      steps: [
+        'Saisie de l’opération dans Opérations, ou directement dans le registre des Transactions.',
+        'Contrôle du suspens : l’opération est négociée, pas encore réglée — comptes 464 et 465.',
+        'Rapprochement de la ligne du relevé, puis passage de l’écriture de règlement.',
+      ],
+    },
+    {
+      heading: '1. SELL — cession de 10 LVMH pour le compte du client',
+      body:
+        "Transaction TXN000040, compte Bourse Direct — PEA : 10 titres MC cédés à 152,30 €, soit 1 523,00 € bruts, 2,50 € de frais et 0,46 € de taxes. Négociée le 02/09, réglée le 08/09. La cession solde la ligne à son prix de revient — 138,00 € l’unité dans cet exemple — et dégage le résultat ; les frais ne viennent pas en diminution du produit, ils sont une charge de l’exercice. Le client n’est crédité de rien tant que le dépositaire n’a pas réglé : entre les deux dates, il détient une créance.",
+      table: {
+        caption: 'Écritures de la cession',
+        columns: ['Date', 'Compte', 'Libellé', 'Débit', 'Crédit'],
+        align: ['left', 'left', 'left', 'right', 'right'],
+        rows: [
+          ['02/09 — négociation', '4650', 'Créance sur cession, nette de frais', '1 520,04', '—'],
+          ['', '6270', 'Frais de transaction et taxes', '2,96', '—'],
+          ['', '3010', 'Sortie des 10 titres au prix de revient', '—', '1 380,00'],
+          ['', '7620', 'Résultat de cession', '—', '143,00'],
+          ['08/09 — règlement', '5120', 'Encaissement sur le compte espèces', '1 520,04', '—'],
+          ['', '4650', 'Extinction de la créance', '—', '1 520,04'],
+        ],
+        note: 'Le résultat est acquis le 02/09, la trésorerie le 08/09 : c’est exactement l’écart que porte le compte 465.',
+      },
+    },
+    {
+      heading: '2. BUY — acquisition de 20 Apple pour le même client',
+      body:
+        "Transaction TXN000041, compte Degiro — CTO : 20 titres AAPL à 150,00 €, soit 3 000,00 €, 12,00 € de frais et 1,80 € de taxes. Négociée le 03/09, réglée le 07/09 — la place est américaine, le dénouement y est à J+1 ouvré, décalé par le week-end. La ligne entre au bilan à la négociation, la dette de règlement avec elle. Les frais sont passés en charges parce que la ligne est évaluée en juste valeur par résultat ; en juste valeur par capitaux propres ou au coût amorti, ils seraient incorporés au coût d’entrée et le prix de revient unitaire passerait de 150,00 € à 150,69 €.",
+      table: {
+        caption: 'Écritures de l’acquisition',
+        columns: ['Date', 'Compte', 'Libellé', 'Débit', 'Crédit'],
+        align: ['left', 'left', 'left', 'right', 'right'],
+        rows: [
+          ['03/09 — négociation', '3010', 'Entrée des 20 titres au prix d’acquisition', '3 000,00', '—'],
+          ['', '6270', 'Frais de transaction et taxes', '13,80', '—'],
+          ['', '4640', 'Dette de règlement envers le dépositaire', '—', '3 013,80'],
+          ['07/09 — règlement', '4640', 'Extinction de la dette', '3 013,80', '—'],
+          ['', '5120', 'Décaissement du compte espèces', '—', '3 013,80'],
+        ],
+        note: 'Tant que le 07/09 n’est pas passé, le client détient les titres sans les avoir payés : le compte 464 porte la dette.',
+      },
+    },
+    {
+      heading: '3. DIV — dividende L’Oréal encaissé par le client',
+      body:
+        "Transaction TXN000037, compte Bourse Direct — PEA : 100 titres, 2,20 € par titre, détachement le 20/08, mise en paiement le 26/08. Le produit est acquis au détachement, quand le droit de percevoir est établi — pas à l’encaissement. La retenue à la source de 30 % est un impôt, non une réduction du produit : le résultat du client porte 220,00 €, sa trésorerie 154,00 €. La retenue est portée en créance parce qu’elle est récupérable par convention ; à défaut, elle irait en charge d’impôt et le résultat net tomberait à 154,00 €.",
+      table: {
+        caption: 'Écritures du dividende',
+        columns: ['Date', 'Compte', 'Libellé', 'Débit', 'Crédit'],
+        align: ['left', 'left', 'left', 'right', 'right'],
+        rows: [
+          ['20/08 — détachement', '4670', 'Dividende à recevoir, net de retenue', '154,00', '—'],
+          ['', '4487', 'Retenue à la source récupérable (30 %)', '66,00', '—'],
+          ['', '7630', 'Revenus de participations, montant brut', '—', '220,00'],
+          ['26/08 — paiement', '5120', 'Encaissement sur le compte espèces', '154,00', '—'],
+          ['', '4670', 'Extinction de la créance', '—', '154,00'],
+        ],
+        note: 'Un dividende optionnel ne change rien à ces deux lignes : le choix du porteur ne porte que sur la façon d’éteindre la créance, en titres ou en espèces.',
+      },
+    },
+    {
+      heading: 'Ce que les trois événements laissent au client',
+      body:
+        "Le résultat et la trésorerie ne se forment pas aux mêmes dates, et c’est le suspens qui tient l’écart. Le solde projeté que vous lisez dans Transactions — 512 + 465 − 464 — est la seule mesure qui réconcilie les deux colonnes : il dit ce que le compte espèces vaudra une fois tout dénoué.",
+      table: {
+        caption: 'Résultat acquis, trésorerie encaissée',
+        columns: ['Événement', 'Résultat', 'À la négociation', 'Au règlement'],
+        align: ['left', 'right', 'left', 'right'],
+        rows: [
+          ['SELL — 10 LVMH', '+140,04', 'Créance 465 de 1 520,04', '+1 520,04 le 08/09'],
+          ['BUY — 20 AAPL', '−13,80', 'Dette 464 de 3 013,80', '−3 013,80 le 07/09'],
+          ['DIV — L’Oréal', '+220,00', 'Créance de 154,00', '+154,00 le 26/08'],
+          ['Total', '+346,24', '—', '−1 339,76'],
+        ],
+        totalRow: true,
+        note: 'Le résultat de la cession est net des frais (143,00 − 2,96) ; celui de l’achat ne porte que ses frais, la ligne restant au bilan.',
+      },
+    },
+    {
+      heading: 'Où l’administrateur retrouve chaque étape',
+      body:
+        "Rien de ce qui précède ne se saisit deux fois : l’opération est saisie une fois, les écrans en montrent des faces différentes. Le rôle d’administrateur ouvre les quatre en validation ; un gestionnaire saisit et rapproche sans valider les écritures.",
+      table: {
+        columns: ['Étape', 'Écran', 'Ce qu’on y fait'],
+        align: ['left', 'left', 'left'],
+        rows: [
+          ['Saisie', 'Opérations', 'Créer l’ordre, le transfert, la corporate action ou le cashflow'],
+          ['Suivi', 'Transactions', 'Lire le registre, ses jambes, le suspens et le solde projeté'],
+          ['Écritures', 'Comptabilité', 'Contrôler le journal, les comptes mouvementés et la balance'],
+          ['Contrôle', 'Réconciliation', 'Rapprocher la ligne du relevé du dépositaire'],
+        ],
+      },
     },
   ],
   faq: [

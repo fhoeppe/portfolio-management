@@ -46,7 +46,7 @@ import {
   ratesForResidence,
 } from './withholding-data';
 
-type Tab = 'prefs' | 'tax' | 'settle' | 'venues' | 'roles';
+type Tab = 'prefs' | 'tax' | 'settle' | 'venues' | 'roles' | 'users';
 
 /** Retouches d'un taux, champ par champ : une clé absente signifie « barème officiel ». */
 interface RateEdit {
@@ -139,6 +139,10 @@ export class Parametres {
     { key: 'settle' as const, label: 'Règlement-livraison', icon: 'transfer' },
     { key: 'venues' as const, label: 'Places boursières', icon: 'globe' },
     { key: 'roles' as const, label: 'Gestion des rôles', icon: 'shield' },
+    /* Les utilisateurs quittent l'onglet des rôles : on y vient pour une personne — la retrouver,
+       changer son rôle, voir sa dernière connexion —, pas pour la grille des droits. Deux tâches
+       distinctes que le même écran obligeait à parcourir l'une après l'autre. */
+    { key: 'users' as const, label: 'Gestion des utilisateurs', icon: 'user' },
   ];
 
   protected setTab(t: Tab): void {
@@ -154,7 +158,9 @@ export class Parametres {
       case 'venues':
         return 'Places rattachées à chaque pays, avec les indices et devises qui en découlent';
       case 'roles':
-        return "Droits accordés par rôle, écran par écran, et rôle attribué à chaque utilisateur";
+        return "Droits accordés par rôle, écran par écran";
+      case 'users':
+        return 'Comptes ouverts, rôle attribué et dernière connexion';
       default:
         return "Préférences d'affichage et de notification appliquées à votre session";
     }

@@ -74,6 +74,37 @@
                   }
                 </div>
               }
+              <!-- Tableau d'écritures ou de synthèse. Un <table> nu et non mat-table : ces
+                   tableaux sont du contenu rédactionnel figé, sans tri ni sélection ni source de
+                   données — la directive n'apporterait que ses colonnes déclaratives. -->
+              @if (s.table; as t) {
+                <div class="gd-table-wrap">
+                  <table class="gd-table">
+                    @if (t.caption) {
+                      <caption class="gd-table-caption">{{ t.caption }}</caption>
+                    }
+                    <thead>
+                      <tr>
+                        @for (c of t.columns; track $index) {
+                          <th [class.gd-num]="t.align && t.align[$index] === 'right'">{{ c }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of t.rows; track $index) {
+                        <tr [class.gd-table-total]="t.totalRow && $index === t.rows.length - 1">
+                          @for (cell of row; track $index) {
+                            <td [class.gd-num]="t.align && t.align[$index] === 'right'">{{ cell }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                @if (t.note) {
+                  <p class="gd-table-note">{{ t.note }}</p>
+                }
+              }
             </div>
           }
           @if (sections().length === 0) {

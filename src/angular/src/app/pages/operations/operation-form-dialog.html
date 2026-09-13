@@ -83,27 +83,11 @@
       <div class="pm-section">
         <div class="pm-exec-head" [style.background]="info().tint">
           <span class="pm-section-title" [style.color]="info().bg">Exécution</span>
-          <span class="pm-osel pm-exec-menu">
-            <button type="button" matButton class="pm-exec-trigger" [matMenuTriggerFor]="fillMenu" #fillTrigger="matMenuTrigger" [class.pm-exec-trigger-open]="fillTrigger.menuOpen">
-              @if (tradeFill() === 'full') {
-                <mat-icon svgIcon="check" style="font-size:15px" [style.color]="info().bg"></mat-icon>
-              } @else {
-                <mat-icon svgIcon="circle-minus" style="font-size:15px" [style.color]="info().bg"></mat-icon>
-              }
-              <span>{{ tradeFill() === 'full' ? 'Totale' : 'Partielle' }}</span>
-              <mat-icon iconPositionEnd svgIcon="chevron-down" style="font-size:13px" class="pm-exec-chevron"></mat-icon>
-            </button>
-            <mat-menu #fillMenu="matMenu">
-              <button mat-menu-item (click)="setFillFull()">
-                <mat-icon svgIcon="check" style="font-size:15px" [style.color]="info().bg"></mat-icon>
-                Totale
-              </button>
-              <button mat-menu-item (click)="setFillPartial()">
-                <mat-icon svgIcon="circle-minus" style="font-size:15px" [style.color]="info().bg"></mat-icon>
-                Partielle
-              </button>
-            </mat-menu>
-          </span>
+          <!-- Une case plutôt qu'une puce et son menu : le choix est binaire — l'ordre est servi
+               en totalité ou il ne l'est pas — et un menu à deux entrées demandait deux gestes
+               pour dire oui ou non. Même dessin de case que partout ailleurs dans l'application. -->
+          <mat-checkbox class="pm-exec-check" [checked]="tradeFill() === 'full'"
+            (change)="setFill($event.checked)">Exécution totale</mat-checkbox>
         </div>
         <div class="pm-exec-rows">
           @for (r of execRows(); track $index) {

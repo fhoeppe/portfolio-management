@@ -11,6 +11,7 @@ import { ColResize } from '../../ui/col-resize';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { NonWorkingDaysService } from '../../domain/non-working-days.service';
 import { settlementRuleFor } from '../../domain/settlement-calendar';
+import { ViewStateService } from '../../shell/view-state.service';
 import {
   LEG_RULES,
   TRADABLE_SECURITIES,
@@ -111,28 +112,35 @@ export class Transactions {
     return (nature && LIGHT_NATURE_TINT[nature]?.fg) || null;
   }
 
+  /* Le routeur détruit la page à chaque navigation : l'onglet ouvert, les filtres posés et la
+     ligne consultée sont empruntés au service plutôt que déclarés ici, sans quoi on retrouverait
+     le registre vierge en revenant d'une fiche titre ou d'un compte. */
+  private readonly viewState = inject(ViewStateService);
+
   // ---- Onglets --------------------------------------------------------
-  protected readonly tab = signal<Tab>('register');
+  protected readonly tab = this.viewState.remember<Tab>('transactions.tab', 'register');
 
   // ---- Filtres du registre ----------------------------------------------
-  protected readonly query = signal('');
-  protected readonly dateFrom = signal('');
-  protected readonly dateTo = signal('');
-  protected readonly refFilter = signal('');
-  protected readonly opNoFilter = signal('');
-  protected readonly kindFilter = signal<'all' | 'security' | 'cash'>('all');
-  protected readonly natPick = signal<ReadonlySet<NatureKey>>(new Set());
-  protected readonly typePick = signal<ReadonlySet<string>>(new Set());
-  protected readonly accPick = signal<ReadonlySet<string>>(new Set());
-  protected readonly secPick = signal<ReadonlySet<string>>(new Set());
-  protected readonly stateFilter = signal<'all' | 'pending' | 'settled'>('all');
+  protected readonly query = this.viewState.remember('transactions.query', '');
+  protected readonly dateFrom = this.viewState.remember('transactions.dateFrom', '');
+  protected readonly dateTo = this.viewState.remember('transactions.dateTo', '');
+  protected readonly refFilter = this.viewState.remember('transactions.refFilter', '');
+  protected readonly opNoFilter = this.viewState.remember('transactions.opNoFilter', '');
+  protected readonly kindFilter = this.viewState.remember<'all' | 'security' | 'cash'>('transactions.kindFilter', 'all');
+  protected readonly natPick = this.viewState.remember<ReadonlySet<NatureKey>>('transactions.natPick', new Set());
+  protected readonly typePick = this.viewState.remember<ReadonlySet<string>>('transactions.typePick', new Set());
+  protected readonly accPick = this.viewState.remember<ReadonlySet<string>>('transactions.accPick', new Set());
+  protected readonly secPick = this.viewState.remember<ReadonlySet<string>>('transactions.secPick', new Set());
+  protected readonly stateFilter = this.viewState.remember<'all' | 'pending' | 'settled'>('transactions.stateFilter', 'all');
   /* Même système que Nature/Type/Compte/Titre : sélection multiple à cases, et non plus une
      valeur unique. Un ensemble vide vaut « tous les états », comme pour les autres. */
-  protected readonly recoPick = signal<ReadonlySet<RecoStateKey>>(new Set());
+  protected readonly recoPick = this.viewState.remember<ReadonlySet<RecoStateKey>>('transactions.recoPick', new Set());
   protected readonly showOp = signal(false);
-  protected readonly selected = signal<string | null>(null);
-  protected readonly open = signal<ReadonlySet<string>>(new Set());
-  protected readonly openMonths = signal<ReadonlySet<string>>(new Set());
+  /* Ligne consultée et lignes dépliées : c'est l'endroit où l'on en était, au même titre que
+     l'onglet. */
+  protected readonly selected = this.viewState.remember<string | null>('transactions.selected', null);
+  protected readonly open = this.viewState.remember<ReadonlySet<string>>('transactions.open', new Set());
+  protected readonly openMonths = this.viewState.remember<ReadonlySet<string>>('transactions.openMonths', new Set());
   /* Critère de regroupement demandé, mois par mois. Réglage par mois et non global : la
      commande vit dans le panneau d'un mois donné, elle ne doit pas en engager d'autres. */
   protected readonly monthGroups = signal<ReadonlyMap<string, GroupKey>>(new Map());

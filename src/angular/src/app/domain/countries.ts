@@ -1,0 +1,411 @@
+/**
+ * Référentiel des pays du monde — figé, sans dépendance ni appel réseau.
+ *
+ * Il existe parce que trois écrans en avaient chacun leur bout : le code ISO dans le référentiel
+ * des places (`pages/parametres/places-data`), le pays d'un calendrier de jours fériés
+ * (`holiday-rules`), le pays d'un événement (`pages/calendrier`). Chaque table portait son propre
+ * nom de pays et son propre drapeau, avec le risque de diverger au premier ajout.
+ *
+ * Source des codes, devises et régions : le jeu de données ISO 3166 / ISO 4217 de mledoze/countries
+ * (domaine public, CC0), relu à la génération. Les noms français viennent de l'ICU embarqué dans
+ * Node (`Intl.DisplayNames`), à quelques exceptions près nommées dans le générateur — « Congo » et
+ * « Corée » y sont ambigus. Les contrôles passés à la génération : unicité des trois codes, format
+ * des codes, devise connue de l'ICU, nom non vide, drapeau à deux points de code, 193 membres de
+ * l'ONU, 27 États membres de l'Union, 21 de la zone euro.
+ *
+ * Les décalages horaires sont calculés par l'ICU au moment de la génération, et non repris tels
+ * quels d'un jeu de données : ceux-ci livrent le décalage en vigueur le jour de leur construction,
+ * heure d'été comprise — Sydney y figure à +11:00 alors que l'Australie n'y est qu'en été austral.
+ * Le décalage retenu est celui de l'heure standard, soit le plus petit des deux mesurés en janvier
+ * et en juillet, l'heure d'été ne faisant qu'avancer les horloges.
+ *
+ * Ce qui n'y est pas : l'indicatif téléphonique (sans usage ici) et le nombre de décimales de la
+ * devise, qui se lit de l'ICU en une ligne :
+ * `new Intl.NumberFormat('fr', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits`.
+ */
+
+/** Continents au sens géographique usuel ; l'Amérique centrale et les Caraïbes relèvent du Nord. */
+export type Continent =
+  | 'Afrique'
+  | 'Amérique du Nord'
+  | 'Amérique du Sud'
+  | 'Antarctique'
+  | 'Asie'
+  | 'Europe'
+  | 'Océanie';
+
+export interface Country {
+  /** ISO 3166-1 alpha-2 — la clé employée partout ailleurs dans l'application. */
+  readonly alpha2: string;
+  /** ISO 3166-1 alpha-3. */
+  readonly alpha3: string;
+  /** ISO 3166-1 numérique, sur trois chiffres. Vide pour le Kosovo, qui n'en a pas. */
+  readonly numeric: string;
+  /** Nom courant en français. */
+  readonly name: string;
+  /** Drapeau, en indicateurs régionaux Unicode. */
+  readonly flag: string;
+  readonly continent: Continent;
+  /** Sous-région, pour un regroupement plus fin que le continent. */
+  readonly region: string;
+  /** Devise ayant cours légal, en ISO 4217. Vide pour les territoires qui n'en ont pas. */
+  readonly currency: string;
+  /**
+   * Fuseau de référence, en identifiant IANA. Pour un pays qui en compte plusieurs, celui du siège
+   * des institutions et des marchés — `America/New_York` pour les États-Unis, `Australia/Sydney`
+   * pour l'Australie. À passer tel quel à `Intl.DateTimeFormat` pour une heure locale juste, heure
+   * d'été comprise.
+   */
+  readonly timeZone: string;
+  /** Décalage d'heure standard du fuseau de référence, sous la forme `UTC+01:00`. */
+  readonly utcOffset: string;
+  /** Décalages de tous les fuseaux du pays, du plus occidental au plus oriental. */
+  readonly utcOffsets: readonly string[];
+  /** Le pays pratique l'heure d'été — le décalage effectif varie alors selon la saison. */
+  readonly dst: boolean;
+  /** État membre de l'ONU — distingue les États souverains des territoires et dépendances. */
+  readonly un: boolean;
+  /** État membre de l'Union européenne. */
+  readonly eu: boolean;
+  /** Pays de la zone euro — la Bulgarie y est entrée le 1er janvier 2026. */
+  readonly eurozone: boolean;
+}
+
+export const COUNTRIES: readonly Country[] = [
+  { alpha2: 'AF', alpha3: 'AFG', numeric: '004', name: 'Afghanistan', flag: '🇦🇫', continent: 'Asie', region: 'Asie du Sud', currency: 'AFN', timeZone: 'Asia/Kabul', utcOffset: 'UTC+04:30', utcOffsets: ['UTC+04:30'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ZA', alpha3: 'ZAF', numeric: '710', name: 'Afrique du Sud', flag: '🇿🇦', continent: 'Afrique', region: 'Afrique australe', currency: 'ZAR', timeZone: 'Africa/Johannesburg', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'AL', alpha3: 'ALB', numeric: '008', name: 'Albanie', flag: '🇦🇱', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'ALL', timeZone: 'Europe/Tirane', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'DZ', alpha3: 'DZA', numeric: '012', name: 'Algérie', flag: '🇩🇿', continent: 'Afrique', region: 'Afrique du Nord', currency: 'DZD', timeZone: 'Africa/Algiers', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'DE', alpha3: 'DEU', numeric: '276', name: 'Allemagne', flag: '🇩🇪', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'EUR', timeZone: 'Europe/Berlin', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'AD', alpha3: 'AND', numeric: '020', name: 'Andorre', flag: '🇦🇩', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Andorra', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'AO', alpha3: 'AGO', numeric: '024', name: 'Angola', flag: '🇦🇴', continent: 'Afrique', region: 'Afrique centrale', currency: 'AOA', timeZone: 'Africa/Luanda', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'AI', alpha3: 'AIA', numeric: '660', name: 'Anguilla', flag: '🇦🇮', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/Anguilla', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'AQ', alpha3: 'ATA', numeric: '010', name: 'Antarctique', flag: '🇦🇶', continent: 'Antarctique', region: 'Antarctique', currency: '', timeZone: 'Antarctica/McMurdo', utcOffset: 'UTC+12:00', utcOffsets: ['UTC-03:00', 'UTC+00:00', 'UTC+03:00', 'UTC+05:00', 'UTC+07:00', 'UTC+08:00', 'UTC+10:00', 'UTC+12:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'AG', alpha3: 'ATG', numeric: '028', name: 'Antigua-et-Barbuda', flag: '🇦🇬', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/Antigua', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SA', alpha3: 'SAU', numeric: '682', name: 'Arabie saoudite', flag: '🇸🇦', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'SAR', timeZone: 'Asia/Riyadh', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'AR', alpha3: 'ARG', numeric: '032', name: 'Argentine', flag: '🇦🇷', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'ARS', timeZone: 'America/Argentina/Buenos_Aires', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'AM', alpha3: 'ARM', numeric: '051', name: 'Arménie', flag: '🇦🇲', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'AMD', timeZone: 'Asia/Yerevan', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'AW', alpha3: 'ABW', numeric: '533', name: 'Aruba', flag: '🇦🇼', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'AWG', timeZone: 'America/Aruba', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'AU', alpha3: 'AUS', numeric: '036', name: 'Australie', flag: '🇦🇺', continent: 'Océanie', region: 'Australie et Nouvelle-Zélande', currency: 'AUD', timeZone: 'Australia/Sydney', utcOffset: 'UTC+10:00', utcOffsets: ['UTC+08:00', 'UTC+08:45', 'UTC+09:30', 'UTC+10:00', 'UTC+10:30'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'AT', alpha3: 'AUT', numeric: '040', name: 'Autriche', flag: '🇦🇹', continent: 'Europe', region: 'Europe centrale', currency: 'EUR', timeZone: 'Europe/Vienna', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'AZ', alpha3: 'AZE', numeric: '031', name: 'Azerbaïdjan', flag: '🇦🇿', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'AZN', timeZone: 'Asia/Baku', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BS', alpha3: 'BHS', numeric: '044', name: 'Bahamas', flag: '🇧🇸', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'BSD', timeZone: 'America/Nassau', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'BH', alpha3: 'BHR', numeric: '048', name: 'Bahreïn', flag: '🇧🇭', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'BHD', timeZone: 'Asia/Bahrain', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BD', alpha3: 'BGD', numeric: '050', name: 'Bangladesh', flag: '🇧🇩', continent: 'Asie', region: 'Asie du Sud', currency: 'BDT', timeZone: 'Asia/Dhaka', utcOffset: 'UTC+06:00', utcOffsets: ['UTC+06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BB', alpha3: 'BRB', numeric: '052', name: 'Barbade', flag: '🇧🇧', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'BBD', timeZone: 'America/Barbados', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BE', alpha3: 'BEL', numeric: '056', name: 'Belgique', flag: '🇧🇪', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'EUR', timeZone: 'Europe/Brussels', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'BZ', alpha3: 'BLZ', numeric: '084', name: 'Belize', flag: '🇧🇿', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'BZD', timeZone: 'America/Belize', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BJ', alpha3: 'BEN', numeric: '204', name: 'Bénin', flag: '🇧🇯', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Porto-Novo', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BM', alpha3: 'BMU', numeric: '060', name: 'Bermudes', flag: '🇧🇲', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'BMD', timeZone: 'Atlantic/Bermuda', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'BT', alpha3: 'BTN', numeric: '064', name: 'Bhoutan', flag: '🇧🇹', continent: 'Asie', region: 'Asie du Sud', currency: 'BTN', timeZone: 'Asia/Thimphu', utcOffset: 'UTC+06:00', utcOffsets: ['UTC+06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BY', alpha3: 'BLR', numeric: '112', name: 'Biélorussie', flag: '🇧🇾', continent: 'Europe', region: 'Europe de l’Est', currency: 'BYN', timeZone: 'Europe/Minsk', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BO', alpha3: 'BOL', numeric: '068', name: 'Bolivie', flag: '🇧🇴', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'BOB', timeZone: 'America/La_Paz', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BA', alpha3: 'BIH', numeric: '070', name: 'Bosnie-Herzégovine', flag: '🇧🇦', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'BAM', timeZone: 'Europe/Sarajevo', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'BW', alpha3: 'BWA', numeric: '072', name: 'Botswana', flag: '🇧🇼', continent: 'Afrique', region: 'Afrique australe', currency: 'BWP', timeZone: 'Africa/Gaborone', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BR', alpha3: 'BRA', numeric: '076', name: 'Brésil', flag: '🇧🇷', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'BRL', timeZone: 'America/Sao_Paulo', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-05:00', 'UTC-04:00', 'UTC-03:00', 'UTC-02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BN', alpha3: 'BRN', numeric: '096', name: 'Brunei', flag: '🇧🇳', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'BND', timeZone: 'Asia/Brunei', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BG', alpha3: 'BGR', numeric: '100', name: 'Bulgarie', flag: '🇧🇬', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'BGN', timeZone: 'Europe/Sofia', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'BF', alpha3: 'BFA', numeric: '854', name: 'Burkina Faso', flag: '🇧🇫', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Ouagadougou', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'BI', alpha3: 'BDI', numeric: '108', name: 'Burundi', flag: '🇧🇮', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'BIF', timeZone: 'Africa/Bujumbura', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KH', alpha3: 'KHM', numeric: '116', name: 'Cambodge', flag: '🇰🇭', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'KHR', timeZone: 'Asia/Phnom_Penh', utcOffset: 'UTC+07:00', utcOffsets: ['UTC+07:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CM', alpha3: 'CMR', numeric: '120', name: 'Cameroun', flag: '🇨🇲', continent: 'Afrique', region: 'Afrique centrale', currency: 'XAF', timeZone: 'Africa/Douala', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CA', alpha3: 'CAN', numeric: '124', name: 'Canada', flag: '🇨🇦', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'CAD', timeZone: 'America/Toronto', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-08:00', 'UTC-07:00', 'UTC-06:00', 'UTC-05:00', 'UTC-04:00', 'UTC-03:30'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'CV', alpha3: 'CPV', numeric: '132', name: 'Cap-Vert', flag: '🇨🇻', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'CVE', timeZone: 'Atlantic/Cape_Verde', utcOffset: 'UTC-01:00', utcOffsets: ['UTC-01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CL', alpha3: 'CHL', numeric: '152', name: 'Chili', flag: '🇨🇱', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'CLP', timeZone: 'America/Santiago', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-06:00', 'UTC-04:00', 'UTC-03:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'CN', alpha3: 'CHN', numeric: '156', name: 'Chine', flag: '🇨🇳', continent: 'Asie', region: 'Asie de l’Est', currency: 'CNY', timeZone: 'Asia/Shanghai', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+06:00', 'UTC+08:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CY', alpha3: 'CYP', numeric: '196', name: 'Chypre', flag: '🇨🇾', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Asia/Nicosia', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'CO', alpha3: 'COL', numeric: '170', name: 'Colombie', flag: '🇨🇴', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'COP', timeZone: 'America/Bogota', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KM', alpha3: 'COM', numeric: '174', name: 'Comores', flag: '🇰🇲', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'KMF', timeZone: 'Indian/Comoro', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KP', alpha3: 'PRK', numeric: '408', name: 'Corée du Nord', flag: '🇰🇵', continent: 'Asie', region: 'Asie de l’Est', currency: 'KPW', timeZone: 'Asia/Pyongyang', utcOffset: 'UTC+09:00', utcOffsets: ['UTC+09:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KR', alpha3: 'KOR', numeric: '410', name: 'Corée du Sud', flag: '🇰🇷', continent: 'Asie', region: 'Asie de l’Est', currency: 'KRW', timeZone: 'Asia/Seoul', utcOffset: 'UTC+09:00', utcOffsets: ['UTC+09:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CR', alpha3: 'CRI', numeric: '188', name: 'Costa Rica', flag: '🇨🇷', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'CRC', timeZone: 'America/Costa_Rica', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CI', alpha3: 'CIV', numeric: '384', name: 'Côte d’Ivoire', flag: '🇨🇮', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Abidjan', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'HR', alpha3: 'HRV', numeric: '191', name: 'Croatie', flag: '🇭🇷', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'EUR', timeZone: 'Europe/Zagreb', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'CU', alpha3: 'CUB', numeric: '192', name: 'Cuba', flag: '🇨🇺', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'CUP', timeZone: 'America/Havana', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'CW', alpha3: 'CUW', numeric: '531', name: 'Curaçao', flag: '🇨🇼', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'ANG', timeZone: 'America/Curacao', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'DK', alpha3: 'DNK', numeric: '208', name: 'Danemark', flag: '🇩🇰', continent: 'Europe', region: 'Europe du Nord', currency: 'DKK', timeZone: 'Europe/Copenhagen', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: false },
+  { alpha2: 'DJ', alpha3: 'DJI', numeric: '262', name: 'Djibouti', flag: '🇩🇯', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'DJF', timeZone: 'Africa/Djibouti', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'DM', alpha3: 'DMA', numeric: '212', name: 'Dominique', flag: '🇩🇲', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/Dominica', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'EG', alpha3: 'EGY', numeric: '818', name: 'Égypte', flag: '🇪🇬', continent: 'Afrique', region: 'Afrique du Nord', currency: 'EGP', timeZone: 'Africa/Cairo', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'AE', alpha3: 'ARE', numeric: '784', name: 'Émirats arabes unis', flag: '🇦🇪', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'AED', timeZone: 'Asia/Dubai', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'EC', alpha3: 'ECU', numeric: '218', name: 'Équateur', flag: '🇪🇨', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'USD', timeZone: 'America/Guayaquil', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-06:00', 'UTC-05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ER', alpha3: 'ERI', numeric: '232', name: 'Érythrée', flag: '🇪🇷', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'ERN', timeZone: 'Africa/Asmara', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ES', alpha3: 'ESP', numeric: '724', name: 'Espagne', flag: '🇪🇸', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Madrid', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+00:00', 'UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'EE', alpha3: 'EST', numeric: '233', name: 'Estonie', flag: '🇪🇪', continent: 'Europe', region: 'Europe du Nord', currency: 'EUR', timeZone: 'Europe/Tallinn', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'SZ', alpha3: 'SWZ', numeric: '748', name: 'Eswatini', flag: '🇸🇿', continent: 'Afrique', region: 'Afrique australe', currency: 'SZL', timeZone: 'Africa/Mbabane', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'US', alpha3: 'USA', numeric: '840', name: 'États-Unis', flag: '🇺🇸', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'USD', timeZone: 'America/New_York', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-10:00', 'UTC-09:00', 'UTC-08:00', 'UTC-07:00', 'UTC-06:00', 'UTC-05:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'ET', alpha3: 'ETH', numeric: '231', name: 'Éthiopie', flag: '🇪🇹', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'ETB', timeZone: 'Africa/Addis_Ababa', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'FJ', alpha3: 'FJI', numeric: '242', name: 'Fidji', flag: '🇫🇯', continent: 'Océanie', region: 'Mélanésie', currency: 'FJD', timeZone: 'Pacific/Fiji', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'FI', alpha3: 'FIN', numeric: '246', name: 'Finlande', flag: '🇫🇮', continent: 'Europe', region: 'Europe du Nord', currency: 'EUR', timeZone: 'Europe/Helsinki', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'FR', alpha3: 'FRA', numeric: '250', name: 'France', flag: '🇫🇷', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'EUR', timeZone: 'Europe/Paris', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'GA', alpha3: 'GAB', numeric: '266', name: 'Gabon', flag: '🇬🇦', continent: 'Afrique', region: 'Afrique centrale', currency: 'XAF', timeZone: 'Africa/Libreville', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GM', alpha3: 'GMB', numeric: '270', name: 'Gambie', flag: '🇬🇲', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'GMD', timeZone: 'Africa/Banjul', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GE', alpha3: 'GEO', numeric: '268', name: 'Géorgie', flag: '🇬🇪', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'GEL', timeZone: 'Asia/Tbilisi', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GS', alpha3: 'SGS', numeric: '239', name: 'Géorgie du Sud-et-les Îles Sandwich du Sud', flag: '🇬🇸', continent: 'Antarctique', region: 'Antarctique', currency: 'SHP', timeZone: 'Atlantic/South_Georgia', utcOffset: 'UTC-02:00', utcOffsets: ['UTC-02:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'GH', alpha3: 'GHA', numeric: '288', name: 'Ghana', flag: '🇬🇭', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'GHS', timeZone: 'Africa/Accra', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GI', alpha3: 'GIB', numeric: '292', name: 'Gibraltar', flag: '🇬🇮', continent: 'Europe', region: 'Europe du Sud', currency: 'GIP', timeZone: 'Europe/Gibraltar', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'GR', alpha3: 'GRC', numeric: '300', name: 'Grèce', flag: '🇬🇷', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Athens', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'GD', alpha3: 'GRD', numeric: '308', name: 'Grenade', flag: '🇬🇩', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/Grenada', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GL', alpha3: 'GRL', numeric: '304', name: 'Groenland', flag: '🇬🇱', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'DKK', timeZone: 'America/Nuuk', utcOffset: 'UTC-02:00', utcOffsets: ['UTC-04:00', 'UTC-02:00', 'UTC+00:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'GP', alpha3: 'GLP', numeric: '312', name: 'Guadeloupe', flag: '🇬🇵', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'EUR', timeZone: 'America/Guadeloupe', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'GU', alpha3: 'GUM', numeric: '316', name: 'Guam', flag: '🇬🇺', continent: 'Océanie', region: 'Micronésie', currency: 'USD', timeZone: 'Pacific/Guam', utcOffset: 'UTC+10:00', utcOffsets: ['UTC+10:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'GT', alpha3: 'GTM', numeric: '320', name: 'Guatemala', flag: '🇬🇹', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'GTQ', timeZone: 'America/Guatemala', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GG', alpha3: 'GGY', numeric: '831', name: 'Guernesey', flag: '🇬🇬', continent: 'Europe', region: 'Europe du Nord', currency: 'GBP', timeZone: 'Europe/Guernsey', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'GN', alpha3: 'GIN', numeric: '324', name: 'Guinée', flag: '🇬🇳', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'GNF', timeZone: 'Africa/Conakry', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GQ', alpha3: 'GNQ', numeric: '226', name: 'Guinée équatoriale', flag: '🇬🇶', continent: 'Afrique', region: 'Afrique centrale', currency: 'XAF', timeZone: 'Africa/Malabo', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GW', alpha3: 'GNB', numeric: '624', name: 'Guinée-Bissau', flag: '🇬🇼', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Bissau', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GY', alpha3: 'GUY', numeric: '328', name: 'Guyana', flag: '🇬🇾', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'GYD', timeZone: 'America/Guyana', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'GF', alpha3: 'GUF', numeric: '254', name: 'Guyane française', flag: '🇬🇫', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'EUR', timeZone: 'America/Cayenne', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'HT', alpha3: 'HTI', numeric: '332', name: 'Haïti', flag: '🇭🇹', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'HTG', timeZone: 'America/Port-au-Prince', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'HN', alpha3: 'HND', numeric: '340', name: 'Honduras', flag: '🇭🇳', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'HNL', timeZone: 'America/Tegucigalpa', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'HK', alpha3: 'HKG', numeric: '344', name: 'Hong Kong', flag: '🇭🇰', continent: 'Asie', region: 'Asie de l’Est', currency: 'HKD', timeZone: 'Asia/Hong_Kong', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'HU', alpha3: 'HUN', numeric: '348', name: 'Hongrie', flag: '🇭🇺', continent: 'Europe', region: 'Europe centrale', currency: 'HUF', timeZone: 'Europe/Budapest', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: false },
+  { alpha2: 'BV', alpha3: 'BVT', numeric: '074', name: 'Île Bouvet', flag: '🇧🇻', continent: 'Antarctique', region: 'Antarctique', currency: '', timeZone: 'Europe/Oslo', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'CX', alpha3: 'CXR', numeric: '162', name: 'Île Christmas', flag: '🇨🇽', continent: 'Océanie', region: 'Australie et Nouvelle-Zélande', currency: 'AUD', timeZone: 'Indian/Christmas', utcOffset: 'UTC+07:00', utcOffsets: ['UTC+07:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'IM', alpha3: 'IMN', numeric: '833', name: 'Île de Man', flag: '🇮🇲', continent: 'Europe', region: 'Europe du Nord', currency: 'GBP', timeZone: 'Europe/Isle_of_Man', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'NF', alpha3: 'NFK', numeric: '574', name: 'Île Norfolk', flag: '🇳🇫', continent: 'Océanie', region: 'Australie et Nouvelle-Zélande', currency: 'AUD', timeZone: 'Pacific/Norfolk', utcOffset: 'UTC+11:00', utcOffsets: ['UTC+11:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'AX', alpha3: 'ALA', numeric: '248', name: 'Îles Åland', flag: '🇦🇽', continent: 'Europe', region: 'Europe du Nord', currency: 'EUR', timeZone: 'Europe/Mariehamn', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'KY', alpha3: 'CYM', numeric: '136', name: 'Îles Caïmans', flag: '🇰🇾', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'KYD', timeZone: 'America/Cayman', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'CC', alpha3: 'CCK', numeric: '166', name: 'Îles Cocos', flag: '🇨🇨', continent: 'Océanie', region: 'Australie et Nouvelle-Zélande', currency: 'AUD', timeZone: 'Indian/Cocos', utcOffset: 'UTC+06:30', utcOffsets: ['UTC+06:30'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'CK', alpha3: 'COK', numeric: '184', name: 'Îles Cook', flag: '🇨🇰', continent: 'Océanie', region: 'Polynésie', currency: 'NZD', timeZone: 'Pacific/Rarotonga', utcOffset: 'UTC-10:00', utcOffsets: ['UTC-10:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'FO', alpha3: 'FRO', numeric: '234', name: 'Îles Féroé', flag: '🇫🇴', continent: 'Europe', region: 'Europe du Nord', currency: 'DKK', timeZone: 'Atlantic/Faroe', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'HM', alpha3: 'HMD', numeric: '334', name: 'Îles Heard-et-MacDonald', flag: '🇭🇲', continent: 'Antarctique', region: 'Antarctique', currency: '', timeZone: 'Indian/Kerguelen', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'FK', alpha3: 'FLK', numeric: '238', name: 'Îles Malouines', flag: '🇫🇰', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'FKP', timeZone: 'Atlantic/Stanley', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'MP', alpha3: 'MNP', numeric: '580', name: 'Îles Mariannes du Nord', flag: '🇲🇵', continent: 'Océanie', region: 'Micronésie', currency: 'USD', timeZone: 'Pacific/Saipan', utcOffset: 'UTC+10:00', utcOffsets: ['UTC+10:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'MH', alpha3: 'MHL', numeric: '584', name: 'Îles Marshall', flag: '🇲🇭', continent: 'Océanie', region: 'Micronésie', currency: 'USD', timeZone: 'Pacific/Majuro', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'UM', alpha3: 'UMI', numeric: '581', name: 'Îles mineures éloignées des États-Unis', flag: '🇺🇲', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'USD', timeZone: 'Pacific/Wake', utcOffset: 'UTC+12:00', utcOffsets: ['UTC-11:00', 'UTC+12:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'PN', alpha3: 'PCN', numeric: '612', name: 'Îles Pitcairn', flag: '🇵🇳', continent: 'Océanie', region: 'Polynésie', currency: 'NZD', timeZone: 'Pacific/Pitcairn', utcOffset: 'UTC-08:00', utcOffsets: ['UTC-08:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'SB', alpha3: 'SLB', numeric: '090', name: 'Îles Salomon', flag: '🇸🇧', continent: 'Océanie', region: 'Mélanésie', currency: 'SBD', timeZone: 'Pacific/Guadalcanal', utcOffset: 'UTC+11:00', utcOffsets: ['UTC+11:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TC', alpha3: 'TCA', numeric: '796', name: 'Îles Turques-et-Caïques', flag: '🇹🇨', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'USD', timeZone: 'America/Grand_Turk', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'VG', alpha3: 'VGB', numeric: '092', name: 'Îles Vierges britanniques', flag: '🇻🇬', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'USD', timeZone: 'America/Tortola', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'VI', alpha3: 'VIR', numeric: '850', name: 'Îles Vierges des États-Unis', flag: '🇻🇮', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'USD', timeZone: 'America/St_Thomas', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'IN', alpha3: 'IND', numeric: '356', name: 'Inde', flag: '🇮🇳', continent: 'Asie', region: 'Asie du Sud', currency: 'INR', timeZone: 'Asia/Kolkata', utcOffset: 'UTC+05:30', utcOffsets: ['UTC+05:30'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ID', alpha3: 'IDN', numeric: '360', name: 'Indonésie', flag: '🇮🇩', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'IDR', timeZone: 'Asia/Jakarta', utcOffset: 'UTC+07:00', utcOffsets: ['UTC+07:00', 'UTC+08:00', 'UTC+09:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'IQ', alpha3: 'IRQ', numeric: '368', name: 'Irak', flag: '🇮🇶', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'IQD', timeZone: 'Asia/Baghdad', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'IR', alpha3: 'IRN', numeric: '364', name: 'Iran', flag: '🇮🇷', continent: 'Asie', region: 'Asie du Sud', currency: 'IRR', timeZone: 'Asia/Tehran', utcOffset: 'UTC+03:30', utcOffsets: ['UTC+03:30'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'IE', alpha3: 'IRL', numeric: '372', name: 'Irlande', flag: '🇮🇪', continent: 'Europe', region: 'Europe du Nord', currency: 'EUR', timeZone: 'Europe/Dublin', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'IS', alpha3: 'ISL', numeric: '352', name: 'Islande', flag: '🇮🇸', continent: 'Europe', region: 'Europe du Nord', currency: 'ISK', timeZone: 'Atlantic/Reykjavik', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'IL', alpha3: 'ISR', numeric: '376', name: 'Israël', flag: '🇮🇱', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'ILS', timeZone: 'Asia/Jerusalem', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'IT', alpha3: 'ITA', numeric: '380', name: 'Italie', flag: '🇮🇹', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Rome', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'JM', alpha3: 'JAM', numeric: '388', name: 'Jamaïque', flag: '🇯🇲', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'JMD', timeZone: 'America/Jamaica', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'JP', alpha3: 'JPN', numeric: '392', name: 'Japon', flag: '🇯🇵', continent: 'Asie', region: 'Asie de l’Est', currency: 'JPY', timeZone: 'Asia/Tokyo', utcOffset: 'UTC+09:00', utcOffsets: ['UTC+09:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'JE', alpha3: 'JEY', numeric: '832', name: 'Jersey', flag: '🇯🇪', continent: 'Europe', region: 'Europe du Nord', currency: 'GBP', timeZone: 'Europe/Jersey', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'JO', alpha3: 'JOR', numeric: '400', name: 'Jordanie', flag: '🇯🇴', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'JOD', timeZone: 'Asia/Amman', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KZ', alpha3: 'KAZ', numeric: '398', name: 'Kazakhstan', flag: '🇰🇿', continent: 'Asie', region: 'Asie centrale', currency: 'KZT', timeZone: 'Asia/Almaty', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KE', alpha3: 'KEN', numeric: '404', name: 'Kenya', flag: '🇰🇪', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'KES', timeZone: 'Africa/Nairobi', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KG', alpha3: 'KGZ', numeric: '417', name: 'Kirghizstan', flag: '🇰🇬', continent: 'Asie', region: 'Asie centrale', currency: 'KGS', timeZone: 'Asia/Bishkek', utcOffset: 'UTC+06:00', utcOffsets: ['UTC+06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'KI', alpha3: 'KIR', numeric: '296', name: 'Kiribati', flag: '🇰🇮', continent: 'Océanie', region: 'Micronésie', currency: 'AUD', timeZone: 'Pacific/Tarawa', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00', 'UTC+13:00', 'UTC+14:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'XK', alpha3: 'UNK', numeric: '', name: 'Kosovo', flag: '🇽🇰', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'EUR', timeZone: 'Europe/Belgrade', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'KW', alpha3: 'KWT', numeric: '414', name: 'Koweït', flag: '🇰🇼', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'KWD', timeZone: 'Asia/Kuwait', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'RE', alpha3: 'REU', numeric: '638', name: 'La Réunion', flag: '🇷🇪', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'EUR', timeZone: 'Indian/Reunion', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'LA', alpha3: 'LAO', numeric: '418', name: 'Laos', flag: '🇱🇦', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'LAK', timeZone: 'Asia/Vientiane', utcOffset: 'UTC+07:00', utcOffsets: ['UTC+07:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'LS', alpha3: 'LSO', numeric: '426', name: 'Lesotho', flag: '🇱🇸', continent: 'Afrique', region: 'Afrique australe', currency: 'LSL', timeZone: 'Africa/Maseru', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'LV', alpha3: 'LVA', numeric: '428', name: 'Lettonie', flag: '🇱🇻', continent: 'Europe', region: 'Europe du Nord', currency: 'EUR', timeZone: 'Europe/Riga', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'LB', alpha3: 'LBN', numeric: '422', name: 'Liban', flag: '🇱🇧', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'LBP', timeZone: 'Asia/Beirut', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'LR', alpha3: 'LBR', numeric: '430', name: 'Liberia', flag: '🇱🇷', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'LRD', timeZone: 'Africa/Monrovia', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'LY', alpha3: 'LBY', numeric: '434', name: 'Libye', flag: '🇱🇾', continent: 'Afrique', region: 'Afrique du Nord', currency: 'LYD', timeZone: 'Africa/Tripoli', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'LI', alpha3: 'LIE', numeric: '438', name: 'Liechtenstein', flag: '🇱🇮', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'CHF', timeZone: 'Europe/Vaduz', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'LT', alpha3: 'LTU', numeric: '440', name: 'Lituanie', flag: '🇱🇹', continent: 'Europe', region: 'Europe du Nord', currency: 'EUR', timeZone: 'Europe/Vilnius', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'LU', alpha3: 'LUX', numeric: '442', name: 'Luxembourg', flag: '🇱🇺', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'EUR', timeZone: 'Europe/Luxembourg', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'MO', alpha3: 'MAC', numeric: '446', name: 'Macao', flag: '🇲🇴', continent: 'Asie', region: 'Asie de l’Est', currency: 'MOP', timeZone: 'Asia/Macau', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'MK', alpha3: 'MKD', numeric: '807', name: 'Macédoine du Nord', flag: '🇲🇰', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'MKD', timeZone: 'Europe/Skopje', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'MG', alpha3: 'MDG', numeric: '450', name: 'Madagascar', flag: '🇲🇬', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'MGA', timeZone: 'Indian/Antananarivo', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MY', alpha3: 'MYS', numeric: '458', name: 'Malaisie', flag: '🇲🇾', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'MYR', timeZone: 'Asia/Kuala_Lumpur', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MW', alpha3: 'MWI', numeric: '454', name: 'Malawi', flag: '🇲🇼', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'MWK', timeZone: 'Africa/Blantyre', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MV', alpha3: 'MDV', numeric: '462', name: 'Maldives', flag: '🇲🇻', continent: 'Asie', region: 'Asie du Sud', currency: 'MVR', timeZone: 'Indian/Maldives', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ML', alpha3: 'MLI', numeric: '466', name: 'Mali', flag: '🇲🇱', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Bamako', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MT', alpha3: 'MLT', numeric: '470', name: 'Malte', flag: '🇲🇹', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Malta', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'MA', alpha3: 'MAR', numeric: '504', name: 'Maroc', flag: '🇲🇦', continent: 'Afrique', region: 'Afrique du Nord', currency: 'MAD', timeZone: 'Africa/Casablanca', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MQ', alpha3: 'MTQ', numeric: '474', name: 'Martinique', flag: '🇲🇶', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'EUR', timeZone: 'America/Martinique', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'MU', alpha3: 'MUS', numeric: '480', name: 'Maurice', flag: '🇲🇺', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'MUR', timeZone: 'Indian/Mauritius', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MR', alpha3: 'MRT', numeric: '478', name: 'Mauritanie', flag: '🇲🇷', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'MRU', timeZone: 'Africa/Nouakchott', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'YT', alpha3: 'MYT', numeric: '175', name: 'Mayotte', flag: '🇾🇹', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'EUR', timeZone: 'Indian/Mayotte', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'MX', alpha3: 'MEX', numeric: '484', name: 'Mexique', flag: '🇲🇽', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'MXN', timeZone: 'America/Mexico_City', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-08:00', 'UTC-07:00', 'UTC-06:00', 'UTC-05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'FM', alpha3: 'FSM', numeric: '583', name: 'Micronésie', flag: '🇫🇲', continent: 'Océanie', region: 'Micronésie', currency: 'USD', timeZone: 'Pacific/Pohnpei', utcOffset: 'UTC+11:00', utcOffsets: ['UTC+10:00', 'UTC+11:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MD', alpha3: 'MDA', numeric: '498', name: 'Moldavie', flag: '🇲🇩', continent: 'Europe', region: 'Europe de l’Est', currency: 'MDL', timeZone: 'Europe/Chisinau', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'MC', alpha3: 'MCO', numeric: '492', name: 'Monaco', flag: '🇲🇨', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'EUR', timeZone: 'Europe/Monaco', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'MN', alpha3: 'MNG', numeric: '496', name: 'Mongolie', flag: '🇲🇳', continent: 'Asie', region: 'Asie de l’Est', currency: 'MNT', timeZone: 'Asia/Ulaanbaatar', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+07:00', 'UTC+08:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ME', alpha3: 'MNE', numeric: '499', name: 'Monténégro', flag: '🇲🇪', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'EUR', timeZone: 'Europe/Podgorica', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'MS', alpha3: 'MSR', numeric: '500', name: 'Montserrat', flag: '🇲🇸', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/Montserrat', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'MZ', alpha3: 'MOZ', numeric: '508', name: 'Mozambique', flag: '🇲🇿', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'MZN', timeZone: 'Africa/Maputo', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'MM', alpha3: 'MMR', numeric: '104', name: 'Myanmar (Birmanie)', flag: '🇲🇲', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'MMK', timeZone: 'Asia/Yangon', utcOffset: 'UTC+06:30', utcOffsets: ['UTC+06:30'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NA', alpha3: 'NAM', numeric: '516', name: 'Namibie', flag: '🇳🇦', continent: 'Afrique', region: 'Afrique australe', currency: 'NAD', timeZone: 'Africa/Windhoek', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NR', alpha3: 'NRU', numeric: '520', name: 'Nauru', flag: '🇳🇷', continent: 'Océanie', region: 'Micronésie', currency: 'AUD', timeZone: 'Pacific/Nauru', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NP', alpha3: 'NPL', numeric: '524', name: 'Népal', flag: '🇳🇵', continent: 'Asie', region: 'Asie du Sud', currency: 'NPR', timeZone: 'Asia/Kathmandu', utcOffset: 'UTC+05:45', utcOffsets: ['UTC+05:45'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NI', alpha3: 'NIC', numeric: '558', name: 'Nicaragua', flag: '🇳🇮', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'NIO', timeZone: 'America/Managua', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NE', alpha3: 'NER', numeric: '562', name: 'Niger', flag: '🇳🇪', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Niamey', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NG', alpha3: 'NGA', numeric: '566', name: 'Nigeria', flag: '🇳🇬', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'NGN', timeZone: 'Africa/Lagos', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NU', alpha3: 'NIU', numeric: '570', name: 'Niue', flag: '🇳🇺', continent: 'Océanie', region: 'Polynésie', currency: 'NZD', timeZone: 'Pacific/Niue', utcOffset: 'UTC-11:00', utcOffsets: ['UTC-11:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'NO', alpha3: 'NOR', numeric: '578', name: 'Norvège', flag: '🇳🇴', continent: 'Europe', region: 'Europe du Nord', currency: 'NOK', timeZone: 'Europe/Oslo', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'NC', alpha3: 'NCL', numeric: '540', name: 'Nouvelle-Calédonie', flag: '🇳🇨', continent: 'Océanie', region: 'Mélanésie', currency: 'XPF', timeZone: 'Pacific/Noumea', utcOffset: 'UTC+11:00', utcOffsets: ['UTC+11:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'NZ', alpha3: 'NZL', numeric: '554', name: 'Nouvelle-Zélande', flag: '🇳🇿', continent: 'Océanie', region: 'Australie et Nouvelle-Zélande', currency: 'NZD', timeZone: 'Pacific/Auckland', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00', 'UTC+12:45'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'OM', alpha3: 'OMN', numeric: '512', name: 'Oman', flag: '🇴🇲', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'OMR', timeZone: 'Asia/Muscat', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'UG', alpha3: 'UGA', numeric: '800', name: 'Ouganda', flag: '🇺🇬', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'UGX', timeZone: 'Africa/Kampala', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'UZ', alpha3: 'UZB', numeric: '860', name: 'Ouzbékistan', flag: '🇺🇿', continent: 'Asie', region: 'Asie centrale', currency: 'UZS', timeZone: 'Asia/Tashkent', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PK', alpha3: 'PAK', numeric: '586', name: 'Pakistan', flag: '🇵🇰', continent: 'Asie', region: 'Asie du Sud', currency: 'PKR', timeZone: 'Asia/Karachi', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PW', alpha3: 'PLW', numeric: '585', name: 'Palaos', flag: '🇵🇼', continent: 'Océanie', region: 'Micronésie', currency: 'USD', timeZone: 'Pacific/Palau', utcOffset: 'UTC+09:00', utcOffsets: ['UTC+09:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PS', alpha3: 'PSE', numeric: '275', name: 'Palestine', flag: '🇵🇸', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'ILS', timeZone: 'Asia/Gaza', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'PA', alpha3: 'PAN', numeric: '591', name: 'Panama', flag: '🇵🇦', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'PAB', timeZone: 'America/Panama', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PG', alpha3: 'PNG', numeric: '598', name: 'Papouasie-Nouvelle-Guinée', flag: '🇵🇬', continent: 'Océanie', region: 'Mélanésie', currency: 'PGK', timeZone: 'Pacific/Port_Moresby', utcOffset: 'UTC+10:00', utcOffsets: ['UTC+10:00', 'UTC+11:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PY', alpha3: 'PRY', numeric: '600', name: 'Paraguay', flag: '🇵🇾', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'PYG', timeZone: 'America/Asuncion', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'NL', alpha3: 'NLD', numeric: '528', name: 'Pays-Bas', flag: '🇳🇱', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'EUR', timeZone: 'Europe/Amsterdam', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'BQ', alpha3: 'BES', numeric: '535', name: 'Pays-Bas caribéens', flag: '🇧🇶', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'USD', timeZone: 'America/Kralendijk', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'PE', alpha3: 'PER', numeric: '604', name: 'Pérou', flag: '🇵🇪', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'PEN', timeZone: 'America/Lima', utcOffset: 'UTC-05:00', utcOffsets: ['UTC-05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PH', alpha3: 'PHL', numeric: '608', name: 'Philippines', flag: '🇵🇭', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'PHP', timeZone: 'Asia/Manila', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'PL', alpha3: 'POL', numeric: '616', name: 'Pologne', flag: '🇵🇱', continent: 'Europe', region: 'Europe centrale', currency: 'PLN', timeZone: 'Europe/Warsaw', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: false },
+  { alpha2: 'PF', alpha3: 'PYF', numeric: '258', name: 'Polynésie française', flag: '🇵🇫', continent: 'Océanie', region: 'Polynésie', currency: 'XPF', timeZone: 'Pacific/Tahiti', utcOffset: 'UTC-10:00', utcOffsets: ['UTC-10:00', 'UTC-09:30', 'UTC-09:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'PR', alpha3: 'PRI', numeric: '630', name: 'Porto Rico', flag: '🇵🇷', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'USD', timeZone: 'America/Puerto_Rico', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'PT', alpha3: 'PRT', numeric: '620', name: 'Portugal', flag: '🇵🇹', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Lisbon', utcOffset: 'UTC+00:00', utcOffsets: ['UTC-01:00', 'UTC+00:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'QA', alpha3: 'QAT', numeric: '634', name: 'Qatar', flag: '🇶🇦', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'QAR', timeZone: 'Asia/Qatar', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CF', alpha3: 'CAF', numeric: '140', name: 'République centrafricaine', flag: '🇨🇫', continent: 'Afrique', region: 'Afrique centrale', currency: 'XAF', timeZone: 'Africa/Bangui', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CD', alpha3: 'COD', numeric: '180', name: 'République démocratique du Congo', flag: '🇨🇩', continent: 'Afrique', region: 'Afrique centrale', currency: 'CDF', timeZone: 'Africa/Kinshasa', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00', 'UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'DO', alpha3: 'DOM', numeric: '214', name: 'République dominicaine', flag: '🇩🇴', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'DOP', timeZone: 'America/Santo_Domingo', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CG', alpha3: 'COG', numeric: '178', name: 'République du Congo', flag: '🇨🇬', continent: 'Afrique', region: 'Afrique centrale', currency: 'XAF', timeZone: 'Africa/Brazzaville', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'RO', alpha3: 'ROU', numeric: '642', name: 'Roumanie', flag: '🇷🇴', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'RON', timeZone: 'Europe/Bucharest', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: true, un: true, eu: true, eurozone: false },
+  { alpha2: 'GB', alpha3: 'GBR', numeric: '826', name: 'Royaume-Uni', flag: '🇬🇧', continent: 'Europe', region: 'Europe du Nord', currency: 'GBP', timeZone: 'Europe/London', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'RU', alpha3: 'RUS', numeric: '643', name: 'Russie', flag: '🇷🇺', continent: 'Europe', region: 'Europe de l’Est', currency: 'RUB', timeZone: 'Europe/Moscow', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+02:00', 'UTC+03:00', 'UTC+04:00', 'UTC+05:00', 'UTC+06:00', 'UTC+07:00', 'UTC+08:00', 'UTC+09:00', 'UTC+10:00', 'UTC+11:00', 'UTC+12:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'RW', alpha3: 'RWA', numeric: '646', name: 'Rwanda', flag: '🇷🇼', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'RWF', timeZone: 'Africa/Kigali', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'EH', alpha3: 'ESH', numeric: '732', name: 'Sahara occidental', flag: '🇪🇭', continent: 'Afrique', region: 'Afrique du Nord', currency: 'MAD', timeZone: 'Africa/El_Aaiun', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'BL', alpha3: 'BLM', numeric: '652', name: 'Saint-Barthélemy', flag: '🇧🇱', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'EUR', timeZone: 'America/St_Barthelemy', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'KN', alpha3: 'KNA', numeric: '659', name: 'Saint-Christophe-et-Niévès', flag: '🇰🇳', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/St_Kitts', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SM', alpha3: 'SMR', numeric: '674', name: 'Saint-Marin', flag: '🇸🇲', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/San_Marino', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'MF', alpha3: 'MAF', numeric: '663', name: 'Saint-Martin (France)', flag: '🇲🇫', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'EUR', timeZone: 'America/Marigot', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'SX', alpha3: 'SXM', numeric: '534', name: 'Saint-Martin (Pays-Bas)', flag: '🇸🇽', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'ANG', timeZone: 'America/Anguilla', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'PM', alpha3: 'SPM', numeric: '666', name: 'Saint-Pierre-et-Miquelon', flag: '🇵🇲', continent: 'Amérique du Nord', region: 'Amérique du Nord', currency: 'EUR', timeZone: 'America/Miquelon', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'VC', alpha3: 'VCT', numeric: '670', name: 'Saint-Vincent-et-les Grenadines', flag: '🇻🇨', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/St_Vincent', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SH', alpha3: 'SHN', numeric: '654', name: 'Sainte-Hélène', flag: '🇸🇭', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'SHP', timeZone: 'Atlantic/St_Helena', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'LC', alpha3: 'LCA', numeric: '662', name: 'Sainte-Lucie', flag: '🇱🇨', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'XCD', timeZone: 'America/St_Lucia', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SV', alpha3: 'SLV', numeric: '222', name: 'Salvador', flag: '🇸🇻', continent: 'Amérique du Nord', region: 'Amérique centrale', currency: 'USD', timeZone: 'America/El_Salvador', utcOffset: 'UTC-06:00', utcOffsets: ['UTC-06:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'WS', alpha3: 'WSM', numeric: '882', name: 'Samoa', flag: '🇼🇸', continent: 'Océanie', region: 'Polynésie', currency: 'WST', timeZone: 'Pacific/Apia', utcOffset: 'UTC+13:00', utcOffsets: ['UTC+13:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'AS', alpha3: 'ASM', numeric: '016', name: 'Samoa américaines', flag: '🇦🇸', continent: 'Océanie', region: 'Polynésie', currency: 'USD', timeZone: 'Pacific/Pago_Pago', utcOffset: 'UTC-11:00', utcOffsets: ['UTC-11:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'ST', alpha3: 'STP', numeric: '678', name: 'Sao Tomé-et-Principe', flag: '🇸🇹', continent: 'Afrique', region: 'Afrique centrale', currency: 'STN', timeZone: 'Africa/Sao_Tome', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SN', alpha3: 'SEN', numeric: '686', name: 'Sénégal', flag: '🇸🇳', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Dakar', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'RS', alpha3: 'SRB', numeric: '688', name: 'Serbie', flag: '🇷🇸', continent: 'Europe', region: 'Europe du Sud-Est', currency: 'RSD', timeZone: 'Europe/Belgrade', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'SC', alpha3: 'SYC', numeric: '690', name: 'Seychelles', flag: '🇸🇨', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'SCR', timeZone: 'Indian/Mahe', utcOffset: 'UTC+04:00', utcOffsets: ['UTC+04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SL', alpha3: 'SLE', numeric: '694', name: 'Sierra Leone', flag: '🇸🇱', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'SLL', timeZone: 'Africa/Freetown', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SG', alpha3: 'SGP', numeric: '702', name: 'Singapour', flag: '🇸🇬', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'SGD', timeZone: 'Asia/Singapore', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SK', alpha3: 'SVK', numeric: '703', name: 'Slovaquie', flag: '🇸🇰', continent: 'Europe', region: 'Europe centrale', currency: 'EUR', timeZone: 'Europe/Bratislava', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'SI', alpha3: 'SVN', numeric: '705', name: 'Slovénie', flag: '🇸🇮', continent: 'Europe', region: 'Europe centrale', currency: 'EUR', timeZone: 'Europe/Ljubljana', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: true },
+  { alpha2: 'SO', alpha3: 'SOM', numeric: '706', name: 'Somalie', flag: '🇸🇴', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'SOS', timeZone: 'Africa/Mogadishu', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SD', alpha3: 'SDN', numeric: '729', name: 'Soudan', flag: '🇸🇩', continent: 'Afrique', region: 'Afrique du Nord', currency: 'SDG', timeZone: 'Africa/Khartoum', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SS', alpha3: 'SSD', numeric: '728', name: 'Soudan du Sud', flag: '🇸🇸', continent: 'Afrique', region: 'Afrique centrale', currency: 'SSP', timeZone: 'Africa/Juba', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'LK', alpha3: 'LKA', numeric: '144', name: 'Sri Lanka', flag: '🇱🇰', continent: 'Asie', region: 'Asie du Sud', currency: 'LKR', timeZone: 'Asia/Colombo', utcOffset: 'UTC+05:30', utcOffsets: ['UTC+05:30'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SE', alpha3: 'SWE', numeric: '752', name: 'Suède', flag: '🇸🇪', continent: 'Europe', region: 'Europe du Nord', currency: 'SEK', timeZone: 'Europe/Stockholm', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: false },
+  { alpha2: 'CH', alpha3: 'CHE', numeric: '756', name: 'Suisse', flag: '🇨🇭', continent: 'Europe', region: 'Europe de l’Ouest', currency: 'CHF', timeZone: 'Europe/Zurich', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'SR', alpha3: 'SUR', numeric: '740', name: 'Suriname', flag: '🇸🇷', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'SRD', timeZone: 'America/Paramaribo', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'SJ', alpha3: 'SJM', numeric: '744', name: 'Svalbard et Jan Mayen', flag: '🇸🇯', continent: 'Europe', region: 'Europe du Nord', currency: 'NOK', timeZone: 'Arctic/Longyearbyen', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'SY', alpha3: 'SYR', numeric: '760', name: 'Syrie', flag: '🇸🇾', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'SYP', timeZone: 'Asia/Damascus', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TJ', alpha3: 'TJK', numeric: '762', name: 'Tadjikistan', flag: '🇹🇯', continent: 'Asie', region: 'Asie centrale', currency: 'TJS', timeZone: 'Asia/Dushanbe', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TW', alpha3: 'TWN', numeric: '158', name: 'Taïwan', flag: '🇹🇼', continent: 'Asie', region: 'Asie de l’Est', currency: 'TWD', timeZone: 'Asia/Taipei', utcOffset: 'UTC+08:00', utcOffsets: ['UTC+08:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'TZ', alpha3: 'TZA', numeric: '834', name: 'Tanzanie', flag: '🇹🇿', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'TZS', timeZone: 'Africa/Dar_es_Salaam', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TD', alpha3: 'TCD', numeric: '148', name: 'Tchad', flag: '🇹🇩', continent: 'Afrique', region: 'Afrique centrale', currency: 'XAF', timeZone: 'Africa/Ndjamena', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'CZ', alpha3: 'CZE', numeric: '203', name: 'Tchéquie', flag: '🇨🇿', continent: 'Europe', region: 'Europe centrale', currency: 'CZK', timeZone: 'Europe/Prague', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: true, eu: true, eurozone: false },
+  { alpha2: 'TF', alpha3: 'ATF', numeric: '260', name: 'Terres australes françaises', flag: '🇹🇫', continent: 'Antarctique', region: 'Antarctique', currency: 'EUR', timeZone: 'Indian/Kerguelen', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'IO', alpha3: 'IOT', numeric: '086', name: 'Territoire britannique de l’océan Indien', flag: '🇮🇴', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'USD', timeZone: 'Indian/Chagos', utcOffset: 'UTC+06:00', utcOffsets: ['UTC+06:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'TH', alpha3: 'THA', numeric: '764', name: 'Thaïlande', flag: '🇹🇭', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'THB', timeZone: 'Asia/Bangkok', utcOffset: 'UTC+07:00', utcOffsets: ['UTC+07:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TL', alpha3: 'TLS', numeric: '626', name: 'Timor oriental', flag: '🇹🇱', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'USD', timeZone: 'Asia/Dili', utcOffset: 'UTC+09:00', utcOffsets: ['UTC+09:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TG', alpha3: 'TGO', numeric: '768', name: 'Togo', flag: '🇹🇬', continent: 'Afrique', region: 'Afrique de l’Ouest', currency: 'XOF', timeZone: 'Africa/Lome', utcOffset: 'UTC+00:00', utcOffsets: ['UTC+00:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TK', alpha3: 'TKL', numeric: '772', name: 'Tokelau', flag: '🇹🇰', continent: 'Océanie', region: 'Polynésie', currency: 'NZD', timeZone: 'Pacific/Fakaofo', utcOffset: 'UTC+13:00', utcOffsets: ['UTC+13:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'TO', alpha3: 'TON', numeric: '776', name: 'Tonga', flag: '🇹🇴', continent: 'Océanie', region: 'Polynésie', currency: 'TOP', timeZone: 'Pacific/Tongatapu', utcOffset: 'UTC+13:00', utcOffsets: ['UTC+13:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TT', alpha3: 'TTO', numeric: '780', name: 'Trinité-et-Tobago', flag: '🇹🇹', continent: 'Amérique du Nord', region: 'Caraïbes', currency: 'TTD', timeZone: 'America/Port_of_Spain', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TN', alpha3: 'TUN', numeric: '788', name: 'Tunisie', flag: '🇹🇳', continent: 'Afrique', region: 'Afrique du Nord', currency: 'TND', timeZone: 'Africa/Tunis', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TM', alpha3: 'TKM', numeric: '795', name: 'Turkménistan', flag: '🇹🇲', continent: 'Asie', region: 'Asie centrale', currency: 'TMT', timeZone: 'Asia/Ashgabat', utcOffset: 'UTC+05:00', utcOffsets: ['UTC+05:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TR', alpha3: 'TUR', numeric: '792', name: 'Turquie', flag: '🇹🇷', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'TRY', timeZone: 'Europe/Istanbul', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'TV', alpha3: 'TUV', numeric: '798', name: 'Tuvalu', flag: '🇹🇻', continent: 'Océanie', region: 'Polynésie', currency: 'AUD', timeZone: 'Pacific/Funafuti', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'UA', alpha3: 'UKR', numeric: '804', name: 'Ukraine', flag: '🇺🇦', continent: 'Europe', region: 'Europe de l’Est', currency: 'UAH', timeZone: 'Europe/Kyiv', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00', 'UTC+03:00'], dst: true, un: true, eu: false, eurozone: false },
+  { alpha2: 'UY', alpha3: 'URY', numeric: '858', name: 'Uruguay', flag: '🇺🇾', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'UYU', timeZone: 'America/Montevideo', utcOffset: 'UTC-03:00', utcOffsets: ['UTC-03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'VU', alpha3: 'VUT', numeric: '548', name: 'Vanuatu', flag: '🇻🇺', continent: 'Océanie', region: 'Mélanésie', currency: 'VUV', timeZone: 'Pacific/Efate', utcOffset: 'UTC+11:00', utcOffsets: ['UTC+11:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'VA', alpha3: 'VAT', numeric: '336', name: 'Vatican', flag: '🇻🇦', continent: 'Europe', region: 'Europe du Sud', currency: 'EUR', timeZone: 'Europe/Vatican', utcOffset: 'UTC+01:00', utcOffsets: ['UTC+01:00'], dst: true, un: false, eu: false, eurozone: false },
+  { alpha2: 'VE', alpha3: 'VEN', numeric: '862', name: 'Venezuela', flag: '🇻🇪', continent: 'Amérique du Sud', region: 'Amérique du Sud', currency: 'VES', timeZone: 'America/Caracas', utcOffset: 'UTC-04:00', utcOffsets: ['UTC-04:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'VN', alpha3: 'VNM', numeric: '704', name: 'Viêt Nam', flag: '🇻🇳', continent: 'Asie', region: 'Asie du Sud-Est', currency: 'VND', timeZone: 'Asia/Ho_Chi_Minh', utcOffset: 'UTC+07:00', utcOffsets: ['UTC+07:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'WF', alpha3: 'WLF', numeric: '876', name: 'Wallis-et-Futuna', flag: '🇼🇫', continent: 'Océanie', region: 'Polynésie', currency: 'XPF', timeZone: 'Pacific/Wallis', utcOffset: 'UTC+12:00', utcOffsets: ['UTC+12:00'], dst: false, un: false, eu: false, eurozone: false },
+  { alpha2: 'YE', alpha3: 'YEM', numeric: '887', name: 'Yémen', flag: '🇾🇪', continent: 'Asie', region: 'Asie de l’Ouest', currency: 'YER', timeZone: 'Asia/Aden', utcOffset: 'UTC+03:00', utcOffsets: ['UTC+03:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ZM', alpha3: 'ZMB', numeric: '894', name: 'Zambie', flag: '🇿🇲', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'ZMW', timeZone: 'Africa/Lusaka', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+  { alpha2: 'ZW', alpha3: 'ZWE', numeric: '716', name: 'Zimbabwe', flag: '🇿🇼', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'ZWG', timeZone: 'Africa/Harare', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
+];
+
+export const CONTINENT_ORDER: readonly Continent[] = [
+  'Europe',
+  'Amérique du Nord',
+  'Amérique du Sud',
+  'Asie',
+  'Afrique',
+  'Océanie',
+  'Antarctique',
+];
+
+const BY_ALPHA2 = new Map<string, Country>(COUNTRIES.map((c) => [c.alpha2, c]));
+const BY_ALPHA3 = new Map<string, Country>(COUNTRIES.map((c) => [c.alpha3, c]));
+
+/** Pays par code alpha-2 ou alpha-3, insensible à la casse ; `null` si le code est inconnu. */
+export function countryOf(code: string): Country | null {
+  const k = (code || '').trim().toUpperCase();
+  return BY_ALPHA2.get(k) ?? BY_ALPHA3.get(k) ?? null;
+}
+
+/** Nom français, le code lui-même à défaut — un libellé vide serait pire qu'un code brut. */
+export function countryName(code: string): string {
+  return countryOf(code)?.name ?? code;
+}
+
+/**
+ * Drapeau d'un pays, chaîne vide si le code est inconnu. Les codes hors ISO 3166 employés par
+ * l'application — `EU` pour la zone euro — sont rendus ici plutôt que laissés à chaque appelant.
+ */
+export function countryFlag(code: string): string {
+  const k = (code || '').trim().toUpperCase();
+  if (k === 'EU') return '🇪🇺';
+  return countryOf(k)?.flag ?? '';
+}
+
+/** Devise ayant cours légal, chaîne vide si le pays est inconnu ou n'en a pas. */
+export function countryCurrency(code: string): string {
+  return countryOf(code)?.currency ?? '';
+}
+
+/** Décalage d'heure standard, sous la forme `UTC+01:00` ; chaîne vide si le pays est inconnu. */
+export function countryUtcOffset(code: string): string {
+  return countryOf(code)?.utcOffset ?? '';
+}
+
+/**
+ * Décalage effectif à une date donnée, heure d'été comprise — celui qu'il faut pour convertir une
+ * heure locale, là où `utcOffset` ne décrit que l'heure standard. Calculé par l'ICU à partir du
+ * fuseau de référence, comme le fait déjà l'écran Cours marché pour les heures de séance.
+ */
+export function countryOffsetOn(code: string, date: Date = new Date()): string {
+  const zone = countryOf(code)?.timeZone;
+  if (!zone) return '';
+  const name = new Intl.DateTimeFormat('en', { timeZone: zone, timeZoneName: 'longOffset' })
+    .formatToParts(date)
+    .find((p) => p.type === 'timeZoneName')?.value;
+  if (!name) return '';
+  return name === 'GMT' ? 'UTC+00:00' : name.replace('GMT', 'UTC');
+}
+
+/** États souverains seulement — sans les territoires et dépendances. */
+export function sovereignCountries(): readonly Country[] {
+  return COUNTRIES.filter((c) => c.un);
+}
+
+export function euCountries(): readonly Country[] {
+  return COUNTRIES.filter((c) => c.eu);
+}
+
+export function eurozoneCountries(): readonly Country[] {
+  return COUNTRIES.filter((c) => c.eurozone);
+}
+
+/**
+ * Pays groupés par continent, dans l'ordre d'affichage, chaque groupe trié par nom. Les groupes
+ * vides sont écartés : filtrer sur les seuls États souverains ne doit pas laisser un intertitre
+ * « Antarctique » sans rien dessous.
+ */
+export function countriesByContinent(
+  list: readonly Country[] = COUNTRIES,
+): readonly { readonly continent: Continent; readonly countries: readonly Country[] }[] {
+  return CONTINENT_ORDER.map((continent) => ({
+    continent,
+    countries: list.filter((c) => c.continent === continent),
+  })).filter((g) => g.countries.length > 0);
+}

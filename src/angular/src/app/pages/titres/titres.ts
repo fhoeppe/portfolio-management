@@ -7,6 +7,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ViewStateService } from '../../shell/view-state.service';
 
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
 import { ACCOUNT_OPEN, IndexMember, PORTFOLIO_LINKS, PositionStatusKey, REGIONS, SECURITIES, INDICES } from './titres-data';
@@ -97,9 +98,15 @@ function toggleAllInSet<T>(sig: WritableSignal<ReadonlySet<T>>, all: readonly T[
 })
 export class Titres {
   private readonly dialog = inject(MatDialog);
+  /* Le routeur détruit la page à chaque navigation : onglet, filtres, tris, ligne consultée et
+     titres cochés sont empruntés au service plutôt que déclarés ici, sans quoi une sélection
+     patiemment montée dans l'écran de recherche serait perdue en allant vérifier une position.
+     Les messages d'état (`status`, `deleteNote`, `pickStatus`…) restent locaux : ils commentent
+     un geste qui vient d'avoir lieu, les rappeler au retour n'aurait aucun sens. */
+  private readonly viewState = inject(ViewStateService);
 
   // -- Onglets ----------------------------------------------------------------------------
-  protected readonly tab = signal<Tab>('universe');
+  protected readonly tab = this.viewState.remember<Tab>('titres.tab', 'universe');
   protected readonly pageTabs: readonly { readonly key: Tab; readonly label: string }[] = [
     { key: 'universe', label: "Univers d'investissement" },
     { key: 'search', label: 'Recherche de titres' },
@@ -111,10 +118,10 @@ export class Titres {
   protected readonly subtitle = "Univers autorisé à l'achat · " + SECURITIES.length + ' titres référencés · dernière revue du comité le 18/07/2026';
 
   // -- État partagé -------------------------------------------------------------------------
-  protected readonly decisions = signal<ReadonlyMap<string, 'ok' | 'none'>>(new Map());
-  protected readonly selected = signal('GLBEQ');
+  protected readonly decisions = this.viewState.remember<ReadonlyMap<string, 'ok' | 'none'>>('titres.decisions', new Map());
+  protected readonly selected = this.viewState.remember('titres.selected', 'GLBEQ');
   protected readonly status = signal('');
-  protected readonly deleted = signal<ReadonlySet<string>>(new Set());
+  protected readonly deleted = this.viewState.remember<ReadonlySet<string>>('titres.deleted', new Set());
   protected readonly deleteNote = signal('');
 
   protected readonly kpis = computed(() => computeKpis(this.decisions()));
@@ -159,18 +166,18 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   // Univers — Titres négociables
   // -----------------------------------------------------------------------------------------
-  protected readonly query = signal('');
-  protected readonly filter = signal<'all' | 'ok'>('all');
-  protected readonly acctPick = signal<ReadonlySet<string> | null>(null);
-  protected readonly groupByStatus = signal(false);
-  protected readonly sortKey = signal<string | null>(null);
-  protected readonly sortDir = signal<SortDir>('asc');
-  protected readonly colIsin = signal('');
-  protected readonly colName = signal('');
-  protected readonly tickPick = signal<ReadonlySet<string>>(new Set());
-  protected readonly placePick = signal<ReadonlySet<string>>(new Set());
-  protected readonly curPick = signal<ReadonlySet<string>>(new Set());
-  protected readonly statPick = signal<ReadonlySet<string>>(new Set());
+  protected readonly query = this.viewState.remember('titres.query', '');
+  protected readonly filter = this.viewState.remember<'all' | 'ok'>('titres.filter', 'all');
+  protected readonly acctPick = this.viewState.remember<ReadonlySet<string> | null>('titres.acctPick', null);
+  protected readonly groupByStatus = this.viewState.remember('titres.groupByStatus', false);
+  protected readonly sortKey = this.viewState.remember<string | null>('titres.sortKey', null);
+  protected readonly sortDir = this.viewState.remember<SortDir>('titres.sortDir', 'asc');
+  protected readonly colIsin = this.viewState.remember('titres.colIsin', '');
+  protected readonly colName = this.viewState.remember('titres.colName', '');
+  protected readonly tickPick = this.viewState.remember<ReadonlySet<string>>('titres.tickPick', new Set());
+  protected readonly placePick = this.viewState.remember<ReadonlySet<string>>('titres.placePick', new Set());
+  protected readonly curPick = this.viewState.remember<ReadonlySet<string>>('titres.curPick', new Set());
+  protected readonly statPick = this.viewState.remember<ReadonlySet<string>>('titres.statPick', new Set());
 
   protected readonly acctKeys = computed(() => pickedAccountKeys(this.acctPick()));
   protected readonly acctKeysSet = computed(() => new Set(this.acctKeys()));
@@ -280,13 +287,13 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   // Univers — Titres suivis (watchlist)
   // -----------------------------------------------------------------------------------------
-  protected readonly watchColIsin = signal('');
-  protected readonly watchColName = signal('');
-  protected readonly watchTickPick = signal<ReadonlySet<string>>(new Set());
-  protected readonly watchPlacePick = signal<ReadonlySet<string>>(new Set());
-  protected readonly watchCurPick = signal<ReadonlySet<string>>(new Set());
-  protected readonly watchSortKey = signal<string | null>(null);
-  protected readonly watchSortDir = signal<SortDir>('asc');
+  protected readonly watchColIsin = this.viewState.remember('titres.watchColIsin', '');
+  protected readonly watchColName = this.viewState.remember('titres.watchColName', '');
+  protected readonly watchTickPick = this.viewState.remember<ReadonlySet<string>>('titres.watchTickPick', new Set());
+  protected readonly watchPlacePick = this.viewState.remember<ReadonlySet<string>>('titres.watchPlacePick', new Set());
+  protected readonly watchCurPick = this.viewState.remember<ReadonlySet<string>>('titres.watchCurPick', new Set());
+  protected readonly watchSortKey = this.viewState.remember<string | null>('titres.watchSortKey', null);
+  protected readonly watchSortDir = this.viewState.remember<SortDir>('titres.watchSortDir', 'asc');
 
   protected readonly watchTickerOptions: readonly MultiOption[] = buildWatchTickerOptions();
   protected readonly watchPlaceOptions: readonly MultiOption[] = buildWatchPlaceOptions();
@@ -332,12 +339,12 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   // Onglet Recherche — panneau « Indices de référence »
   // -----------------------------------------------------------------------------------------
-  protected readonly index = signal('cac40');
-  protected readonly refs = signal<ReadonlyMap<string, 'ok' | 'none'>>(new Map());
-  protected readonly indexMembers = signal<Readonly<Record<string, readonly IndexMember[]>>>({});
+  protected readonly index = this.viewState.remember('titres.index', 'cac40');
+  protected readonly refs = this.viewState.remember<ReadonlyMap<string, 'ok' | 'none'>>('titres.refs', new Map());
+  protected readonly indexMembers = this.viewState.remember<Readonly<Record<string, readonly IndexMember[]>>>('titres.indexMembers', {});
   protected readonly lastUpdate = signal('31/08/2026, 18:05');
   protected readonly indexAction = signal('');
-  protected readonly panels = signal<{ readonly index: boolean; readonly crit: boolean; readonly res: boolean }>({ index: true, crit: true, res: true });
+  protected readonly panels = this.viewState.remember<{ readonly index: boolean; readonly crit: boolean; readonly res: boolean }>('titres.panels', { index: true, crit: true, res: true });
 
   protected readonly indexNote = INDICES.length + ' indices suivis sur ' + REGIONS.length + ' zones géographiques';
   protected readonly selectedIndex = computed(() => INDICES.find((i) => i.key === this.index()) ?? INDICES[0]);
@@ -374,7 +381,7 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   // Onglet Recherche — panneau « Critères de recherche »
   // -----------------------------------------------------------------------------------------
-  protected readonly search = signal<SearchState>(blankSearch());
+  protected readonly search = this.viewState.remember<SearchState>('titres.search', blankSearch());
   protected readonly classGroups = CLASS_SELECT_GROUPS;
   protected readonly currencyGroups = CURRENCY_SELECT_GROUPS;
   protected readonly liquidityGroups = LIQUIDITY_SELECT_GROUPS;
@@ -406,16 +413,16 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   // Onglet Recherche — panneau « Résultats »
   // -----------------------------------------------------------------------------------------
-  protected readonly resColName = signal('');
-  protected readonly resColCls = signal('');
-  protected readonly resColCurrency = signal('');
-  protected readonly resColRating = signal('');
-  protected readonly resColLiquidity = signal('');
-  protected readonly resStatusPick = signal<ReadonlySet<PositionStatusKey>>(new Set());
-  protected readonly resSortKey = signal<string | null>(null);
-  protected readonly resSortDir = signal<SortDir>('asc');
-  protected readonly resSource = signal<'criteria' | 'index'>('criteria');
-  protected readonly picked = signal<ReadonlySet<string>>(new Set());
+  protected readonly resColName = this.viewState.remember('titres.resColName', '');
+  protected readonly resColCls = this.viewState.remember('titres.resColCls', '');
+  protected readonly resColCurrency = this.viewState.remember('titres.resColCurrency', '');
+  protected readonly resColRating = this.viewState.remember('titres.resColRating', '');
+  protected readonly resColLiquidity = this.viewState.remember('titres.resColLiquidity', '');
+  protected readonly resStatusPick = this.viewState.remember<ReadonlySet<PositionStatusKey>>('titres.resStatusPick', new Set());
+  protected readonly resSortKey = this.viewState.remember<string | null>('titres.resSortKey', null);
+  protected readonly resSortDir = this.viewState.remember<SortDir>('titres.resSortDir', 'asc');
+  protected readonly resSource = this.viewState.remember<'criteria' | 'index'>('titres.resSource', 'criteria');
+  protected readonly picked = this.viewState.remember<ReadonlySet<string>>('titres.picked', new Set());
   protected readonly pickStatus = signal('');
   protected readonly pickStatusColor = signal('var(--ink-ok-2)');
 

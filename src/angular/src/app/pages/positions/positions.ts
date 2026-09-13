@@ -9,6 +9,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
+import { ViewStateService } from '../../shell/view-state.service';
 import {
   CHART_ACCOUNTS,
   CHART_METRICS,
@@ -105,19 +106,25 @@ export class Positions {
     { key: 'dash', label: 'Synthèse' },
   ];
 
-  protected readonly tab = signal<Tab>('detail');
-  protected readonly query = signal('');
-  protected readonly chartOpen = signal(true);
-  protected readonly chartRange = signal('6m');
-  protected readonly chartMetric = signal<'holdings' | 'growth'>('holdings');
-  protected readonly chartOff = signal<Record<string, boolean>>({});
-  protected readonly chartAccount = signal('all');
+  /* Le routeur détruit la page à chaque navigation : ce que l'utilisateur y choisit est emprunté
+     au service plutôt que déclaré ici, sans quoi tout — onglet, recherche, portée du graphique,
+     lignes dépliées, ordre des portefeuilles, tri du tableau — repartirait à zéro au retour.
+     `hoverIdx` fait exception : il suit le curseur, il n'a aucun sens une fois la page quittée. */
+  private readonly viewState = inject(ViewStateService);
+
+  protected readonly tab = this.viewState.remember<Tab>('positions.tab', 'detail');
+  protected readonly query = this.viewState.remember('positions.query', '');
+  protected readonly chartOpen = this.viewState.remember('positions.chartOpen', true);
+  protected readonly chartRange = this.viewState.remember('positions.chartRange', '6m');
+  protected readonly chartMetric = this.viewState.remember<'holdings' | 'growth'>('positions.chartMetric', 'holdings');
+  protected readonly chartOff = this.viewState.remember<Record<string, boolean>>('positions.chartOff', {});
+  protected readonly chartAccount = this.viewState.remember('positions.chartAccount', 'all');
   protected readonly hoverIdx = signal<number | null>(null);
-  protected readonly invView = signal<InvView>('account');
-  protected readonly invOpen = signal<Record<string, boolean>>({ 'DG-CTO': true });
-  protected readonly portfolioOrder = signal<readonly string[]>(PORTFOLIOS.map((p) => p.id));
-  protected readonly posSortKey = signal<string | null>(null);
-  protected readonly posSortDir = signal<'asc' | 'desc'>('asc');
+  protected readonly invView = this.viewState.remember<InvView>('positions.invView', 'account');
+  protected readonly invOpen = this.viewState.remember<Record<string, boolean>>('positions.invOpen', { 'DG-CTO': true });
+  protected readonly portfolioOrder = this.viewState.remember<readonly string[]>('positions.portfolioOrder', PORTFOLIOS.map((p) => p.id));
+  protected readonly posSortKey = this.viewState.remember<string | null>('positions.posSortKey', null);
+  protected readonly posSortDir = this.viewState.remember<'asc' | 'desc'>('positions.posSortDir', 'asc');
 
   protected readonly metricOptions = CHART_METRICS;
   protected readonly chartRangeOptions = CHART_RANGES;
