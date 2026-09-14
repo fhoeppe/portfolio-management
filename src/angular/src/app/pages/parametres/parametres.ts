@@ -413,8 +413,13 @@ export class Parametres {
     const rows = this.settleRows();
     return CONTINENT_ORDER.map((continent) => ({
       continent,
+      /* Rangées par code MIC : c'est la clé de la ligne, la seule colonne que l'œil balaie pour
+         retrouver une place. Le tri précède le zébrage, sans quoi une ligne sur deux serait teintée
+         dans l'ordre d'origine et non dans celui affiché. */
       rows: rows
         .filter((p) => continentOf(placeOf(p.mic)?.code ?? '') === continent)
+        .slice()
+        .sort((a, b) => a.mic.localeCompare(b.mic, 'fr'))
         .map((p, i) => ({ ...p, bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)' })),
     }))
       .filter((g) => g.rows.length > 0)
@@ -903,6 +908,51 @@ export class Parametres {
   // -- Colonnes des tableaux ----------------------------------------------------------------
   protected readonly taxColumns = ['country', 'places', 'legal', 'treaty', 'applied', 'recovery'];
   protected readonly settleColumns = ['mic', 'place', 'cycle', 'shift', 'csd', 'penalty'];
+
+  // -- Largeurs de colonnes réglables ----------------------------------------------------------
+
+  /**
+   * Largeurs des colonnes du tableau de dénouement, en pixels.
+   *
+   * Elles sont publiées en propriétés CSS sur la carte, et l'en-tête comme les tables de groupe les
+   * lisent de là : c'est ce qui permet à un en-tête sorti des tables de rester en face d'elles
+   * pendant qu'on tire une poignée. « Place » n'y figure pas — elle absorbe ce qui reste, sans quoi
+   * réduire une colonne laisserait un vide au lieu d'élargir le libellé voisin.
+   */
+  private static readonly SETTLE_WIDTHS: Readonly<Record<string, number>> = {
+    mic: 96, cycle: 86, shift: 170, csd: 160, penalty: 240,
+  };
+  /** En deçà, l'en-tête devient illisible et la poignée inattrapable. */
+  private static readonly MIN_COL = 56;
+
+  protected readonly settleWidths = signal<Readonly<Record<string, number>>>(Parametres.SETTLE_WIDTHS);
+
+  private resizing: { readonly key: string; readonly startX: number; readonly startWidth: number } | null = null;
+
+  protected startResize(key: string, ev: PointerEvent): void {
+    /* `stopPropagation` sur l'en-tête d'un panneau dépliable : sans lui, saisir la poignée
+       replierait le groupe sous le curseur. */
+    ev.preventDefault();
+    ev.stopPropagation();
+    (ev.target as HTMLElement).setPointerCapture(ev.pointerId);
+    this.resizing = { key, startX: ev.clientX, startWidth: this.settleWidths()[key] };
+  }
+
+  protected onResize(ev: PointerEvent): void {
+    const r = this.resizing;
+    if (!r) return;
+    const width = Math.max(Parametres.MIN_COL, Math.round(r.startWidth + (ev.clientX - r.startX)));
+    this.settleWidths.update((w) => ({ ...w, [r.key]: width }));
+  }
+
+  protected endResize(): void {
+    this.resizing = null;
+  }
+
+  /** Rend aux colonnes leur largeur d'origine — double-clic sur une poignée. */
+  protected resetWidths(): void {
+    this.settleWidths.set(Parametres.SETTLE_WIDTHS);
+  }
   protected readonly venueColumns = ['country', 'places', 'venues', 'indices', 'currency', 'zone', 'session'];
   protected readonly venueGroupColumns = ['group'];
   protected readonly userColumns = ['user', 'role', 'status', 'lastSeen'];

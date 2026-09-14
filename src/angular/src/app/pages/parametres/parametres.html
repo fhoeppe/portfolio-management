@@ -1,6 +1,6 @@
 <div class="pr-page">
   <div class="pr-head">
-    <h1 class="pr-h1">Paramètres</h1>
+    <h1 class="pr-h1"><mat-icon class="pm-h1-icon" svgIcon="settings"></mat-icon>Paramètres</h1>
     <p class="pr-subtitle">{{ subtitle() }}</p>
   </div>
 
@@ -262,11 +262,35 @@
     <!-- ───────────────────────── Règlement-livraison ───────────────────────── -->
     @if (tab() === 'settle') {
       <div class="pr-body">
-        <section class="pr-card">
+        <section class="pr-card"
+          [style.--pr-w-mic]="settleWidths()['mic'] + 'px'"
+          [style.--pr-w-cycle]="settleWidths()['cycle'] + 'px'"
+          [style.--pr-w-shift]="settleWidths()['shift'] + 'px'"
+          [style.--pr-w-csd]="settleWidths()['csd'] + 'px'"
+          [style.--pr-w-penalty]="settleWidths()['penalty'] + 'px'">
           <header class="pr-card-head">
             <h2 class="pr-card-title">Délais de dénouement par place</h2>
             <span class="pr-card-note pr-card-note-push pr-num-note">{{ settleNote() }}</span>
           </header>
+
+          <!-- En-tête unique de la carte. Il était répété dans chaque groupe de continent, et les
+               colonnes ne s'alignaient même pas d'un groupe à l'autre, chaque table se dimensionnant
+               sur son seul contenu. Les largeurs sont désormais imposées (`table-layout: fixed`),
+               sans quoi un en-tête sorti des tables ne pourrait pas rester en face d'elles. -->
+          <div class="pr-table-scroll pr-settle-head-scroll">
+            <table class="pr-table pr-table-settle pr-table-settle-head">
+              <thead>
+                <tr class="pr-header-row">
+                  <th class="pr-th pr-col-mic">MIC<span class="pr-col-grip" matTooltip="Tirer pour redimensionner, double-cliquer pour rétablir" (pointerdown)="startResize('mic', $event)" (pointermove)="onResize($event)" (pointerup)="endResize()" (pointercancel)="endResize()" (dblclick)="resetWidths()"></span></th>
+                  <th class="pr-th">Place</th>
+                  <th class="pr-th pr-col-cycle">Cycle<span class="pr-col-grip" matTooltip="Tirer pour redimensionner, double-cliquer pour rétablir" (pointerdown)="startResize('cycle', $event)" (pointermove)="onResize($event)" (pointerup)="endResize()" (pointercancel)="endResize()" (dblclick)="resetWidths()"></span></th>
+                  <th class="pr-th pr-col-shift">Bascule<span class="pr-col-grip" matTooltip="Tirer pour redimensionner, double-cliquer pour rétablir" (pointerdown)="startResize('shift', $event)" (pointermove)="onResize($event)" (pointerup)="endResize()" (pointercancel)="endResize()" (dblclick)="resetWidths()"></span></th>
+                  <th class="pr-th pr-col-csd">Dépositaire<span class="pr-col-grip" matTooltip="Tirer pour redimensionner, double-cliquer pour rétablir" (pointerdown)="startResize('csd', $event)" (pointermove)="onResize($event)" (pointerup)="endResize()" (pointercancel)="endResize()" (dblclick)="resetWidths()"></span></th>
+                  <th class="pr-th pr-col-penalty">Régime de pénalités</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
 
           @for (g of settleGroups(); track g.continent) {
             <mat-expansion-panel class="pr-panel pr-tax-panel" hideToggle
@@ -333,7 +357,6 @@
                     <th mat-header-cell *matHeaderCellDef class="pr-th pr-col-penalty">Régime de pénalités</th>
                     <td mat-cell *matCellDef="let p" class="pr-td pr-col-penalty pr-ellipsis">{{ p.penalty }}</td>
                   </ng-container>
-                  <tr mat-header-row *matHeaderRowDef="settleColumns" class="pr-header-row"></tr>
                   <tr mat-row *matRowDef="let p; columns: settleColumns" class="pr-row" [style.background]="p.bg"></tr>
                 </table>
               </div>

@@ -2,6 +2,10 @@
   display: block;
   height: 100%;
   overflow-y: auto;
+  /* Respiration en fin de défilement : sans elle, le dernier compte de l'inventaire touche le bas
+     de la fenêtre à 24px près et paraît écrasé. La marge est posée sur le conteneur qui défile, et
+     non sur la liste des comptes, pour que tous les onglets de l'écran en profitent. */
+  padding-bottom: 56px;
   background: var(--surface);
   color: var(--color-text);
   container-type: inline-size;
@@ -719,28 +723,16 @@ h1, h2 {
   transition: transform 160ms ease;
 }
 
-/* Le detail d'un compte se deroule de haut en bas, comme un store, plutot que d'apparaitre
-   d'un bloc. Le mouvement lui-meme vient de `.pm-unfold-block` (styles.scss), partage avec les
-   panneaux de Titres ; seule la duree est propre a cet ecran.
-   420ms et non 260 : le detail d'un compte est bien plus haut qu'un corps de panneau — jusqu'a
-   plusieurs dizaines de lignes — et le store doit se derouler a vitesse lisible, pas parcourir
-   cette hauteur dans le meme temps qu'un bloc de trois lignes.
-   Le repli n'est pas anime : `@if` retire le noeud immediatement, et le retenir le temps d'une
-   sortie demanderait de porter l'etat d'animation dans le composant pour un gain nul — la
-   disparition se lit deja par le chevron qui pivote. */
+/* Le detail d'un compte apparait sans animation. Il se deroulait en store sur 420ms — duree
+   choisie pour qu'un detail de plusieurs dizaines de lignes reste lisible pendant sa descente —
+   mais un compte qu'on ouvre pour lire un chiffre n'a pas a se faire attendre, et l'ouverture
+   se lit deja au chevron qui pivote. */
 .pm-inv-account-body {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px 16px;
   background: var(--surface);
-  animation-duration: 420ms;
-}
-
-/* La duree du repli suit celle du deroule, dans la meme proportion que le reglage partage
-   (220 / 260) : 355ms pour 420. */
-.pm-inv-account-body.pm-fold-block {
-  animation-duration: 355ms;
 }
 
 .pm-inv-account-badge {

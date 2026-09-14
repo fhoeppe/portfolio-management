@@ -335,6 +335,21 @@
 
 .pr-table-settle {
   min-width: 820px;
+  /* Largeurs imposées : l'en-tête vit hors des tables de groupe, il ne peut donc plus se caler sur
+     leur contenu. C'est aussi ce qui aligne enfin les groupes entre eux. */
+  table-layout: fixed;
+}
+
+/* La table d'en-tête ne porte que sa ligne de titres ; elle se colle au groupe qui la suit.
+   `border-collapse` est indispensable : les tables Material fusionnent leurs bordures, celle-ci
+   partait sur l'espacement par défaut de 2px et décalait toutes ses colonnes d'autant. */
+.pr-table-settle-head {
+  margin-bottom: -1px;
+  border-collapse: collapse;
+}
+
+.pr-settle-head-scroll {
+  overflow: hidden;
 }
 
 .pr-table-venue {
@@ -475,11 +490,14 @@
 .pr-col-rate { width: 170px; }
 .pr-col-applied { width: 120px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
 .pr-col-recovery { width: 230px; }
-.pr-col-mic { width: 96px; }
-.pr-col-cycle { width: 86px; }
-.pr-col-shift { width: 170px; white-space: nowrap; }
-.pr-col-csd { width: 160px; }
-.pr-col-penalty { width: 200px; }
+.pr-col-mic { width: var(--pr-w-mic, 96px); }
+.pr-col-cycle { width: var(--pr-w-cycle, 86px); }
+.pr-col-shift { width: var(--pr-w-shift, 170px); white-space: nowrap; }
+.pr-col-csd { width: var(--pr-w-csd, 160px); }
+/* 240 et non 200 : avec les largeurs imposées, la colonne ne s'élargit plus sur son contenu et
+   « CSDR — pénalités quotidiennes » se faisait tronquer. La place vient de la colonne Place, qui
+   absorbe le reste et en avait largement de trop. */
+.pr-col-penalty { width: var(--pr-w-penalty, 240px); }
 .pr-col-vcountry { width: 176px; }
 .pr-col-vplaces { width: 262px; }
 .pr-col-vvenues { width: 190px; }
@@ -1445,4 +1463,39 @@
   font-size: 14px;
   line-height: 14px;
   color: var(--color-neutral-600);
+}
+
+/* Poignée de redimensionnement, sur le bord droit de l'en-tête. Discrète au repos : une colonne
+   réglable ne doit pas se signaler tant qu'on ne la cherche pas. */
+.pr-th {
+  position: relative;
+}
+
+.pr-col-grip {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 9px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 2;
+}
+
+.pr-col-grip::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  left: 4px;
+  width: 1px;
+  height: 50%;
+  background: var(--color-neutral-300);
+}
+
+.pr-col-grip:hover::after {
+  top: 0;
+  height: 100%;
+  width: 2px;
+  left: 3px;
+  background: var(--ds-brand-fill, var(--ink-brand-2));
 }
