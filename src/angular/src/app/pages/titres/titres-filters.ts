@@ -3,7 +3,6 @@ import {
   CONSENSUS,
   CONSENSUS_VIEWS,
   DIV_FREQ,
-  FOLLOWED,
   FUNDAMENTALS,
   IG_GRADES,
   IndexDef,
@@ -24,6 +23,13 @@ import {
   INDICES,
   toneByColor,
 } from './titres-data';
+import {
+  deleteBlockedReason,
+  isDeletable,
+  isFollowed,
+  positionStatusOf,
+  type UniverseCounts,
+} from '../../domain/security-universe.store';
 
 export interface MultiOption {
   readonly key: string;
@@ -49,12 +55,10 @@ export function statusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Secur
   return decisions.get(s.ticker) ?? s.status;
 }
 
+/* Les règles de l'univers viennent de `SecurityUniverseStore` : ce module les réécrivait, et deux
+   définitions d'une même règle divergent tôt ou tard. Il ne garde que la mise en forme du tableau. */
 export function posStatusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): PositionStatusKey {
-  const link = PORTFOLIO_LINKS[s.ticker];
-  if (link?.held) return 'held';
-  if (link?.history) return 'settled';
-  if (FOLLOWED.indexOf(s.ticker) >= 0) return 'followed';
-  return statusOf(decisions, s) === 'ok' ? 'watch' : 'never';
+  return positionStatusOf(decisions, s);
 }
 
 export interface SearchState {
@@ -71,9 +75,32 @@ export interface SearchState {
   place: string;
 }
 
-/** Notation minimale par défaut à l'ouverture : 'A−', pas 'all' — défaut intentionnel du prototype. */
+/**
+ * Jeu de critères neutre : aucun filtre actif, la liste complète des titres référencés est rendue.
+ *
+ * Il portait `rating: 'A−'`, et rien ne le signalait. Conséquence : « Réinitialiser les critères »
+ * ne réinitialisait pas, il **reposait** une notation minimale — l'utilisateur qui avait élargi à
+ * « Sans minimum » voyait le filtre revenir et le compte retomber de quinze à cinq titres. Un
+ * bouton qui remet un critère au lieu de l'enlever n'a pas l'air de fonctionner, et c'est exact :
+ * il ne fait pas ce que son intitulé promet.
+ *
+ * Le même défaut valait au premier affichage, où dix des quinze titres étaient masqués par un
+ * critère que seul un petit « 1 critère(s) actif(s) » trahissait.
+ */
 export function blankSearch(): SearchState {
-  return { q: '', cls: 'all', currency: 'all', liquidity: 'all', rating: 'A−', esg: 'all', consensus: 'all', divFreq: 'all', eps: '', sector: 'all', place: 'all' };
+  return { q: '', cls: 'all', currency: 'all', liquidity: 'all', rating: 'all', esg: 'all', consensus: 'all', divFreq: 'all', eps: '', sector: 'all', place: 'all' };
+}
+
+/**
+ * Critères tels que l'écran s'ouvre : ceux de `blankSearch()`, plus la notation minimale `A−` que
+ * le prototype posait d'entrée.
+ *
+ * Ce défaut est conservé — c'est celui de la source —, mais il est désormais distinct de la
+ * réinitialisation. Les deux étaient confondus, si bien que « Réinitialiser les critères »
+ * reposait ce filtre au lieu de l'enlever.
+ */
+export function defaultSearch(): SearchState {
+  return { ...blankSearch(), rating: 'A−' };
 }
 
 // ---------------------------------------------------------------------------
@@ -89,13 +116,13 @@ export interface KpiCard {
   readonly labelColor: string;
 }
 
-export function computeKpis(decisions: ReadonlyMap<string, 'ok' | 'none'>): readonly KpiCard[] {
-  const posCount = (k: PositionStatusKey) => SECURITIES.filter((x) => posStatusOf(decisions, x) === k).length;
+/** Mise en forme des décomptes rendus par `SecurityUniverseStore` — le comptage, lui, est à lui. */
+export function computeKpis(c: UniverseCounts): readonly KpiCard[] {
   return [
-    { label: 'En position', value: String(posCount('held')), note: 'Détenus dans au moins un portefeuille', color: 'var(--ink-ok-2)' },
-    { label: 'Positions soldées', value: String(posCount('settled')), note: "Présents dans l'historique des mouvements", color: 'var(--color-text)' },
-    { label: 'Retenus', value: String(posCount('watch')), note: "Retenus dans l'univers, jamais négociés", color: 'var(--color-text)' },
-    { label: 'Titres référencés', value: String(SECURITIES.length), note: "Dans l'univers de référence", color: 'var(--color-text)' },
+    { label: 'En position', value: String(c.held), note: 'Détenus dans au moins un portefeuille', color: 'var(--ink-ok-2)' },
+    { label: 'Positions soldées', value: String(c.settled), note: "Présents dans l'historique des mouvements", color: 'var(--color-text)' },
+    { label: 'Retenus', value: String(c.watch), note: "Retenus dans l'univers, jamais négociés", color: 'var(--color-text)' },
+    { label: 'Titres référencés', value: String(c.referenced), note: "Dans l'univers de référence", color: 'var(--color-text)' },
   ].map((k) => toneByColor(k));
 }
 
@@ -122,7 +149,6 @@ export interface UniRow {
 
 function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): UniRow {
   const mi = MARKET_INFO[s.ticker];
-  const link = PORTFOLIO_LINKS[s.ticker];
   const ps = posStatusOf(decisions, s);
   const def = POSITION_STATUS[ps];
   return {
@@ -138,12 +164,8 @@ function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): U
     tagBg: def.bg,
     tagFg: def.fg,
     dotColor: ps === 'followed' ? '#a37a00' : def.fg,
-    lockDelete: !!(link?.held || link?.history),
-    deleteTitle: link?.held
-      ? 'Suppression impossible : titre en position dans un portefeuille'
-      : link?.history
-        ? "Suppression impossible : titre présent dans l'historique des portefeuilles"
-        : 'Supprimer ce titre négociable',
+    lockDelete: !isDeletable(s.ticker),
+    deleteTitle: deleteBlockedReason(s.ticker) || 'Supprimer ce titre négociable',
   };
 }
 
@@ -284,7 +306,7 @@ export function computeWatchSource(decisions: ReadonlyMap<string, 'ok' | 'none'>
 }
 
 function followedSecurities(): readonly Security[] {
-  return SECURITIES.filter((x) => FOLLOWED.indexOf(x.ticker) >= 0);
+  return SECURITIES.filter((x) => isFollowed(x.ticker));
 }
 
 export function buildWatchTickerOptions(): readonly MultiOption[] {

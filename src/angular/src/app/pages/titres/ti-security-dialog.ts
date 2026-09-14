@@ -7,13 +7,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SidePanel } from '../../ui/side-panel/side-panel';
 import { ThemeService } from '../../shell/theme.service';
+import { SecurityUniverseStore } from '../../domain/security-universe.store';
 import type { Icon } from '../../shell/icon-shapes';
 import { PRICE_LAST, PRICE_PERIODS, Security, priceGeometry, priceSeries } from './titres-data';
 import { buildSecuritySheet, computeCriteria } from './titres-filters';
 
 export interface TiSecurityDialogData {
   readonly security: Security;
-  readonly decisions: Signal<ReadonlyMap<string, 'ok' | 'none'>>;
   readonly onAuthorize: (ticker: string) => void;
   readonly status: Signal<string>;
 }
@@ -37,6 +37,7 @@ export class TiSecurityDialog {
   private readonly data = inject<TiSecurityDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<TiSecurityDialog>);
   private readonly theme = inject(ThemeService);
+  private readonly universe = inject(SecurityUniverseStore);
 
   @HostBinding('attr.data-theme') protected get themeAttr() {
     return this.theme.mode();
@@ -47,7 +48,7 @@ export class TiSecurityDialog {
   protected readonly secTab = signal<SecTab>('sheet');
   protected readonly pricePeriod = signal('ytd');
 
-  protected readonly sheet = computed(() => buildSecuritySheet(this.cur, this.data.decisions()));
+  protected readonly sheet = computed(() => buildSecuritySheet(this.cur, this.universe.decisionMap()));
   protected readonly criteria = computed(() => computeCriteria(this.cur));
 
   protected readonly priceTabs = PRICE_PERIODS;
