@@ -1,8 +1,8 @@
 <div class="ti-page">
   <div class="ti-head-row">
     <div class="ti-head-titles">
-      <h1 class="ti-h1">Titres</h1>
-      <p class="ti-subtitle">{{ subtitle }}</p>
+      <h1 class="ti-h1"><mat-icon class="pm-h1-icon" svgIcon="library"></mat-icon>Titres</h1>
+      <p class="ti-subtitle">{{ subtitle() }}</p>
     </div>
   </div>
 
@@ -69,7 +69,7 @@
         </div>
 
         <div class="ti-table-scroll">
-          <table mat-table [dataSource]="uniTableRows()" [trackBy]="uniTrackBy" class="ti-table">
+          <table mat-table [dataSource]="uniShownRows()" [trackBy]="uniTrackBy" class="ti-table">
             <ng-container matColumnDef="isin">
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-isin">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('isin').color" [style.font-weight]="uniSortHeader('isin').weight" [matTooltip]="uniSortHeader('isin').title" (click)="onUniSort('isin')">
@@ -154,7 +154,7 @@
                  cellules par définition de colonne, il faut donc des colonnes distinctes pour la
                  seconde `matHeaderRowDef`. -->
             <ng-container matColumnDef="isinFilter">
-              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="colIsin()" (input)="colIsin.set($any($event.target).value)" /></th>
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="colIsin()" (input)="setUniFilter('colIsin', $any($event.target).value)" /></th>
             </ng-container>
             <ng-container matColumnDef="tickerFilter">
               <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
@@ -162,7 +162,7 @@
               </th>
             </ng-container>
             <ng-container matColumnDef="nameFilter">
-              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="colName()" (input)="colName.set($any($event.target).value)" /></th>
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="colName()" (input)="setUniFilter('colName', $any($event.target).value)" /></th>
             </ng-container>
             <ng-container matColumnDef="placeFilter">
               <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
@@ -202,7 +202,7 @@
           </table>
         </div>
         @if (noRows()) {
-          <p class="ti-empty-note">Aucun titre ne correspond aux filtres.</p>
+          <p class="ti-empty-note">{{ uniEmptyNote() }}</p>
         }
       </div>
 
@@ -220,7 +220,7 @@
           </button>
         </div>
         <div class="ti-table-scroll">
-          <table mat-table [dataSource]="watchRows()" class="ti-table">
+          <table mat-table [dataSource]="watchShownRows()" class="ti-table">
             <ng-container matColumnDef="isin">
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-isin">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('isin').color" [style.font-weight]="watchSortHeader('isin').weight" [matTooltip]="watchSortHeader('isin').title" (click)="onWatchSort('isin')">
@@ -302,7 +302,7 @@
             </ng-container>
 
             <ng-container matColumnDef="isinFilter">
-              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="watchColIsin()" (input)="watchColIsin.set($any($event.target).value)" /></th>
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="watchColIsin()" (input)="setWatchFilter('watchColIsin', $any($event.target).value)" /></th>
             </ng-container>
             <ng-container matColumnDef="tickerFilter">
               <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
@@ -310,7 +310,7 @@
               </th>
             </ng-container>
             <ng-container matColumnDef="nameFilter">
-              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="watchColName()" (input)="watchColName.set($any($event.target).value)" /></th>
+              <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="watchColName()" (input)="setWatchFilter('watchColName', $any($event.target).value)" /></th>
             </ng-container>
             <ng-container matColumnDef="placeFilter">
               <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
@@ -335,7 +335,7 @@
           </table>
         </div>
         @if (noWatchRows()) {
-          <p class="ti-empty-note">Aucun titre uniquement suivi.</p>
+          <p class="ti-empty-note">{{ watchEmptyNote() }}</p>
         }
       </div>
     </div>
@@ -433,11 +433,17 @@
                 <app-ti-select [groups]="sectorGroups" [value]="search().sector" (valueChange)="patchSearch({ sector: $event })"></app-ti-select>
               </label>
             </div>
+            <!-- L'action principale ouvre la barre, la réinitialisation la ferme à l'opposé : on ne
+                 place pas côte à côte le bouton qu'on cherche et celui qu'on veut éviter. -->
             <div class="ti-panel-body-row">
-              <button type="button" matIconButton matTooltip="Réinitialiser les critères" (click)="resetSearch()">
-                <mat-icon svgIcon="rotate-left" style="font-size:15px"></mat-icon>
+              <button type="button" mat-flat-button class="ti-search-btn" [class.ti-search-btn-dirty]="searchDirty()" (click)="runSearch()">
+                <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
+                Rechercher
               </button>
               <span class="ti-crit-summary">{{ searchSummary() }}</span>
+              <button type="button" matIconButton class="ti-crit-reset-btn" matTooltip="Réinitialiser les critères" (click)="resetSearch()">
+                <mat-icon svgIcon="rotate-left" style="font-size:15px"></mat-icon>
+              </button>
             </div>
           </div>
         }
@@ -476,13 +482,13 @@
               <span class="ti-watch-hint" matTooltip="Le titre ajouté est mis en suivi : retenu dans l'univers, jamais négocié">
                 <mat-icon svgIcon="eye" style="font-size:17px"></mat-icon>
               </span>
-              <button type="button" matIconButton class="ti-reset-picked-btn" matTooltip="Réinitialiser la sélection, les critères et les décisions de cette session" (click)="resetPicked()">
+              <button type="button" matIconButton class="ti-reset-picked-btn" matTooltip="Réinitialiser ce panneau : sa sélection, les filtres de colonnes, le tri et les résultats affichés" (click)="resetPicked()">
                 <mat-icon svgIcon="rotate-left" style="font-size:16px"></mat-icon>
               </button>
             </div>
 
             <div class="ti-table-scroll">
-              <table mat-table [dataSource]="searchRows()" class="ti-table ti-res-table">
+              <table mat-table [dataSource]="shownRows()" class="ti-table ti-res-table">
                 <ng-container matColumnDef="select">
                   <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-select"><mat-checkbox [checked]="allPicked()" (change)="togglePickAll()" matTooltip="Tout sélectionner"></mat-checkbox></th>
                   <td mat-cell *matCellDef="let r" class="ti-td ti-td-select"><mat-checkbox [checked]="r.picked" (change)="togglePicked(r.ticker)"></mat-checkbox></td>
@@ -574,19 +580,19 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th-filter"></th>
                 </ng-container>
                 <ng-container matColumnDef="securityFilter">
-                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColName()" (input)="resColName.set($any($event.target).value)" /></th>
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColName()" (input)="setResCol('name', $any($event.target).value)" /></th>
                 </ng-container>
                 <ng-container matColumnDef="clsFilter">
-                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColCls()" (input)="resColCls.set($any($event.target).value)" /></th>
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColCls()" (input)="setResCol('cls', $any($event.target).value)" /></th>
                 </ng-container>
                 <ng-container matColumnDef="currencyFilter">
-                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColCurrency()" (input)="resColCurrency.set($any($event.target).value)" /></th>
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColCurrency()" (input)="setResCol('currency', $any($event.target).value)" /></th>
                 </ng-container>
                 <ng-container matColumnDef="ratingFilter">
-                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColRating()" (input)="resColRating.set($any($event.target).value)" /></th>
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColRating()" (input)="setResCol('rating', $any($event.target).value)" /></th>
                 </ng-container>
                 <ng-container matColumnDef="liquidityFilter">
-                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColLiquidity()" (input)="resColLiquidity.set($any($event.target).value)" /></th>
+                  <th mat-header-cell *matHeaderCellDef class="ti-th-filter"><input class="ti-text-filter" placeholder="Tous" [value]="resColLiquidity()" (input)="setResCol('liquidity', $any($event.target).value)" /></th>
                 </ng-container>
                 <ng-container matColumnDef="statusFilter">
                   <th mat-header-cell *matHeaderCellDef class="ti-th-filter">
@@ -603,7 +609,7 @@
               </table>
             </div>
             @if (noSearchRows()) {
-              <p class="ti-empty-note">Aucun titre ne satisfait ces critères.</p>
+              <p class="ti-empty-note">{{ emptyNote() }}</p>
             }
           </div>
         }

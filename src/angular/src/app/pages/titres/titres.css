@@ -800,3 +800,25 @@
 .ti-res-table ::ng-deep .mdc-checkbox__background {
   border-width: 1px;
 }
+
+/* Bouton « Rechercher » du panneau des critères. Repris du bouton « Aperçu » du panneau des
+   indices, pour que les deux actions de cet écran se ressemblent. */
+.ti-search-btn {
+  --mat-button-filled-container-height: 28px;
+  --mat-button-filled-label-text-size: 12px;
+  --mat-button-filled-container-color: var(--ds-brand-fill, var(--ink-brand-2));
+  --mat-button-filled-label-text-color: #ffffff;
+  --mat-button-filled-container-shape: 6px;
+  padding: 0 12px !important;
+}
+
+/* Tant que le formulaire diffère de ce qui est appliqué, le bouton le dit : sans cela, un critère
+   saisi et jamais soumis laisserait croire que les résultats en tiennent compte. */
+.ti-search-btn-dirty {
+  box-shadow: 0 0 0 2px var(--ink-warn-2, #a4552c);
+}
+
+/* La réinitialisation ferme la barre des critères, à l'opposé de « Rechercher ». */
+.ti-crit-reset-btn {
+  margin-left: auto;
+}

@@ -7,6 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from '../../shell/theme.service';
 import { IndexCompositionService } from '../../domain/index-composition.service';
+import { SecurityUniverseStore } from '../../domain/security-universe.store';
 import { IndexDef } from './titres-data';
 import { computePreview } from './titres-filters';
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
@@ -21,7 +22,6 @@ const cmp = (a: string, b: string): number =>
 export interface TiPreviewDialogData {
   readonly idx: IndexDef;
   readonly refs: WritableSignal<ReadonlyMap<string, 'ok' | 'none'>>;
-  readonly decisions: WritableSignal<ReadonlyMap<string, 'ok' | 'none'>>;
 }
 
 /**
@@ -46,6 +46,9 @@ export class TiPreviewDialog {
   }
 
   private readonly indexService = inject(IndexCompositionService);
+  /* Les décisions du comité ne transitent plus par la donnée de la modale : elles ont un service,
+     que la modale interroge directement. */
+  private readonly universe = inject(SecurityUniverseStore);
 
   protected readonly idx = this.data.idx;
 
@@ -56,7 +59,7 @@ export class TiPreviewDialog {
   private readonly members = computed(() => this.idx.members);
 
   protected readonly preview = computed(() =>
-    computePreview(this.idx, this.members(), this.data.refs(), this.data.decisions()),
+    computePreview(this.idx, this.members(), this.data.refs(), this.universe.decisionMap()),
   );
 
   /* La composition vient du service, sur la liste effectivement chargée : c'est lui qui sait où
