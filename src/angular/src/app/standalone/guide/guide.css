@@ -414,7 +414,10 @@ h1, h2, h3 {
   color: var(--color-neutral-700);
 }
 
-.gd-table-total td {
+/* `.gd-table tr.gd-table-total` et non `.gd-table-total` seul : la règle qui grise la première
+   colonne porte un `:first-child`, donc une spécificité supérieure — sans ce renfort, le mot
+   « Total » restait en gris clair pendant que le reste de sa ligne passait en gras. */
+.gd-table tr.gd-table-total td {
   border-top: 1px solid var(--color-neutral-400);
   border-bottom: 0;
   font-weight: 700;
