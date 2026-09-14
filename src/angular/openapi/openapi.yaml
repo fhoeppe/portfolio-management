@@ -856,6 +856,70 @@ paths:
         '204': { description: Cours retiré. }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /market/indices:
+    get:
+      tags: [Marché]
+      summary: Indices de référence et leur composition
+      description: |
+        Référentiel des indices suivis, avec la composition de chacun à sa date d'arrêté.
+
+        **C'est la source du front.** Le référentiel embarqué dans l'application ne décrit qu'un
+        échantillon — dix valeurs sur quarante au CAC 40 — parce qu'une composition se révise
+        chaque trimestre et qu'aucune ne se maintient à la main dans du code. Le front charge donc
+        cette ressource au démarrage et remplace ce qu'il savait. Il accepte une réponse partielle :
+        un indice absent garde sa composition embarquée, ce qui autorise à livrer les compositions
+        une par une, à mesure qu'on obtient les droits du fournisseur d'indice.
+
+        Le format est le même que celui du fichier `data/indices.json` que l'exploitant peut
+        déposer sur le serveur statique. Les deux sources sont interchangeables, et ne diffèrent que
+        par l'URL configurée côté front.
+
+        Le poids est **un pourcentage de l'indice** — `7.9`, pas `0.079` — et la somme des poids
+        livrés n'a aucune raison de valoir 100 : c'est précisément cette part couverte que le front
+        affiche.
+      operationId: listIndices
+      parameters:
+        - name: key
+          in: query
+          description: Restreint la réponse aux indices cités. Répété pour plusieurs indices.
+          schema:
+            type: array
+            items: { type: string }
+          example: [cac40, dax]
+        - name: region
+          in: query
+          description: Restreint à une zone géographique.
+          schema: { type: string }
+          example: Europe continentale
+      responses:
+        '200':
+          description: Les indices et leur composition.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IndexFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /market/indices/{indexKey}:
+    parameters:
+      - $ref: '#/components/parameters/IndexKeyPath'
+    get:
+      tags: [Marché]
+      summary: Composition d'un indice
+      description: |
+        La composition complète d'un seul indice. Même contenu qu'un élément de la collection ;
+        l'opération existe pour relire un indice sans retélécharger les vingt-sept autres, un
+        indice étant révisé pour son compte et non avec les autres.
+      operationId: getIndex
+      responses:
+        '200':
+          description: L'indice.
+          headers:
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Index' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   # ───────────────────────────── Calendriers ─────────────────────────────
   /calendars/zones:
     get:
@@ -1209,6 +1273,13 @@ components:
       required: true
       schema: { $ref: '#/components/schemas/Mic' }
       example: XPAR
+    IndexKeyPath:
+      name: indexKey
+      in: path
+      required: true
+      description: Clé stable de l'indice, en minuscules sans espace — `cac40`, `sx5e`, `msciworld`.
+      schema: { type: string, pattern: '^[a-z0-9]+$' }
+      example: cac40
     ZoneId:
       name: zoneId
       in: path
@@ -1431,6 +1502,16 @@ components:
       type: string
       description: Code ISO 10383 de la place. `OTC` pour le gré à gré.
       example: XPAR
+
+    Isin:
+      type: string
+      description: |
+        Code ISO 6166 : deux lettres de pays, neuf caractères d'identification, une clé de
+        contrôle. Le motif ne vérifie que la forme ; **la clé se vérifie en plus** — module 10 à
+        doublement alterné après conversion des lettres — et un ISIN qui échoue à ce contrôle
+        désigne un autre titre ou aucun. Le front le refuse à l'entrée d'un référentiel chargé.
+      pattern: '^[A-Z]{2}[A-Z0-9]{9}[0-9]$'
+      example: FR0000120271
 
     Money:
       description: |
@@ -1789,6 +1870,97 @@ components:
         statusReason:
           type: string
           description: Motif lisible — « Fermée — Assomption », « Séance close depuis 17:30 ».
+
+    IndexFeed:
+      type: object
+      required: [indices]
+      description: |
+        Enveloppe de livraison des compositions. Les trois champs de tête ne sont pas de la
+        décoration : une composition d'indice sans provenance ni date d'arrêté ne se vérifie pas,
+        et le front les affiche telles quelles.
+      properties:
+        version:
+          type: string
+          description: Version du format, pour qu'un changement futur soit détectable.
+          example: '1.0'
+        source:
+          type: string
+          description: D'où vient la donnée, en clair. Affiché comme provenance.
+          example: Euronext — composition officielle
+        asOf:
+          type: string
+          format: date
+          description: Date d'arrêté générale, reprise par les indices qui n'en portent pas.
+          example: '2026-09-12'
+        indices:
+          type: array
+          items: { $ref: '#/components/schemas/Index' }
+
+    Index:
+      type: object
+      required: [key, name, region, members]
+      properties:
+        key:
+          type: string
+          description: Clé stable, en minuscules sans espace.
+          example: cac40
+        name: { type: string, example: CAC 40 }
+        region:
+          type: string
+          description: Zone géographique, telle que les sélecteurs la groupent.
+          example: Europe continentale
+        place:
+          type: string
+          description: Nom d'usage de la place — « Euronext Paris », « Deutsche Börse ».
+          example: Euronext Paris
+        mic:
+          description: |
+            MIC de la place. **Absent ou vide pour un indice réparti sur plusieurs places** : un
+            S&P 500 cote à New York et au Nasdaq, un STOXX Europe 600 sur seize marchés. Lui
+            attribuer un MIC unique serait faux, et le composant qui en hériterait le serait aussi.
+          allOf:
+            - $ref: '#/components/schemas/Mic'
+        currency: { $ref: '#/components/schemas/CurrencyCode' }
+        count:
+          type: integer
+          minimum: 1
+          description: |
+            Effectif réel de l'indice — 40 pour le CAC 40 — même si `members` en décrit moins.
+            C'est le rapport des deux qui donne le taux de couverture affiché.
+          example: 40
+        detail:
+          type: string
+          example: 40 valeurs · révision trimestrielle · devise EUR
+        asOf:
+          type: string
+          format: date
+          description: Date d'arrêté de cette composition. À défaut, celle de l'enveloppe.
+        members:
+          type: array
+          items: { $ref: '#/components/schemas/IndexMember' }
+
+    IndexMember:
+      type: object
+      required: [name, isin, weight]
+      properties:
+        name: { type: string, example: TotalEnergies }
+        ticker: { type: string, example: TTE }
+        isin: { $ref: '#/components/schemas/Isin' }
+        sector: { type: string, example: Énergie }
+        weight:
+          type: number
+          minimum: 0
+          description: Poids dans l'indice, **en pourcentage** — `8.4`, pas `0.084`.
+          example: 8.4
+        cap:
+          type: string
+          description: Capitalisation telle qu'on veut la lire. Libellé, pas montant calculable.
+          example: 148 Md€
+        ref:
+          type: string
+          enum: [ok, none]
+          default: none
+          description: Avis du comité sur la valeur au sein de l'indice. Absent vaut « non retenue ».
 
     PlaceInput:
       type: object

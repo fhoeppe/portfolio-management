@@ -2,9 +2,11 @@ import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalE
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, type MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { IconRegistryService } from './shell/icon-registry.service';
+import { IndexFeedService } from './domain/index-feed.service';
 
 /**
  * Délai d'apparition des info-bulles, posé une seule fois ici plutôt que répété en
@@ -22,6 +24,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes), provideClientHydration(),
+    // `withFetch()` plutôt que XHR : c'est le transport que le rendu serveur sait suivre, et il
+    // évite l'avertissement d'Angular au prérendu.
+    provideHttpClient(withFetch()),
     { provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: TOOLTIP_OPTIONS },
     // MatDatepicker exige un adaptateur de date ; l'adaptateur natif suffit ici, aucune
     // bibliothèque tierce (Moment, Luxon) n'étant utilisée. La locale force l'affichage en
@@ -32,5 +37,11 @@ export const appConfig: ApplicationConfig = {
     // rendu, y compris côté serveur pour le prérendu — un composant qui monte avant l'injection
     // paresseuse du service se retrouverait avec des <mat-icon svgIcon="..."> vides.
     provideAppInitializer(() => void inject(IconRegistryService)),
+    // Le référentiel des indices est embarqué mais partiel ; le chargeur va chercher la vraie
+    // composition — fichier déposé ou API du contrat — et remplace ce que le socle disait.
+    // `void` est délibéré : rendre la promesse ferait attendre le premier rendu qu'un fichier
+    // réponde, alors que l'application sait déjà tout afficher sans lui. Le chargement part en
+    // parallèle du bootstrap, et les écrans se corrigent d'eux-mêmes quand il aboutit.
+    provideAppInitializer(() => void inject(IndexFeedService).load()),
   ]
 };

@@ -354,7 +354,7 @@
   color: var(--color-text) !important;
 }
 
-.ti-sort-chevron {
+.ti-sort-arrow {
   display: flex;
   align-items: center;
 }
@@ -644,16 +644,32 @@
   background: var(--color-neutral-100);
 }
 
-.ti-index-summary {
+/* Les trois constats de composition se lisent comme une ligne de faits, chacun précédé de son
+   pictogramme : ils ne se hiérarchisent pas entre eux, un séparateur suffirait mal à les distinguer
+   d'une énumération. `flex-wrap` parce que la ligne se replie sur un panneau étroit. */
+.ti-index-facts {
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.ti-index-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   color: var(--color-neutral-700);
 }
 
-.ti-index-action {
-  margin-left: auto;
+.ti-index-fact mat-icon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: var(--ink-brand-2);
+}
+
+.ti-index-summary {
   font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-ok-2);
+  color: var(--color-neutral-700);
 }
 
 .ti-crit-grid {

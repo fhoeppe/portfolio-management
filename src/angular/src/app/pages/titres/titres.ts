@@ -8,9 +8,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ViewStateService } from '../../shell/view-state.service';
+import { IndexCompositionService } from '../../domain/index-composition.service';
+import { IndexFeedService } from '../../domain/index-feed.service';
 
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
-import { ACCOUNT_OPEN, IndexMember, PORTFOLIO_LINKS, PositionStatusKey, REGIONS, SECURITIES, INDICES } from './titres-data';
+import { ACCOUNT_OPEN, PORTFOLIO_LINKS, PositionStatusKey, REGIONS, SECURITIES, INDICES } from './titres-data';
 import {
   CLASS_SELECT_GROUPS,
   CONSENSUS_SELECT_GROUPS,
@@ -45,7 +47,6 @@ import {
   computeWatchSource,
   groupUniRows,
   pickedAccountKeys,
-  refreshIndex,
   sortUniRows,
 } from './titres-filters';
 import type { UniRow, UniRowGroup } from './titres-filters';
@@ -104,6 +105,14 @@ export class Titres {
      Les messages d'état (`status`, `deleteNote`, `pickStatus`…) restent locaux : ils commentent
      un geste qui vient d'avoir lieu, les rappeler au retour n'aurait aucun sens. */
   private readonly viewState = inject(ViewStateService);
+  /* Le panneau des indices ne dérive plus lui-même l'identité de la place ni le rattachement des
+     composants à l'univers : `IndexCompositionService` rapproche les trois référentiels — membres,
+     registre ISO 10383, pays — et rend une fiche complète. L'écran n'a qu'à la lire. */
+  private readonly indexService = inject(IndexCompositionService);
+  /* Le chargeur n'est lu que pour sa provenance : la composition, elle, arrive par le référentiel,
+     que le service remplace au démarrage. L'écran n'a rien à déclencher — il dit seulement d'où
+     vient ce qu'il affiche, ce qu'une composition d'indice non datée ne permet pas de vérifier. */
+  private readonly indexFeed = inject(IndexFeedService);
 
   // -- Onglets ----------------------------------------------------------------------------
   protected readonly tab = this.viewState.remember<Tab>('titres.tab', 'universe');
@@ -341,16 +350,57 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   protected readonly index = this.viewState.remember('titres.index', 'cac40');
   protected readonly refs = this.viewState.remember<ReadonlyMap<string, 'ok' | 'none'>>('titres.refs', new Map());
-  protected readonly indexMembers = this.viewState.remember<Readonly<Record<string, readonly IndexMember[]>>>('titres.indexMembers', {});
-  protected readonly lastUpdate = signal('31/08/2026, 18:05');
-  protected readonly indexAction = signal('');
+  /**
+   * D'où vient la composition affichée. La ligne portait une date en dur — « 31/08/2026, 18:05 » —
+   * qui ne correspondait à rien ; maintenant qu'une source répond, elle dit ce qu'elle sait :
+   * provenance déclarée, date d'arrêté, volume livré, ou le repli embarqué le cas échéant.
+   */
+  protected readonly indexOrigin = computed(() => this.indexFeed.origin());
   protected readonly panels = this.viewState.remember<{ readonly index: boolean; readonly crit: boolean; readonly res: boolean }>('titres.panels', { index: true, crit: true, res: true });
 
   protected readonly indexNote = INDICES.length + ' indices suivis sur ' + REGIONS.length + ' zones géographiques';
   protected readonly selectedIndex = computed(() => INDICES.find((i) => i.key === this.index()) ?? INDICES[0]);
-  protected readonly indexMembersCurrent = computed(() => this.indexMembers()[this.selectedIndex().key] || this.selectedIndex().members);
-  protected readonly indexGroups = computed(() => buildIndexGroups(this.indexMembers(), this.refs(), this.decisions()));
-  protected readonly refreshLabel = computed(() => this.indexMembersCurrent().length + ' / ' + this.selectedIndex().count + ' composants — rafraîchir');
+  protected readonly indexMembersCurrent = computed(() => this.selectedIndex().members);
+  protected readonly indexGroups = computed(() => buildIndexGroups(this.refs(), this.decisions()));
+
+  /* Composée sur la liste courante et non sur celle du référentiel : un rechargement de l'indice
+     doit se voir dans la couverture comme dans le rattachement. */
+  protected readonly indexComposition = computed(() =>
+    this.indexService.withMembers(this.selectedIndex().key, this.indexMembersCurrent()),
+  );
+
+  /** Place et devise de cotation — « plusieurs places » quand l'indice en couvre plusieurs. */
+  protected readonly indexIdentity = computed(() => {
+    const c = this.indexComposition();
+    if (!c) return '';
+    const venue = c.mic ? `${c.mic} · ${c.place}` : `Plusieurs places · ${c.place}`;
+    return `${venue} · ${c.currency}`;
+  });
+
+  /** Ce que le référentiel détaille vraiment, en composants et en poids. */
+  protected readonly indexCoverage = computed(() => {
+    const c = this.indexComposition();
+    if (!c) return '';
+    const weight = c.detailedWeight.toFixed(1).replace('.', ',');
+    return `${c.detailedCount} / ${c.declaredCount} composants · ${weight} % du poids`;
+  });
+
+  /**
+   * Croisement avec l'univers d'investissement, compté par le service. La part de poids compte plus
+   * que le nombre : connaître deux valeurs sur dix ne dit rien, savoir qu'elles pèsent 13 % de
+   * l'indice dit tout.
+   */
+  protected readonly indexUniverse = computed(() => {
+    const c = this.universeCoverage();
+    if (!c.known) return 'Aucun composant à l’univers';
+    const weight = c.knownWeight.toFixed(1).replace('.', ',');
+    const parts = [`${c.known} à l’univers · ${weight} % du poids`];
+    if (c.retained) parts.push(`${c.retained} retenu${c.retained > 1 ? 's' : ''}`);
+    if (c.held) parts.push(`${c.held} détenu${c.held > 1 ? 's' : ''}`);
+    return parts.join(' · ');
+  });
+
+  private readonly universeCoverage = computed(() => this.indexService.universeCoverage(this.selectedIndex().key));
 
   protected togglePanel(key: 'index' | 'crit' | 'res'): void {
     this.panels.update((p) => ({ ...p, [key]: !p[key] }));
@@ -358,20 +408,11 @@ export class Titres {
 
   protected setIndex(key: string): void {
     this.index.set(key);
-    this.indexAction.set('');
-  }
-
-  protected refreshIndexAction(): void {
-    const idx = this.selectedIndex();
-    const result = refreshIndex(idx, this.indexMembersCurrent());
-    this.indexMembers.update((m) => ({ ...m, [idx.key]: result.members }));
-    this.lastUpdate.set(result.lastUpdate);
-    this.indexAction.set(result.indexAction);
   }
 
   protected openPreview(): void {
     this.dialog.open<TiPreviewDialog, TiPreviewDialogData>(TiPreviewDialog, {
-      data: { idx: this.selectedIndex(), indexMembers: this.indexMembers, refs: this.refs, decisions: this.decisions },
+      data: { idx: this.selectedIndex(), refs: this.refs, decisions: this.decisions },
       maxWidth: '96vw',
       maxHeight: '90vh',
       autoFocus: false,
@@ -431,7 +472,7 @@ export class Titres {
     { key: 'index', label: "Selon l'indice retenu" },
   ];
 
-  protected readonly searchPool = computed(() => buildSearchPool(this.resSource() === 'index', this.selectedIndex(), this.indexMembers()));
+  protected readonly searchPool = computed(() => buildSearchPool(this.resSource() === 'index', this.selectedIndex()));
   protected readonly resStatusOptions = computed(() => buildResStatusOptions(this.searchPool(), this.decisions()));
 
   protected readonly searchRows = computed(() =>

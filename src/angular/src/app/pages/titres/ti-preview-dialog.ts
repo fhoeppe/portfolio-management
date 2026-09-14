@@ -1,4 +1,4 @@
-import { Component, HostBinding, WritableSignal, computed, inject } from '@angular/core';
+import { Component, HostBinding, WritableSignal, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,12 +6,20 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from '../../shell/theme.service';
-import { IndexDef, IndexMember } from './titres-data';
+import { IndexCompositionService } from '../../domain/index-composition.service';
+import { IndexDef } from './titres-data';
 import { computePreview } from './titres-filters';
+import { nextSort, sortHeaderView } from '../positions/positions-sort';
+
+/** Colonne qui range le tableau au repos : le nom, toujours. */
+const DEFAULT_SORT = 'composant';
+
+/** Comparaison des libellés : accents rangés comme en français, « 3i Group » avant « 30 ». */
+const cmp = (a: string, b: string): number =>
+  a.localeCompare(b, 'fr', { numeric: true, sensitivity: 'base' });
 
 export interface TiPreviewDialogData {
   readonly idx: IndexDef;
-  readonly indexMembers: WritableSignal<Readonly<Record<string, readonly IndexMember[]>>>;
   readonly refs: WritableSignal<ReadonlyMap<string, 'ok' | 'none'>>;
   readonly decisions: WritableSignal<ReadonlyMap<string, 'ok' | 'none'>>;
 }
@@ -37,14 +45,104 @@ export class TiPreviewDialog {
     return this.theme.mode();
   }
 
+  private readonly indexService = inject(IndexCompositionService);
+
   protected readonly idx = this.data.idx;
 
-  protected readonly previewColumns = ['composant', 'secteur', 'poids', 'bascule', 'statut'];
+  protected readonly previewColumns = ['composant', 'cotation', 'secteur', 'poids', 'bascule', 'statut'];
 
-  protected readonly preview = computed(() => {
-    const members = this.data.indexMembers()[this.idx.key] || this.idx.members;
-    return computePreview(this.idx, members, this.data.refs(), this.data.decisions());
+  /* La composition vient du référentiel et de lui seul : l'écran ne tient plus de copie locale
+     depuis que la source la fournit. */
+  private readonly members = computed(() => this.idx.members);
+
+  protected readonly preview = computed(() =>
+    computePreview(this.idx, this.members(), this.data.refs(), this.data.decisions()),
+  );
+
+  /* La composition vient du service, sur la liste effectivement chargée : c'est lui qui sait où
+     l'indice cote, de quel pays chaque composant est émis et ce que l'univers en connaît. La modale
+     se contentait du nom, du secteur et du poids. */
+  private readonly composition = computed(() => this.indexService.withMembers(this.idx.key, this.members()));
+
+  /** Place et devise de l'indice, pour l'en-tête — « plusieurs places » quand il en couvre plusieurs. */
+  protected readonly venue = computed(() => {
+    const c = this.composition();
+    if (!c) return '';
+    return `${c.mic ? c.mic + ' · ' : ''}${c.place} · ${c.currency}`;
   });
+
+  /** Ce que l'indice partage avec l'univers, en poids — l'information que la modale n'avait pas. */
+  protected readonly universeKpi = computed(() => {
+    const c = this.indexService.universeCoverage(this.idx.key);
+    if (!c.known) return { label: 'Part à l’univers', value: 'Aucun composant', color: 'var(--color-neutral-700)' };
+    return {
+      label: 'Part à l’univers',
+      value: `${c.knownWeight.toFixed(1).replace('.', ',')} % · ${c.known} valeur${c.known > 1 ? 's' : ''}`,
+      color: 'var(--ink-ok-2)',
+    };
+  });
+
+  /* Les lignes du tableau, complétées par ce que le service ajoute. L'appariement se fait par ISIN
+     et non par ticker : c'est le seul identifiant qui ne dépend pas de la place. */
+  protected readonly rows = computed(() => {
+    const byIsin = new Map((this.composition()?.components ?? []).map((c) => [c.isin, c]));
+    const rows = this.preview().rows.map((r) => {
+      const c = byIsin.get(r.isin);
+      /* La cotation s'écrit `MIC.Ticker` — `XPAR.TTE` : c'est la désignation d'usage d'une ligne
+         cotée, place puis code local, et elle est sans ambiguïté là où le seul ticker ne l'est pas
+         (`MC` désigne LVMH à Paris et McCormick à New York). Sans MIC — un indice réparti sur
+         plusieurs places n'en a pas — il ne reste que le ticker. */
+      const mic = c?.mic || '';
+      return {
+        ...r,
+        listing: mic ? `${mic}.${r.ticker}` : r.ticker,
+        flag: c?.flag ?? '',
+        country: c?.country ?? '',
+        inUniverse: !!c?.inUniverse,
+      };
+    });
+
+    const key = this.sortKey();
+    if (!key) return rows;
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    const of = (r: (typeof rows)[number]): string =>
+      key === 'cotation' ? r.listing : key === 'secteur' ? r.sector : key === 'statut' ? r.eligible : r.name;
+    /* Tri stable de repli sur le nom : deux lignes du même secteur ou du même statut gardent entre
+       elles l'ordre alphabétique, sinon elles se rangeraient dans l'ordre de la source — le poids —
+       et un même clic donnerait deux ordres différents selon l'indice. */
+    return [...rows].sort(
+      (a, b) => dir * cmp(of(a), of(b)) || cmp(a.name, b.name),
+    );
+  });
+
+  // -- Tri des colonnes -------------------------------------------------------------------------
+
+  /* Le tri démarre explicitement sur le nom, et non à `null` : l'en-tête se montrant actif dès
+     l'ouverture, un état interne vide aurait rendu le premier clic sans effet — il aurait posé le
+     tri croissant déjà en place au lieu de l'inverser. `null` reste le troisième temps du cycle,
+     qui rend la composition à son ordre par défaut, alphabétique lui aussi : une modale d'indice
+     sert à retrouver une valeur précise parmi cinq cents, l'ordre des noms est le seul repos. */
+  private readonly sortKey = signal<string | null>(DEFAULT_SORT);
+  private readonly sortDir = signal<'asc' | 'desc'>('asc');
+
+  protected sortHeader(key: string) {
+    /* La colonne du nom se montre active tant qu'aucune autre ne l'est, puisque c'est elle qui
+       range effectivement le tableau. */
+    const active = this.sortKey() ?? DEFAULT_SORT;
+    return sortHeaderView(active, this.sortDir(), key);
+  }
+
+  protected onSort(key: string): void {
+    const next = nextSort(this.sortKey(), this.sortDir(), key);
+    /* Le cycle habituel a trois temps — croissant, décroissant, sans tri — mais « sans tri » rend
+       ici la composition rangée par nom, c'est-à-dire exactement ce que donne le tri croissant sur
+       le nom. Laisser ce troisième temps sur cette colonne produirait un clic sans effet visible.
+       Elle bascule donc simplement entre croissant et décroissant ; les autres colonnes gardent les
+       trois temps, leur troisième clic ramenant au classement alphabétique. */
+    const idle = next.key === null && key === DEFAULT_SORT;
+    this.sortKey.set(idle ? DEFAULT_SORT : next.key);
+    this.sortDir.set(idle ? 'asc' : next.dir);
+  }
 
   protected close(): void {
     this.dialogRef.close();
@@ -63,7 +161,7 @@ export class TiPreviewDialog {
     const on = !p.allOn;
     this.data.refs.update((m) => {
       const next = new Map(m);
-      const members = this.data.indexMembers()[this.idx.key] || this.idx.members;
+      const members = this.idx.members;
       members.forEach((mem) => next.set(this.idx.key + '/' + mem.ticker, on ? 'ok' : 'none'));
       return next;
     });

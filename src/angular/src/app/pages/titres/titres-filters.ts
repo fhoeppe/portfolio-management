@@ -415,9 +415,9 @@ export const PLACE_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 
 // Résultats de recherche
 // ---------------------------------------------------------------------------
 
-export function buildSearchPool(fromIndex: boolean, idx: IndexDef, indexMembers: Readonly<Record<string, readonly IndexMember[]>>): readonly Security[] {
+export function buildSearchPool(fromIndex: boolean, idx: IndexDef): readonly Security[] {
   if (!fromIndex) return SECURITIES;
-  const members = indexMembers[idx.key] || idx.members;
+  const members = idx.members;
   return members.map(
     (m) =>
       SECURITIES.find((x) => x.ticker === m.ticker) || {
@@ -550,7 +550,6 @@ export function inCount(idx: IndexDef, members: readonly IndexMember[], refs: Re
 }
 
 export function buildIndexGroups(
-  indexMembers: Readonly<Record<string, readonly IndexMember[]>>,
   refs: ReadonlyMap<string, 'ok' | 'none'>,
   decisions: ReadonlyMap<string, 'ok' | 'none'>,
 ): readonly { readonly label: string; readonly items: readonly { readonly value: string; readonly label: string }[] }[] {
@@ -559,7 +558,7 @@ export function buildIndexGroups(
     items: INDICES.filter((i) => i.region === r)
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
       .map((i) => {
-        const members = indexMembers[i.key] || i.members;
+        const members = i.members;
         return { value: i.key, label: i.name + ' — ' + i.place + ' (' + inCount(i, members, refs, decisions) + '/' + members.length + ' retenus)' };
       }),
   }));
@@ -606,75 +605,34 @@ export function computePreview(idx: IndexDef, members: readonly IndexMember[], r
       { label: 'Retenus', value: elig.length + ' / ' + members.length, color: 'var(--ink-ok-2)' },
       { label: 'Poids retenu', value: weight ? weight.toFixed(1).replace('.', ',') + ' %' : 'Non communiqué', color: 'var(--ds-brand-fill, var(--ink-brand-2))' },
     ],
-    rows: members.map((m) => {
-      const r = ref(m);
-      const on = r === 'ok';
-      const st = posOf(m, on);
-      return {
-        name: m.name, ticker: m.ticker, isin: m.isin, sector: m.sector,
-        weight: m.weight ? m.weight.toFixed(1).replace('.', ',') + ' %' : '—',
-        eligible: st.label, posHint: st.hint, switchTitle: on ? "Retirer de l'univers" : "Retenir dans l'univers",
-        tagBg: st.bg, tagFg: st.fg, on,
-      };
-    }),
+    /* Toujours par nom, et jamais par poids : la source livre ses composants du plus lourd au plus
+       léger, ce qui est l'ordre d'un gérant mais pas celui d'un lecteur. Sur un indice de cinq cents
+       lignes on vient chercher une valeur précise, et seul l'ordre alphabétique permet de la
+       trouver. `localeCompare` en français pour que les accents se rangent où on les attend —
+       « Élis » avec les E — et `numeric` pour que « 3i Group » ne passe pas après « 30 ». */
+    rows: [...members]
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr', { numeric: true, sensitivity: 'base' }))
+      .map((m) => {
+        const r = ref(m);
+        const on = r === 'ok';
+        const st = posOf(m, on);
+        return {
+          name: m.name, ticker: m.ticker, isin: m.isin, sector: m.sector,
+          weight: m.weight ? m.weight.toFixed(1).replace('.', ',') + ' %' : '—',
+          eligible: st.label, posHint: st.hint, switchTitle: on ? "Retirer de l'univers" : "Retenir dans l'univers",
+          tagBg: st.bg, tagFg: st.fg, on,
+        };
+      }),
     allOn: elig.length === members.length,
     footer: 'Indice de ' + idx.count + ' valeurs · ' + members.length + ' composants listés · devise ' + idx.currency,
   };
 }
 
-const REFRESH_SECTORS: readonly string[] = ['Industrie', 'Finance', 'Technologie', 'Santé', 'Consommation courante', 'Consommation discrétionnaire', 'Énergie', 'Matériaux', 'Services aux collectivités', 'Communication'];
-const pad2 = (n: number) => String(n).padStart(2, '0');
-const stamp = (d: Date) => pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ', ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
-
-export interface RefreshResult {
-  readonly members: readonly IndexMember[];
-  readonly lastUpdate: string;
-  readonly indexAction: string;
-}
-
-/** Simule le rafraîchissement/complètement de la composition d'un indice — d'abord elle se
- * complète par lots de 12 tant qu'elle est incomplète, puis, une fois complète, elle ne fait
- * plus que dériver les pondérations (fidèle à `refresh()` de la source). */
-export function refreshIndex(idx: IndexDef, currentMembers: readonly IndexMember[]): RefreshResult {
-  const base = currentMembers;
-  if (base.length < idx.count) {
-    const missing = idx.count - base.length;
-    const batch = Math.min(missing, 12);
-    const added: IndexMember[] = [];
-    for (let n = 0; n < batch; n++) {
-      const rank = base.length + n + 1;
-      added.push({
-        name: idx.name + ' · composant ' + rank,
-        ticker: idx.key.toUpperCase().slice(0, 4) + rank,
-        isin: 'XX' + String(1000000000 + rank * 7919).slice(0, 10),
-        sector: REFRESH_SECTORS[rank % REFRESH_SECTORS.length],
-        weight: Math.max(0.1, Math.round((100 / idx.count) * 10) / 10),
-        cap: '—',
-        ref: 'none',
-      });
-    }
-    const next = [...base, ...added];
-    return {
-      members: next,
-      lastUpdate: stamp(new Date()),
-      indexAction: idx.name + ' : ' + next.length + ' / ' + idx.count + ' composants chargés' + (next.length < idx.count ? ' — relancez pour poursuivre.' : ' — composition complète.'),
-    };
-  }
-  const d = new Date();
-  const drift = base
-    .map((m, i) => {
-      const step = (((i * 37 + d.getMinutes() * 13 + d.getSeconds()) % 21) - 10) / 100;
-      const w = Math.max(0.1, Math.round(m.weight * (1 + step) * 10) / 10);
-      return { ...m, weight: w };
-    })
-    .sort((a, b) => b.weight - a.weight);
-  const moved = drift.filter((m, i) => base[i] && base[i].ticker !== m.ticker).length;
-  return {
-    members: drift,
-    lastUpdate: stamp(d),
-    indexAction: 'Composition ' + idx.name + ' rafraîchie : pondérations mises à jour' + (moved ? ', ' + moved + ' ligne(s) reclassée(s)' : '') + '.',
-  };
-}
+/* La simulation de rafraîchissement d'indice a été retirée d'ici. Elle complétait la composition
+   par lots de douze lignes fabriquées — « CAC 40 · composant 11 », ISIN `XX…` calculé — puis faisait
+   dériver les pondérations au hasard de l'heure. L'écran avait alors l'air complet sans l'être, et
+   un ISIN inventé désigne un autre titre ou aucun. Le bouton relit désormais la composition à la
+   source, via `IndexFeedService.reload()`. */
 
 // ---------------------------------------------------------------------------
 // Panneau latéral titre (Fiche / Évaluation)

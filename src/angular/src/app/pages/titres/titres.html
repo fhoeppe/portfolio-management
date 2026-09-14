@@ -74,8 +74,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-isin">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('isin').color" [style.font-weight]="uniSortHeader('isin').weight" [matTooltip]="uniSortHeader('isin').title" (click)="onUniSort('isin')">
                   ISIN
-                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('isin').opacity" [style.transform]="'rotate(' + uniSortHeader('isin').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="uniSortHeader('isin').opacity" [style.transform]="'rotate(' + uniSortHeader('isin').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -85,8 +85,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-ticker">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('ticker').color" [style.font-weight]="uniSortHeader('ticker').weight" [matTooltip]="uniSortHeader('ticker').title" (click)="onUniSort('ticker')">
                   Ticker
-                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('ticker').opacity" [style.transform]="'rotate(' + uniSortHeader('ticker').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="uniSortHeader('ticker').opacity" [style.transform]="'rotate(' + uniSortHeader('ticker').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -96,8 +96,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('name').color" [style.font-weight]="uniSortHeader('name').weight" [matTooltip]="uniSortHeader('name').title" (click)="onUniSort('name')">
                   Nom
-                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('name').opacity" [style.transform]="'rotate(' + uniSortHeader('name').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="uniSortHeader('name').opacity" [style.transform]="'rotate(' + uniSortHeader('name').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -107,8 +107,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-place">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('place').color" [style.font-weight]="uniSortHeader('place').weight" [matTooltip]="uniSortHeader('place').title" (click)="onUniSort('place')">
                   Place boursière
-                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('place').opacity" [style.transform]="'rotate(' + uniSortHeader('place').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="uniSortHeader('place').opacity" [style.transform]="'rotate(' + uniSortHeader('place').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -118,8 +118,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-currency">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('currency').color" [style.font-weight]="uniSortHeader('currency').weight" [matTooltip]="uniSortHeader('currency').title" (click)="onUniSort('currency')">
                   Devise
-                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('currency').opacity" [style.transform]="'rotate(' + uniSortHeader('currency').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="uniSortHeader('currency').opacity" [style.transform]="'rotate(' + uniSortHeader('currency').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -129,8 +129,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-status">
                 <button type="button" class="ti-sort-btn" [style.color]="uniSortHeader('status').color" [style.font-weight]="uniSortHeader('status').weight" [matTooltip]="uniSortHeader('status').title" (click)="onUniSort('status')">
                   Statut
-                  <span class="ti-sort-chevron" [style.opacity]="uniSortHeader('status').opacity" [style.transform]="'rotate(' + uniSortHeader('status').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="uniSortHeader('status').opacity" [style.transform]="'rotate(' + uniSortHeader('status').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -225,8 +225,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-isin">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('isin').color" [style.font-weight]="watchSortHeader('isin').weight" [matTooltip]="watchSortHeader('isin').title" (click)="onWatchSort('isin')">
                   ISIN
-                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('isin').opacity" [style.transform]="'rotate(' + watchSortHeader('isin').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="watchSortHeader('isin').opacity" [style.transform]="'rotate(' + watchSortHeader('isin').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -236,8 +236,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-ticker">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('ticker').color" [style.font-weight]="watchSortHeader('ticker').weight" [matTooltip]="watchSortHeader('ticker').title" (click)="onWatchSort('ticker')">
                   Ticker
-                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('ticker').opacity" [style.transform]="'rotate(' + watchSortHeader('ticker').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="watchSortHeader('ticker').opacity" [style.transform]="'rotate(' + watchSortHeader('ticker').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -247,8 +247,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('name').color" [style.font-weight]="watchSortHeader('name').weight" [matTooltip]="watchSortHeader('name').title" (click)="onWatchSort('name')">
                   Nom
-                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('name').opacity" [style.transform]="'rotate(' + watchSortHeader('name').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="watchSortHeader('name').opacity" [style.transform]="'rotate(' + watchSortHeader('name').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -258,8 +258,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-place">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('place').color" [style.font-weight]="watchSortHeader('place').weight" [matTooltip]="watchSortHeader('place').title" (click)="onWatchSort('place')">
                   Place boursière
-                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('place').opacity" [style.transform]="'rotate(' + watchSortHeader('place').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="watchSortHeader('place').opacity" [style.transform]="'rotate(' + watchSortHeader('place').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -269,8 +269,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-currency">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('currency').color" [style.font-weight]="watchSortHeader('currency').weight" [matTooltip]="watchSortHeader('currency').title" (click)="onWatchSort('currency')">
                   Devise
-                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('currency').opacity" [style.transform]="'rotate(' + watchSortHeader('currency').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="watchSortHeader('currency').opacity" [style.transform]="'rotate(' + watchSortHeader('currency').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -280,8 +280,8 @@
               <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-status">
                 <button type="button" class="ti-sort-btn" [style.color]="watchSortHeader('status').color" [style.font-weight]="watchSortHeader('status').weight" [matTooltip]="watchSortHeader('status').title" (click)="onWatchSort('status')">
                   Statut
-                  <span class="ti-sort-chevron" [style.opacity]="watchSortHeader('status').opacity" [style.transform]="'rotate(' + watchSortHeader('status').rotate + ')'">
-                    <mat-icon svgIcon="chevron-up" style="font-size:13px"></mat-icon>
+                  <span class="ti-sort-arrow" [style.opacity]="watchSortHeader('status').opacity" [style.transform]="'rotate(' + watchSortHeader('status').rotate + ')'">
+                    <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                   </span>
                 </button>
               </th>
@@ -364,16 +364,21 @@
                 <mat-icon svgIcon="eye" style="font-size:14px"></mat-icon>
                 Aperçu
               </button>
-              <button type="button" matIconButton [matTooltip]="refreshLabel()" (click)="refreshIndexAction()">
-                <mat-icon svgIcon="refresh" style="font-size:15px"></mat-icon>
-              </button>
             </div>
-            <p class="ti-index-updated">Dernière mise à jour de la liste : {{ lastUpdate() }}</p>
-            <div class="ti-panel-body-row">
-              <span class="ti-index-summary">{{ indexMembersCurrent().length }} / {{ selectedIndex().count }} composants chargés</span>
-              @if (indexAction()) {
-                <span class="ti-index-action">{{ indexAction() }}</span>
-              }
+            <p class="ti-index-updated">Composition : {{ indexOrigin() }}</p>
+            <!-- Trois lectures de la même composition, rendues par `IndexCompositionService` :
+                 où l'indice cote, ce que le référentiel en détaille, et ce qu'il partage avec notre
+                 univers d'investissement. -->
+            <div class="ti-panel-body-row ti-index-facts">
+              <span class="ti-index-fact">
+                <mat-icon svgIcon="globe" style="font-size:13px"></mat-icon>{{ indexIdentity() }}
+              </span>
+              <span class="ti-index-fact">
+                <mat-icon svgIcon="list" style="font-size:13px"></mat-icon>{{ indexCoverage() }}
+              </span>
+              <span class="ti-index-fact">
+                <mat-icon svgIcon="check-circle" style="font-size:13px"></mat-icon>{{ indexUniverse() }}
+              </span>
             </div>
           </div>
         }
@@ -486,8 +491,8 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-security">
                     <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('security').color" [style.font-weight]="resSortHeader('security').weight" [matTooltip]="resSortHeader('security').title" (click)="onResSort('security')">
                       Titre
-                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('security').opacity" [style.transform]="'rotate(' + resSortHeader('security').rotate + ')'">
-                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      <span class="ti-sort-arrow" [style.opacity]="resSortHeader('security').opacity" [style.transform]="'rotate(' + resSortHeader('security').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                       </span>
                     </button>
                   </th>
@@ -500,8 +505,8 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th">
                     <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('cls').color" [style.font-weight]="resSortHeader('cls').weight" [matTooltip]="resSortHeader('cls').title" (click)="onResSort('cls')">
                       Classe
-                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('cls').opacity" [style.transform]="'rotate(' + resSortHeader('cls').rotate + ')'">
-                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      <span class="ti-sort-arrow" [style.opacity]="resSortHeader('cls').opacity" [style.transform]="'rotate(' + resSortHeader('cls').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                       </span>
                     </button>
                   </th>
@@ -511,8 +516,8 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th">
                     <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('currency').color" [style.font-weight]="resSortHeader('currency').weight" [matTooltip]="resSortHeader('currency').title" (click)="onResSort('currency')">
                       Devise
-                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('currency').opacity" [style.transform]="'rotate(' + resSortHeader('currency').rotate + ')'">
-                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      <span class="ti-sort-arrow" [style.opacity]="resSortHeader('currency').opacity" [style.transform]="'rotate(' + resSortHeader('currency').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                       </span>
                     </button>
                   </th>
@@ -522,8 +527,8 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th">
                     <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('rating').color" [style.font-weight]="resSortHeader('rating').weight" [matTooltip]="resSortHeader('rating').title" (click)="onResSort('rating')">
                       Notation
-                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('rating').opacity" [style.transform]="'rotate(' + resSortHeader('rating').rotate + ')'">
-                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      <span class="ti-sort-arrow" [style.opacity]="resSortHeader('rating').opacity" [style.transform]="'rotate(' + resSortHeader('rating').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                       </span>
                     </button>
                   </th>
@@ -533,8 +538,8 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th">
                     <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('liquidity').color" [style.font-weight]="resSortHeader('liquidity').weight" [matTooltip]="resSortHeader('liquidity').title" (click)="onResSort('liquidity')">
                       Liquidité
-                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('liquidity').opacity" [style.transform]="'rotate(' + resSortHeader('liquidity').rotate + ')'">
-                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      <span class="ti-sort-arrow" [style.opacity]="resSortHeader('liquidity').opacity" [style.transform]="'rotate(' + resSortHeader('liquidity').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                       </span>
                     </button>
                   </th>
@@ -544,8 +549,8 @@
                   <th mat-header-cell *matHeaderCellDef class="ti-th">
                     <button type="button" class="ti-sort-btn" [style.color]="resSortHeader('status').color" [style.font-weight]="resSortHeader('status').weight" [matTooltip]="resSortHeader('status').title" (click)="onResSort('status')">
                       Statut
-                      <span class="ti-sort-chevron" [style.opacity]="resSortHeader('status').opacity" [style.transform]="'rotate(' + resSortHeader('status').rotate + ')'">
-                        <mat-icon svgIcon="sort" style="font-size:14px"></mat-icon>
+                      <span class="ti-sort-arrow" [style.opacity]="resSortHeader('status').opacity" [style.transform]="'rotate(' + resSortHeader('status').rotate + ')'">
+                        <mat-icon svgIcon="sort" style="font-size:13px"></mat-icon>
                       </span>
                     </button>
                   </th>
