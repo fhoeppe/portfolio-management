@@ -161,7 +161,7 @@ const ACCOUNTING_TOPIC: GuideTopic = {
           ['26/08 — paiement', '5120', 'Encaissement sur le compte espèces', '154,00', '—'],
           ['', '4670', 'Extinction de la créance', '—', '154,00'],
         ],
-        note: 'Un dividende optionnel ne change rien à ces deux lignes : le choix du porteur ne porte que sur la façon d’éteindre la créance, en titres ou en espèces.',
+        note: 'La retenue suppose une détention en compte-titres ordinaire : logé dans un PEA, le même dividende est exonéré tant qu’il reste dans l’enveloppe, la ligne 4487 disparaît et le net encaissé égale le brut. Un dividende optionnel, lui, ne change rien à ces écritures : le choix du porteur ne porte que sur la façon d’éteindre la créance, en titres ou en espèces.',
       },
     },
     {
@@ -180,6 +180,85 @@ const ACCOUNTING_TOPIC: GuideTopic = {
         ],
         totalRow: true,
         note: 'Le résultat de la cession est net des frais (143,00 − 2,96) ; celui de l’achat ne porte que ses frais, la ligne restant au bilan.',
+      },
+    },
+    {
+      heading: 'Les comptes mouvementés, un par un',
+      body:
+        "Neuf comptes suffisent à écrire les trois événements. Quatre sont des comptes de bilan qui ne font que porter une position ou une créance dans l’attente du dénouement ; trois sont des comptes de résultat, qui décident de ce que l’exercice gagne ou perd ; le compte espèces enregistre le mouvement réel. Le sens rappelé ici est celui de l’augmentation : un compte d’actif augmente au débit, un compte de passif ou de produit au crédit.",
+      table: {
+        caption: 'Plan de comptes employé',
+        columns: ['Compte', 'Intitulé', 'Nature', 'Ce qu’il porte ici', 'Augmente'],
+        align: ['left', 'left', 'left', 'left', 'left'],
+        rows: [
+          ['3010', 'Titres — actions', 'Actif', 'La ligne de titres, à son prix de revient', 'Débit'],
+          ['4487', 'Retenue à la source récupérable', 'Actif', 'L’impôt prélevé à l’étranger, à réclamer', 'Débit'],
+          ['4640', 'Dettes sur acquisitions de titres', 'Passif', 'Un achat négocié, pas encore réglé', 'Crédit'],
+          ['4650', 'Créances sur cessions de titres', 'Actif', 'Une vente négociée, pas encore réglée', 'Débit'],
+          ['4670', 'Compte de liaison dépositaire', 'Actif', 'Ce que le dépositaire doit — ici le dividende', 'Débit'],
+          ['5120', 'Banque — compte espèces', 'Actif', 'La trésorerie réellement disponible', 'Débit'],
+          ['6270', 'Frais de transaction', 'Charge', 'Commissions et taxes de la place', 'Débit'],
+          ['7620', 'Résultat de cession', 'Produit', 'L’écart entre prix de vente et prix de revient', 'Crédit'],
+          ['7630', 'Revenus de participations', 'Produit', 'Le dividende brut, avant impôt', 'Crédit'],
+        ],
+        note: 'Les comptes 464, 465 et 467 sont transitoires : ils naissent à la négociation et meurent au règlement. Si l’un d’eux subsiste après la date de dénouement, c’est un suspens à traiter, pas une écriture à conserver.',
+      },
+    },
+    {
+      heading: 'Ce que le client voit, lui, sur son compte',
+      body:
+        "Le client ne lit pas un journal : il lit deux relevés — ses espèces et son portefeuille. Le débit et le crédit y disparaissent au profit d’un sens de mouvement, et surtout d’une date : celle où l’argent est effectivement là. Les trois événements portent sur deux de ses comptes, le PEA tenu chez Bourse Direct et le compte-titres ordinaire tenu chez Degiro ; aucun montant ne circule entre les deux.",
+      table: {
+        caption: 'Relevé des espèces — ce qui bouge, et quand',
+        columns: ['Date', 'Compte du client', 'Libellé du relevé', 'Mouvement'],
+        align: ['left', 'left', 'left', 'right'],
+        rows: [
+          ['20/08', 'PEA — Bourse Direct', 'Dividende L’Oréal détaché — en attente de paiement', '—'],
+          ['26/08', 'PEA — Bourse Direct', 'Dividende L’Oréal, net de retenue', '+154,00'],
+          ['02/09', 'PEA — Bourse Direct', 'Vente 10 LVMH — négociée, règlement le 08/09', '—'],
+          ['03/09', 'CTO — Degiro', 'Achat 20 Apple — négocié, règlement le 07/09', '—'],
+          ['07/09', 'CTO — Degiro', 'Achat 20 Apple, frais et taxes inclus', '−3 013,80'],
+          ['08/09', 'PEA — Bourse Direct', 'Vente 10 LVMH, nette de frais', '+1 520,04'],
+        ],
+        note: 'Les trois lignes sans montant sont celles que le client voit arriver avant d’en voir l’effet : l’opération est faite, l’argent n’est pas encore là. C’est ce que l’application appelle le solde projeté — le solde du compte augmenté de ce qui est à recevoir et diminué de ce qui est à régler.',
+      },
+    },
+    {
+      heading: 'Et sur son portefeuille',
+      body:
+        "La ligne de titres, elle, bouge dès la négociation : le client est propriétaire le jour de l’ordre exécuté, même si le règlement suit deux jours plus tard. C’est la raison d’être du suspens — sans lui, le patrimoine paraîtrait amputé entre les deux dates.",
+      table: {
+        caption: 'Positions avant et après',
+        columns: ['Titre', 'Compte', 'Avant', 'Mouvement', 'Après', 'Prix de revient'],
+        align: ['left', 'left', 'right', 'right', 'right', 'right'],
+        rows: [
+          ['MC — LVMH', 'PEA — Bourse Direct', '25', '−10 le 02/09', '15', '138,00'],
+          ['AAPL — Apple', 'CTO — Degiro', '0', '+20 le 03/09', '20', '150,00'],
+          ['OR — L’Oréal', 'PEA — Bourse Direct', '100', 'inchangé', '100', 'inchangé'],
+        ],
+        note: 'Le dividende ne touche pas la ligne : il rémunère la détention, il ne la modifie pas. Seul un dividende optionnel servi en titres viendrait augmenter la quantité.',
+      },
+    },
+    {
+      heading: 'Le client voit-il ces comptes ? Non — il en voit les effets',
+      body:
+        "Aucun numéro de compte comptable n’apparaît dans un espace client. Le plan de comptes est l’outil du teneur de compte ; le client, lui, reçoit des documents — relevé de portefeuille, relevé d’espèces, avis d’opéré, relevé de frais, imprimé fiscal — dont chaque chiffre sort pourtant de ces comptes. Le tableau ci-dessous fait la correspondance dans ce sens : ce qui est écrit d’un côté, ce qui est lu de l’autre.",
+      table: {
+        caption: 'Du compte comptable au document du client',
+        columns: ['Compte', 'Ce qui y est écrit', 'Ce que le client lit', 'Sur quel document'],
+        align: ['left', 'left', 'left', 'left'],
+        rows: [
+          ['3010', 'Ligne de titres au prix de revient', '« 15 LVMH · prix de revient 138,00 € »', 'Relevé de portefeuille'],
+          ['4650', 'Créance sur cession, 1 520,04', '« Vente 10 LVMH — règlement le 08/09 »', 'Opérations en cours, solde projeté'],
+          ['4640', 'Dette d’acquisition, 3 013,80', '« Achat 20 Apple — règlement le 07/09 »', 'Opérations en cours, solde projeté'],
+          ['4670', 'Dividende à recevoir, 154,00', '« Dividende détaché, paiement le 26/08 »', 'Opérations à venir'],
+          ['5120', 'Encaissements et décaissements', 'Le solde et les mouvements datés', 'Relevé d’espèces'],
+          ['6270', 'Frais et taxes, 2,96 puis 13,80', '« Courtage 12,00 € · taxes 1,80 € »', 'Avis d’opéré, relevé de frais'],
+          ['7620', 'Résultat de cession, 143,00', '« Plus-value réalisée +143,00 € »', 'Relevé de performance, imprimé fiscal'],
+          ['7630', 'Dividende brut, 220,00', '« Dividende brut 220,00 € »', 'Avis d’opéré, imprimé fiscal'],
+          ['4487', 'Retenue récupérable, 66,00', '« Retenue à la source 66,00 € »', 'Avis d’opéré, imprimé fiscal'],
+        ],
+        note: 'Un même montant porte deux noms selon le lecteur : ce que la comptabilité appelle 4650 est, pour le client, « une vente réglée le 08/09 ». C’est la même information, nommée par ce qu’elle produit plutôt que par où elle est rangée.',
       },
     },
     {

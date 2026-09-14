@@ -296,6 +296,17 @@ export class Comptes {
   );
   protected readonly opColsValue = computed(() => opCols(this.currentStep().fields));
   protected readonly opRowGapValue = computed(() => opRowGap(this.currentStep().fields));
+  /* Repère d'étape porté par la grille, pour les rares réglages qui ne valent que sur l'une
+     d'elles — la largeur du statut à l'étape de contrôle. Déduit des champs plutôt que du titre :
+     un intitulé se réécrit, la composition d'une étape non. */
+  protected readonly opStepKey = computed(() => {
+    const f = this.currentStep().fields;
+    if (f.includes('lastName')) return 'titulaires';
+    if (f.includes('kycId')) return 'kyc';
+    if (f.includes('broker')) return 'compte-titre';
+    if (f.includes('closed')) return 'controle';
+    return 'autre';
+  });
   protected labelIcon(key: string): string {
     return FIELD_ICONS[key] || '';
   }

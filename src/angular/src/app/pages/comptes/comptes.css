@@ -666,8 +666,18 @@
   font-weight: 600;
   color: var(--color-neutral-700);
 }
+/* Champ isolé, hors grille : sa largeur est bornée pour ne pas s'étirer sur toute la rangée. La
+   moitié de l'ancienne borne suffit — « Statut du compte » ne montre qu'une pastille et son
+   commentaire court, un contrôle de 420px pour « Projet » donnait à la ligne un poids qu'elle
+   n'a pas. */
 .ac-field-standalone {
-  max-width: 420px;
+  max-width: 210px;
+}
+
+/* À l'étape de contrôle, le statut se réduit à sa pastille : la fermeture est la seule saisie de
+   la rangée, et un contrôle en lecture large de 870px à côté d'elle déséquilibrait l'étape. */
+.ac-fields-grid[data-step='controle'] .ac-field[data-field='status'] {
+  max-width: 210px;
 }
 
 /* La civilité tient en un mot : lui laisser toute une colonne dilate un contrôle qui n'affiche
@@ -937,14 +947,21 @@
 
 /* ---- Tableau des comptes de liquidité ------------------------------------ */
 
+/* Une seule définition de colonnes pour l'en-tête et les lignes : deux gabarits écrits côte à côte
+   finissent par diverger, et la colonne de devise se décale d'un pixel sous son intitulé.
+   La dernière colonne est un vide : elle absorbe la largeur restante pour que les trois champs
+   occupent environ quatre cinquièmes de la rangée au lieu de la totalité — un IBAN et une devise
+   étirés sur 1 100px se lisent moins bien qu'à leur largeur utile. Les proportions entre les trois,
+   elles, ne bougent pas. */
 .ac-cash-table {
+  --ac-cash-cols: minmax(0, 1.25fr) minmax(0, 1.4fr) minmax(0, 0.62fr) 30px minmax(0, 0.8fr);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .ac-cash-table-head {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.4fr) minmax(0, 0.62fr) 30px;
+  grid-template-columns: var(--ac-cash-cols);
   gap: 10px;
   align-items: center;
   padding: 0 0 4px;
@@ -962,7 +979,7 @@
 }
 .ac-cash-table-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.4fr) minmax(0, 0.62fr) 30px;
+  grid-template-columns: var(--ac-cash-cols);
   gap: 10px;
   align-items: center;
   padding: 2px 0;

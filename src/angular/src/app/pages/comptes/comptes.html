@@ -177,7 +177,7 @@
               </div>
             }
 
-            <div class="ac-fields-grid" [style.--ac-cols]="opColsValue()" [style.--ac-rowgap]="opRowGapValue()">
+            <div class="ac-fields-grid" [attr.data-step]="opStepKey()" [style.--ac-cols]="opColsValue()" [style.--ac-rowgap]="opRowGapValue()">
               @for (f of opFields(); track f.key) {
                 <label class="ac-field" [attr.data-field]="f.key" [style.--ac-span]="f.span">
                   <span class="ac-field-label">

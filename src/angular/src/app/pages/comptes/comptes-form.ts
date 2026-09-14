@@ -368,7 +368,10 @@ function statusSpan(isTitulaires: boolean, isKyc: boolean, isAccount: boolean, h
   if (isTitulaires) return SPAN_TITULAIRES['status'];
   if (isKyc) return SPAN_KYC['status'];
   if (isAccount) return SPAN_ACCOUNT['status'];
-  return hasOpened ? 'auto' : '1 / -1';
+  /* Une seule colonne, et non la rangée entière : le statut n'affiche qu'une pastille — « Projet »,
+     « Actif » — suivie d'une phrase d'aide. L'étaler sur toute la largeur lui donnait le poids d'un
+     champ de saisie, qu'il n'est pas. */
+  return 'auto';
 }
 
 /** Porté de `mapField` — construit la description de rendu d'un champ dynamique pour
@@ -581,7 +584,14 @@ export function opRowGap(stepFields: readonly string[]): string {
 }
 
 export function opCols(stepFields: readonly string[]): string {
-  if (stepFields.includes('lastName') || stepFields.includes('kycId') || stepFields.includes('broker')) {
+  /* KYC : les deux premières colonnes portent la nature du document — un libellé court, « Pièce
+     d'identité », « Origine des fonds » — là où les quatre suivantes portent numéro, émetteur et
+     dates. Les rendre plus étroites que les autres donne aux attributs la place qui leur manquait,
+     sans quoi la colonne de gauche occupait le tiers de la rangée pour deux mots. */
+  if (stepFields.includes('kycId')) {
+    return 'repeat(2, minmax(0,0.72fr)) repeat(4, minmax(0,1fr))';
+  }
+  if (stepFields.includes('lastName') || stepFields.includes('broker')) {
     return 'repeat(6, minmax(0,1fr))';
   }
   if (stepFields.length === 3) return 'repeat(3, minmax(0,1fr))';
