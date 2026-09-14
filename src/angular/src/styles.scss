@@ -1058,3 +1058,23 @@ table.mat-mdc-table th.mat-mdc-header-cell {
   text-align: left;
   line-height: 1.45;
 }
+
+/* Icône du titre de page, sur les douze écrans de la section Gestion.
+   Déclarée ici et non dans chaque feuille d'écran : les h1 ont douze classes différentes
+   (`ti-h1`, `tx-h1`, `pm-h1`…) et douze tailles de titre, mais une seule règle d'alignement.
+   `1em` et `currentColor` font suivre l'icône : elle grandit et se teinte avec son titre,
+   quel que soit l'écran, sans qu'aucun réglage ne soit à reprendre page par page. */
+.pm-h1-icon {
+  width: 1em;
+  height: 1em;
+  font-size: 0.82em;
+  margin-right: 0.42em;
+  vertical-align: -0.07em;
+  color: currentColor;
+  flex: none;
+}
+
+h1:has(> .pm-h1-icon) {
+  display: flex;
+  align-items: center;
+}
