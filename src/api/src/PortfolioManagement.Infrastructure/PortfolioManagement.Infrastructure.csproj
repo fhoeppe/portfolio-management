@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../PortfolioManagement.Domain/PortfolioManagement.Domain.csproj" />
+  </ItemGroup>
+
+  <!-- Le catalogue d'amorçage voyage dans l'assembly : aucun fichier à déposer à côté du binaire
+       pour que l'API réponde quelque chose. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Seed/securities.seed.json" />
+    <EmbeddedResource Include="Seed/indices.seed.json" />
+  </ItemGroup>
+
+</Project>

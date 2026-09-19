@@ -24,6 +24,14 @@
   --ink-4338ca: #4338ca;
   --ink-e6ebf5: #e6ebf5;
   --ink-6b5d3f: #6b5d3f;
+
+  /* Fond du panneau et surface des blocs. Les deux vont ensemble : un fond sans surface
+     laisserait les cartes en creux, une surface sans fond ne se verrait pas. Valeurs en dur
+     plutôt que `var(--color-neutral-100)` — ces jetons sont déclarés par `app-side-panel`, qui
+     est ici un descendant : ils ne remontent pas jusqu'à cet hôte. */
+  --pm-panel-ground: #f7f6f5;
+  --pm-block-surface: #ffffff;
+  --pm-block-edge: rgba(29, 27, 26, 0.10);
 }
 
 :host([data-theme='dark']) {
@@ -39,6 +47,12 @@
   --ink-4338ca: #978dff;
   --ink-e6ebf5: #cbced3;
   --ink-6b5d3f: #ffffd3;
+
+  /* En sombre la surface est plus claire que le fond. L'écart entre les deux doit rester lisible :
+     #141313 contre #1d1b1a ne se distinguait quasiment pas, et les cartes se recollaient. */
+  --pm-panel-ground: #0e0d0d;
+  --pm-block-surface: #262423;
+  --pm-block-edge: rgba(0, 0, 0, 0.45);
 }
 
 /* -- Sous-onglets (Ordre/Exécution ↔ Jambes ; Initiation ↔ Jambes impactées) --------------
@@ -77,6 +91,26 @@
   background: rgba(11, 95, 87, 0.14);
   color: var(--ink-ok);
   font-weight: 700;
+}
+
+/**
+ * Le panneau d'onglets reprend la colonne que le corps du panneau avait ouverte.
+ *
+ * `app-side-panel` dispose son contenu en `flex column` avec un `gap`, mais Ordre et Transfert
+ * glissent un `mat-tab-nav-panel` entre les deux : un `display:block` qui devient l'unique enfant
+ * flex, et sous lequel le `gap` ne passe plus. Les blocs — type d'opération, encadré, sections —
+ * s'y retrouvaient bord à bord, à 0 px, alors que les trois autres formulaires, qui posent leurs
+ * blocs directement dans le corps, étaient correctement espacés.
+ *
+ * Le `gap` est repris du corps de panneau plutôt que réécrit : les quatre formulaires doivent
+ * respirer pareil, et deux valeurs pour un même espacement finiraient par diverger.
+ */
+mat-tab-nav-panel {
+  display: flex;
+  flex-direction: column;
+  /* Repli explicite : la variable vient d'un composant voisin, et un panneau monté hors de
+     `app-side-panel` ne doit pas retomber à zéro sans prévenir. */
+  gap: var(--pm-panel-gap, 18px);
 }
 
 .pm-field-block {
@@ -132,12 +166,20 @@
   text-wrap: pretty;
 }
 
+/**
+ * L'ombre n'est pas un ornement : c'est elle qui fait tenir la séparation quand le fond et la
+ * surface se ressemblent — en thème sombre surtout, où les deux sont proches du noir. Le fond du
+ * corps détache les cartes, l'ombre en dessine le bord ; l'un sans l'autre laisse deux cartes
+ * voisines se lire comme une seule.
+ */
 .pm-section {
   display: flex;
   flex-direction: column;
   gap: 0;
+  background: var(--pm-block-surface);
   border: 1px solid var(--color-neutral-300);
   border-radius: 6px;
+  box-shadow: 0 1px 3px var(--pm-block-edge);
   flex: none;
 }
 
@@ -154,6 +196,26 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+/**
+ * Corps d'une section qui empile ses champs, là où `.pm-order-grid` les range en trois colonnes.
+ *
+ * Écart plus serré que les 12 px des deux autres corps de section, et c'est voulu : eux répartissent
+ * leurs champs sur plusieurs colonnes, donc peu de rangs ; celui-ci les empile tous, et six rangs
+ * à 12 px étirent la carte au point qu'on ne la lit plus d'un regard. Le retrait, lui, reste le
+ * même — c'est la marge de la carte, pas le rythme interne.
+ */
+.pm-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+}
+
+/* Les rangs à deux champs suivent le même resserrement vertical quand ils passent à la ligne. */
+.pm-section-body > .pm-row-2 {
+  row-gap: 8px;
 }
 
 .pm-order-grid {
@@ -361,8 +423,10 @@
 }
 
 .pm-legs-block {
+  background: var(--pm-block-surface);
   border: 1px solid var(--color-neutral-200);
   border-radius: 8px;
+  box-shadow: 0 1px 3px var(--pm-block-edge);
   overflow: hidden;
 }
 

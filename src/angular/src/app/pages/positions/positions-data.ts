@@ -71,27 +71,27 @@ function mk(
 
 // Encours calibrés sur Comptes / Tableau de bord : BGM-004 486,2 M€, INP-011 212,7 M€, BGM-002 94,5 M€.
 export const POS: readonly Position[] = [
-  mk('BGM-004', 'GLBEQ', 'Global Equity Index', 'LU1234567890', 'Actions', 'Mondial', 'EUR', 96.4, 1019.6, 0.875, 128, 198, '11/02/2026', 'Dépositaire LU'),
-  mk('BGM-004', 'USLC', 'US Large Cap Core', 'IE00B1234567', 'Actions', 'Amérique du Nord', 'USD', 78.9, 44.1, 0.882, 84, 62, '11/02/2026', 'Dépositaire LU'),
+  mk('BGM-004', 'GLBEQ', 'Global Equity Index', 'LU1234567896', 'Actions', 'Mondial', 'EUR', 96.4, 1019.6, 0.875, 128, 198, '11/02/2026', 'Dépositaire LU'),
+  mk('BGM-004', 'USLC', 'US Large Cap Core', 'IE00B1234566', 'Actions', 'Amérique du Nord', 'USD', 78.9, 44.1, 0.882, 84, 62, '11/02/2026', 'Dépositaire LU'),
   mk('BGM-004', 'EUEQ', 'Europe ex-UK Equity', 'LU2345678901', 'Actions', 'Europe', 'EUR', 41.2, 225.1, 0.995, 0, 41, '11/02/2026', 'Dépositaire LU'),
-  mk('BGM-004', 'EMEQ', 'EM Equity Sleeve', 'LU4567890123', 'Actions', 'Émergents', 'USD', 27.6, 1000.0, 1.042, -38, 18, '11/02/2026', 'Dépositaire LU'),
+  mk('BGM-004', 'EMEQ', 'EM Equity Sleeve', 'LU4567890125', 'Actions', 'Émergents', 'USD', 27.6, 1000.0, 1.042, -38, 18, '11/02/2026', 'Dépositaire LU'),
   mk('BGM-004', 'REIT', 'Listed Real Estate', 'LU7890123456', 'Actions', 'Europe', 'EUR', 19.8, 521.0, 1.040, -14, 74, '22/01/2026', 'Dépositaire LU'),
-  mk('BGM-004', 'TSY10', 'Treasury 7–10 ans ETF', 'US912828XX12', 'Obligataire', 'Amérique du Nord', 'USD', 58.1, 100.2, 0.982, 0, 412, '11/02/2026', 'Dépositaire LU'),
-  mk('BGM-004', 'IGCRD', 'IG Corporate Bond', 'XS1234567890', 'Obligataire', 'Europe', 'EUR', 43.7, 100.0, 0.968, 12, 284, '11/02/2026', 'Dépositaire LU'),
+  mk('BGM-004', 'TSY10', 'Treasury 7–10 ans ETF', 'US912828XX18', 'Obligataire', 'Amérique du Nord', 'USD', 58.1, 100.2, 0.982, 0, 412, '11/02/2026', 'Dépositaire LU'),
+  mk('BGM-004', 'IGCRD', 'IG Corporate Bond', 'XS1234567896', 'Obligataire', 'Europe', 'EUR', 43.7, 100.0, 0.968, 12, 284, '11/02/2026', 'Dépositaire LU'),
   mk('BGM-004', 'EUBND', 'Euro Aggregate Bond', 'LU8901234567', 'Obligataire', 'Europe', 'EUR', 16.5, 98.6, 0.975, 0, 96, '11/02/2026', 'Dépositaire LU'),
-  mk('BGM-004', 'PRVE', 'Private Equity Co-invest', 'LU5678901234', 'Alternatifs', 'Mondial', 'EUR', 31.5, 1000.0, 0.920, 0, 0, '30/06/2025', 'Dépositaire LU'),
-  mk('BGM-004', 'INFRA', 'Infrastructure Fund II', 'LU3456789012', 'Alternatifs', 'Europe', 'EUR', 29.4, 1240.0, 0.952, 0, 96, '30/06/2025', 'Dépositaire LU'),
+  mk('BGM-004', 'PRVE', 'Private Equity Co-invest', 'LU5678901230', 'Alternatifs', 'Mondial', 'EUR', 31.5, 1000.0, 0.920, 0, 0, '30/06/2025', 'Dépositaire LU'),
+  mk('BGM-004', 'INFRA', 'Infrastructure Fund II', 'LU3456789018', 'Alternatifs', 'Europe', 'EUR', 29.4, 1240.0, 0.952, 0, 96, '30/06/2025', 'Dépositaire LU'),
   mk('BGM-004', 'EUR', 'Trésorerie EUR', '—', 'Trésorerie', 'Europe', 'EUR', 43.1, 1, 1, 0, 84, '11/02/2026', 'Compte courant'),
 
-  mk('INP-011', 'IGCRD', 'IG Corporate Bond', 'XS1234567890', 'Obligataire', 'Europe', 'EUR', 130.2, 100.0, 0.968, 8, 642, '04/09/2023', 'Dépositaire LU'),
-  mk('INP-011', 'GLBEQ', 'Global Equity Index', 'LU1234567890', 'Actions', 'Mondial', 'EUR', 60.4, 1019.6, 0.902, 24, 124, '04/09/2023', 'Dépositaire LU'),
-  mk('INP-011', 'INFRA', 'Infrastructure Fund II', 'LU3456789012', 'Alternatifs', 'Europe', 'EUR', 8.7, 1240.0, 0.968, 0, 28, '30/06/2025', 'Dépositaire LU'),
+  mk('INP-011', 'IGCRD', 'IG Corporate Bond', 'XS1234567896', 'Obligataire', 'Europe', 'EUR', 130.2, 100.0, 0.968, 8, 642, '04/09/2023', 'Dépositaire LU'),
+  mk('INP-011', 'GLBEQ', 'Global Equity Index', 'LU1234567896', 'Actions', 'Mondial', 'EUR', 60.4, 1019.6, 0.902, 24, 124, '04/09/2023', 'Dépositaire LU'),
+  mk('INP-011', 'INFRA', 'Infrastructure Fund II', 'LU3456789018', 'Alternatifs', 'Europe', 'EUR', 8.7, 1240.0, 0.968, 0, 28, '30/06/2025', 'Dépositaire LU'),
   mk('INP-011', 'EUR', 'Trésorerie EUR', '—', 'Trésorerie', 'Europe', 'EUR', 13.4, 1, 1, 0, 32, '04/09/2023', 'Compte courant'),
 
-  mk('BGM-002', 'GLBEQ', 'Global Equity Index', 'LU1234567890', 'Actions', 'Mondial', 'EUR', 31.4, 1019.6, 0.889, 12, 64, '19/06/2024', 'Dépositaire LU'),
-  mk('BGM-002', 'USLC', 'US Large Cap Core', 'IE00B1234567', 'Actions', 'Amérique du Nord', 'USD', 18.5, 44.1, 0.874, 6, 21, '19/06/2024', 'Dépositaire LU'),
-  mk('BGM-002', 'IGCRD', 'IG Corporate Bond', 'XS1234567890', 'Obligataire', 'Europe', 'EUR', 31.6, 100.0, 0.972, 0, 148, '19/06/2024', 'Dépositaire LU'),
-  mk('BGM-002', 'INFRA', 'Infrastructure Fund II', 'LU3456789012', 'Alternatifs', 'Europe', 'EUR', 8.1, 1240.0, 0.960, 0, 26, '30/06/2025', 'Dépositaire LU'),
+  mk('BGM-002', 'GLBEQ', 'Global Equity Index', 'LU1234567896', 'Actions', 'Mondial', 'EUR', 31.4, 1019.6, 0.889, 12, 64, '19/06/2024', 'Dépositaire LU'),
+  mk('BGM-002', 'USLC', 'US Large Cap Core', 'IE00B1234566', 'Actions', 'Amérique du Nord', 'USD', 18.5, 44.1, 0.874, 6, 21, '19/06/2024', 'Dépositaire LU'),
+  mk('BGM-002', 'IGCRD', 'IG Corporate Bond', 'XS1234567896', 'Obligataire', 'Europe', 'EUR', 31.6, 100.0, 0.972, 0, 148, '19/06/2024', 'Dépositaire LU'),
+  mk('BGM-002', 'INFRA', 'Infrastructure Fund II', 'LU3456789018', 'Alternatifs', 'Europe', 'EUR', 8.1, 1240.0, 0.960, 0, 26, '30/06/2025', 'Dépositaire LU'),
   mk('BGM-002', 'EUR', 'Trésorerie EUR', '—', 'Trésorerie', 'Europe', 'EUR', 4.9, 1, 1, 0, 11, '19/06/2024', 'Compte courant'),
 ];
 

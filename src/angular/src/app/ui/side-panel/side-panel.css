@@ -165,14 +165,38 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+/**
+ * Espacement entre les blocs du panneau, publié en variable.
+ *
+ * Le contenu projeté en a besoin : un formulaire qui interpose un conteneur — le panneau d'onglets
+ * d'Ordre et de Transfert, par exemple — interrompt la colonne flex et doit rouvrir la même, avec
+ * la même valeur. La lire ici plutôt que la recopier garde une seule définition de l'écart.
+ *
+ * 18 px et non 14 : les blocs portent bordure, en-tête teinté et fond, et à 14 px deux cartes
+ * voisines se lisaient comme une seule.
+ */
+.pm-panel {
+  --pm-panel-gap: 18px;
+}
+
+/**
+ * `--pm-panel-ground` : fond du corps, transparent par défaut.
+ *
+ * Un formulaire dont les blocs portent leur propre surface peut le teinter, et ses cartes se
+ * détachent alors du panneau. Sans cela, un bloc sans fond propre est blanc sur blanc : l'écart
+ * qui les sépare est bien là, mais rien ne le donne à voir, et deux cartes voisines se lisent
+ * comme une seule. C'est au contenu d'en décider — les six panneaux de l'application ne posent
+ * pas tous des cartes, et teinter d'office laisserait les autres sur un fond sans objet.
+ */
 .pm-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--pm-panel-gap);
   padding: 16px;
+  background: var(--pm-panel-ground, transparent);
 }
 
 .pm-body-flush {

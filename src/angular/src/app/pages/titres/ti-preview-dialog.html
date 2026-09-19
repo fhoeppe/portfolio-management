@@ -78,7 +78,7 @@
           <mat-slide-toggle [checked]="preview().allOn" [matTooltip]="preview().allOn ? 'Désélectionner tous les composants' : 'Sélectionner tous les composants'" (change)="toggleAll()"></mat-slide-toggle>
         </th>
         <td mat-cell *matCellDef="let r">
-          <mat-slide-toggle [checked]="r.on" [matTooltip]="r.switchTitle" (change)="toggleRow(r.ticker, r.on)"></mat-slide-toggle>
+          <mat-slide-toggle [checked]="r.on" [disabled]="r.locked" [matTooltip]="r.switchTitle" (change)="toggleRow(r.ticker, r.on)"></mat-slide-toggle>
         </td>
       </ng-container>
       <ng-container matColumnDef="statut">
@@ -104,7 +104,7 @@
 
   <div class="ti-pv-footer">
     <span class="ti-pv-footer-note">{{ preview().footer }}</span>
-    <button type="button" mat-flat-button class="ti-pv-load-btn" (click)="close()">Charger dans la liste</button>
+    <button type="button" mat-flat-button class="ti-pv-load-btn" (click)="load()">Charger dans la liste</button>
     <button type="button" mat-stroked-button class="ti-pv-close-btn" (click)="close()">Fermer</button>
   </div>
 </div>

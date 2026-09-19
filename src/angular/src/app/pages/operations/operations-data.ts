@@ -167,6 +167,32 @@ export const ACCOUNTS_LIST: readonly AccountRef[] = [
 ];
 export const ACCOUNTS: readonly string[] = ACCOUNTS_LIST.map((a) => a.value);
 
+/** L'établissement teneur du compte — c'est `label`, le reste du libellé nommant l'enveloppe. */
+export function accountBroker(account: string): string {
+  return ACCOUNTS_LIST.find((a) => a.value === account)?.label ?? '';
+}
+
+/**
+ * Les autres comptes ouverts chez le même établissement.
+ *
+ * C'est le périmètre d'un virement d'espèces : la trésorerie se déplace à l'intérieur d'un
+ * teneur de compte, pas de l'un à l'autre — un mouvement entre deux établissements passe par
+ * un compte bancaire externe, et relève alors du retrait puis du dépôt.
+ */
+export function siblingAccounts(account: string): readonly AccountRef[] {
+  const broker = accountBroker(account);
+  if (!broker) return [];
+  return ACCOUNTS_LIST.filter((a) => a.label === broker && a.value !== account);
+}
+
+/**
+ * Un virement est-il seulement concevable dans ce référentiel ?
+ *
+ * Faux tant qu'aucun établissement ne tient deux comptes. Proposer la saisie dans ce cas
+ * reviendrait à ouvrir un formulaire dont aucune valeur ne pourrait remplir le second champ.
+ */
+export const TRANSFER_POSSIBLE: boolean = ACCOUNTS_LIST.some((a) => siblingAccounts(a.value).length > 0);
+
 export const CURRENCY_SYMBOL: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', CHF: 'CHF' };
 
 export const ACCOUNT_CURRENCY: Record<string, string> = {
@@ -263,6 +289,9 @@ export const CASHFLOW_TYPES: readonly { readonly value: string; readonly label: 
   { value: 'INTEREST', label: 'INTEREST', title: 'Intérêts', text: 'Intérêts créditeurs ou débiteurs sur la poche espèces.' },
   { value: 'LENDING', label: 'LENDING', title: 'Prêt de titres', text: 'Commission perçue au titre du prêt de titres, ou jambe suivie côté titres.' },
   { value: 'REFUND', label: 'REFUND', title: 'Remboursement', text: "Remboursement d'espèces crédité sur la poche destinataire." },
+  /* Seule nature de cette liste qui met deux comptes en jeu, et seule dont la transaction porte la
+     nature TRANSFER et non CASHFLOW — le libellé est celui du référentiel des codes. */
+  { value: 'TRANSFER', label: 'TRANSFER', title: 'Virement', text: "Virement d'espèces entre comptes : débit à la source, crédit à l'arrivée. Deux poches distinctes, aucune ne se déduit de l'autre." },
 ];
 
 /** Formatte un montant en devise `fr-FR`, deux décimales, avec le symbole `code`. */

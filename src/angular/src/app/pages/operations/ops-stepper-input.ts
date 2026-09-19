@@ -13,7 +13,7 @@ import { parseFr } from './operations-data';
   selector: 'app-ops-stepper-input',
   imports: [MatIconModule, MatTooltipModule],
   template: `
-    <span class="pm-num-field">
+    <span class="pm-num-field" [class.pm-num-field-disabled]="disabled()">
       @if (prefix()) {
         <span class="pm-num-prefix">{{ prefix() }}</span>
       }
@@ -22,12 +22,13 @@ import { parseFr } from './operations-data';
         [value]="value()"
         (input)="onInput($event)"
         [placeholder]="placeholder()"
+        [disabled]="disabled()"
       />
       <span class="pm-num-steps">
-        <button type="button" class="pm-num-step" (click)="bump(step())" matTooltip="Augmenter">
+        <button type="button" class="pm-num-step" [disabled]="disabled()" (click)="bump(step())" matTooltip="Augmenter">
           <mat-icon svgIcon="chevron-up" style="font-size:10px"></mat-icon>
         </button>
-        <button type="button" class="pm-num-step" (click)="bump(-step())" matTooltip="Diminuer">
+        <button type="button" class="pm-num-step" [disabled]="disabled()" (click)="bump(-step())" matTooltip="Diminuer">
           <mat-icon svgIcon="chevron-down" style="font-size:10px"></mat-icon>
         </button>
       </span>
@@ -41,6 +42,8 @@ export class OpsStepperInput {
   readonly prefix = input('');
   readonly step = input(1);
   readonly integer = input(false);
+  /** Champ inerte : la saisie et les deux boutons sont coupés, et le cadre se grise. */
+  readonly disabled = input(false);
 
   readonly valueChange = output<string>();
 

@@ -25,12 +25,17 @@ import { parseIndexFeed, type IndexFeedDto } from './index-feed';
  * passe à `error`, le socle reste en place, et l'écran continue de fonctionner. Une source de
  * référentiel indisponible ne doit pas empêcher de consulter un portefeuille.
  *
- * ## Fichier ou API
+ * ## API ou fichier
  *
  * Les deux sources servent le même format (voir `index-feed.ts`), donc seule l'URL change. Par
- * défaut c'est le fichier `/data/indices.json`, servi tel quel par le serveur statique : l'exploitant
- * dépose l'extraction de son fournisseur d'indices, sans livraison applicative. Pointer
- * `INDEX_FEED_URL` sur `…/v1/market/indices` bascule sur l'API du contrat sans autre changement.
+ * défaut c'est l'API du contrat, `/v1/market/indices` : elle sait ne livrer que les indices
+ * demandés, elle date et source sa réponse, et elle vit avec le reste du référentiel.
+ *
+ * Pointer `INDEX_FEED_URL` sur `/data/indices.json` revient au fichier déposé sur le serveur
+ * statique — l'exploitant y dépose l'extraction de son fournisseur d'indices, sans livraison
+ * applicative ni back-end. Les deux restent interchangeables, et c'est vérifié : les compositions
+ * servies par l'une et par l'autre sont les mêmes, au `mic` vide près, que le contrat décrit comme
+ * absent et que la lecture traite déjà pareil.
  */
 
 /** Provenance de la composition actuellement servie. */
@@ -48,12 +53,12 @@ export type IndexFeedStatus =
  * Où lire les compositions. Chaîne vide pour ne rien charger du tout — ce que fait un test, ou un
  * déploiement qui assume le socle.
  *
- * Le défaut vise le fichier déposé plutôt que l'API : c'est la source qu'on peut mettre en place
- * sans back-end, et celle qui rend le dispositif vérifiable tout de suite.
+ * Le défaut vise l'API du contrat. Un déploiement sans back-end bascule sur `/data/indices.json`
+ * en redéclarant ce jeton, sans autre changement.
  */
 export const INDEX_FEED_URL = new InjectionToken<string>('INDEX_FEED_URL', {
   providedIn: 'root',
-  factory: () => '/data/indices.json',
+  factory: () => '/v1/market/indices',
 });
 
 @Injectable({ providedIn: 'root' })

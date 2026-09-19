@@ -97,7 +97,7 @@
         }
       </a>
 
-      @for (section of sections; track section.id) {
+      @for (section of sections(); track section.id) {
         <div class="pm-nav-section" [class.pm-collapsed-marker]="isSectionCollapsed(section.id)"
           [matTooltip]="collapsed() ? section.label : ''" [matTooltipShowDelay]="navTooltipDelay"
           (click)="toggleSection(section.id)">

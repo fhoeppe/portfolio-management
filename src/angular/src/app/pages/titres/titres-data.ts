@@ -5,40 +5,17 @@
  * directement `INDICES[i].members`, sans reproduire le fetch/fusion CSV.
  */
 
-export type PositionStatusKey = 'held' | 'settled' | 'watch' | 'followed' | 'never';
+export type { PositionStatusKey, PositionStatusDef, Security } from '../../domain/security-reference';
+export { FOLLOWED, POSITION_STATUS, PORTFOLIO_LINKS } from '../../domain/security-reference';
 
-export interface PositionStatusDef {
-  readonly label: string;
-  readonly bg: string;
-  readonly fg: string;
-  readonly hint: string;
-}
+import type { PositionStatusKey, PositionStatusDef, Security } from '../../domain/security-reference';
+import { PORTFOLIO_LINKS } from '../../domain/security-reference';
 
 export interface Mandate {
   readonly value: string;
   readonly label: string;
 }
 
-export interface Security {
-  readonly ticker: string;
-  readonly name: string;
-  readonly isin: string;
-  readonly market: string;
-  readonly assetClass: string;
-  readonly rating: string;
-  readonly cap: number;
-  readonly status: 'ok' | 'none';
-  readonly liquidity: string;
-  readonly esg: string;
-  readonly domicile: string;
-  readonly currency: string;
-  readonly complexity: string;
-  readonly held: number;
-  readonly mandates: readonly string[];
-  readonly reviewed: string;
-  readonly by: string;
-  readonly note: string;
-}
 
 /** Seul un compte actif est sélectionnable : projet, ouverture, gelé, clôture et clôturé sont exclus. */
 export const ACCOUNT_OPEN: Record<string, boolean> = { 'BGM-004': true, 'INP-011': true, 'BGM-002': true, 'INP-008': false, 'GLG-002': false, 'GLG-005': false };
@@ -76,70 +53,70 @@ export const SECURITIES: readonly Security[] = [
     note: 'Plafond de 5 % par compte : position à surveiller après la baisse récente.',
   },
   {
-    ticker: 'GLBEQ', name: 'Global Equity Index', isin: 'LU1234567890', market: 'Luxembourg', assetClass: 'ETF',
+    ticker: 'GLBEQ', name: 'Global Equity Index', isin: 'LU1234567896', market: 'Luxembourg', assetClass: 'ETF',
     rating: '—', cap: 20, status: 'ok', liquidity: 'Élevée · 42 M€ de volume moyen', esg: 'Article 8 SFDR',
     domicile: 'Luxembourg', currency: 'EUR', complexity: 'Non complexe', held: 94500,
     mandates: ['BGM-004', 'INP-011', 'GLG-002'], reviewed: '12/06/2026', by: "Comité d'investissement",
     note: "Support cœur de l'allocation actions, éligible à tous les profils.",
   },
   {
-    ticker: 'USLC', name: 'US Large Cap Core', isin: 'IE00B1234567', market: 'Dublin', assetClass: 'ETF',
+    ticker: 'USLC', name: 'US Large Cap Core', isin: 'IE00B1234566', market: 'Dublin', assetClass: 'ETF',
     rating: '—', cap: 18, status: 'ok', liquidity: 'Élevée · 31 M€', esg: 'Article 8 SFDR',
     domicile: 'Irlande', currency: 'USD', complexity: 'Non complexe', held: 178900,
     mandates: ['BGM-004', 'GLG-002'], reviewed: '12/06/2026', by: "Comité d'investissement",
     note: 'Exposition devise à couvrir au-delà de 15 % du portefeuille.',
   },
   {
-    ticker: 'IGCRD', name: 'IG Corporate Bond', isin: 'XS1234567890', market: 'Euronext', assetClass: 'ETF',
+    ticker: 'IGCRD', name: 'IG Corporate Bond', isin: 'XS1234567896', market: 'Euronext', assetClass: 'ETF',
     rating: 'A− (S&P)', cap: 25, status: 'ok', liquidity: 'Moyenne · 12 M€', esg: 'Article 8 SFDR',
     domicile: 'Luxembourg', currency: 'EUR', complexity: 'Non complexe', held: 437000,
     mandates: ['BGM-004', 'INP-011'], reviewed: '03/07/2026', by: "Comité d'investissement",
     note: 'Notation minimale du compte prudent respectée.',
   },
   {
-    ticker: 'EMEQ', name: 'EM Equity Sleeve', isin: 'LU4567890123', market: 'Luxembourg', assetClass: 'Fonds',
+    ticker: 'EMEQ', name: 'EM Equity Sleeve', isin: 'LU4567890125', market: 'Luxembourg', assetClass: 'Fonds',
     rating: '—', cap: 10, status: 'ok', liquidity: 'Moyenne · 8 M€', esg: 'Article 8 SFDR',
     domicile: 'Luxembourg', currency: 'USD', complexity: 'Non complexe', held: 27600,
     mandates: ['BGM-004', 'GLG-002'], reviewed: '18/07/2026', by: "Comité d'investissement",
     note: 'Plafond de 10 % et couverture de change obligatoire au-delà de 5 %.',
   },
   {
-    ticker: 'INFRA', name: 'Infrastructure Fund II', isin: 'LU3456789012', market: 'Hors marché', assetClass: 'Fonds',
+    ticker: 'INFRA', name: 'Infrastructure Fund II', isin: 'LU3456789018', market: 'Hors marché', assetClass: 'Fonds',
     rating: '—', cap: 8, status: 'ok', liquidity: 'Faible · valorisation trimestrielle', esg: 'Article 9 SFDR',
     domicile: 'Luxembourg', currency: 'EUR', complexity: 'Complexe', held: 12100,
     mandates: ['BGM-004', 'GLG-002'], reviewed: '30/06/2026', by: "Comité d'investissement",
     note: 'Réservé aux clients professionnels ; interdit au compte prudent.',
   },
   {
-    ticker: 'PRVE', name: 'Private Equity Co-invest', isin: 'LU5678901234', market: 'Hors marché', assetClass: 'Fonds',
+    ticker: 'PRVE', name: 'Private Equity Co-invest', isin: 'LU5678901230', market: 'Hors marché', assetClass: 'Fonds',
     rating: '—', cap: 6, status: 'ok', liquidity: 'Illiquide · appels de fonds', esg: 'Non classé',
     domicile: 'Luxembourg', currency: 'EUR', complexity: 'Complexe', held: 31500,
     mandates: ['GLG-002'], reviewed: '30/06/2026', by: "Comité d'investissement",
     note: 'Validation du client requise avant tout nouvel engagement.',
   },
   {
-    ticker: 'HYBND', name: 'High Yield Bond Fund', isin: 'IE00B7654321', market: 'Dublin', assetClass: 'Fonds',
+    ticker: 'HYBND', name: 'High Yield Bond Fund', isin: 'IE00B7654320', market: 'Dublin', assetClass: 'Fonds',
     rating: 'BB− (S&P)', cap: 4, status: 'ok', liquidity: 'Moyenne · 6 M€', esg: 'Non classé',
     domicile: 'Irlande', currency: 'EUR', complexity: 'Non complexe', held: 0,
     mandates: [], reviewed: '18/07/2026', by: 'Conformité',
     note: 'Notation inférieure au minimum contractuel (BBB−) pour tous les comptes.',
   },
   {
-    ticker: 'CRYPT', name: 'Digital Asset Tracker', isin: 'JE00BLD4ZL17', market: 'Xetra', assetClass: 'ETF',
+    ticker: 'CRYPT', name: 'Digital Asset Tracker', isin: 'JE00BLD4ZL15', market: 'Xetra', assetClass: 'ETF',
     rating: '—', cap: 2, status: 'ok', liquidity: 'Élevée mais volatilité extrême', esg: 'Non classé',
     domicile: 'Jersey', currency: 'USD', complexity: 'Complexe', held: 0,
     mandates: [], reviewed: '05/05/2026', by: 'Conformité',
     note: "Classe d'actifs exclue par la politique d'investissement.",
   },
   {
-    ticker: 'SMLCP', name: 'Euro Small Cap Growth', isin: 'LU6789012345', market: 'Luxembourg', assetClass: 'Fonds',
+    ticker: 'SMLCP', name: 'Euro Small Cap Growth', isin: 'LU6789012347', market: 'Luxembourg', assetClass: 'Fonds',
     rating: '—', cap: 3, status: 'ok', liquidity: 'Faible · 2 M€', esg: 'Article 8 SFDR',
     domicile: 'Luxembourg', currency: 'EUR', complexity: 'Non complexe', held: 0,
     mandates: ['GLG-002'], reviewed: '18/07/2026', by: "Comité d'investissement",
     note: 'Liquidité faible : achat plafonné à 3 % et accord préalable requis.',
   },
   {
-    ticker: 'TSY10', name: 'Treasury 7–10 ans ETF', isin: 'US912828XX12', market: 'États-Unis', assetClass: 'ETF',
+    ticker: 'TSY10', name: 'Treasury 7–10 ans ETF', isin: 'US912828XX18', market: 'États-Unis', assetClass: 'ETF',
     rating: 'AA+ (S&P)', cap: 35, status: 'ok', liquidity: 'Très élevée', esg: 'Non applicable',
     domicile: 'États-Unis', currency: 'USD', complexity: 'Non complexe', held: 580000,
     mandates: ['BGM-004', 'INP-011', 'GLG-002'], reviewed: '03/07/2026', by: "Comité d'investissement",
@@ -241,28 +218,6 @@ export function priceGeometry(serie: readonly number[], devise: string): PriceGe
   };
 }
 
-/** Titres sous surveillance : suivis sans être retenus dans l'univers. */
-export const FOLLOWED: readonly string[] = ['INFRA', 'PRVE', 'SX5E', 'HYBND'];
-
-export const POSITION_STATUS: Record<PositionStatusKey, PositionStatusDef> = {
-  held: { label: 'En position', bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok-2)', hint: 'Détenu dans au moins un portefeuille' },
-  settled: { label: 'Position soldée', bg: 'rgba(124,92,191,0.16)', fg: 'var(--ink-alt)', hint: "Plus détenu, présent dans l'historique des mouvements" },
-  watch: { label: 'Retenu', bg: 'rgba(0,61,165,0.14)', fg: 'var(--ink-brand)', hint: "Retenu dans l'univers, jamais négocié" },
-  followed: { label: 'Suivi', bg: 'rgba(245,217,10,0.30)', fg: 'var(--ink-5c4700)', hint: "Sous surveillance : pas encore négociable, peut être retenu dans l'univers" },
-  never: { label: 'Non retenu', bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)', hint: "Hors univers d'investissement et jamais négocié" },
-};
-
-export const PORTFOLIO_LINKS: Record<string, { readonly held?: boolean; readonly history?: boolean }> = {
-  AAPL: { held: true, history: true },
-  ASML: { held: true, history: true },
-  MSFT: { held: true, history: true },
-  AI: { held: true, history: true },
-  MC: { held: true, history: true },
-  OR: { held: true, history: true },
-  GLBEQ: { held: false, history: true },
-  USLC: { held: false, history: true },
-  TSY10: { held: false, history: true },
-};
 
 export interface MarketInfo {
   readonly symbol: string;

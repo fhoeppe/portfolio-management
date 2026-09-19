@@ -9,7 +9,10 @@ import { ThemeService } from '../../shell/theme.service';
 import { IndexCompositionService } from '../../domain/index-composition.service';
 import { SecurityUniverseStore } from '../../domain/security-universe.store';
 import { IndexDef } from './titres-data';
-import { computePreview } from './titres-filters';
+import {
+  computePreview,
+  isLockedInUniverse,
+} from './titres-filters';
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
 
 /** Colonne qui range le tableau au repos : le nom, toujours. */
@@ -59,7 +62,7 @@ export class TiPreviewDialog {
   private readonly members = computed(() => this.idx.members);
 
   protected readonly preview = computed(() =>
-    computePreview(this.idx, this.members(), this.data.refs(), this.universe.decisionMap()),
+    computePreview(this.universe.all(), this.idx, this.members(), this.data.refs(), this.universe.decisionMap()),
   );
 
   /* La composition vient du service, sur la liste effectivement chargée : c'est lui qui sait où
@@ -147,11 +150,32 @@ export class TiPreviewDialog {
     this.sortDir.set(idle ? 'asc' : next.dir);
   }
 
+  /** Ferme sans rien demander à l'écran. */
   protected close(): void {
     this.dialogRef.close();
   }
 
+  /**
+   * Ferme en demandant que la composition passe aux résultats.
+   *
+   * Les deux boutons du pied appelaient `close()` à l'identique : « Charger dans la liste »
+   * fermait le dialogue et rien d'autre, alors que son libellé promet une action. Rendre `true`
+   * est le minimum pour que l'écran sache lequel des deux a été pressé — c'est lui qui décide
+   * ensuite quoi en faire, le dialogue n'ayant pas à connaître le panneau de résultats.
+   */
+  protected load(): void {
+    this.dialogRef.close(true);
+  }
+
+  /**
+   * Bascule une ligne.
+   *
+   * Le refus est ici et pas seulement sur l'attribut `disabled` du gabarit : une bascule grisée
+   * empêche le clic, elle n'empêche pas l'appel. C'est au domaine de dire non — la vue ne fait
+   * que le montrer.
+   */
   protected toggleRow(ticker: string, on: boolean): void {
+    if (isLockedInUniverse(ticker, on)) return;
     this.data.refs.update((m) => {
       const next = new Map(m);
       next.set(this.idx.key + '/' + ticker, on ? 'none' : 'ok');
@@ -159,13 +183,22 @@ export class TiPreviewDialog {
     });
   }
 
+  /**
+   * Bascule toute la composition.
+   *
+   * Tout décocher épargne les titres détenus : ils restent retenus. Un « tout décocher » qui les
+   * sortirait de l'univers ferait par lot ce que la ligne refuse une par une, et c'est le genre
+   * d'échappatoire qu'on ne découvre qu'après coup.
+   */
   protected toggleAll(): void {
     const p = this.preview();
     const on = !p.allOn;
     this.data.refs.update((m) => {
       const next = new Map(m);
-      const members = this.idx.members;
-      members.forEach((mem) => next.set(this.idx.key + '/' + mem.ticker, on ? 'ok' : 'none'));
+      this.idx.members.forEach((mem) => {
+        if (!on && isLockedInUniverse(mem.ticker, true)) return;
+        next.set(this.idx.key + '/' + mem.ticker, on ? 'ok' : 'none');
+      });
       return next;
     });
   }

@@ -1,0 +1,12 @@
+# Sorties de compilation .NET. Régénérées par `dotnet build` ; rien à versionner.
+bin/
+obj/
+
+# Résultats de tests et couverture.
+TestResults/
+*.coverage
+*.trx
+
+# Réglages d'outils locaux.
+.vs/
+*.user

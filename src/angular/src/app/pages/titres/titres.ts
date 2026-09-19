@@ -1,4 +1,4 @@
-import { Component, WritableSignal, computed, inject, signal } from '@angular/core';
+import { Component, WritableSignal, computed, inject, signal, viewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,45 +13,37 @@ import { IndexFeedService } from '../../domain/index-feed.service';
 import { SecurityUniverseStore } from '../../domain/security-universe.store';
 
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
-import { ACCOUNT_OPEN, PORTFOLIO_LINKS, PositionStatusKey, REGIONS, SECURITIES, INDICES } from './titres-data';
+import { ACCOUNT_OPEN, PORTFOLIO_LINKS, PositionStatusKey, REGIONS, INDICES } from './titres-data';
 import {
+  accountNote as accountNoteText,
+  accountTriggerLabel,
+  blankSearch,
+  buildAccountOptions,
+  buildIndexGroups,
+  buildResStatusOptions,
+  buildSearchPool,
   CLASS_SELECT_GROUPS,
+  computeKpis,
+  computeSearchRows,
   CONSENSUS_SELECT_GROUPS,
   CURRENCY_SELECT_GROUPS,
+  defaultSearch,
   DIV_FREQ_SELECT_GROUPS,
   ESG_SELECT_GROUPS,
   LIQUIDITY_SELECT_GROUPS,
   MultiOption,
   OPEN_ACCOUNTS,
-  PLACE_SELECT_GROUPS,
+  pickedAccountKeys,
+  placeSelectGroups,
   RATING_SELECT_GROUPS,
+  refOf,
   SearchState,
   SECTOR_SELECT_GROUPS,
-  accountNote as accountNoteText,
-  accountTriggerLabel,
-  blankSearch,
-  defaultSearch,
-  buildAccountOptions,
-  buildCurrencyOptions,
-  buildIndexGroups,
-  buildPlaceOptions,
-  buildResStatusOptions,
-  buildSearchPool,
-  buildStatusOptions,
-  buildTickerOptions,
-  buildWatchCurrencyOptions,
-  buildWatchPlaceOptions,
-  buildWatchTickerOptions,
-  computeKpis,
-  computeSearchRows,
-  computeUniRows,
-  computeWatchRows,
-  computeWatchSource,
-  groupUniRows,
-  pickedAccountKeys,
-  sortUniRows,
+  type SortDir,
+  toggleAllInSet,
+  toggleInSet,
 } from './titres-filters';
-import type { UniRow, UniRowGroup } from './titres-filters';
+import { SecuritiesTable } from './securities-table';
 import { TiMultiSelect } from './ti-multiselect';
 import { TiSelect } from './ti-select';
 import { TiPreviewDialog, TiPreviewDialogData } from './ti-preview-dialog';
@@ -59,23 +51,6 @@ import { TiSecurityDialog, TiSecurityDialogData } from './ti-security-dialog';
 import { SIDE_PANEL_LAYOUT } from '../../ui/side-panel/side-panel-layout';
 
 type Tab = 'universe' | 'search';
-type SortDir = 'asc' | 'desc';
-
-/** Ligne du tableau de l'univers : soit un en-tête de section, soit un titre. */
-type UniTableRow = { readonly kind: 'group'; readonly g: UniRowGroup } | { readonly kind: 'sec'; readonly r: UniRow };
-
-function toggleInSet<T>(sig: WritableSignal<ReadonlySet<T>>, key: T): void {
-  sig.update((s) => {
-    const next = new Set(s);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    return next;
-  });
-}
-
-function toggleAllInSet<T>(sig: WritableSignal<ReadonlySet<T>>, all: readonly T[]): void {
-  sig.update((s) => (all.length > 0 && all.every((v) => s.has(v)) ? new Set<T>() : new Set(all)));
-}
 
 /**
  * Porté depuis `Titres.dc.html` (`UniversePage`). Le prototype propose un 3ᵉ onglet
@@ -95,9 +70,9 @@ function toggleAllInSet<T>(sig: WritableSignal<ReadonlySet<T>>, all: readonly T[
  */
 @Component({
   selector: 'app-titres',
-  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatCheckboxModule, MatSlideToggleModule, MatTableModule, MatTooltipModule, TiMultiSelect, TiSelect],
+  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatCheckboxModule, MatSlideToggleModule, MatTableModule, MatTooltipModule, SecuritiesTable, TiMultiSelect, TiSelect],
   templateUrl: './titres.html',
-  styleUrl: './titres.css',
+  styleUrls: ['./titres.css', './titres-table.css'],
 })
 export class Titres {
   private readonly dialog = inject(MatDialog);
@@ -117,7 +92,17 @@ export class Titres {
   private readonly indexFeed = inject(IndexFeedService);
   /* Les titres négociables et suivis ont leur service : il porte les décisions du comité, les
      suppressions et les règles qui vont avec. L'écran n'en garde que l'affichage. */
-  private readonly universe = inject(SecurityUniverseStore);
+  protected readonly universe = inject(SecurityUniverseStore);
+
+  /* Le catalogue des titres est récupéré à la demande, pas au démarrage : l'écran qui en a besoin
+     le réclame. Un `constructor` plutôt qu'un `ngOnInit` — l'appel est idempotent et n'attend
+     rien, il n'a pas à guetter un cycle de vie. */
+  constructor() {
+    this.universe.load();
+  }
+
+  /** Le catalogue courant — vide tant qu'il n'est pas arrivé, d'où le passage par un signal. */
+  private readonly securities = computed(() => this.universe.all());
 
   // -- Onglets ----------------------------------------------------------------------------
   protected readonly tab = this.viewState.remember<Tab>('titres.tab', 'universe');
@@ -139,6 +124,8 @@ export class Titres {
   /* Décisions et suppressions ne sont plus des signaux d'écran : ils appartiennent au service,
      qui survit à la navigation par nature — un service racine n'est pas détruit avec la page. */
   protected readonly decisions = this.universe.decisionMap;
+  /* Le périmètre de veille de la session : les tableaux en ont besoin pour que `follow()` se voie. */
+  protected readonly followed = this.universe.followedSet;
   protected readonly selected = this.viewState.remember('titres.selected', 'GLBEQ');
   protected readonly status = signal('');
   protected readonly deleted = this.universe.deletedSet;
@@ -183,44 +170,22 @@ export class Titres {
   // Univers — Titres négociables
   // -----------------------------------------------------------------------------------------
   /**
-   * Les deux tableaux de l'univers partent vides.
+   * Les deux tableaux de l'univers montrent leur liste, sans attendre de question.
    *
-   * Sans filtre ni recherche, ils déversaient le référentiel entier — ce qui n'est pas un résultat,
-   * c'est l'absence de question. On pose un critère, ils répondent ; on réinitialise la carte, ils
-   * se taisent de nouveau. Un état par carte : réinitialiser les négociables ne vide pas les suivis.
+   * Ils partaient vides jusqu'à ce qu'un filtre soit posé — au motif qu'une liste non filtrée
+   * n'est pas un résultat. L'argument vaut pour une recherche, pas pour un référentiel : l'univers
+   * d'investissement *est* ce qu'on vient lire. Surtout, l'attente cassait le lien avec l'onglet
+   * Recherche : y retenir des titres mettait bien `universe.tradable()` à jour, mais la carte des
+   * négociables restait vide, et le geste semblait n'avoir rien fait.
    */
-  protected readonly uniShown = this.viewState.remember('titres.uniShown', false);
-
-  /**
-   * Filtres de colonnes et recherche libre des deux cartes.
-   *
-   * Ils passent par ici plutôt que d'écrire dans leur signal depuis le gabarit : sur une carte
-   * vide, saisir un filtre doit la réveiller, sans quoi le champ répondrait à un tableau qu'on ne
-   * rend pas.
-   */
-  protected setUniFilter(key: 'query' | 'colIsin' | 'colName', value: string): void {
-    ({ query: this.query, colIsin: this.colIsin, colName: this.colName })[key].set(value);
-    this.uniShown.set(true);
+  protected setUniFilter(_key: 'query', value: string): void {
+    this.query.set(value);
   }
-
-  protected setWatchFilter(key: 'watchColIsin' | 'watchColName', value: string): void {
-    ({ watchColIsin: this.watchColIsin, watchColName: this.watchColName })[key].set(value);
-    this.watchShown.set(true);
-  }
-  protected readonly watchShown = this.viewState.remember('titres.watchShown', false);
 
   protected readonly query = this.viewState.remember('titres.query', '');
   protected readonly filter = this.viewState.remember<'all' | 'ok'>('titres.filter', 'all');
   protected readonly acctPick = this.viewState.remember<ReadonlySet<string> | null>('titres.acctPick', null);
   protected readonly groupByStatus = this.viewState.remember('titres.groupByStatus', false);
-  protected readonly sortKey = this.viewState.remember<string | null>('titres.sortKey', null);
-  protected readonly sortDir = this.viewState.remember<SortDir>('titres.sortDir', 'asc');
-  protected readonly colIsin = this.viewState.remember('titres.colIsin', '');
-  protected readonly colName = this.viewState.remember('titres.colName', '');
-  protected readonly tickPick = this.viewState.remember<ReadonlySet<string>>('titres.tickPick', new Set());
-  protected readonly placePick = this.viewState.remember<ReadonlySet<string>>('titres.placePick', new Set());
-  protected readonly curPick = this.viewState.remember<ReadonlySet<string>>('titres.curPick', new Set());
-  protected readonly statPick = this.viewState.remember<ReadonlySet<string>>('titres.statPick', new Set());
 
   protected readonly acctKeys = computed(() => pickedAccountKeys(this.acctPick()));
   protected readonly acctKeysSet = computed(() => new Set(this.acctKeys()));
@@ -229,71 +194,31 @@ export class Titres {
   protected readonly accountAllOn = computed(() => OPEN_ACCOUNTS.every((v) => this.acctKeys().indexOf(v) >= 0));
   protected readonly accountNote = computed(() => accountNoteText(this.acctKeys().length));
 
-  protected readonly tickerOptions = computed(() => buildTickerOptions(this.deleted()));
-  protected readonly placeOptions = computed(() => buildPlaceOptions(this.deleted()));
-  protected readonly currencyOptions = computed(() => buildCurrencyOptions(this.deleted()));
-  protected readonly statusOptions = computed(() => buildStatusOptions(this.deleted(), this.decisions()));
-
-  protected readonly uniRowsRaw = computed(() =>
-    computeUniRows({
-      decisions: this.decisions(),
-      deleted: this.deleted(),
-      query: this.query(),
-      filter: this.filter(),
-      acctKeys: this.acctKeys(),
-      colIsin: this.colIsin(),
-      colName: this.colName(),
-      tickKeys: this.tickPick(),
-      placeKeys: this.placePick(),
-      curKeys: this.curPick(),
-      statKeys: this.statPick(),
-    }),
-  );
-  protected readonly uniRowsSorted = computed(() => sortUniRows(this.uniRowsRaw(), this.sortKey(), this.sortDir()));
-  protected readonly uniGroups = computed(() => groupUniRows(this.uniRowsSorted(), this.groupByStatus()));
+  /* Le décompte est celui du tableau, qui tient ses filtres : l'écran le lui demande plutôt que de
+     refaire le calcul avec des critères qu'il ne détient plus. */
+  private readonly uniTable = viewChild('uniTable', { read: SecuritiesTable });
+  private readonly watchTable = viewChild('watchTable', { read: SecuritiesTable });
   /**
-   * MatTable n'a qu'un seul corps de tableau : les sections de `uniGroups()` sont aplaties en
-   * une seule liste où l'en-tête de section devient une ligne à part entière, reconnue par
-   * `isGroupRow` et rendue par son propre `matRowDef`.
+   * « n / m titres » : m est la population dont le tableau tire ses lignes, pas le référentiel.
+   *
+   * Le dénominateur valait `referenced`, tout le référentiel — 15 — alors que la carte ne montre
+   * que les négociables et qu'un filtre par compte éligible s'applique par-dessus. « 9 / 15 »
+   * rapprochait donc deux populations différentes ; c'est « 9 sur les 11 négociables » qu'il faut
+   * lire, et c'est ce que compte la vignette juste au-dessus.
    */
-  protected readonly uniTableRows = computed<readonly UniTableRow[]>(() =>
-    this.uniGroups().flatMap((g) => [
-      ...(g.hasHeader ? [{ kind: 'group' as const, g }] : []),
-      ...g.rows.map((r) => ({ kind: 'sec' as const, r })),
-    ]),
-  );
-  protected readonly isGroupRow = (_: number, row: UniTableRow) => row.kind === 'group';
-  protected readonly uniTrackBy = (_: number, row: UniTableRow) => (row.kind === 'group' ? 'g:' + row.g.label : 's:' + row.r.ticker);
-
-  protected readonly uniColumns = ['isin', 'ticker', 'name', 'place', 'currency', 'status', 'actions'];
-  protected readonly uniFilterColumns = ['isinFilter', 'tickerFilter', 'nameFilter', 'placeFilter', 'currencyFilter', 'statusFilter', 'actionsFilter'];
-  protected readonly uniGroupColumns = ['uniGroupHead'];
-  protected readonly resColumns = ['select', 'security', 'cls', 'currency', 'rating', 'liquidity', 'status', 'actions'];
-  protected readonly resFilterColumns = ['selectFilter', 'securityFilter', 'clsFilter', 'currencyFilter', 'ratingFilter', 'liquidityFilter', 'statusFilter', 'actionsFilter'];
-
-  /** Ce que le tableau rend : rien tant qu'aucun filtre n'a été posé. */
-  protected readonly uniShownRows = computed<readonly UniTableRow[]>(() => (this.uniShown() ? this.uniTableRows() : []));
-  protected readonly noRows = computed(() => this.uniShownRows().length === 0);
-  protected readonly uniEmptyNote = computed(() =>
-    this.uniShown() ? 'Aucun titre ne correspond aux filtres.' : 'Posez un filtre ou une recherche pour afficher les titres négociables.',
-  );
-  protected readonly listNote = computed(() =>
-    this.uniShown() ? this.uniRowsRaw().length + ' / ' + this.universe.counts().referenced + ' titres' : 'Aucun filtre posé',
+  protected readonly listNote = computed(
+    () => (this.uniTable()?.matchingCount() ?? 0) + ' / ' + this.universe.tradableCount() + ' titres',
   );
   protected readonly listNoteMargin = computed(() => (this.deleteNote() ? '12px' : 'auto'));
 
-  protected readonly UNI_SORT_COLS = ['isin', 'ticker', 'name', 'place', 'currency', 'status'] as const;
-  protected uniSortHeader(key: string) {
-    return sortHeaderView(this.sortKey(), this.sortDir(), key);
-  }
-  protected onUniSort(key: string): void {
-    const next = nextSort(this.sortKey(), this.sortDir(), key);
-    this.sortKey.set(next.key);
-    this.sortDir.set(next.dir);
-  }
+  /* Les tableaux des titres suivis et des résultats de recherche partagent les colonnes du tableau
+     des négociables — qui, lui, les porte désormais chez lui. Ils les gardent ici tant qu'ils n'ont
+     pas suivi le même chemin. */
+  protected readonly resColumns = ['select', 'security', 'cls', 'currency', 'rating', 'liquidity', 'status', 'actions'];
+  protected readonly resFilterColumns = ['selectFilter', 'securityFilter', 'clsFilter', 'currencyFilter', 'ratingFilter', 'liquidityFilter', 'statusFilter', 'actionsFilter'];
+
 
   protected toggleAccount(value: string): void {
-    this.uniShown.set(true);
     if (!ACCOUNT_OPEN[value]) return;
     const set = new Set(this.acctKeys());
     if (set.has(value)) set.delete(value);
@@ -301,7 +226,6 @@ export class Titres {
     this.acctPick.set(set);
   }
   protected toggleAllAccounts(): void {
-    this.uniShown.set(true);
     const full = OPEN_ACCOUNTS.every((v) => this.acctKeys().indexOf(v) >= 0);
     this.acctPick.set(full ? new Set() : new Set(OPEN_ACCOUNTS));
   }
@@ -316,88 +240,29 @@ export class Titres {
   ];
   protected setFilter(f: 'all' | 'ok'): void {
     this.filter.set(f);
-    this.uniShown.set(true);
   }
 
   protected resetUniverseView(): void {
-    this.sortKey.set(null);
-    this.sortDir.set('asc');
+    this.uniTable()?.reset();
     this.groupByStatus.set(false);
     this.acctPick.set(null);
-    this.colIsin.set('');
-    this.colName.set('');
-    this.tickPick.set(new Set());
-    this.watchColIsin.set('');
-    this.watchColName.set('');
-    this.watchTickPick.set(new Set());
-    this.watchSortKey.set(null);
-    this.watchSortDir.set('asc');
     this.deleteNote.set('');
     this.filter.set('all');
     this.query.set('');
-    /* On repart de zéro : la carte se tait jusqu'au prochain filtre. */
-    this.uniShown.set(false);
-    this.watchShown.set(false);
   }
 
   // -----------------------------------------------------------------------------------------
   // Univers — Titres suivis (watchlist)
   // -----------------------------------------------------------------------------------------
-  protected readonly watchColIsin = this.viewState.remember('titres.watchColIsin', '');
-  protected readonly watchColName = this.viewState.remember('titres.watchColName', '');
-  protected readonly watchTickPick = this.viewState.remember<ReadonlySet<string>>('titres.watchTickPick', new Set());
-  protected readonly watchPlacePick = this.viewState.remember<ReadonlySet<string>>('titres.watchPlacePick', new Set());
-  protected readonly watchCurPick = this.viewState.remember<ReadonlySet<string>>('titres.watchCurPick', new Set());
-  protected readonly watchSortKey = this.viewState.remember<string | null>('titres.watchSortKey', null);
-  protected readonly watchSortDir = this.viewState.remember<SortDir>('titres.watchSortDir', 'asc');
 
-  protected readonly watchTickerOptions: readonly MultiOption[] = buildWatchTickerOptions();
-  protected readonly watchPlaceOptions: readonly MultiOption[] = buildWatchPlaceOptions();
-  protected readonly watchCurrencyOptions: readonly MultiOption[] = buildWatchCurrencyOptions();
-
-  protected readonly watchSource = computed(() => computeWatchSource(this.decisions()));
-  protected readonly watchRows = computed(() =>
-    computeWatchRows(this.watchSource(), {
-      colIsin: this.watchColIsin(),
-      colName: this.watchColName(),
-      tickKeys: this.watchTickPick(),
-      placeKeys: this.watchPlacePick(),
-      curKeys: this.watchCurPick(),
-      sortKey: this.watchSortKey(),
-      sortDir: this.watchSortDir(),
-    }),
-  );
-  protected readonly watchShownRows = computed(() => (this.watchShown() ? this.watchRows() : []));
-  protected readonly noWatchRows = computed(() => this.watchShownRows().length === 0);
-  protected readonly watchEmptyNote = computed(() =>
-    this.watchShown() ? 'Aucun titre uniquement suivi.' : 'Posez un filtre pour afficher les titres suivis.',
-  );
   protected readonly watchNote = computed(() => {
-    /* Tant que la carte n'a rien à montrer, elle ne prétend pas compter : annoncer « 4 titres
-       suivis » au-dessus d'un tableau vide serait se contredire à une ligne d'intervalle. */
-    if (!this.watchShown()) return 'Aucun filtre posé';
-    const n = this.watchShownRows().filter((r) => r.posKey === 'followed').length;
+    const n = this.watchTable()?.matchingCount() ?? 0;
     return n + (n > 1 ? ' titres suivis' : ' titre suivi');
   });
 
-  protected watchSortHeader(key: string) {
-    return sortHeaderView(this.watchSortKey(), this.watchSortDir(), key);
-  }
-  protected onWatchSort(key: string): void {
-    const next = nextSort(this.watchSortKey(), this.watchSortDir(), key);
-    this.watchSortKey.set(next.key);
-    this.watchSortDir.set(next.dir);
-  }
 
   protected resetWatchView(): void {
-    this.watchColIsin.set('');
-    this.watchColName.set('');
-    this.watchTickPick.set(new Set());
-    this.watchSortKey.set(null);
-    this.watchSortDir.set('asc');
-    this.watchPlacePick.set(new Set());
-    this.watchCurPick.set(new Set());
-    this.watchShown.set(false);
+    this.watchTable()?.reset();
   }
 
   // -----------------------------------------------------------------------------------------
@@ -419,7 +284,7 @@ export class Titres {
   protected readonly indexNote = INDICES.length + ' indices suivis sur ' + REGIONS.length + ' zones géographiques';
   protected readonly selectedIndex = computed(() => INDICES.find((i) => i.key === this.index()) ?? INDICES[0]);
   protected readonly indexMembersCurrent = computed(() => this.selectedIndex().members);
-  protected readonly indexGroups = computed(() => buildIndexGroups(this.refs(), this.decisions()));
+  protected readonly indexGroups = computed(() => buildIndexGroups(this.securities(), this.refs(), this.decisions()));
 
   /* Composée sur la liste courante et non sur celle du référentiel : un rechargement de l'indice
      doit se voir dans la couverture comme dans le rattachement. */
@@ -470,13 +335,34 @@ export class Titres {
     this.shownBySource.update((p) => ({ ...p, index: true }));
   }
 
+  /**
+   * Ouvre l'aperçu de la composition, et verse le résultat dans la liste si on le demande.
+   *
+   * « Charger dans la liste » ne chargeait rien : les deux boutons du pied du dialogue appelaient
+   * la même fermeture, et les titres retenus dans l'aperçu n'apparaissaient nulle part. Le
+   * dialogue rend maintenant `true` quand on presse ce bouton-là, et l'écran bascule ses
+   * résultats sur l'indice — ce qui est exactement ce que le libellé annonce.
+   *
+   * Le dialogue ne connaît pas le panneau de résultats et n'a pas à le connaître : il dit ce
+   * qu'on lui a demandé, l'écran décide de la suite.
+   */
   protected openPreview(): void {
-    this.dialog.open<TiPreviewDialog, TiPreviewDialogData>(TiPreviewDialog, {
-      data: { idx: this.selectedIndex(), refs: this.refs },
-      maxWidth: '96vw',
-      maxHeight: '90vh',
-      autoFocus: false,
-    });
+    this.dialog
+      .open<TiPreviewDialog, TiPreviewDialogData, boolean | undefined>(TiPreviewDialog, {
+        data: { idx: this.selectedIndex(), refs: this.refs },
+        maxWidth: '96vw',
+        maxHeight: '90vh',
+        autoFocus: false,
+      })
+      .afterClosed()
+      .subscribe((charger) => {
+        if (!charger) return;
+        this.resSource.set('index');
+        this.shownBySource.update((p) => ({ ...p, index: true }));
+        /* Le panneau se déplie s'il était replié : charger une liste pour la laisser cachée
+           reviendrait à ne rien faire, ce que le bouton faisait déjà. */
+        this.panels.update((p) => ({ ...p, res: true }));
+      });
   }
 
   // -----------------------------------------------------------------------------------------
@@ -506,7 +392,7 @@ export class Titres {
   protected readonly consensusGroups = CONSENSUS_SELECT_GROUPS;
   protected readonly divFreqGroups = DIV_FREQ_SELECT_GROUPS;
   protected readonly sectorGroups = SECTOR_SELECT_GROUPS;
-  protected readonly placeGroups = PLACE_SELECT_GROUPS;
+  protected readonly placeGroups = computed(() => placeSelectGroups(this.securities()));
 
   protected readonly activeCriteria = computed(() => {
     const sr = this.search();
@@ -612,17 +498,42 @@ export class Titres {
     { key: 'index', label: "Selon l'indice retenu" },
   ];
 
-  protected readonly searchPool = computed(() => buildSearchPool(this.resSource() === 'index', this.selectedIndex()));
-  protected readonly resStatusOptions = computed(() => buildResStatusOptions(this.searchPool(), this.decisions()));
+  protected readonly searchPool = computed(() => buildSearchPool(this.securities(), this.resSource() === 'index', this.selectedIndex()));
+
+  /**
+   * Décisions telles qu'elles s'appliquent aux résultats.
+   *
+   * Sur la source « indice », un composant retenu depuis l'aperçu porte sa décision dans `refs`,
+   * à la clé `indice/mnémonique` — pas dans les décisions du comité. Sans ce recouvrement, un
+   * titre qu'on venait de retenir dans l'aperçu ressortait « Non retenu » dans la liste : l'aperçu
+   * et les résultats affirmaient deux choses contraires sur le même titre.
+   *
+   * Le recouvrement passe par `refOf`, la fonction dont l'aperçu se sert lui-même. C'est la seule
+   * façon que les deux vues ne divergent pas — une seconde règle écrite ici finirait par dire
+   * autre chose.
+   */
+  protected readonly resDecisions = computed(() => {
+    const base = this.decisions();
+    if (this.resSource() !== 'index') return base;
+    const idx = this.selectedIndex();
+    const refs = this.refs();
+    const pool = this.securities();
+    const effectives = new Map(base);
+    idx.members.forEach((m) => effectives.set(m.ticker, refOf(pool, refs, idx.key, m, base)));
+    return effectives;
+  });
+
+  protected readonly resStatusOptions = computed(() => buildResStatusOptions(this.searchPool(), this.resDecisions(), this.followed()));
 
   protected readonly searchRows = computed(() =>
     computeSearchRows({
       pool: this.searchPool(),
+      followed: this.followed(),
       fromIndex: this.resSource() === 'index',
       search: this.appliedSearch(),
       resCol: { name: this.resColName(), cls: this.resColCls(), currency: this.resColCurrency(), rating: this.resColRating(), liquidity: this.resColLiquidity() },
       resStatusKeys: this.resStatusPick(),
-      decisions: this.decisions(),
+      decisions: this.resDecisions(),
       picked: this.picked(),
       sortKey: this.resSortKey(),
       sortDir: this.resSortDir(),
@@ -692,10 +603,57 @@ export class Titres {
       this.pickStatusColor.set('var(--ink-warn-2)');
       return;
     }
-    this.universe.retain(keys);
+    const added = this.universe.retain(...keys);
     this.setPicked(new Set());
-    this.pickStatus.set(keys.length + " titre(s) ajouté(s) à l'univers.");
+    /* Le store rend ce qui a effectivement changé : annoncer « 3 ajoutés » quand deux l'étaient
+       déjà serait faux, et c'est le genre de faux qu'on ne remarque jamais. */
+    this.pickStatus.set(
+      added ? added + " titre(s) ajouté(s) à l'univers." : 'Ces titres sont déjà négociables.',
+    );
     this.pickStatusColor.set('var(--ink-ok-2)');
+  }
+
+  /**
+   * Met la sélection en suivi.
+   *
+   * Jumeau d'`addPickedOk`, et sa contrepartie exacte : l'un verse les titres dans l'univers
+   * négociable, l'autre les met sous surveillance. Le même geste, deux destinations — c'est
+   * pourquoi les deux boutons sont côte à côte, et pourquoi les deux rendent compte de la même
+   * façon.
+   *
+   * Un titre déjà en veille — livré tel quel par le référentiel, ou mis en suivi plus tôt — n'est
+   * pas recompté : le store rend ce qui a effectivement changé.
+   */
+  protected async addPickedWatch(): Promise<void> {
+    const keys = Array.from(this.picked());
+    if (!keys.length) {
+      this.pickStatus.set('Aucun titre sélectionné.');
+      this.pickStatusColor.set('var(--ink-warn-2)');
+      return;
+    }
+
+    /* La sélection est vidée avant l'attente : le tableau des suivis, lui, a déjà bougé — le store
+       écrit l'état de session avant d'appeler le référentiel. L'écran ne fait donc rien patienter,
+       il ne fait que rendre compte une fois l'écriture connue. */
+    this.setPicked(new Set());
+    const report = await this.universe.follow(...keys);
+
+    if (!report.added) {
+      this.pickStatus.set('Ces titres sont déjà suivis.');
+      this.pickStatusColor.set('var(--ink-ok-2)');
+      return;
+    }
+
+    /* Enregistré au référentiel ou retenu pour la séance : ce n'est pas la même promesse, et la
+       seconde doit se dire. Une veille annoncée comme acquise et perdue au rechargement est un
+       mensonge que l'écran a les moyens d'éviter. */
+    const enregistres = report.persisted === report.added;
+    this.pickStatus.set(
+      enregistres
+        ? report.added + ' titre(s) mis en suivi au référentiel.'
+        : report.added + ' titre(s) mis en suivi pour la séance' + (report.reason ? ' — ' + report.reason : '') + '.',
+    );
+    this.pickStatusColor.set(enregistres ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)');
   }
 
   /**
@@ -724,63 +682,6 @@ export class Titres {
   // -----------------------------------------------------------------------------------------
   // Sélections multiples génériques (colonne Ticker/Place/Devise/Statut, univers + suivis + résultats)
   // -----------------------------------------------------------------------------------------
-  protected toggleTick(key: string): void {
-    this.uniShown.set(true);
-    toggleInSet(this.tickPick, key);
-  }
-  protected toggleAllTick(): void {
-    this.uniShown.set(true);
-    toggleAllInSet(this.tickPick, this.tickerOptions().map((o) => o.key));
-  }
-  protected togglePlace(key: string): void {
-    this.uniShown.set(true);
-    toggleInSet(this.placePick, key);
-  }
-  protected toggleAllPlace(): void {
-    this.uniShown.set(true);
-    toggleAllInSet(this.placePick, this.placeOptions().map((o) => o.key));
-  }
-  protected toggleCur(key: string): void {
-    this.uniShown.set(true);
-    toggleInSet(this.curPick, key);
-  }
-  protected toggleAllCur(): void {
-    this.uniShown.set(true);
-    toggleAllInSet(this.curPick, this.currencyOptions().map((o) => o.key));
-  }
-  protected toggleStat(key: string): void {
-    this.uniShown.set(true);
-    toggleInSet(this.statPick, key);
-  }
-  protected toggleAllStat(): void {
-    this.uniShown.set(true);
-    toggleAllInSet(this.statPick, this.statusOptions().map((o) => o.key));
-  }
-
-  protected toggleWatchTick(key: string): void {
-    this.watchShown.set(true);
-    toggleInSet(this.watchTickPick, key);
-  }
-  protected toggleAllWatchTick(): void {
-    this.watchShown.set(true);
-    toggleAllInSet(this.watchTickPick, this.watchTickerOptions.map((o) => o.key));
-  }
-  protected toggleWatchPlace(key: string): void {
-    this.watchShown.set(true);
-    toggleInSet(this.watchPlacePick, key);
-  }
-  protected toggleAllWatchPlace(): void {
-    this.watchShown.set(true);
-    toggleAllInSet(this.watchPlacePick, this.watchPlaceOptions.map((o) => o.key));
-  }
-  protected toggleWatchCur(key: string): void {
-    this.watchShown.set(true);
-    toggleInSet(this.watchCurPick, key);
-  }
-  protected toggleAllWatchCur(): void {
-    this.watchShown.set(true);
-    toggleAllInSet(this.watchCurPick, this.watchCurrencyOptions.map((o) => o.key));
-  }
 
   protected toggleResStatus(key: string): void {
     toggleInSet(this.resStatusPick, key as PositionStatusKey);

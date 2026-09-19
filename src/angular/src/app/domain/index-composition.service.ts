@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 
 import { INDEX_MIC, indicesSource, type IndexDef, type IndexMember } from './indices';
-import { SECURITIES } from '../pages/titres/titres-data';
+import { SecurityCatalogService } from './security-catalog.service';
 import { POS, PORTFOLIOS, value } from '../pages/positions/positions-data';
 import { micByCode } from '../pages/parametres/mic-registry';
 import { countryFlag, countryName } from './countries';
@@ -96,9 +96,13 @@ function normalize(value: string): string {
 
 @Injectable({ providedIn: 'root' })
 export class IndexCompositionService {
-  /* L'univers est indexé par ISIN et non par code : deux places peuvent servir le même titre sous
-     des tickers différents, l'ISIN est le seul identifiant stable. */
-  private readonly universeByIsin = new Map(SECURITIES.map((s) => [s.isin, s]));
+  /* L'univers est indexé par ISIN et non par ticker : deux places peuvent servir le même titre sous
+     des codes différents, l'ISIN est le seul identifiant stable.
+
+     Le catalogue est injecté et non importé, puisqu'il arrive à la demande. L'index doit donc se
+     refaire quand il arrive : une `Map` construite au champ serait restée vide pour toujours. */
+  private readonly catalog = inject(SecurityCatalogService);
+  private readonly universeIndex = computed(() => new Map(this.catalog.securities().map((s) => [s.isin, s])));
 
   /**
    * Les indices tels qu'ils sont **en ce moment** : le socle embarqué tant que rien n'est chargé,
@@ -430,7 +434,7 @@ export class IndexCompositionService {
 
     const components = def.members.map((m) => {
       const prefix = m.isin.slice(0, 2).toUpperCase();
-      const universe = this.universeByIsin.get(m.isin);
+      const universe = this.universeIndex().get(m.isin);
       return {
         name: m.name,
         ticker: m.ticker,

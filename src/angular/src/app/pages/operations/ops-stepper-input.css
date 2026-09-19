@@ -63,3 +63,13 @@
 .pm-num-step:hover {
   background: rgba(0, 61, 165, 0.1);
 }
+
+/* Champ inerte : même ton que `.pm-sel-disabled` du sélecteur, pour que les deux se grisent pareil. */
+.pm-num-field-disabled {
+  background: var(--color-neutral-100);
+  opacity: 0.6;
+}
+.pm-num-field-disabled .pm-num-input,
+.pm-num-field-disabled .pm-num-step {
+  cursor: not-allowed;
+}

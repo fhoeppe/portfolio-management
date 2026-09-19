@@ -1,4 +1,5 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
@@ -7,6 +8,7 @@ import { MAT_TOOLTIP_DEFAULT_OPTIONS, type MatTooltipDefaultOptions } from '@ang
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { IconRegistryService } from './shell/icon-registry.service';
 import { IndexFeedService } from './domain/index-feed.service';
+import { SecurityUniverseStore } from './domain/security-universe.store';
 
 /**
  * Délai d'apparition des info-bulles, posé une seule fois ici plutôt que répété en
@@ -32,6 +34,21 @@ export const appConfig: ApplicationConfig = {
     // bibliothèque tierce (Moment, Luxon) n'étant utilisée. La locale force l'affichage en
     // jj/mm/aaaa, comme le faisait le calendrier natif de <input type="date"> en français.
     provideNativeDateAdapter(),
+    // Les animations Material sont déclarées, plutôt que tacitement absentes.
+    //
+    // Sans provider ni `@angular/animations`, Angular Material considère les animations actives
+    // et emprunte ses chemins animés — ouverture de dialogue, menus, ondes de clic — sans que le
+    // moteur soit là pour les jouer. Rien ne casse, mais l'état réel n'était écrit nulle part :
+    // il se déduisait d'une dépendance manquante. Le déclarer vaut mieux que le subir.
+    //
+    // La variante asynchrone, et pas `provideAnimations()` : le moteur part en morceau séparé,
+    // chargé après le premier rendu. Il ne pèse donc pas sur le fascicule initial, déjà au-delà
+    // de son budget.
+    //
+    // À MIGRER : cette fonction porte `@deprecated 20.2 — Use animate.enter or animate.leave
+    // instead. Intent to remove in v23`. Le projet est en 22.1.6, soit un majeur avant la
+    // suppression. La bascule se fera par composant, les deux nouvelles API étant déclaratives.
+    provideAnimationsAsync(),
     { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
     // Enregistre le catalogue d'icônes SVG (voir icon-registry.service.ts) avant le premier
     // rendu, y compris côté serveur pour le prérendu — un composant qui monte avant l'injection
@@ -43,5 +60,18 @@ export const appConfig: ApplicationConfig = {
     // réponde, alors que l'application sait déjà tout afficher sans lui. Le chargement part en
     // parallèle du bootstrap, et les écrans se corrigent d'eux-mêmes quand il aboutit.
     provideAppInitializer(() => void inject(IndexFeedService).load()),
+    // Même dispositif pour le référentiel des titres, et pour une raison qui n'est pas l'écran
+    // Titres — il demande son catalogue lui-même. C'est le menu latéral : sa pastille annonce le
+    // nombre de titres référencés, et elle le tient du store. Sans cet amorçage elle n'aurait rien
+    // à dire tant que personne n'aurait ouvert l'écran.
+    //
+    // Cela ne remet pas en cause la paresse de `SecurityCatalogService`, qui visait à garder le
+    // catalogue embarqué hors du fascicule initial : la source est désormais l'API, et l'`import()`
+    // du catalogue ne part qu'en repli, si elle ne répond pas. Ce qui part au démarrage est une
+    // requête, pas un module.
+    //
+    // `void` est délibéré, comme au-dessus : faire attendre le premier rendu qu'un référentiel
+    // réponde échangerait une pastille contre un écran blanc.
+    provideAppInitializer(() => void inject(SecurityUniverseStore).load()),
   ]
 };

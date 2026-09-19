@@ -180,8 +180,8 @@ export const PLATFORM_ID: Record<string, number> = {
 
 export const ISIN_BY_TICKER: Record<string, string> = {
   AAPL: 'US0378331005', MC: 'FR0000121014', AI: 'FR0000120073', OR: 'FR0000120321',
-  ASML: 'NL0010273215', MSFT: 'US5949181045', GLBEQ: 'LU1234567890',
-  USLC: 'IE00B1234567', EUEQ: 'LU0000000001', REIT: 'LU5678901234',
+  ASML: 'NL0010273215', MSFT: 'US5949181045', GLBEQ: 'LU1234567896',
+  USLC: 'IE00B1234566', EUEQ: 'LU0000000001', REIT: 'LU5678901230',
 };
 
 export type RecoStateKey = 'matched' | 'pending' | 'gap' | 'unmatched' | 'manual';

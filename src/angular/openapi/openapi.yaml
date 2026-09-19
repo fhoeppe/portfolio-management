@@ -27,7 +27,10 @@ info:
     | `DELETE` élément    | retrait — `204`, ou `409` si la ressource est encore référencée |
 
     `PUT` et `PATCH` coexistent parce qu'ils ne disent pas la même chose : le premier affirme
-    l'état complet voulu, le second ne touche qu'aux champs cités. Les deux exigent `If-Match`.
+    l'état complet voulu, le second ne touche qu'aux champs cités. Les deux exigent `If-Match`,
+    comme `DELETE` : une écriture part toujours de ce qu'on a lu. L'en-tête manquant est un `428`,
+    l'en-tête périmé un `412` — ce n'est pas la même erreur, et le client n'y répond pas pareil :
+    au premier il relit, au second il recharge et rejoue.
 
     **Deux ressources n'ont volontairement pas d'écriture** et le disent sur leur opération :
 
@@ -269,6 +272,22 @@ paths:
     get:
       tags: [Titres]
       summary: Lister les titres du référentiel
+      description: |
+        `tradable` et `followed` sont **deux faits indépendants**, et c'est leur conjonction qui
+        forme les deux listes de l'écran Titres :
+
+        | Liste | Requête |
+        |---|---|
+        | Titres négociables | `?tradable=true&followed=false` |
+        | Titres suivis | `?followed=true` |
+
+        Un titre en veille reste autorisé par le référentiel : ce qui le retient, c'est la veille,
+        pas un refus. `?tradable=true` seul rend donc **aussi** les titres suivis — c'est voulu, et
+        c'est la raison pour laquelle la liste des négociables porte les deux critères.
+
+        Deux sous-ressources `/securities/tradable` et `/securities/followed` auraient figé cette
+        composition dans des URL, et interdit de demander ce que ni l'une ni l'autre ne nomme —
+        les titres écartés, par exemple, ou la veille d'une seule place.
       operationId: listSecurities
       parameters:
         - $ref: '#/components/parameters/Page'
@@ -280,7 +299,15 @@ paths:
           schema: { $ref: '#/components/schemas/Mic' }
         - name: tradable
           in: query
-          description: Ne renvoyer que les titres ouverts à la négociation.
+          description: |
+            Restreint aux titres que le référentiel autorise à la négociation, ou — à `false` — à
+            ceux qu'il en écarte. Absent, le critère ne départage pas.
+          schema: { type: boolean }
+        - name: followed
+          in: query
+          description: |
+            Restreint aux titres tenus en veille, ou — à `false` — à ceux qui ne le sont pas.
+            Absent, le critère ne départage pas.
           schema: { type: boolean }
       responses:
         '200':
@@ -352,6 +379,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '412': { $ref: '#/components/responses/PreconditionFailed' }
         '422': { $ref: '#/components/responses/UnprocessableEntity' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
     patch:
       tags: [Titres]
       summary: Modifier un titre
@@ -368,6 +396,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '412': { $ref: '#/components/responses/PreconditionFailed' }
         '422': { $ref: '#/components/responses/UnprocessableEntity' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
     delete:
       tags: [Titres]
       summary: Retirer un titre du référentiel
@@ -384,6 +413,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
 
   # ────────────────────────────── Positions ──────────────────────────────
   /positions:
@@ -1431,6 +1461,18 @@ components:
             title: Clôture impossible
             status: 409
             detail: Le compte porte encore 12 positions et un solde espèces non nul.
+    PreconditionRequired:
+      description: |
+        L'`If-Match` est absent, vide, ou porte une étiquette que ce serveur n'a pas pu émettre.
+        Distinct du `412`, qui répond à une précondition *fournie mais périmée*.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: 'https://api.portfolio-management.example/problems/precondition-required'
+            title: Précondition requise
+            status: 428
+            detail: Cette opération exige un en-tête If-Match portant l'ETag de la version que vous modifiez.
     PreconditionFailed:
       description: L'`If-Match` fourni ne correspond plus à la version courante.
       content:
@@ -1660,6 +1702,16 @@ components:
 
     # -- Titres -----------------------------------------------------------
     Security:
+      description: |
+        Un titre du référentiel. Trois familles de propriétés cohabitent, et elles n'ont pas le
+        même propriétaire :
+
+        - **le noyau**, de `id` à `quoted` — ce que tout consommateur peut attendre ;
+        - **la fiche**, de `rating` à `note` — la due diligence attachée au titre, qui s'édite
+          avec lui et que l'écran Titres affiche dans son panneau latéral ;
+        - **le dérivé**, `held` et `mandates` — issu des positions, jamais écrit. Ces deux
+          propriétés ne sont pas là par confort : c'est d'elles que dépend le refus de suppression
+          d'un titre encore référencé.
       type: object
       required: [id, ticker, name, mic, currency]
       properties:
@@ -1671,7 +1723,14 @@ components:
           pattern: '^[A-Z]{2}[A-Z0-9]{9}[0-9]$'
           example: US0378331005
         mic: { $ref: '#/components/schemas/Mic' }
-        place: { type: string, example: Nasdaq }
+        place:
+          type: string
+          example: Nasdaq
+          readOnly: true
+          description: |
+            Nom lisible de la place, **dérivé du MIC**. Il n'est jamais reçu en écriture : deux
+            clients qui écriraient « Euronext Paris » et « EURONEXT PARIS » produiraient deux
+            libellés pour une même place.
         currency: { $ref: '#/components/schemas/CurrencyCode' }
         assetClass: { type: string, example: Actions }
         region: { type: string, example: Amérique du Nord }
@@ -1681,8 +1740,55 @@ components:
           description: |
             Faux pour un instrument non coté en continu — fonds fermé, co-investissement — dont
             la valeur est une valeur liquidative publiée, non un cours.
+        followed:
+          type: boolean
+          description: |
+            Le titre est tenu en veille plutôt qu'à l'achat. C'est le **périmètre livré par le
+            référentiel** : les mises en suivi décidées dans l'application s'empilent par-dessus,
+            côté client, et ne remontent pas ici.
+
+        # ── Fiche de référentiel ──────────────────────────────────────────────
+        rating: { type: string, example: 'A− (S&P)' }
+        cap:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: >-
+            Plafond de concentration, **en pourcentage de l'actif net par compte** — `20`, pas
+            `0.20`. Zéro signifie « aucun plafond attribué ». Ce n'est pas un rang de taille :
+            le champ homonyme d'une composition d'indice, lui, porte bien une capitalisation.
+          example: 20
+        liquidity: { type: string, example: 'Élevée · 118 M€ de volume moyen' }
+        esg: { type: string, example: Article 8 SFDR }
+        domicile: { type: string, example: France }
+        complexity: { type: string, example: Non complexe }
+        reviewed:
+          type: string
+          format: date
+          description: Date de la dernière revue du titre par le comité.
+        reviewedBy: { type: string, example: "Comité d'investissement" }
+        note: { type: string }
+
+        # ── Dérivé des positions, en lecture seule ────────────────────────────
+        held:
+          type: integer
+          readOnly: true
+          description: Quantité détenue, tous comptes confondus.
+        mandates:
+          type: array
+          readOnly: true
+          items: { type: string }
+          description: Comptes qui portent ce titre, en position ou en historique.
 
     SecurityInput:
+      description: |
+        Représentation complète d'un titre en écriture. Ni `id`, ni `place`, ni `held`, ni
+        `mandates` : le premier est attribué, le deuxième est dérivé du MIC, les deux derniers
+        viennent des positions.
+
+        L'ISIN est facultatif ; **présent, sa clé de contrôle est vérifiée** et un code qui échoue
+        à ce contrôle est refusé en `422`. Le motif seul laisse passer une faute de frappe une
+        fois sur dix.
       type: object
       required: [ticker, name, mic, currency]
       properties:
@@ -1697,9 +1803,28 @@ components:
         region: { type: string }
         tradable: { type: boolean, default: true }
         quoted: { type: boolean, default: true }
+        followed: { type: boolean, default: false }
+        rating: { type: string }
+        cap: { type: integer, minimum: 0, maximum: 100 }
+        liquidity: { type: string }
+        esg: { type: string }
+        domicile: { type: string }
+        complexity: { type: string }
+        reviewed: { type: string, format: date }
+        reviewedBy: { type: string }
+        note: { type: string }
 
     SecurityPatch:
+      description: |
+        Modification partielle en JSON Merge Patch. Un champ **absent** n'est pas touché, un champ
+        à **`null`** est effacé.
+
+        `ticker`, `mic` et `currency` n'y figurent pas, et ce n'est pas un oubli : changer le
+        mnémonique ou la place d'une ligne de référentiel, c'est en désigner une autre. Un patch
+        qui les cite est refusé en `422` plutôt qu'ignoré — le taire ferait croire à l'appelant que
+        son écriture a porté. Il en va de même d'un champ inconnu.
       type: object
+      additionalProperties: false
       properties:
         name: { type: string }
         isin: { type: ['string', 'null'] }
@@ -1707,6 +1832,16 @@ components:
         region: { type: ['string', 'null'] }
         tradable: { type: boolean }
         quoted: { type: boolean }
+        followed: { type: boolean }
+        rating: { type: ['string', 'null'] }
+        cap: { type: integer, minimum: 0, maximum: 100 }
+        liquidity: { type: ['string', 'null'] }
+        esg: { type: ['string', 'null'] }
+        domicile: { type: ['string', 'null'] }
+        complexity: { type: ['string', 'null'] }
+        reviewed: { type: ['string', 'null'], format: date }
+        reviewedBy: { type: ['string', 'null'] }
+        note: { type: ['string', 'null'] }
 
     # -- Positions --------------------------------------------------------
     Position:

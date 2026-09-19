@@ -115,11 +115,21 @@ h1, h2 {
 
 /* -- Aperçu : bandeau d'accordéon à ouverture unique -------------------------------------- */
 .pm-accordion {
+  /* `mat-accordion` est un élément inconnu du navigateur et Material ne lui donne pas de
+     `display` : il reste donc `inline`, et rien de ce qui suit ne s'appliquait. Les marges
+     horizontales n'insèraient rien — les panneaux, qui sont des blocs, s'échappaient de la boîte
+     en ligne et reprenaient toute la largeur de la page, débordant de 20px de chaque côté du
+     titre et des onglets. La marge haute était ignorée, et la bordure, les coins et la surface se
+     peignaient sur des fragments en ligne, c'est-à-dire nulle part. */
+  display: block;
   flex: none;
   margin: 16px 20px 0;
   border-radius: 8px;
   border: 1px solid var(--color-neutral-300);
   background: var(--surface);
+  /* Les bandes portent leur propre teinte à fond perdu ; sans découpe, leurs angles droits
+     dépasseraient des coins arrondis du cadre. */
+  overflow: hidden;
 }
 
 .pm-acc-band-first {
@@ -444,6 +454,13 @@ h1, h2 {
   background: transparent;
   color: inherit;
   font-family: inherit;
+}
+
+/* Material écarte de 16px un panneau déplié au sein d'un accordéon, pour le détacher de ses
+   voisins. Ces bandes-ci sont jointives par construction — chacune porte son propre filet
+   supérieur —, et cet écart ouvrait une bande blanche sous celle qu'on venait d'ouvrir. */
+.pm-acc-band.mat-expansion-panel-spacing {
+  margin: 0;
 }
 
 .pm-acc-head.mat-expansion-panel-header {

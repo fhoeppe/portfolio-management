@@ -13,11 +13,14 @@
     "mock": "prism mock -p 4010 openapi/openapi.yaml",
     "mock:dynamic": "prism mock -p 4010 --dynamic openapi/openapi.yaml",
     "mock:proxy": "prism proxy -p 4010 openapi/openapi.yaml http://localhost:8080/v1",
-    "start:mock": "ng serve --proxy-config proxy.conf.json"
+    "start:mock": "ng serve --proxy-config proxy.conf.json",
+    "api": "dotnet run --project ../api/src/PortfolioManagement.Api --urls http://localhost:8080",
+    "api:test": "dotnet test ../api/PortfolioManagement.slnx"
   },
   "private": true,
   "packageManager": "npm@11.16.0",
   "dependencies": {
+    "@angular/animations": "^22.1.6",
     "@angular/cdk": "^22.1.6",
     "@angular/common": "^22.1.0",
     "@angular/compiler": "^22.1.0",

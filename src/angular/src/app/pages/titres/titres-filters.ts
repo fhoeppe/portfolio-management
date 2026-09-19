@@ -1,3 +1,6 @@
+import type { WritableSignal } from '@angular/core';
+
+
 import {
   ACCOUNT_OPEN,
   CONSENSUS,
@@ -17,7 +20,6 @@ import {
   RATING_SCALE,
   REGIONS,
   SECTORS,
-  SECURITIES,
   STATUS,
   Security,
   INDICES,
@@ -26,7 +28,7 @@ import {
 import {
   deleteBlockedReason,
   isDeletable,
-  isFollowed,
+  isSecurityFollowed,
   positionStatusOf,
   type UniverseCounts,
 } from '../../domain/security-universe.store';
@@ -47,8 +49,20 @@ const hit = (val: string | undefined, q: string | undefined): boolean => !q || S
 /** Comptes ouverts, hors comptes en projet/gel/clôture — seuls sélectionnables dans le filtre Compte. */
 export const OPEN_ACCOUNTS: readonly string[] = MANDATES.filter((m) => m.value !== 'all' && ACCOUNT_OPEN[m.value]).map((m) => m.value);
 
+/**
+ * Les comptes retenus par le filtre — vide quand rien n'est sélectionné.
+ *
+ * Vide et non « les comptes ouverts » : ne rien choisir n'est pas choisir les trois, c'est ne pas
+ * poser la question. La valeur par défaut retenait les trois comptes ouverts, et le tableau
+ * écartait alors sans le dire les titres rattachés à aucun d'eux — un titre jamais négocié, ou
+ * rattaché à un compte gelé. La vignette annonçait onze négociables, le tableau en montrait neuf,
+ * et le sélecteur affichait « Tous les comptes ».
+ *
+ * Choisir explicitement les trois comptes ouverts reste possible et reste un filtre : c'est
+ * « éligible à l'un de ces trois-là », une autre question que « sans restriction ».
+ */
 export function pickedAccountKeys(acctPick: ReadonlySet<string> | null): readonly string[] {
-  return acctPick === null ? OPEN_ACCOUNTS : Array.from(acctPick);
+  return acctPick === null ? [] : Array.from(acctPick);
 }
 
 export function statusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): 'ok' | 'none' {
@@ -57,8 +71,12 @@ export function statusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Secur
 
 /* Les règles de l'univers viennent de `SecurityUniverseStore` : ce module les réécrivait, et deux
    définitions d'une même règle divergent tôt ou tard. Il ne garde que la mise en forme du tableau. */
-export function posStatusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): PositionStatusKey {
-  return positionStatusOf(decisions, s);
+export function posStatusOf(
+  decisions: ReadonlyMap<string, 'ok' | 'none'>,
+  s: Security,
+  followed: ReadonlySet<string>,
+): PositionStatusKey {
+  return positionStatusOf(decisions, s, followed);
 }
 
 export interface SearchState {
@@ -122,7 +140,11 @@ export function computeKpis(c: UniverseCounts): readonly KpiCard[] {
     { label: 'En position', value: String(c.held), note: 'Détenus dans au moins un portefeuille', color: 'var(--ink-ok-2)' },
     { label: 'Positions soldées', value: String(c.settled), note: "Présents dans l'historique des mouvements", color: 'var(--color-text)' },
     { label: 'Retenus', value: String(c.watch), note: "Retenus dans l'univers, jamais négociés", color: 'var(--color-text)' },
-    { label: 'Titres référencés', value: String(c.referenced), note: "Dans l'univers de référence", color: 'var(--color-text)' },
+    /* La quatrième vignette compte les négociables, pas le référentiel entier : c'est la liste que
+       la carte du dessous montre, et une vignette qui annonce un autre nombre que le tableau
+       qu'elle surplombe se lit comme une erreur. Le total du référentiel reste dit ailleurs —
+       sous-titre de l'écran, badge du menu, et la note « n / m » du tableau. */
+    { label: 'Négociables', value: String(c.tradable), note: "Autorisés à l'achat, veille exclue", color: 'var(--color-text)' },
   ].map((k) => toneByColor(k));
 }
 
@@ -147,9 +169,9 @@ export interface UniRow {
   readonly deleteTitle: string;
 }
 
-function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): UniRow {
+function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security, followed: ReadonlySet<string>): UniRow {
   const mi = MARKET_INFO[s.ticker];
-  const ps = posStatusOf(decisions, s);
+  const ps = posStatusOf(decisions, s, followed);
   const def = POSITION_STATUS[ps];
   return {
     ticker: s.ticker,
@@ -169,8 +191,28 @@ function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): U
   };
 }
 
+/**
+ * Quelle moitié de l'univers le tableau montre.
+ *
+ * Les deux cartes de l'écran sont complémentaires : `tradable` retient ce que le comité autorise,
+ * `followed` ce qu'on garde sous les yeux sans l'acheter. C'est la seule chose qui distingue leur
+ * calcul de lignes — d'où ce critère plutôt que deux fonctions qui divergeraient.
+ */
+export type UniScope = 'tradable' | 'followed';
+
 export interface UniFilterInput {
+  readonly scope: UniScope;
+  readonly securities: readonly Security[];
   readonly decisions: ReadonlyMap<string, 'ok' | 'none'>;
+  /**
+   * Les titres mis en veille pendant la session, en plus de ceux que le référentiel livre.
+   *
+   * Il est passé explicitement, et n'a pas de valeur par défaut : c'est précisément parce qu'il
+   * en avait une — l'ensemble vide — qu'une mise en suivi restait invisible dans les tableaux
+   * alors que les décomptes du store, eux, la voyaient. Un défaut silencieux tant que rien
+   * n'appelait `follow()`.
+   */
+  readonly followed: ReadonlySet<string>;
   readonly deleted: ReadonlySet<string>;
   readonly query: string;
   readonly filter: 'all' | 'ok';
@@ -185,8 +227,19 @@ export interface UniFilterInput {
 
 export function computeUniRows(f: UniFilterInput): readonly UniRow[] {
   const q = f.query.trim().toLowerCase();
-  return SECURITIES.filter((s) => !f.deleted.has(s.ticker))
-    .filter((s) => posStatusOf(f.decisions, s) !== 'followed')
+  /**
+   * La partition des deux tableaux se fait sur le FAIT de veille, pas sur le statut de position.
+   *
+   * `posStatusOf` est un statut d'affichage à préséance — détenu, soldé, suivi, retenu, jamais
+   * négocié — et « détenu » l'emporte sur « suivi ». Un titre à la fois détenu et mis en veille
+   * rendait donc `'held'`, `veille(s)` valait faux, et il disparaissait du tableau des suivis
+   * alors que le store et l'API l'y mettaient tous les deux. Le badge garde sa préséance, la
+   * partition non : ce sont deux questions différentes.
+   */
+  const veille = (s: Security) => isSecurityFollowed(s, f.followed);
+
+  return f.securities.filter((s) => !f.deleted.has(s.ticker))
+    .filter((s) => (f.scope === 'followed' ? veille(s) : !veille(s)))
     .filter((s) => {
       const mi = MARKET_INFO[s.ticker];
       if (!hit(s.isin, f.colIsin)) return false;
@@ -196,15 +249,17 @@ export function computeUniRows(f: UniFilterInput): readonly UniRow[] {
       if (f.curKeys.size && !f.curKeys.has(s.currency)) return false;
       return true;
     })
-    .filter((s) => !f.statKeys.size || f.statKeys.has(POSITION_STATUS[posStatusOf(f.decisions, s)].label))
-    .filter((s) => statusOf(f.decisions, s) !== 'none')
+    .filter((s) => !f.statKeys.size || f.statKeys.has(POSITION_STATUS[posStatusOf(f.decisions, s, f.followed)].label))
+    /* Un titre écarté par le comité sort des négociables — mais pas de la veille : on regarde
+       précisément ce qu'on n'achète pas. */
+    .filter((s) => f.scope === 'followed' || statusOf(f.decisions, s) !== 'none')
     .filter((s) => {
       if (f.filter !== 'all' && statusOf(f.decisions, s) !== f.filter) return false;
       if (f.acctKeys.length && !f.acctKeys.some((k) => s.mandates.indexOf(k) >= 0)) return false;
       if (!q) return true;
       return (s.ticker + ' ' + s.name + ' ' + s.isin + ' ' + s.assetClass).toLowerCase().indexOf(q) >= 0;
     })
-    .map((s) => toUniRow(f.decisions, s));
+    .map((s) => toUniRow(f.decisions, s, f.followed));
 }
 
 const UNI_SORT_GET: Record<string, (r: UniRow) => string> = {
@@ -246,30 +301,30 @@ export function groupUniRows(rows: readonly UniRow[], grouped: boolean): readonl
 export const STATUS_LABELS: readonly string[] = ['En position', 'Retenu', 'Position soldée', 'Non retenu'];
 const STATUS_LABEL_KEY: Record<string, PositionStatusKey> = { 'En position': 'held', Retenu: 'watch', 'Position soldée': 'settled', 'Non retenu': 'never' };
 
-export function buildTickerOptions(deleted: ReadonlySet<string>): readonly MultiOption[] {
-  const alive = SECURITIES.filter((x) => !deleted.has(x.ticker));
+export function buildTickerOptions(securities: readonly Security[], deleted: ReadonlySet<string>): readonly MultiOption[] {
+  const alive = securities.filter((x) => !deleted.has(x.ticker));
   const values = Array.from(new Set(alive.map((x) => MARKET_INFO[x.ticker]?.symbol || x.ticker))).sort((a, b) => a.localeCompare(b, 'fr'));
   return values.map((v) => ({ key: v, label: v, count: alive.filter((x) => (MARKET_INFO[x.ticker]?.symbol || x.ticker) === v).length }));
 }
 
-export function buildPlaceOptions(deleted: ReadonlySet<string>): readonly MultiOption[] {
-  const alive = SECURITIES.filter((x) => !deleted.has(x.ticker));
+export function buildPlaceOptions(securities: readonly Security[], deleted: ReadonlySet<string>): readonly MultiOption[] {
+  const alive = securities.filter((x) => !deleted.has(x.ticker));
   const values = Array.from(new Set(alive.map((x) => MARKET_INFO[x.ticker]?.place || x.market))).sort((a, b) => a.localeCompare(b, 'fr'));
   return values.map((v) => ({ key: v, label: v, count: alive.filter((x) => (MARKET_INFO[x.ticker]?.place || x.market) === v).length }));
 }
 
-export function buildCurrencyOptions(deleted: ReadonlySet<string>): readonly MultiOption[] {
-  const alive = SECURITIES.filter((x) => !deleted.has(x.ticker));
+export function buildCurrencyOptions(securities: readonly Security[], deleted: ReadonlySet<string>): readonly MultiOption[] {
+  const alive = securities.filter((x) => !deleted.has(x.ticker));
   const values = Array.from(new Set(alive.map((x) => x.currency))).sort((a, b) => a.localeCompare(b, 'fr'));
   return values.map((v) => ({ key: v, label: v, count: alive.filter((x) => x.currency === v).length }));
 }
 
-export function buildStatusOptions(deleted: ReadonlySet<string>, decisions: ReadonlyMap<string, 'ok' | 'none'>): readonly MultiOption[] {
-  const alive = SECURITIES.filter((x) => !deleted.has(x.ticker));
+export function buildStatusOptions(securities: readonly Security[], deleted: ReadonlySet<string>, decisions: ReadonlyMap<string, 'ok' | 'none'>, followed: ReadonlySet<string>): readonly MultiOption[] {
+  const alive = securities.filter((x) => !deleted.has(x.ticker));
   return STATUS_LABELS.map((label) => {
     const key = STATUS_LABEL_KEY[label];
     const def = POSITION_STATUS[key];
-    return { key: label, label, count: alive.filter((x) => posStatusOf(decisions, x) === key).length, badgeBg: def.bg, badgeFg: def.fg, dotColor: key === 'followed' ? '#a37a00' : def.fg };
+    return { key: label, label, count: alive.filter((x) => posStatusOf(decisions, x, followed) === key).length, badgeBg: def.bg, badgeFg: def.fg, dotColor: key === 'followed' ? '#a37a00' : def.fg };
   });
 }
 
@@ -283,14 +338,16 @@ export function buildAccountOptions(): readonly MultiOption[] {
 
 export function accountTriggerLabel(acctPick: ReadonlySet<string> | null): string {
   const keys = pickedAccountKeys(acctPick);
-  if (!keys.length) return 'Aucun compte';
-  if (keys.length === OPEN_ACCOUNTS.length) return 'Tous les comptes';
+  /* Aucune sélection = aucune restriction, et c'est bien « tous les comptes » qu'il faut lire.
+     Retenir les trois comptes ouverts est autre chose, et se nomme autrement. */
+  if (!keys.length) return 'Tous les comptes';
+  if (keys.length === OPEN_ACCOUNTS.length) return 'Les ' + keys.length + ' comptes ouverts';
   if (keys.length === 1) return MANDATES.find((m) => m.value === keys[0])?.label || keys[0];
   return keys.length + ' comptes sélectionnés';
 }
 
 export function accountNote(n: number): string {
-  if (!n) return 'Comptes ouverts, hors comptes en projet';
+  if (!n) return 'Aucun filtre de compte — tous les titres négociables';
   return n === 1 ? 'Titres éligibles au compte retenu' : 'Titres éligibles à l\'un des ' + n + ' comptes retenus';
 }
 
@@ -298,61 +355,12 @@ export function accountNote(n: number): string {
 // Titres suivis (watchlist) — même Security, autre périmètre de filtrage
 // ---------------------------------------------------------------------------
 
-/** Contrairement au tableau négociable, la source ne retire pas les titres `deleted` de ce
- * tableau : c'est un choix conservé tel quel (un titre supprimé peut donc encore apparaître
- * ici s'il est par ailleurs suivi). */
-export function computeWatchSource(decisions: ReadonlyMap<string, 'ok' | 'none'>): readonly UniRow[] {
-  return SECURITIES.map((s) => toUniRow(decisions, s));
-}
 
-function followedSecurities(): readonly Security[] {
-  return SECURITIES.filter((x) => isFollowed(x.ticker));
-}
 
-export function buildWatchTickerOptions(): readonly MultiOption[] {
-  const fs = followedSecurities();
-  const values = fs.map((x) => x.ticker).sort((a, b) => a.localeCompare(b, 'fr'));
-  return values.map((v) => ({ key: v, label: v, count: fs.filter((x) => x.ticker === v).length }));
-}
 
-export function buildWatchPlaceOptions(): readonly MultiOption[] {
-  const fs = followedSecurities();
-  const values = Array.from(new Set(fs.map((x) => MARKET_INFO[x.ticker]?.place || x.market))).sort((a, b) => a.localeCompare(b, 'fr'));
-  return values.map((v) => ({ key: v, label: v, count: fs.filter((x) => (MARKET_INFO[x.ticker]?.place || x.market) === v).length }));
-}
 
-export function buildWatchCurrencyOptions(): readonly MultiOption[] {
-  const fs = followedSecurities();
-  const values = Array.from(new Set(fs.map((x) => x.currency))).sort((a, b) => a.localeCompare(b, 'fr'));
-  return values.map((v) => ({ key: v, label: v, count: fs.filter((x) => x.currency === v).length }));
-}
 
-export interface WatchFilterInput {
-  readonly colIsin: string;
-  readonly colName: string;
-  readonly tickKeys: ReadonlySet<string>;
-  readonly placeKeys: ReadonlySet<string>;
-  readonly curKeys: ReadonlySet<string>;
-  readonly sortKey: string | null;
-  readonly sortDir: 'asc' | 'desc';
-}
 
-/** Le filtre ticker de ce tableau compare `r.ticker` (pas `r.symbol` affiché) — fidèle à la
- * source (`WATCH_TICKERS = FOLLOWED_SEC.map(x => x.ticker)`), incohérence assumée du prototype. */
-export function computeWatchRows(source: readonly UniRow[], f: WatchFilterInput): readonly UniRow[] {
-  let out = source
-    .filter((r) => r.posKey === 'followed')
-    .filter((r) => hit(r.isin, f.colIsin) && hit(r.name, f.colName))
-    .filter((r) => !f.placeKeys.size || f.placeKeys.has(r.market))
-    .filter((r) => !f.curKeys.size || f.curKeys.has(r.currency))
-    .filter((r) => !f.tickKeys.size || f.tickKeys.has(r.ticker));
-  const get = f.sortKey ? UNI_SORT_GET[f.sortKey] : null;
-  if (get) {
-    const d = f.sortDir === 'desc' ? -1 : 1;
-    out = [...out].sort((a, b) => get(a).localeCompare(get(b), 'fr') * d);
-  }
-  return out;
-}
 
 // ---------------------------------------------------------------------------
 // Recherche de titres — options de filtres statiques
@@ -416,9 +424,13 @@ export const CONSENSUS_OPTIONS = CONSENSUS_VIEWS;
 export const SECTOR_OPTIONS: readonly { readonly value: string; readonly label: string }[] = SECTORS.slice()
   .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
   .map((x) => ({ value: x.name, label: x.icon + '  ' + x.name }));
-export const PLACE_OPTIONS: readonly { readonly value: string; readonly label: string }[] = Array.from(new Set(SECURITIES.map((x) => MARKET_INFO[x.ticker]?.place || x.market)))
-  .sort((a, b) => a.localeCompare(b, 'fr'))
-  .map((p) => ({ value: p, label: p }));
+/* Fonction et non constante : la liste des places se déduit du catalogue, qui n'est plus connu au
+   chargement du module. Une constante l'aurait figée à vide. */
+export function placeOptions(securities: readonly Security[]): readonly { readonly value: string; readonly label: string }[] {
+  return Array.from(new Set(securities.map((x) => MARKET_INFO[x.ticker]?.place || x.market)))
+    .sort((a, b) => a.localeCompare(b, 'fr'))
+    .map((p) => ({ value: p, label: p }));
+}
 
 /** Groupes prêts pour `app-ti-select`, option « Tous/Toutes » en tête (fidèle au `<option value="all">` statique de la source). */
 export const CLASS_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Toutes les classes' }, ...CLASS_OPTIONS] }];
@@ -431,18 +443,20 @@ export const ESG_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'T
 export const CONSENSUS_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Tous les consensus' }, ...CONSENSUS_OPTIONS] }];
 export const DIV_FREQ_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Toutes les fréquences' }, ...DIV_FREQ_OPTIONS] }];
 export const SECTOR_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Tous les secteurs' }, ...SECTOR_OPTIONS] }];
-export const PLACE_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Toutes les places' }, ...PLACE_OPTIONS] }];
+export function placeSelectGroups(securities: readonly Security[]) {
+  return [{ label: '', items: [{ value: 'all', label: 'Toutes les places' }, ...placeOptions(securities)] }];
+}
 
 // ---------------------------------------------------------------------------
 // Résultats de recherche
 // ---------------------------------------------------------------------------
 
-export function buildSearchPool(fromIndex: boolean, idx: IndexDef): readonly Security[] {
-  if (!fromIndex) return SECURITIES;
+export function buildSearchPool(securities: readonly Security[], fromIndex: boolean, idx: IndexDef): readonly Security[] {
+  if (!fromIndex) return securities;
   const members = idx.members;
   return members.map(
     (m) =>
-      SECURITIES.find((x) => x.ticker === m.ticker) || {
+      securities.find((x) => x.ticker === m.ticker) || {
         ticker: m.ticker, name: m.name, isin: '—', market: idx.place, assetClass: 'Action', currency: idx.currency,
         rating: '—', liquidity: 'Composant ' + idx.name, esg: 'Non renseigné', domicile: '—', complexity: 'Non complexe', cap: 0, held: 0,
         mandates: [], reviewed: '—', by: idx.name, status: 'none' as const, note: 'Composant de ' + idx.name + ' non encore évalué.',
@@ -482,6 +496,8 @@ export interface SearchFilterInput {
   readonly resCol: SearchColFilters;
   readonly resStatusKeys: ReadonlySet<PositionStatusKey>;
   readonly decisions: ReadonlyMap<string, 'ok' | 'none'>;
+  /** Les titres mis en veille pendant la session — voir `UniFilterInput.followed`. */
+  readonly followed: ReadonlySet<string>;
   readonly picked: ReadonlySet<string>;
   readonly sortKey: string | null;
   readonly sortDir: 'asc' | 'desc';
@@ -497,7 +513,7 @@ export function computeSearchRows(f: SearchFilterInput): readonly SearchRow[] {
     if (!hit(s.currency, f.resCol.currency)) return false;
     if (!hit(s.rating, f.resCol.rating)) return false;
     if (!hit(String(s.liquidity).split(' · ')[0], f.resCol.liquidity)) return false;
-    if (f.resStatusKeys.size && !f.resStatusKeys.has(posStatusOf(f.decisions, s))) return false;
+    if (f.resStatusKeys.size && !f.resStatusKeys.has(posStatusOf(f.decisions, s, f.followed))) return false;
     if (f.fromIndex) return true;
     if (q && (s.ticker + ' ' + s.name + ' ' + s.isin + ' ' + s.assetClass).toLowerCase().indexOf(q) < 0) return false;
     if (f.search.cls !== 'all' && s.assetClass !== f.search.cls) return false;
@@ -530,13 +546,13 @@ export function computeSearchRows(f: SearchFilterInput): readonly SearchRow[] {
     currency: (x) => x.currency,
     rating: (x) => x.rating,
     liquidity: (x) => String(x.liquidity).split(' · ')[0],
-    status: (x) => POSITION_STATUS[posStatusOf(f.decisions, x)].label,
+    status: (x) => POSITION_STATUS[posStatusOf(f.decisions, x, f.followed)].label,
   };
   const get = f.sortKey ? getters[f.sortKey] : null;
   const sorted = get ? raw.slice().sort((a, b) => get(a).localeCompare(get(b), 'fr') * (f.sortDir === 'desc' ? -1 : 1)) : raw;
 
   return sorted.map((s) => {
-    const ps = posStatusOf(f.decisions, s);
+    const ps = posStatusOf(f.decisions, s, f.followed);
     const def = POSITION_STATUS[ps];
     return {
       ticker: s.ticker, name: s.name, isin: s.isin, market: s.market, assetClass: s.assetClass, currency: s.currency,
@@ -548,10 +564,10 @@ export function computeSearchRows(f: SearchFilterInput): readonly SearchRow[] {
 
 const RES_STATUS_ORDER: readonly PositionStatusKey[] = ['held', 'settled', 'watch', 'followed', 'never'];
 
-export function buildResStatusOptions(pool: readonly Security[], decisions: ReadonlyMap<string, 'ok' | 'none'>): readonly MultiOption[] {
+export function buildResStatusOptions(pool: readonly Security[], decisions: ReadonlyMap<string, 'ok' | 'none'>, followed: ReadonlySet<string>): readonly MultiOption[] {
   return RES_STATUS_ORDER.map((k) => {
     const def = POSITION_STATUS[k];
-    return { key: k, label: def.label, count: pool.filter((x) => posStatusOf(decisions, x) === k).length, badgeBg: def.bg, badgeFg: def.fg, dotColor: k === 'followed' ? '#a37a00' : def.fg };
+    return { key: k, label: def.label, count: pool.filter((x) => posStatusOf(decisions, x, followed) === k).length, badgeBg: def.bg, badgeFg: def.fg, dotColor: k === 'followed' ? '#a37a00' : def.fg };
   });
 }
 
@@ -559,19 +575,20 @@ export function buildResStatusOptions(pool: readonly Security[], decisions: Read
 // Panneau « Indices de référence » + modale d'aperçu
 // ---------------------------------------------------------------------------
 
-export function refOf(refs: ReadonlyMap<string, 'ok' | 'none'>, idxKey: string, m: IndexMember, decisions: ReadonlyMap<string, 'ok' | 'none'>): 'ok' | 'none' {
+export function refOf(securities: readonly Security[], refs: ReadonlyMap<string, 'ok' | 'none'>, idxKey: string, m: IndexMember, decisions: ReadonlyMap<string, 'ok' | 'none'>): 'ok' | 'none' {
   const override = refs.get(idxKey + '/' + m.ticker);
   if (override) return override;
-  const known = SECURITIES.find((x) => x.ticker === m.ticker);
+  const known = securities.find((x) => x.ticker === m.ticker);
   if (known && statusOf(decisions, known) !== 'none') return 'ok';
   return m.ref;
 }
 
-export function inCount(idx: IndexDef, members: readonly IndexMember[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): number {
-  return members.filter((m) => refOf(refs, idx.key, m, decisions) === 'ok').length;
+export function inCount(securities: readonly Security[], idx: IndexDef, members: readonly IndexMember[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): number {
+  return members.filter((m) => refOf(securities, refs, idx.key, m, decisions) === 'ok').length;
 }
 
 export function buildIndexGroups(
+  securities: readonly Security[],
   refs: ReadonlyMap<string, 'ok' | 'none'>,
   decisions: ReadonlyMap<string, 'ok' | 'none'>,
 ): readonly { readonly label: string; readonly items: readonly { readonly value: string; readonly label: string }[] }[] {
@@ -581,9 +598,25 @@ export function buildIndexGroups(
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
       .map((i) => {
         const members = i.members;
-        return { value: i.key, label: i.name + ' — ' + i.place + ' (' + inCount(i, members, refs, decisions) + '/' + members.length + ' retenus)' };
+        return { value: i.key, label: i.name + ' — ' + i.place + ' (' + inCount(securities, i, members, refs, decisions) + '/' + members.length + ' retenus)' };
       }),
   }));
+}
+
+/**
+ * Un titre détenu ne peut pas sortir de l'univers.
+ *
+ * L'appartenance à l'univers est une décision ; la détention est un fait. Décocher un titre qu'on
+ * possède ne le vendrait pas — cela prétendrait seulement qu'on ne l'a pas retenu, alors qu'il est
+ * en portefeuille. L'écran afficherait « Non retenu » sur une ligne détenue, et le décompte des
+ * retenus cesserait de couvrir ce qui est réellement détenu.
+ *
+ * La condition porte sur `retained` et pas seulement sur la détention : un titre détenu qui ne
+ * serait pas encore retenu doit pouvoir l'être. C'est le passage de retenu à non retenu qui est
+ * interdit, pas l'inverse — verrouiller les deux sens l'enfermerait hors de l'univers.
+ */
+export function isLockedInUniverse(ticker: string, retained: boolean): boolean {
+  return retained && !!PORTFOLIO_LINKS[ticker]?.held;
 }
 
 export interface PreviewRow {
@@ -598,6 +631,8 @@ export interface PreviewRow {
   readonly tagBg: string;
   readonly tagFg: string;
   readonly on: boolean;
+  /** La bascule est-elle inerte ? Vrai pour un titre détenu, qui ne peut pas être décoché. */
+  readonly locked: boolean;
 }
 
 export interface PreviewData {
@@ -609,8 +644,8 @@ export interface PreviewData {
   readonly footer: string;
 }
 
-export function computePreview(idx: IndexDef, members: readonly IndexMember[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): PreviewData {
-  const ref = (m: IndexMember) => refOf(refs, idx.key, m, decisions);
+export function computePreview(securities: readonly Security[], idx: IndexDef, members: readonly IndexMember[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): PreviewData {
+  const ref = (m: IndexMember) => refOf(securities, refs, idx.key, m, decisions);
   const elig = members.filter((m) => ref(m) === 'ok');
   const posOf = (m: IndexMember, retained: boolean): PositionStatusDef => {
     const link = PORTFOLIO_LINKS[m.ticker];
@@ -638,11 +673,15 @@ export function computePreview(idx: IndexDef, members: readonly IndexMember[], r
         const r = ref(m);
         const on = r === 'ok';
         const st = posOf(m, on);
+        const locked = isLockedInUniverse(m.ticker, on);
         return {
           name: m.name, ticker: m.ticker, isin: m.isin, sector: m.sector,
           weight: m.weight ? m.weight.toFixed(1).replace('.', ',') + ' %' : '—',
-          eligible: st.label, posHint: st.hint, switchTitle: on ? "Retirer de l'univers" : "Retenir dans l'univers",
-          tagBg: st.bg, tagFg: st.fg, on,
+          eligible: st.label, posHint: st.hint,
+          switchTitle: locked
+            ? "Titre détenu en portefeuille : il ne peut pas sortir de l'univers"
+            : on ? "Retirer de l'univers" : "Retenir dans l'univers",
+          tagBg: st.bg, tagFg: st.fg, on, locked,
         };
       }),
     allOn: elig.length === members.length,
@@ -729,4 +768,32 @@ export function computeCriteria(cur: Security): readonly CriterionRow[] {
     { label: 'Plafond de concentration', detail: cur.cap ? cur.cap + " % de l'actif net par compte" : 'Aucun plafond attribué', ok: cur.cap > 0 },
   ];
   return list.map((c) => ({ label: c.label, detail: c.detail, verdict: c.ok ? 'Conforme' : 'Restriction', color: c.ok ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)' }));
+}
+
+// ---------------------------------------------------------------------------
+// Sélections multiples — outils partagés par les tableaux
+// ---------------------------------------------------------------------------
+
+/** Sens d'un tri de colonne. */
+export type SortDir = 'asc' | 'desc';
+
+/**
+ * Bascule une clé dans un ensemble persisté.
+ *
+ * Ces deux fonctions vivaient dans `titres.ts`, qui était le seul à en avoir l'usage. Le tableau
+ * des titres en est sorti dans son propre composant, et deux fichiers ne peuvent pas partager une
+ * fonction privée de module — elles sont donc ici, auprès des filtres qu'elles servent.
+ */
+export function toggleInSet<T>(sig: WritableSignal<ReadonlySet<T>>, key: T): void {
+  sig.update((s) => {
+    const next = new Set(s);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+  });
+}
+
+/** Tout sélectionner, ou tout désélectionner si tout l'était déjà. */
+export function toggleAllInSet<T>(sig: WritableSignal<ReadonlySet<T>>, all: readonly T[]): void {
+  sig.update((s) => (all.length > 0 && all.every((v) => s.has(v)) ? new Set<T>() : new Set(all)));
 }

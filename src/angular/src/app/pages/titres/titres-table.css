@@ -1,0 +1,263 @@
+/*
+ * Le tableau de titres — habillage commun.
+ *
+ * Ces règles servaient l'unique tableau de l'écran Titres, et vivaient donc dans sa feuille. Le
+ * tableau est désormais un composant, `pm-securities-table`, dont la CSS est scopée : les règles
+ * doivent le suivre. Mais l'écran en garde deux autres — les titres suivis et les résultats de
+ * recherche — bâtis sur les mêmes classes.
+ *
+ * D'où ce fichier, listé par les deux composants dans leur `styleUrls`. Une seule définition,
+ * deux portées : dupliquer aurait garanti la divergence, et charger toute la feuille de l'écran
+ * dans le composant aurait doublé 12 ko de CSS pour en utiliser un cinquième.
+ */
+
+.ti-table-scroll {
+  overflow-x: auto;
+}
+
+.ti-table {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+  background: var(--surface);
+}
+
+.ti-table-header-row {
+  height: 40px;
+}
+
+.ti-th {
+  text-align: left;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.ti-th-isin {
+  width: 150px;
+  padding-left: 24px;
+}
+
+.ti-th-ticker {
+  width: 132px;
+}
+
+.ti-th-place {
+  width: 170px;
+}
+
+.ti-th-currency {
+  width: 84px;
+}
+
+.ti-th-status {
+  width: 150px;
+}
+
+.ti-th-actions {
+  width: 64px;
+  text-align: right;
+  padding: 0 24px 0 16px;
+}
+
+.ti-th-select {
+  width: 36px;
+  text-align: center;
+  padding: 0 8px 0 24px;
+}
+
+.ti-th-security {
+  width: 28%;
+}
+
+.ti-sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.ti-sort-btn:hover {
+  color: var(--color-text) !important;
+}
+
+.ti-sort-arrow {
+  display: flex;
+  align-items: center;
+}
+
+.ti-filter-row {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.ti-th-filter {
+  padding: 4px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.ti-th-filter:first-child {
+  padding-left: 24px;
+}
+
+.ti-text-filter {
+  width: 100%;
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.ti-text-filter:focus {
+  border-color: #003da5;
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.34), 0 0 0 3px rgba(0, 61, 165, 0.1);
+}
+
+.ti-group-row {
+  background: rgba(0, 61, 165, 0.12);
+}
+
+.ti-group-cell {
+  height: 34px;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(0, 61, 165, 0.28);
+}
+
+.ti-group-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ti-group-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.ti-group-count {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.ti-row {
+  height: 36px;
+  cursor: pointer;
+}
+
+.ti-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ti-row-picked {
+  background: rgba(0, 61, 165, 0.34);
+}
+
+.ti-td {
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* MatTable pose `border-bottom: none` sur les cellules de la dernière ligne du corps
+   (`.mdc-data-table__row:last-child > .mat-mdc-cell`, 0-3-0) — une convention de liste
+   Material que la règle ci-dessus, à 0-2-0, ne peut pas dépasser. Ici cette bordure ferme
+   le tableau : on la repose à spécificité suffisante. */
+.ti-table tr:last-child > .ti-td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.ti-td-isin {
+  padding-left: 24px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.ti-td-ticker {
+  font-weight: 700;
+  color: var(--ink-brand);
+}
+
+.ti-td-select {
+  text-align: center;
+  padding: 0 8px 0 24px;
+  white-space: normal;
+}
+
+.ti-td-actions {
+  padding: 0 24px 0 16px;
+  text-align: right;
+  white-space: normal;
+}
+
+.ti-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ti-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.ti-del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--color-accent-300, var(--color-neutral-300));
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-accent-700, #b91c1c);
+  cursor: pointer;
+}
+
+.ti-del-btn:disabled {
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-500, var(--color-neutral-600));
+  cursor: not-allowed;
+}
+
+.ti-del-btn:not(:disabled):hover {
+  background: var(--color-accent-100, rgba(185, 28, 28, 0.08));
+}
+
+.ti-empty-note {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 12px;
+  color: var(--color-neutral-700);
+}

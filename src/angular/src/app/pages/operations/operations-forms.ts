@@ -419,18 +419,35 @@ export function caTaxPlaceholder(t: string): string {
 // Cashflow
 // ---------------------------------------------------------------------------
 
+/**
+ * Le virement met deux comptes en jeu ; toutes les autres natures n'en touchent qu'un.
+ *
+ * C'est la seule chose qui le distingue vraiment ici — et c'est aussi pourquoi sa transaction porte
+ * la nature TRANSFER et non CASHFLOW : deux opérations, un débit et un crédit, là où un dépôt ou
+ * des frais n'en produisent qu'une.
+ */
+export function cfHasTarget(t: string): boolean {
+  return t === 'TRANSFER';
+}
+
+/** « Compte » suffit quand il n'y en a qu'un ; dès qu'il y en a deux, il faut dire lequel. */
+export function cfAccountLabel(t: string): string {
+  return cfHasTarget(t) ? 'Compte source' : 'Compte';
+}
+
 export function cfHasFee(t: string): boolean {
   return t === 'DEPOSIT' || t === 'WITHDRAW';
 }
-/** Versements et retraits d'espèces ne sont pas taxés. */
+/** Versements, retraits et virements d'espèces ne sont pas taxés. */
 export function cfHasTax(t: string): boolean {
-  return ['DEPOSIT', 'WITHDRAW', 'REFUND'].indexOf(t) < 0;
+  return ['DEPOSIT', 'WITHDRAW', 'REFUND', 'TRANSFER'].indexOf(t) < 0;
 }
 /** Sans frais ni taxes, brut et net se confondent : un seul montant. */
 export function cfHasNet(t: string): boolean {
-  return t !== 'REFUND';
+  return ['REFUND', 'TRANSFER'].indexOf(t) < 0;
 }
 export function cfGrossLabel(t: string): string {
+  if (t === 'TRANSFER') return 'Montant viré';
   return t === 'REFUND' ? 'Montant' : 'Montant brut';
 }
 export function cfNetAmount(gross: string, fee: string, tax: string): string {
@@ -446,6 +463,7 @@ const CF_INTERNAL_WHY: Record<string, string> = {
   INTEREST: 'Les intérêts sont crédités sur la poche espèces du compte titre, sans passage par un compte bancaire externe.',
   LENDING: 'La commission de prêt de titres est créditée sur la poche espèces du compte titre, sans passage par un compte bancaire externe.',
   REFUND: 'Le remboursement est crédité sur la poche espèces du compte titre, sans passage par un compte bancaire externe.',
+  TRANSFER: "Le virement va d'une poche espèces à une autre, toutes deux suivies : aucun compte bancaire externe n'intervient.",
 };
 export function cfInternalWhy(t: string): string {
   return CF_INTERNAL_WHY[t] || 'Cette nature se règle sur la poche espèces du compte titre.';

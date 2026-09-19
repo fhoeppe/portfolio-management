@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    Réglages communs à tous les projets de la solution. Posés ici une seule fois : un projet ajouté
+    plus tard hérite des mêmes garanties sans qu'on ait à y penser.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Un avertissement du compilateur est un défaut qu'on n'a pas encore corrigé, pas une note
+         de bas de page. La compilation échoue tant qu'il reste. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
+    <!-- La documentation XML n'est pas décorative : elle alimente le schéma OpenAPI généré.
+         CS1591 reste désactivé, on ne documente pas l'interne. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>

@@ -17,6 +17,7 @@
   --color-neutral-100: #f7f6f5;
   --color-neutral-200: #ececea;
   --color-neutral-300: #d8d5d2;
+  --color-neutral-400: #bab6b6;
   --color-neutral-600: #7d7979;
   --color-neutral-700: #605d5d;
 }
@@ -35,6 +36,7 @@
   --color-neutral-100: #141313;
   --color-neutral-200: #262423;
   --color-neutral-300: #35322f;
+  --color-neutral-400: #4a4643;
   --color-neutral-600: #8a8582;
   --color-neutral-700: #b5b0ad;
 }
@@ -135,6 +137,13 @@
 .ti-pv-table th.mat-mdc-header-cell {
   position: sticky;
   top: 0;
+  /* Sans `z-index`, une cellule collante reste à `auto` : elle ne crée pas de contexte
+     d'empilement, et tout descendant POSITIONNÉ des lignes suivantes se peint par-dessus. Le texte
+     des lignes passait bien dessous — il n'est pas positionné —, mais les bascules, dont Material
+     place la pastille et le rail en absolu, traversaient l'en-tête et venaient se superposer à la
+     bascule « tout sélectionner ». 2 et non 6 : il suffit de dominer les lignes, et rester sous la
+     valeur des barres d'onglets collantes garde l'ordre juste si l'une venait les surmonter. */
+  z-index: 2;
   padding: 8px 12px;
   font-size: 10px;
   font-weight: 700;
@@ -308,4 +317,32 @@
 .ti-pv-sort-arrow {
   display: flex;
   align-items: center;
+}
+
+/**
+ * La bascule d'un titre détenu doit se lire comme verrouillée, pas comme effacée.
+ *
+ * Material grise l'inerte en posant `opacity: 0.12` sur la piste — d'où une bascule si pâle qu'elle
+ * ressemble à un défaut d'affichage plutôt qu'à une décision. Ici le verrou porte une règle métier :
+ * un titre en portefeuille ne peut pas sortir de l'univers. Il doit donc rester parfaitement
+ * visible, et seulement gris.
+ *
+ * Par jetons et non par sélecteurs de descendance : `.mdc-switch__track` est rendu par le gabarit
+ * de `MatSlideToggle`, hors encapsulation de ce composant — le viser ne ciblerait rien, exactement
+ * comme `thead`/`tbody` plus haut. Les propriétés personnalisées, elles, traversent l'encapsulation
+ * par héritage CSS. Le préfixe est `--mat-slide-toggle-`, et non `--mdc-switch-` comme le nom des
+ * classes le laisserait croire.
+ */
+.ti-pv-table mat-slide-toggle {
+  --mat-slide-toggle-disabled-track-opacity: 1;
+  --mat-slide-toggle-disabled-selected-track-color: var(--color-neutral-400);
+  --mat-slide-toggle-disabled-unselected-track-color: var(--color-neutral-200);
+  --mat-slide-toggle-disabled-selected-handle-color: var(--color-neutral-100);
+  --mat-slide-toggle-disabled-selected-handle-opacity: 1;
+  --mat-slide-toggle-disabled-selected-icon-color: var(--color-neutral-600);
+  --mat-slide-toggle-disabled-selected-icon-opacity: 1;
+  /* Material cerne la piste inerte d'un liseré presque noir. Passé le rétablissement de l'opacité,
+     cet anneau ressort et fait lire la bascule comme soulignée plutôt qu'inerte — l'inverse de ce
+     qu'on veut dire. */
+  --mat-slide-toggle-disabled-unselected-track-outline-color: var(--color-neutral-400);
 }

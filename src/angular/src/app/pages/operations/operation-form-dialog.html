@@ -166,55 +166,60 @@
     </span>
 
     @if (trfSub() === 'init') {
-      <label class="pm-field">Compte source
-        <app-ops-select [options]="transferFromOptions()" [value]="quick().from" [placeholder]="'Aucun'" (valueChange)="patchQuick({ from: $event })" />
-      </label>
-      @if (trfFromExternal()) {
-        <label class="pm-field">Numéro du compte titre externe (source)
-          <input [value]="quick().extFrom" (input)="patchQuick({ extFrom: $any($event.target).value })" placeholder="Référence du compte chez l'établissement source" class="pm-text-input" />
-          <span class="pm-hint-text-sm">Le compte doit appartenir au titulaire du transfert.</span>
+      <div class="pm-section">
+        <div class="pm-section-head" [style.background]="info().tint" [style.color]="info().bg">Définition du transfert</div>
+        <div class="pm-section-body">
+        <label class="pm-field">Compte source
+          <app-ops-select [options]="transferFromOptions()" [value]="quick().from" [placeholder]="'Aucun'" (valueChange)="patchQuick({ from: $event })" />
         </label>
-      }
-      <label class="pm-field">Compte destinataire
-        <app-ops-select [options]="transferToOptions()" [value]="quick().to" [placeholder]="'Aucun'" (valueChange)="patchQuick({ to: $event })" />
-      </label>
-      @if (trfIsExternal()) {
-        <label class="pm-field">Numéro du compte titre externe
-          <input [value]="quick().extAccount" (input)="patchQuick({ extAccount: $any($event.target).value })" placeholder="Référence du compte chez l'établissement destinataire" class="pm-text-input" />
-          <span class="pm-hint-text-sm">Le compte externe doit appartenir au propriétaire du transfert.</span>
+        @if (trfFromExternal()) {
+          <label class="pm-field">Numéro du compte titre externe (source)
+            <input [value]="quick().extFrom" (input)="patchQuick({ extFrom: $any($event.target).value })" placeholder="Référence du compte chez l'établissement source" class="pm-text-input" />
+            <span class="pm-hint-text-sm">Le compte doit appartenir au titulaire du transfert.</span>
+          </label>
+        }
+        <label class="pm-field">Compte destinataire
+          <app-ops-select [options]="transferToOptions()" [value]="quick().to" [placeholder]="'Aucun'" (valueChange)="patchQuick({ to: $event })" />
         </label>
-      }
-      <span class="pm-row-2">
-        <label class="pm-field pm-field-narrow">Place (MIC)
-          <span class="pm-static-box">{{ trfMic() }}</span>
-          <span class="pm-hint-text-sm">{{ trfMicPlace() }}</span>
-        </label>
-        <label class="pm-field pm-field-grow">Titre transféré
-          <app-ops-select [options]="transferSecOptions" [value]="quick().security" (valueChange)="patchQuick({ security: $event })" />
-        </label>
-      </span>
-      <span class="pm-row-2">
-        <label class="pm-field pm-field-grow">Quantité
-          <app-ops-stepper-input [value]="quick().qty" placeholder="20" [integer]="true" [step]="1" (valueChange)="patchQuick({ qty: $event })" />
-        </label>
-        <label class="pm-field pm-field-grow">Prix estimé
-          <app-ops-stepper-input [value]="quick().price" placeholder="150,00" [prefix]="trfCurrency()" [step]="0.5" (valueChange)="patchQuick({ price: $event })" />
-        </label>
-      </span>
-      <span class="pm-row-2">
-        <label class="pm-field pm-field-narrow">Type de transfert
-          <span class="pm-static-box">
-            <span [matTooltip]="trfKindHint()" class="pm-kind-badges">
-              @for (b of trfKindBadges(); track b.code) {
-                <span class="pm-kind-badge" [style.background]="b.bg" [style.color]="b.fg"><span class="pm-kind-dot" [style.background]="b.fg"></span>{{ b.code }}</span>
-              }
+        @if (trfIsExternal()) {
+          <label class="pm-field">Numéro du compte titre externe
+            <input [value]="quick().extAccount" (input)="patchQuick({ extAccount: $any($event.target).value })" placeholder="Référence du compte chez l'établissement destinataire" class="pm-text-input" />
+            <span class="pm-hint-text-sm">Le compte externe doit appartenir au propriétaire du transfert.</span>
+          </label>
+        }
+        <span class="pm-row-2">
+          <label class="pm-field pm-field-narrow">Place (MIC)
+            <span class="pm-static-box">{{ trfMic() }}</span>
+            <span class="pm-hint-text-sm">{{ trfMicPlace() }}</span>
+          </label>
+          <label class="pm-field pm-field-grow">Titre transféré
+            <app-ops-select [options]="transferSecOptions" [value]="quick().security" (valueChange)="patchQuick({ security: $event })" />
+          </label>
+        </span>
+        <span class="pm-row-2">
+          <label class="pm-field pm-field-grow">Quantité
+            <app-ops-stepper-input [value]="quick().qty" placeholder="20" [integer]="true" [step]="1" (valueChange)="patchQuick({ qty: $event })" />
+          </label>
+          <label class="pm-field pm-field-grow">Prix estimé
+            <app-ops-stepper-input [value]="quick().price" placeholder="150,00" [prefix]="trfCurrency()" [step]="0.5" (valueChange)="patchQuick({ price: $event })" />
+          </label>
+        </span>
+        <span class="pm-row-2">
+          <label class="pm-field pm-field-narrow">Type de transfert
+            <span class="pm-static-box">
+              <span [matTooltip]="trfKindHint()" class="pm-kind-badges">
+                @for (b of trfKindBadges(); track b.code) {
+                  <span class="pm-kind-badge" [style.background]="b.bg" [style.color]="b.fg"><span class="pm-kind-dot" [style.background]="b.fg"></span>{{ b.code }}</span>
+                }
+              </span>
             </span>
-          </span>
-        </label>
-        <label class="pm-field pm-field-grow">Valeur du transfert
-          <span class="pm-static-value"><span class="pm-static-prefix">{{ trfCurrency() }}</span><span class="pm-static-amount">{{ trfValueLabel() }}</span></span>
-        </label>
-      </span>
+          </label>
+          <label class="pm-field pm-field-grow">Valeur du transfert
+            <span class="pm-static-value"><span class="pm-static-prefix">{{ trfCurrency() }}</span><span class="pm-static-amount">{{ trfValueLabel() }}</span></span>
+          </label>
+        </span>
+        </div>
+      </div>
     } @else {
       <div class="pm-section">
         <div class="pm-legs-head" [style.background]="info().tint">
@@ -349,8 +354,9 @@
   @if (kind === 'cashflow') {
     <label class="pm-field">Nature du cashflow
       <mat-button-toggle-group class="pm-type-toggle pm-type-toggle-magenta" hideSingleSelectionIndicator [value]="quick().cfType" (change)="setCfType($event.value)">
-        @for (o of cfTypeOptions; track o.value) {
-          <mat-button-toggle [value]="o.value">{{ o.label }}</mat-button-toggle>
+        @for (o of cfTypeToggles(); track o.value) {
+          <mat-button-toggle [value]="o.value" [disabled]="o.disabled"
+            [matTooltip]="o.disabled ? cfTransferWhy() : ''">{{ o.label }}</mat-button-toggle>
         }
       </mat-button-toggle-group>
     </label>
@@ -358,42 +364,59 @@
       <span class="pm-callout-title" style="color:var(--ink-magenta)">{{ cfTypeDef().title }}</span>
       <span class="pm-callout-text">{{ cfTypeDef().text }}</span>
     </span>
-    <label class="pm-field">Date
-      <span class="pm-datepicker"><input [matDatepicker]="opPicker7" [value]="isoToDate(quick().date)" (dateChange)="patchQuick({ date: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker7"></mat-datepicker-toggle><mat-datepicker #opPicker7></mat-datepicker></span>
-    </label>
-    @if (cfExternalAllowed()) {
-      <label class="pm-field">Compte de rattachement
-        <app-ops-select [options]="cfBankOptions()" [value]="quick().linkedBank" [disabled]="cfBankLocked()" [placeholder]="'Aucun'" (valueChange)="patchQuick({ linkedBank: $event })" />
+      <div class="pm-section">
+        <div class="pm-section-head" [style.background]="info().tint" [style.color]="info().bg">Définition du cashflow</div>
+        <div class="pm-section-body">
+      <label class="pm-field">Date
+        <span class="pm-datepicker"><input [matDatepicker]="opPicker7" [value]="isoToDate(quick().date)" (dateChange)="patchQuick({ date: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker7"></mat-datepicker-toggle><mat-datepicker #opPicker7></mat-datepicker></span>
       </label>
-    } @else {
-      <span class="pm-callout" style="border-color:var(--color-neutral-300);border-left-color:var(--color-neutral-400);background:var(--color-neutral-100)">
-        <span class="pm-callout-title" style="color:var(--color-neutral-800)">Aucun compte bancaire externe</span>
-        <span class="pm-callout-text">{{ cfInternalWhy() }}</span>
+      @if (cfExternalAllowed()) {
+        <label class="pm-field">Compte de rattachement
+          <app-ops-select [options]="cfBankOptions()" [value]="quick().linkedBank" [disabled]="cfBankLocked()" [placeholder]="'Aucun'" (valueChange)="patchQuick({ linkedBank: $event })" />
+        </label>
+      } @else {
+        <span class="pm-callout" style="border-color:var(--color-neutral-300);border-left-color:var(--color-neutral-400);background:var(--color-neutral-100)">
+          <span class="pm-callout-title" style="color:var(--color-neutral-800)">Aucun compte bancaire externe</span>
+          <span class="pm-callout-text">{{ cfInternalWhy() }}</span>
+        </span>
+      }
+      <label class="pm-field">{{ cfAccountLabel() }}
+        <app-ops-select [options]="cfAccOptions" [value]="quick().account" (valueChange)="setAccount($event)" />
+      </label>
+      @if (cfHasTarget()) {
+        <label class="pm-field">Compte destinataire
+          <app-ops-select [options]="cfTargetOptions()" [value]="quick().to" [disabled]="cfTransferBlocked()" [placeholder]="cfTransferBlocked() ? 'Aucun compte chez le même établissement' : 'Aucun'" (valueChange)="patchQuick({ to: $event })" />
+          <span class="pm-hint-text-sm">Un virement reste chez le même teneur de compte.</span>
+        </label>
+        @if (cfTransferBlocked()) {
+          <span class="pm-callout" style="border-color:rgba(180,83,9,0.28);border-left-color:var(--field-warn);background:rgba(180,83,9,0.06)">
+            <span class="pm-callout-title" style="color:var(--ink-warn)">Virement impossible</span>
+            <span class="pm-callout-text">{{ cfTransferWhy() }}</span>
+          </span>
+        }
+      }
+      <span class="pm-row-2 pm-row-start">
+        <label class="pm-field pm-field-grow">{{ cfGrossLabel() }}
+          <app-ops-stepper-input [value]="quick().amount" placeholder="1 000,00" [prefix]="cfCurrency()" [step]="100" [disabled]="cfTransferBlocked()" (valueChange)="patchQuick({ amount: $event })" />
+        </label>
+        @if (cfHasFee()) {
+          <label class="pm-field pm-field-grow">Frais
+            <app-ops-stepper-input [value]="quick().fee" placeholder="0,00" [prefix]="cfCurrency()" [step]="0.5" (valueChange)="patchQuick({ fee: $event })" />
+          </label>
+        }
+        @if (cfHasTax()) {
+          <label class="pm-field pm-field-grow">Taxes
+            <app-ops-stepper-input [value]="quick().tax" placeholder="0,00" [prefix]="cfCurrency()" [step]="0.5" (valueChange)="patchQuick({ tax: $event })" />
+          </label>
+        }
+        @if (cfHasNet()) {
+          <label class="pm-field pm-field-grow">Montant net
+            <span class="pm-static-value pm-static-value-tint"><span class="pm-static-prefix">{{ cfCurrency() }}</span><span class="pm-static-amount">{{ cfNetAmount() }}</span></span>
+          </label>
+        }
       </span>
-    }
-    <label class="pm-field">Compte
-      <app-ops-select [options]="cfAccOptions" [value]="quick().account" (valueChange)="setAccount($event)" />
-    </label>
-    <span class="pm-row-2 pm-row-start">
-      <label class="pm-field pm-field-grow">{{ cfGrossLabel() }}
-        <app-ops-stepper-input [value]="quick().amount" placeholder="1 000,00" [prefix]="cfCurrency()" [step]="100" (valueChange)="patchQuick({ amount: $event })" />
-      </label>
-      @if (cfHasFee()) {
-        <label class="pm-field pm-field-grow">Frais
-          <app-ops-stepper-input [value]="quick().fee" placeholder="0,00" [prefix]="cfCurrency()" [step]="0.5" (valueChange)="patchQuick({ fee: $event })" />
-        </label>
-      }
-      @if (cfHasTax()) {
-        <label class="pm-field pm-field-grow">Taxes
-          <app-ops-stepper-input [value]="quick().tax" placeholder="0,00" [prefix]="cfCurrency()" [step]="0.5" (valueChange)="patchQuick({ tax: $event })" />
-        </label>
-      }
-      @if (cfHasNet()) {
-        <label class="pm-field pm-field-grow">Montant net
-          <span class="pm-static-value pm-static-value-tint"><span class="pm-static-prefix">{{ cfCurrency() }}</span><span class="pm-static-amount">{{ cfNetAmount() }}</span></span>
-        </label>
-      }
-    </span>
+        </div>
+      </div>
     <div class="pm-section">
       <div class="pm-comment-head" [style.background]="info().tint">
         <mat-icon svgIcon="comment" style="font-size:15px" [style.color]="info().bg"></mat-icon>

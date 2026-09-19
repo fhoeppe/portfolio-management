@@ -11,7 +11,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
-import { HOME_ITEM, NAV_SECTIONS, type NavItem } from './nav-model';
+import { HOME_ITEM, NAV_SECTIONS, type NavBadge, type NavItem } from './nav-model';
+import { SecurityUniverseStore } from '../domain/security-universe.store';
 import { ThemeService } from './theme.service';
 import { MaskingService } from './masking.service';
 import { ProfileDialog } from './profile-dialog';
@@ -62,8 +63,47 @@ export class AppShell {
   protected readonly theme = inject(ThemeService);
   protected readonly masking = inject(MaskingService);
 
+  private readonly universe = inject(SecurityUniverseStore);
+
   protected readonly homeItem = HOME_ITEM;
-  protected readonly sections = NAV_SECTIONS;
+
+  /**
+   * Compteurs que le menu tient d'un store, et non de son modèle.
+   *
+   * `nav-model.ts` décrit le menu ; il ne compte rien, et n'a aucun moyen de le faire — ce n'est
+   * pas un injectable. Les nombres qu'il portait étaient donc des littéraux, avec ce que cela
+   * suppose : celui des titres annonçait 15 sous le libellé « Titres suivis », alors que 15 est
+   * le nombre de titres *référencés* et que les suivis sont quatre.
+   *
+   * La pastille compte les **négociables**, comme la vignette de l'écran et le dénominateur de
+   * son tableau : le menu annonce ce que la page va montrer. Elle tient ce nombre de la longueur
+   * de la liste, jamais d'un second calcul — c'est la même règle partout, une seule définition.
+   *
+   * Elle disparaît tant que le catalogue n'est pas chargé, plutôt que d'afficher zéro ou un
+   * nombre de façade. La fenêtre est brève : un `provideAppInitializer` réclame le référentiel au
+   * démarrage — c'est ce qui permet au menu d'annoncer un nombre sans que personne n'ait ouvert
+   * l'écran — et il le fait sans attendre la réponse, pour ne pas échanger une pastille contre un
+   * écran blanc. Le menu ne déclenche donc rien lui-même ; il lit ce qui arrive.
+   *
+   * La condition porte sur `ready()` et non sur le compte : un univers réellement vide de
+   * négociables est un fait à montrer, pas un chargement en cours.
+   */
+  private readonly liveBadges = computed<Readonly<Record<string, readonly NavBadge[]>>>(() => {
+    const tradable = this.universe.tradableCount();
+    return {
+      universe: this.universe.ready() ? [{ count: tradable, tone: 'default', label: 'Titres négociables' }] : [],
+    };
+  });
+
+  protected readonly sections = computed(() =>
+    NAV_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.map((item) => {
+        const live = this.liveBadges()[item.id];
+        return live ? { ...item, badges: live } : item;
+      }),
+    })),
+  );
   protected readonly icons = {
     refresh: ICON_REFRESH,
     export: ICON_EXPORT,

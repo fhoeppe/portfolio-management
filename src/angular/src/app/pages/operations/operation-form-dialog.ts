@@ -18,9 +18,12 @@ import {
   ACCOUNTS_LIST,
   ACCOUNT_CURRENCY,
   CASHFLOW_TYPES,
+  TRANSFER_POSSIBLE,
+  accountBroker,
   CURRENCY_SYMBOL,
   LINKED_BANKS,
   MIC_CURRENCY,
+  siblingAccounts,
   MIC_HINT,
   MIC_PLACES,
   MIC_SHORT,
@@ -55,10 +58,12 @@ import {
   caImpactHint,
   caTaxPlaceholder,
   caTaxPrefix,
+  cfAccountLabel,
   cfExternalAllowed,
   cfGrossLabel,
   cfHasFee,
   cfHasNet,
+  cfHasTarget,
   cfHasTax,
   cfInternalWhy,
   cfNetAmount,
@@ -220,6 +225,7 @@ export class OperationFormDialog {
   protected readonly trfSub = signal<'init' | 'legs'>('init');
   protected readonly trfComment = signal('');
 
+
   protected readonly transferFromOptions = computed(() => {
     const q = this.quick();
     return ACCOUNTS.map((a) => ({ value: a, label: a, disabled: a === q.to }))
@@ -300,6 +306,45 @@ export class OperationFormDialog {
   });
   protected readonly cfBankLocked = computed(() => (LINKED_BANKS[this.quick().account] || []).length <= 1);
   protected readonly cfAccOptions = ACCOUNTS_LIST.map((a) => ({ value: a.value, label: a.value }));
+  protected readonly cfHasTarget = computed(() => cfHasTarget(this.quick().cfType));
+  protected readonly cfAccountLabel = computed(() => cfAccountLabel(this.quick().cfType));
+
+  /**
+   * Destinataires possibles : les autres comptes du **même établissement**, et eux seuls.
+   *
+   * Un virement d'espèces déplace la trésorerie à l'intérieur d'un teneur de compte. D'un
+   * établissement à un autre, il n'y a pas de virement : il y a un retrait puis un dépôt, qui
+   * passent par un compte bancaire externe et ont leurs propres natures. Le compte source est
+   * évidemment exclu — un virement vers soi-même n'est pas un mouvement.
+   */
+  protected readonly cfTargetOptions = computed(() =>
+    siblingAccounts(this.quick().account).map((a) => ({ value: a.value, label: a.value })),
+  );
+
+  /** Le virement est-il concevable quelque part dans le référentiel ? Sinon la nature est inerte. */
+  protected readonly cfTransferPossible = TRANSFER_POSSIBLE;
+
+  /** Le compte source choisi a-t-il un frère chez le même établissement ? */
+  protected readonly cfTransferBlocked = computed(
+    () => this.cfHasTarget() && this.cfTargetOptions().length === 0,
+  );
+
+  protected readonly cfTransferWhy = computed(() => {
+    const broker = accountBroker(this.quick().account);
+    if (!TRANSFER_POSSIBLE) {
+      return "Aucun établissement du référentiel ne tient deux comptes : il n'y a nulle part où virer des espèces. Un mouvement vers un autre établissement se saisit en retrait puis en dépôt.";
+    }
+    return (
+      'Un seul compte est ouvert chez ' + (broker || 'cet établissement') +
+      " : il n'y a pas de second compte vers lequel virer. Vers un autre établissement, saisissez un retrait puis un dépôt."
+    );
+  });
+
+  /* La nature TRANSFER s'affiche toujours — la masquer laisserait croire qu'elle n'existe pas —
+     mais elle est inerte tant qu'aucun établissement ne tient deux comptes. */
+  protected readonly cfTypeToggles = computed(() =>
+    CASHFLOW_TYPES.map((t) => ({ ...t, disabled: t.value === 'TRANSFER' && !TRANSFER_POSSIBLE })),
+  );
 
   // -------------------------------------------------------------------------
 
@@ -308,12 +353,26 @@ export class OperationFormDialog {
   }
 
   protected setAccount(value: string): void {
-    this.quick.update((q) => ({ ...q, account: value, linkedBank: (LINKED_BANKS[value] || [])[0] || '' }));
+    this.quick.update((q) => ({
+      ...q,
+      account: value,
+      linkedBank: (LINKED_BANKS[value] || [])[0] || '',
+      /* Le destinataire d'un virement tombe s'il devient la source : garder les deux identiques
+         laisserait afficher un mouvement qui n'en est pas un. */
+      to: q.to === value ? '' : q.to,
+    }));
   }
 
   protected setCfType(value: string): void {
     const ext = value === 'DEPOSIT' || value === 'WITHDRAW';
-    this.quick.update((q) => ({ ...q, cfType: value, linkedBank: ext ? q.linkedBank : '' }));
+    this.quick.update((q) => ({
+      ...q,
+      cfType: value,
+      linkedBank: ext ? q.linkedBank : '',
+      /* Quitter le virement efface son destinataire : il n'a pas de sens pour les autres natures,
+         et le laisser le ferait ressurgir en revenant sur TRANSFER. */
+      to: cfHasTarget(value) ? q.to : '',
+    }));
   }
 
   protected patchForm(patch: Partial<TradeForm>): void {

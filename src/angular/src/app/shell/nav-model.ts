@@ -77,7 +77,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         hint: 'Quels titres ai-je le droit d\'acheter ?',
         route: '/titres',
         icon: 'library',
-        badges: [{ count: 15, tone: 'default', label: 'Titres suivis' }],
+        /* Pas de pastille ici : le nombre de titres référencés vient du store, et c'est
+           `AppShell` qui la pose (voir `liveBadges`). */
       },
       {
         id: 'orders',
