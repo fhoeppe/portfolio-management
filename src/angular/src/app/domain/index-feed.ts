@@ -26,7 +26,7 @@
  *   dépôt index par index : livrer le seul CAC 40 complet ne vide pas les vingt-sept autres.
  */
 
-import type { IndexDef, IndexMember } from './indices';
+import { securityElementOf, type IndexDef, type IndexMemberInput } from './indices';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  Format d'échange
@@ -206,7 +206,10 @@ export function parseIndexFeed(payload: unknown, known: ReadonlyMap<string, Inde
       count,
       detail: text(row['detail']) || base?.detail || `${count} valeurs · devise ${currency || 'EUR'}`,
       asOf: text(row['asOf']) || feedAsOf || undefined,
-      members,
+      /* La MÊME fabrique que le socle, et non une construction propre au flux : deux chemins
+         séparés auraient fini par remplir les titres différemment, et l'écart ne se serait vu
+         qu'au moment de verser une valeur dans l'univers. */
+      members: members.map((m) => securityElementOf(m, { name, place, currency: currency || 'EUR' })),
     });
     memberCount += members.length;
   }
@@ -221,13 +224,15 @@ export function parseIndexFeed(payload: unknown, known: ReadonlyMap<string, Inde
   };
 }
 
-function readMembers(key: string, raw: unknown, warnings: string[]): readonly IndexMember[] {
+/* Rend la forme d'ENTRÉE : la fabrique n'intervient qu'à l'assemblage, où l'on connaît enfin la
+   place, la devise et le nom de l'indice — le contexte qu'une valeur emprunte à celui qui la cite. */
+function readMembers(key: string, raw: unknown, warnings: string[]): readonly IndexMemberInput[] {
   if (!Array.isArray(raw)) {
     warnings.push(`« ${key} » : champ « members » absent ou non tableau.`);
     return [];
   }
 
-  const out: IndexMember[] = [];
+  const out: IndexMemberInput[] = [];
   const seen = new Set<string>();
 
   for (const row of raw) {

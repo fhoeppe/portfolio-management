@@ -1,10 +1,11 @@
 import { Injectable, computed, inject } from '@angular/core';
 
-import { INDEX_MIC, indicesSource, type IndexDef, type IndexMember } from './indices';
+import { INDEX_MIC, indicesSource, type IndexDef } from './indices';
 import { SecurityCatalogService } from './security-catalog.service';
 import { POS, PORTFOLIOS, value } from '../pages/positions/positions-data';
 import { micByCode } from '../pages/parametres/mic-registry';
-import { countryFlag, countryName } from './countries';
+import { NON_COUNTRY_ISIN, countryFlag, countryName } from './countries';
+import type { SecurityElement } from './security-reference';
 
 /**
  * Composition des indices de référence — un nom d'indice en entrée, ses composants en sortie.
@@ -77,14 +78,6 @@ export interface IndexSummary {
   readonly detailedCount: number;
 }
 
-/**
- * Préfixes ISIN qui ne désignent pas un pays. `XS` est le préfixe des dépositaires internationaux
- * Euroclear et Clearstream : un titre qui le porte n'a pas de pays d'émission au sens ISO.
- */
-const NON_COUNTRY_ISIN: Readonly<Record<string, string>> = {
-  XS: 'International — Euroclear / Clearstream',
-};
-
 /** Comparaison souple : sans casse, sans accents, sans ponctuation ni espaces. */
 function normalize(value: string): string {
   return value
@@ -152,7 +145,7 @@ export class IndexCompositionService {
    * référentiel. C'est ce dont a besoin un écran qui a rechargé l'indice : la liste vient de lui,
    * l'enrichissement — MIC, pays, rattachement à l'univers — reste ici.
    */
-  withMembers(query: string, members: readonly IndexMember[]): IndexComposition | null {
+  withMembers(query: string, members: readonly SecurityElement[]): IndexComposition | null {
     const def = this.resolve(query);
     return def ? this.compose({ ...def, members }) : null;
   }
@@ -177,7 +170,10 @@ export class IndexCompositionService {
       if (hit) {
         out.push({
           index: this.indices().find((i) => i.key === def.key)!,
-          weight: hit.weight,
+          /* `?? 0` et non une garde : une valeur trouvée DANS une composition porte toujours son
+             poids — c'est le type qui l'ignore, `weight` étant facultatif pour les titres du
+             catalogue, qui n'appartiennent à aucune liste. */
+          weight: hit.weight ?? 0,
         });
       }
     }
@@ -445,9 +441,12 @@ export class IndexCompositionService {
         countryCode: NON_COUNTRY_ISIN[prefix] ? '' : prefix,
         country: NON_COUNTRY_ISIN[prefix] ?? countryName(prefix),
         flag: NON_COUNTRY_ISIN[prefix] ? '' : countryFlag(prefix),
-        sector: m.sector,
-        weight: m.weight,
-        marketCap: m.cap,
+        /* Replis du côté liste : `IndexComponent` les veut fermes, et une valeur issue d'une
+           composition les porte toujours. Ils ne servent que si un titre du catalogue passe par
+           ici — auquel cas « non classé » et zéro disent la vérité, plutôt que de la taire. */
+        sector: m.sector ?? 'Non classé',
+        weight: m.weight ?? 0,
+        marketCap: m.marketCap ?? '—',
         inUniverse: !!universe,
         /* `ref` porte l'avis du comité sur le titre au sein de l'indice ; `status` celui de notre
            univers. Un titre peut être retenu ici et pas là, d'où les deux lectures. */

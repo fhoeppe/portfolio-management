@@ -26,8 +26,18 @@
  */
 
 import { computed, signal, type Signal } from '@angular/core';
+import { NON_COUNTRY_ISIN, countryName } from './countries';
+import type { SecurityElement } from './security-reference';
 
-export interface IndexMember {
+/**
+ * Une valeur telle que le référentiel la DÉCLARE : les sept champs qu'une composition connaît.
+ *
+ * Ce n'est pas ce que l'application manipule — `IndexDef.members` porte des `SecurityElement`,
+ * c'est-à-dire de vrais titres. C'est la forme d'entrée, gardée compacte pour que les compositions
+ * du socle restent lisibles : leur imposer les dix-huit champs d'un `SecurityElement` ferait des centaines
+ * de lignes de remplissage, toutes identiques.
+ */
+export interface IndexMemberInput {
   readonly name: string;
   readonly ticker: string;
   readonly isin: string;
@@ -35,6 +45,60 @@ export interface IndexMember {
   readonly weight: number;
   readonly cap: string;
   readonly ref: 'ok' | 'none';
+}
+
+/** Contexte que la valeur emprunte à l'indice qui la cite : elle n'en porte pas d'elle-même. */
+export interface IndexContext {
+  readonly name: string;
+  readonly place: string;
+  readonly currency: string;
+}
+
+/**
+ * Fait un titre complet d'une valeur déclarée.
+ *
+ * **Une seule fabrique, et elle est partagée** : le socle ci-dessous et le flux distant passent
+ * tous deux par ici. Deux constructions séparées auraient fini par diverger — un champ ajouté
+ * d'un côté, oublié de l'autre —, et la divergence ne se serait vue qu'au moment où l'on verse
+ * une valeur dans l'univers, c'est-à-dire trop tard.
+ *
+ * Ce qu'une composition ignore est renseigné par défaut, mais **rien de connu n'est perdu** :
+ * l'ISIN, le secteur, le poids et la capitalisation passent tels quels, et le domicile se déduit
+ * du préfixe ISIN plutôt que de rester un tiret — les deux premières lettres d'un ISIN SONT le
+ * pays d'émission.
+ */
+export function securityElementOf(row: IndexMemberInput, idx: IndexContext): SecurityElement {
+  const prefix = row.isin.slice(0, 2).toUpperCase();
+  return {
+    ticker: row.ticker,
+    name: row.name,
+    isin: row.isin,
+    market: idx.place,
+    currency: idx.currency,
+    assetClass: 'Action',
+    domicile: NON_COUNTRY_ISIN[prefix] ?? countryName(prefix),
+    /* Le statut de NOTRE univers, qui ne se déduit pas de l'avis porté au sein de l'indice : une
+       valeur retenue par le comité de l'indice n'est pas pour autant négociable ici. C'est `ref`
+       qui porte le second, et les deux restent lisibles séparément. */
+    status: 'none',
+    rating: '—',
+    liquidity: 'Composant ' + idx.name,
+    esg: 'Non renseigné',
+    complexity: 'Non complexe',
+    /* Plafond de concentration — sans objet tant que la valeur n'a pas été évaluée. À ne pas
+       confondre avec `marketCap` juste en dessous : voir le commentaire de `SecurityElement`. */
+    cap: 0,
+    held: 0,
+    mandates: [],
+    reviewed: '—',
+    by: idx.name,
+    note: 'Composant de ' + idx.name + ' non encore évalué.',
+
+    sector: row.sector,
+    weight: row.weight,
+    marketCap: row.cap,
+    ref: row.ref,
+  };
 }
 
 export interface IndexDef {
@@ -45,7 +109,7 @@ export interface IndexDef {
   readonly currency: string;
   readonly count: number;
   readonly detail: string;
-  readonly members: readonly IndexMember[];
+  readonly members: readonly SecurityElement[];
   /**
    * MIC ISO 10383 de la place. Absent sur le socle, qui le déclare à part dans `INDEX_MIC` ; porté
    * en propre par une composition chargée, qui tient sa place de sa source.
@@ -56,17 +120,34 @@ export interface IndexDef {
   readonly asOf?: string;
 }
 
+/**
+ * Un indice tel qu'il est DÉCLARÉ plus bas : ses membres sous leur forme compacte.
+ *
+ * Le socle s'écrit ainsi, puis `toIndexDef` en fait des `IndexDef` aux membres complets. Écrire
+ * directement des `SecurityElement` aurait multiplié chaque ligne de donnée par dix-huit champs
+ * dont dix-sept identiques d'une valeur à l'autre — illisible, et faux dès la première faute de
+ * frappe. La donnée reste donc telle qu'on veut la lire ; c'est la fabrique qui l'enrichit.
+ */
+interface IndexInput extends Omit<IndexDef, 'members'> {
+  readonly members: readonly IndexMemberInput[];
+}
+
 function synth(
   key: string, region: string, name: string, place: string, currency: string, count: number, detail: string,
   rows: readonly [string, string, string, string, number, string, 'ok' | 'none'][],
-): IndexDef {
+): IndexInput {
   return {
     key, region, name, place, currency, count, detail,
     members: rows.map((r) => ({ name: r[0], ticker: r[1], isin: r[2], sector: r[3], weight: r[4], cap: r[5], ref: r[6] })),
   };
 }
 
-const BASE_INDICES: readonly IndexDef[] = [
+/** Passe une déclaration par la fabrique. Seul point de conversion du socle. */
+function toIndexDef(raw: IndexInput): IndexDef {
+  return { ...raw, members: raw.members.map((m) => securityElementOf(m, raw)) };
+}
+
+const BASE_INPUTS: readonly IndexInput[] = [
   {
     key: 'cac40', region: 'Europe continentale', name: 'CAC 40', place: 'Euronext Paris', currency: 'EUR', count: 40,
     detail: '40 valeurs · révision trimestrielle · devise EUR',
@@ -154,7 +235,7 @@ const BASE_INDICES: readonly IndexDef[] = [
 
 export const REGIONS: readonly string[] = ['Europe continentale', 'Royaume-Uni', 'Suisse', 'Amérique du Nord', 'Asie-Pacifique', 'Marchés émergents', 'Mondial'];
 
-const MORE_INDICES: readonly IndexDef[] = [
+const MORE_INPUTS: readonly IndexInput[] = [
   synth('bel20', 'Europe continentale', 'BEL 20', 'Euronext Bruxelles', 'EUR', 20, '20 valeurs belges · révision annuelle · devise EUR', [
     ['KBC Groupe', 'KBC', 'BE0003565737', 'Finance', 12.4, '32 Md€', 'ok'],
     ['UCB', 'UCB', 'BE0003739530', 'Santé', 11.8, '38 Md€', 'ok'],
@@ -310,7 +391,7 @@ const MORE_INDICES: readonly IndexDef[] = [
  * base d'identité aux compositions chargées — un dépôt peut ne porter que des valeurs, la région
  * et la devise venant d'ici — et reste affiché si le chargement échoue.
  */
-export const SEED_INDICES: readonly IndexDef[] = [...BASE_INDICES, ...MORE_INDICES];
+export const SEED_INDICES: readonly IndexDef[] = [...BASE_INPUTS, ...MORE_INPUTS].map(toIndexDef);
 
 /**
  * Place de cotation de chaque indice, en MIC ISO 10383.

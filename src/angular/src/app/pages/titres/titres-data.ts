@@ -5,10 +5,10 @@
  * directement `INDICES[i].members`, sans reproduire le fetch/fusion CSV.
  */
 
-export type { PositionStatusKey, PositionStatusDef, Security } from '../../domain/security-reference';
+export type { PositionStatusKey, PositionStatusDef, SecurityElement } from '../../domain/security-reference';
 export { FOLLOWED, POSITION_STATUS, PORTFOLIO_LINKS } from '../../domain/security-reference';
 
-import type { PositionStatusKey, PositionStatusDef, Security } from '../../domain/security-reference';
+import type { PositionStatusKey, PositionStatusDef, SecurityElement } from '../../domain/security-reference';
 import { PORTFOLIO_LINKS } from '../../domain/security-reference';
 
 export interface Mandate {
@@ -30,7 +30,7 @@ export const MANDATES: readonly Mandate[] = [
   { value: 'GLG-005', label: 'GLG-005 · Atlas Industries — en clôture' },
 ];
 
-export const SECURITIES: readonly Security[] = [
+export const SECURITIES: readonly SecurityElement[] = [
   {
     ticker: 'AI', name: 'Air Liquide', isin: 'FR0000120073', market: 'Euronext Paris', assetClass: 'Action',
     rating: 'A− (S&P)', cap: 5, status: 'ok', liquidity: 'Élevée · 118 M€ de volume moyen', esg: 'Article 8 SFDR',
@@ -339,7 +339,7 @@ export const RATING_ORDER: readonly string[] = RATING_SCALE.map((r) => r.code);
    écran, et `IndexCompositionService` les lisait depuis cette page, ce qui faisait dépendre un
    service de domaine d'un dossier de pages. Réexportés ici pour que les appelants historiques —
    la page Titres, ses filtres, l'Accueil — n'aient rien à changer. */
-export type { IndexDef, IndexMember } from '../../domain/indices';
+export type { IndexDef, IndexMemberInput } from '../../domain/indices';
 export { INDICES, INDEX_MIC, indexMic, indexOf } from '../../domain/indices';
 
 export const REGIONS: readonly string[] = ['Europe continentale', 'Royaume-Uni', 'Suisse', 'Amérique du Nord', 'Asie-Pacifique', 'Marchés émergents', 'Mondial'];

@@ -23,7 +23,33 @@ export interface PositionStatusDef {
   readonly hint: string;
 }
 
-export interface Security {
+/**
+ * Un titre du référentiel — la structure unique, et la seule.
+ *
+ * ## Une seule structure, à plat
+ *
+ * Il y en a eu deux un moment : `SecurityElement` et un `SecurityElement` qui l'étendait. L'héritage
+ * n'apportait rien qu'une indirection — tout consommateur d'un titre finissait par vouloir les
+ * deux moitiés — et obligeait à choisir, à chaque signature, laquelle des deux on attendait.
+ * Une seule déclaration supprime la question.
+ *
+ * ## Ce qui est facultatif, et pourquoi
+ *
+ * Quatre champs le sont, et jamais par oubli : ils décrivent ce qu'un titre ne peut pas savoir
+ * de lui-même.
+ *
+ * `id` et `followed` dépendent du référentiel distant ; `sector`, `weight`, `marketCap` et `ref`
+ * dépendent de la liste d'origine qui cite le titre. Un titre du catalogue n'a pas de poids dans
+ * un indice — lui en inventer un à zéro serait affirmer quelque chose de faux plutôt que de
+ * n'affirmer rien. Une valeur issue d'une composition, elle, les porte tous.
+ *
+ * ## `cap` et `marketCap` ne sont pas la même chose
+ *
+ * `cap` est le **plafond de concentration**, un pourcentage sur lequel on calcule. `marketCap` est
+ * la **capitalisation boursière**, et c'est un libellé qu'on lit — « 312 Md€ ». Les deux portaient
+ * le nom `cap` dans leurs structures d'origine ; il faut que la distinction tienne.
+ */
+export interface SecurityElement {
   /**
    * Identifiant stable du référentiel — `SEC-AAPL`. C'est l'adresse de la ressource, et donc la
    * seule chose qui permette d'écrire : sans lui, une mise en suivi ne peut être que locale.
@@ -39,7 +65,9 @@ export interface Security {
   readonly market: string;
   readonly assetClass: string;
   readonly rating: string;
+  /** Plafond de concentration, en pourcentage de l'actif net par compte. Voir `marketCap`. */
   readonly cap: number;
+  /** Statut dans NOTRE univers d'investissement. Voir `ref`, qui porte celui de la liste d'origine. */
   readonly status: 'ok' | 'none';
   readonly liquidity: string;
   readonly esg: string;
@@ -60,7 +88,23 @@ export interface Security {
   readonly reviewed: string;
   readonly by: string;
   readonly note: string;
+
+  // -- Ce que la liste d'origine ajoute -----------------------------------------------------
+  /** Secteur d'activité tel que la liste d'origine le classe. */
+  readonly sector?: string;
+  /** Poids dans la liste d'origine, en pourcentage — `7.9`, et non `0.079`. */
+  readonly weight?: number;
+  /** Capitalisation boursière, telle qu'on veut la lire. Libellé, pas montant calculable. */
+  readonly marketCap?: string;
+  /**
+   * Avis du comité sur la valeur **au sein de cette liste**.
+   *
+   * Distinct de `status`, qui porte celui de notre univers : un titre peut être retenu dans un
+   * indice et pas chez nous, et les deux lectures doivent rester lisibles séparément.
+   */
+  readonly ref?: 'ok' | 'none';
 }
+
 
 /**
  * Veille du catalogue embarqué — repli, et non référence.

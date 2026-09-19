@@ -409,3 +409,14 @@ export function countriesByContinent(
     countries: list.filter((c) => c.continent === continent),
   })).filter((g) => g.countries.length > 0);
 }
+
+/**
+ * Préfixes ISIN qui ne désignent pas un pays. `XS` est le préfixe des dépositaires internationaux
+ * Euroclear et Clearstream : un titre qui le porte n'a pas de pays d'émission au sens ISO.
+ *
+ * Remonté ici depuis `index-composition.service.ts` : la fabrique des titres d'indice en a besoin
+ * elle aussi, et un service d'écran n'est pas le lieu d'une table de référence.
+ */
+export const NON_COUNTRY_ISIN: Readonly<Record<string, string>> = {
+  XS: 'International — Euroclear / Clearstream',
+};

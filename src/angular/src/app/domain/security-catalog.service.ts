@@ -2,7 +2,7 @@ import { Injectable, InjectionToken, PLATFORM_ID, computed, inject, resource, si
 import { isPlatformBrowser } from '@angular/common';
 
 import { isinValid } from './index-feed';
-import { FOLLOWED, type Security } from './security-reference';
+import { FOLLOWED, type SecurityElement } from './security-reference';
 
 /**
  * Catalogue des titres — négociables et à suivre — récupéré à la demande.
@@ -91,7 +91,7 @@ export class SecurityCatalogService {
   readonly origin = this.originState.asReadonly();
   readonly warning = this.warningState.asReadonly();
 
-  private readonly catalog = resource<readonly Security[], unknown>({
+  private readonly catalog = resource<readonly SecurityElement[], unknown>({
     params: () => (this.asked() ? { revision: this.revision() } : undefined),
     loader: async () => {
       const remote = await this.fromSource();
@@ -120,7 +120,7 @@ export class SecurityCatalogService {
   private readonly watchRes = this.listResource('followed=true');
 
   /** Les titres. Vide tant que personne n'a appelé `load()`, et pendant la récupération. */
-  readonly securities = computed<readonly Security[]>(() => this.catalog.value() ?? []);
+  readonly securities = computed<readonly SecurityElement[]>(() => this.catalog.value() ?? []);
 
   /**
    * Les titres que le référentiel autorise à l'achat, veille exclue.
@@ -130,12 +130,12 @@ export class SecurityCatalogService {
    * n'a pas abouti, et il affiche la même chose que ce qu'il affichait avant que ces listes
    * n'existent.
    */
-  readonly tradableList = computed<readonly Security[]>(
+  readonly tradableList = computed<readonly SecurityElement[]>(
     () => this.tradableRes.value() ?? this.securities().filter((s) => !this.followedByReference(s)),
   );
 
   /** Les titres tenus en veille. Même repli que ci-dessus. */
-  readonly watchList = computed<readonly Security[]>(
+  readonly watchList = computed<readonly SecurityElement[]>(
     () => this.watchRes.value() ?? this.securities().filter((s) => this.followedByReference(s)),
   );
 
@@ -166,7 +166,7 @@ export class SecurityCatalogService {
    * « le serveur n'a rien dit », et de retomber sur le catalogue dans le second cas seulement.
    */
   private listResource(query: string) {
-    return resource<readonly Security[] | undefined, unknown>({
+    return resource<readonly SecurityElement[] | undefined, unknown>({
       params: () => (this.asked() ? { revision: this.revision() } : undefined),
       loader: async () => {
         if (!this.isBrowser || !this.url) return undefined;
@@ -194,7 +194,7 @@ export class SecurityCatalogService {
   }
 
   /** La veille telle que le référentiel la déclare, sans les mises en suivi de la session. */
-  private followedByReference(security: Security): boolean {
+  private followedByReference(security: SecurityElement): boolean {
     return security.followed ?? FOLLOWED.indexOf(security.ticker) >= 0;
   }
 
@@ -254,7 +254,7 @@ export class SecurityCatalogService {
    * veille pour la session et reçoit de quoi le dire. C'est la même règle que pour la lecture, où
    * une source muette fait retomber sur le catalogue embarqué plutôt qu'échouer.
    */
-  async setFollowed(security: Security, followed: boolean): Promise<FollowOutcome> {
+  async setFollowed(security: SecurityElement, followed: boolean): Promise<FollowOutcome> {
     if (!this.isBrowser || !this.url) return local('aucun référentiel distant');
     if (!security.id) return local('titre hors référentiel distant');
 
@@ -311,7 +311,7 @@ export class SecurityCatalogService {
    * calculerait serait recalculé à l'hydratation. Il rend l'embarqué, ce qui est la bonne réponse
    * pour une page servie avant toute interaction.
    */
-  private async fromSource(): Promise<readonly Security[] | null> {
+  private async fromSource(): Promise<readonly SecurityElement[] | null> {
     if (!this.isBrowser || !this.url) return null;
     try {
       const res = await fetch(this.url, { headers: { Accept: 'application/json' } });
@@ -347,7 +347,7 @@ export class SecurityCatalogService {
  * que traduites ailleurs : c'est le seul point du code qui lit une charge étrangère, et une
  * couche de traduction supplémentaire ne ferait que déplacer la correspondance sans la réduire.
  */
-export function parseSecurities(payload: unknown): { readonly list: readonly Security[]; readonly dropped: number } {
+export function parseSecurities(payload: unknown): { readonly list: readonly SecurityElement[]; readonly dropped: number } {
   const rows = Array.isArray(payload) ? payload : (payload as { items?: unknown })?.items;
   if (!Array.isArray(rows)) return { list: [], dropped: 0 };
 
@@ -360,7 +360,7 @@ export function parseSecurities(payload: unknown): { readonly list: readonly Sec
     const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
     return iso ? `${iso[3]}/${iso[2]}/${iso[1]}` : raw;
   };
-  const list: Security[] = [];
+  const list: SecurityElement[] = [];
   let dropped = 0;
 
   /* L'API dit `tradable`, un fichier déposé dit `status`. Le booléen l'emporte quand il est là :
