@@ -10,6 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ViewStateService } from '../../shell/view-state.service';
 import { IndexCompositionService } from '../../domain/index-composition.service';
 import { IndexFeedService } from '../../domain/index-feed.service';
+import { SecurityElement } from '../../domain/security-reference';
 import { SecurityUniverseStore } from '../../domain/security-universe.store';
 
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
@@ -331,10 +332,18 @@ export class Titres {
 
   protected setIndex(key: string): void {
     this.index.set(key);
-    /* Changer d'indice relance la recherche du panneau qui s'en nourrit, et lève la restriction
-       posée par un « Charger dans la liste » précédent : elle portait sur l'indice d'avant. */
+    /**
+     * Choisir un indice ne verse RIEN dans les résultats — c'est seulement le moyen d'accéder à
+     * son aperçu.
+     *
+     * Le panneau s'ouvrait auparavant sur la composition entière, quarante valeurs d'un coup, sans
+     * que personne les ait demandées. L'aperçu devenait décoratif : ce qu'on y retenait se perdait
+     * dans une liste qui montrait déjà tout. Seul « Charger dans la liste » remplit désormais les
+     * résultats, et il n'y met que ce qu'on vient d'y retenir.
+     */
     this.indexCharges.set([]);
-    this.shownBySource.update((p) => ({ ...p, index: true }));
+    this.shownBySource.update((p) => ({ ...p, index: false }));
+    this.versesBySource.update((p) => ({ ...p, index: new Set<string>() }));
   }
 
   /**
@@ -364,6 +373,8 @@ export class Titres {
         this.indexCharges.set(nouveaux);
         this.resSource.set('index');
         this.shownBySource.update((p) => ({ ...p, index: true }));
+        /* Un chargement est une liste neuve : ce qu'on avait versé portait sur le précédent. */
+        this.versesBySource.update((p) => ({ ...p, index: new Set<string>() }));
         /* Le panneau se déplie s'il était replié : charger une liste pour la laisser cachée
            reviendrait à ne rien faire, ce que le bouton faisait déjà. */
         this.panels.update((p) => ({ ...p, res: true }));
@@ -426,6 +437,9 @@ export class Titres {
     this.appliedSearch.set(this.search());
     this.resSource.set('criteria');
     this.shownBySource.update((p) => ({ ...p, criteria: true }));
+    /* Nouvelle question, nouvelle liste : un titre versé sous les critères d'avant a de nouveau sa
+       place sous ceux-ci. Le retrait ne vaut que pour la liste qui l'a produit. */
+    this.versesBySource.update((p) => ({ ...p, criteria: new Set<string>() }));
     this.pickStatus.set('');
   }
 
@@ -471,6 +485,28 @@ export class Titres {
   protected readonly picked = computed(() => this.pickedBySource()[this.resSource()]);
 
   /**
+   * Ce que les deux boutons ont versé, et qui a donc quitté les résultats.
+   *
+   * Un titre passé aux suivis ou aux négociables n'a plus rien à faire dans une liste de
+   * candidats : il est classé. L'y laisser invitait à le verser une seconde fois, et le compte
+   * rendu aurait alors annoncé « déjà suivis » sans qu'on comprenne pourquoi.
+   *
+   * Par source, comme la sélection et l'affichage : verser depuis un panneau ne doit rien retirer
+   * de l'autre, qui pose une autre question. Vidé quand la question change — nouvelle recherche,
+   * nouvel indice, réinitialisation —, faute de quoi un titre resterait caché d'une liste où il
+   * a de nouveau sa place.
+   */
+  private readonly versesBySource = signal<Readonly<Record<'criteria' | 'index', ReadonlySet<string>>>>({
+    criteria: new Set(),
+    index: new Set(),
+  });
+  private readonly verses = computed(() => this.versesBySource()[this.resSource()]);
+
+  private setVerses(next: ReadonlySet<string>): void {
+    this.versesBySource.update((p) => ({ ...p, [this.resSource()]: next }));
+  }
+
+  /**
    * Un tableau de résultats a-t-il quelque chose à montrer ?
    *
    * Sans critères, la recherche rendrait l'univers entier — ce qui n'est pas un résultat, c'est
@@ -512,9 +548,14 @@ export class Titres {
    */
   private readonly indexCharges = signal<readonly string[]>([]);
 
-  protected readonly searchPool = computed(() =>
-    buildSearchPool(this.securities(), this.resSource() === 'index', this.selectedIndex(), this.indexCharges()),
-  );
+  protected readonly searchPool = computed(() => {
+    const verses = this.verses();
+    const pool = buildSearchPool(this.securities(), this.resSource() === 'index', this.selectedIndex(), this.indexCharges());
+    /* Le retrait se fait ICI, sur le pool, et non sur les lignes rendues : le total affiché en
+       tête de panneau — « 12 / 37 titres » — compte le pool. Filtrer plus bas aurait laissé le
+       dénominateur annoncer des titres que la liste ne contient plus. */
+    return verses.size ? pool.filter((s) => !verses.has(s.ticker)) : pool;
+  });
 
   /**
    * Décisions telles qu'elles s'appliquent aux résultats.
@@ -613,20 +654,43 @@ export class Titres {
   }
 
   protected addPickedOk(): void {
-    const keys = Array.from(this.picked());
-    if (!keys.length) {
+    const titres = this.pickedSecurities();
+    if (!titres.length) {
       this.pickStatus.set('Aucun titre sélectionné.');
       this.pickStatusColor.set('var(--ink-warn-2)');
       return;
     }
-    const added = this.universe.retain(...keys);
-    this.setPicked(new Set());
+    const added = this.universe.retainSecurities(...titres);
+    this.consume(titres.map((s) => s.ticker));
     /* Le store rend ce qui a effectivement changé : annoncer « 3 ajoutés » quand deux l'étaient
        déjà serait faux, et c'est le genre de faux qu'on ne remarque jamais. */
     this.pickStatus.set(
       added ? added + " titre(s) ajouté(s) à l'univers." : 'Ces titres sont déjà négociables.',
     );
     this.pickStatusColor.set('var(--ink-ok-2)');
+  }
+
+  /**
+   * Les titres sélectionnés, pris dans le pool affiché — et non résolus dans le catalogue.
+   *
+   * C'est ce qui permet aux deux boutons d'agir sur un composant d'indice : le catalogue en
+   * ignore la plupart, alors que la composition, elle, en porte le `SecurityElement` complet.
+   * Le store reçoit donc le titre, pas un ticker qu'il ne saurait pas lire.
+   */
+  private pickedSecurities(): readonly SecurityElement[] {
+    const keys = this.picked();
+    return this.searchPool().filter((s) => keys.has(s.ticker));
+  }
+
+  /**
+   * Sort des résultats ce qu'un bouton vient de verser, et vide la sélection.
+   *
+   * Les deux boutons finissent pareil, et c'est voulu : le geste est le même — classer des
+   * candidats —, seule la destination change.
+   */
+  private consume(tickers: readonly string[]): void {
+    this.setVerses(new Set([...this.verses(), ...tickers]));
+    this.setPicked(new Set());
   }
 
   /**
@@ -641,8 +705,8 @@ export class Titres {
    * pas recompté : le store rend ce qui a effectivement changé.
    */
   protected async addPickedWatch(): Promise<void> {
-    const keys = Array.from(this.picked());
-    if (!keys.length) {
+    const titres = this.pickedSecurities();
+    if (!titres.length) {
       this.pickStatus.set('Aucun titre sélectionné.');
       this.pickStatusColor.set('var(--ink-warn-2)');
       return;
@@ -651,8 +715,8 @@ export class Titres {
     /* La sélection est vidée avant l'attente : le tableau des suivis, lui, a déjà bougé — le store
        écrit l'état de session avant d'appeler le référentiel. L'écran ne fait donc rien patienter,
        il ne fait que rendre compte une fois l'écriture connue. */
-    this.setPicked(new Set());
-    const report = await this.universe.follow(...keys);
+    this.consume(titres.map((s) => s.ticker));
+    const report = await this.universe.followSecurities(...titres);
 
     if (!report.added) {
       this.pickStatus.set('Ces titres sont déjà suivis.');
@@ -682,6 +746,7 @@ export class Titres {
    */
   protected resetPicked(): void {
     this.setPicked(new Set());
+    this.setVerses(new Set());
     this.resColName.set('');
     this.resColCls.set('');
     this.resColCurrency.set('');
@@ -691,8 +756,9 @@ export class Titres {
     this.resSortKey.set(null);
     this.resSortDir.set('asc');
     this.setShown(false);
-    this.pickStatus.set('Panneau réinitialisé : sélection, filtres, tri et résultats.');
-    this.pickStatusColor.set('var(--ink-ok-2)');
+    /* Aucun compte rendu : le panneau vidé sous les yeux se voit tout seul. Un message n'a de
+       raison d'être que pour ce qui ne se voit pas — ce que les deux boutons ont versé, et où. */
+    this.pickStatus.set('');
   }
 
   // -----------------------------------------------------------------------------------------

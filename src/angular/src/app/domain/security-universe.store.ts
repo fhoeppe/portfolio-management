@@ -1,5 +1,12 @@
 import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withProps, withState } from '@ngrx/signals';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withProps,
+  withState,
+} from '@ngrx/signals';
 
 import { SecurityCatalogService } from './security-catalog.service';
 import {
@@ -7,7 +14,7 @@ import {
   PORTFOLIO_LINKS,
   POSITION_STATUS,
   type PositionStatusKey,
-  type Security,
+  type SecurityElement,
 } from './security-reference';
 
 /**
@@ -121,7 +128,10 @@ export function isFollowed(ticker: string, extra: ReadonlySet<string> = EMPTY): 
  * retombe sur la liste livrée que lorsqu'il est absent — c'est-à-dire sur le catalogue embarqué.
  * `isFollowed(ticker)` reste pour les appelants qui n'ont qu'un mnémonique en main.
  */
-export function isSecurityFollowed(security: Security, extra: ReadonlySet<string> = EMPTY): boolean {
+export function isSecurityFollowed(
+  security: SecurityElement,
+  extra: ReadonlySet<string> = EMPTY,
+): boolean {
   const fromReference = security.followed ?? FOLLOWED.indexOf(security.ticker) >= 0;
   return fromReference || extra.has(security.ticker);
 }
@@ -129,7 +139,7 @@ export function isSecurityFollowed(security: Security, extra: ReadonlySet<string
 const EMPTY: ReadonlySet<string> = new Set();
 
 /** Décision courante : celle du comité si elle existe, sinon celle du référentiel. */
-export function decisionOf(decisions: ReadonlyMap<string, Decision>, security: Security): Decision {
+export function decisionOf(decisions: ReadonlyMap<string, Decision>, security: SecurityElement): Decision {
   return decisions.get(security.ticker) ?? security.status;
 }
 
@@ -139,7 +149,7 @@ export function decisionOf(decisions: ReadonlyMap<string, Decision>, security: S
  */
 export function positionStatusOf(
   decisions: ReadonlyMap<string, Decision>,
-  security: Security,
+  security: SecurityElement,
   followed: ReadonlySet<string> = EMPTY,
 ): PositionStatusKey {
   const link = PORTFOLIO_LINKS[security.ticker];
@@ -162,7 +172,8 @@ export function isDeletable(ticker: string): boolean {
 export function deleteBlockedReason(ticker: string): string {
   const link = PORTFOLIO_LINKS[ticker];
   if (link?.held) return 'Suppression impossible : titre en position dans un portefeuille';
-  if (link?.history) return "Suppression impossible : titre présent dans l'historique des portefeuilles";
+  if (link?.history)
+    return "Suppression impossible : titre présent dans l'historique des portefeuilles";
   return '';
 }
 
@@ -189,9 +200,24 @@ interface UniverseState {
    * dans ce tableau est exactement ce qui ne survivra pas au rechargement.
    */
   readonly followed: readonly string[];
+
+  /**
+   * Titres pris en séance alors que le catalogue les ignore — composants d'indice, essentiellement.
+   *
+   * Sans ce tiroir, les prendre n'inscrirait que leur ticker, et les deux listes — qui ne lisent
+   * que le catalogue — n'en montreraient aucune ligne : retenu quelque part, invisible partout.
+   * Le store garde donc l'objet lui-même, le temps de la séance.
+   *
+   * Un même tiroir pour les deux destinations : ce qu'on y range n'est pas encore classé, c'est
+   * seulement connu. C'est `followed` et les décisions qui disent ensuite de quel côté il tombe.
+   *
+   * Ce qu'on y range n'est l'image d'aucune ressource : rien ne l'enregistre, et le compte-rendu
+   * de `followSecurities` le dit en distinguant `added` de `persisted`.
+   */
+  readonly adopted: readonly SecurityElement[];
 }
 
-const initialState: UniverseState = { decisions: {}, deleted: [], followed: [] };
+const initialState: UniverseState = { decisions: {}, deleted: [], followed: [], adopted: [] };
 
 export const SecurityUniverseStore = signalStore(
   { providedIn: 'root' },
@@ -202,10 +228,12 @@ export const SecurityUniverseStore = signalStore(
      `load()`. Voir `SecurityCatalogService`. */
   withProps(() => ({ catalog: inject(SecurityCatalogService) })),
 
-  withComputed(({ decisions, deleted, followed, catalog }) => {
+  withComputed(({ decisions, deleted, followed, adopted, catalog }) => {
     /* Reconstruits une fois par changement d'état, pas à chaque lecture : `positionStatusOf` est
        appelé une fois par titre et par décompte, et `titres-filters` attend une `Map`. */
-    const decisionMap = computed<ReadonlyMap<string, Decision>>(() => new Map(Object.entries(decisions())));
+    const decisionMap = computed<ReadonlyMap<string, Decision>>(
+      () => new Map(Object.entries(decisions())),
+    );
     const deletedSet = computed<ReadonlySet<string>>(() => new Set(deleted()));
     /* Le périmètre de veille complet : le livré plus l'ajouté. C'est lui que traversent les règles,
        pour qu'un titre mis en suivi le soit partout du même coup. */
@@ -229,9 +257,18 @@ export const SecurityUniverseStore = signalStore(
       const veille = followedSet();
       const served = catalog.tradableList();
       const known = new Set(served.map((s) => s.ticker));
-      const retained = catalog.securities().filter((s) => !known.has(s.ticker) && decisions.get(s.ticker) === 'ok');
+      const retained = catalog
+        .securities()
+        .filter((s) => !known.has(s.ticker) && decisions.get(s.ticker) === 'ok');
 
-      return [...served, ...retained]
+      /* Puis les adoptés — composants d'indice versés en séance, que le catalogue ignore. Sans
+         eux, « ajouter à l'univers » depuis les résultats d'un indice n'aurait rien ajouté de
+         visible : la décision aurait été prise sur un titre dont la liste n'a jamais entendu
+         parler. Écartés dès que le référentiel se met à les servir, qui fait foi. */
+      const catalogue = new Set(catalog.securities().map((s) => s.ticker));
+      const hors = adopted().filter((s) => !known.has(s.ticker) && !catalogue.has(s.ticker));
+
+      return [...served, ...retained, ...hors]
         .filter((s) => !deletedSet().has(s.ticker))
         .filter((s) => !isSecurityFollowed(s, veille))
         .filter((s) => decisionOf(decisions, s) === 'ok');
@@ -280,16 +317,23 @@ export const SecurityUniverseStore = signalStore(
         const veille = followedSet();
         const served = catalog.watchList();
         const known = new Set(served.map((s) => s.ticker));
-        const added = catalog.securities().filter((s) => !known.has(s.ticker) && veille.has(s.ticker));
+        const added = catalog
+          .securities()
+          .filter((s) => !known.has(s.ticker) && veille.has(s.ticker));
+        /* Puis les adoptés, que ni la liste servie ni le catalogue ne connaissent — dernier rang,
+           et écartés dès que le référentiel se met à les servir : c'est lui qui fait foi. */
+        const catalogue = new Set(catalog.securities().map((s) => s.ticker));
+        const hors = adopted().filter((s) => !known.has(s.ticker) && !catalogue.has(s.ticker));
 
-        return [...served, ...added].filter((s) => isSecurityFollowed(s, veille));
+        return [...served, ...added, ...hors].filter((s) => isSecurityFollowed(s, veille));
       }),
 
       counts: computed<UniverseCounts>(() => {
         const map = decisionMap();
         const rows = live();
         const set = followedSet();
-        const by = (k: PositionStatusKey) => rows.filter((s) => positionStatusOf(map, s, set) === k).length;
+        const by = (k: PositionStatusKey) =>
+          rows.filter((s) => positionStatusOf(map, s, set) === k).length;
         return {
           held: by('held'),
           settled: by('settled'),
@@ -308,153 +352,25 @@ export const SecurityUniverseStore = signalStore(
     };
   }),
 
-  withMethods((store) => ({
-    // -- Lectures ------------------------------------------------------------------------------
-
-    /** Le catalogue complet, tel qu'il a été récupéré — suppressions comprises. */
-    all(): readonly Security[] {
-      return store.catalog.securities();
-    },
-
-    find(ticker: string): Security | null {
-      return store.catalog.securities().find((s) => s.ticker === ticker) ?? null;
-    },
-
-    /** Demande le catalogue. À appeler par le premier écran qui en a besoin. */
-    load(): void {
-      store.catalog.load();
-    },
-
-    statusOf(security: Security): PositionStatusKey {
-      return positionStatusOf(store.decisionMap(), security, store.followedSet());
-    },
-
-    /** Libellé, couleurs et infobulle du statut — référentiel de présentation, pas une décision. */
-    statusDef(security: Security) {
-      return POSITION_STATUS[positionStatusOf(store.decisionMap(), security, store.followedSet())];
-    },
-
-    isFollowed(ticker: string): boolean {
-      return isFollowed(ticker, store.followedSet());
-    },
-
+  withMethods((store) => {
     /**
-     * Le suivi vient-il du référentiel plutôt que de la session ?
-     *
-     * La question se pose au titre et non à son mnémonique : c'est le référentiel qui tranche dès
-     * qu'il répond, et la constante `FOLLOWED` n'est plus qu'un repli pour le catalogue embarqué,
-     * qui ne porte pas le champ. Interroger la constante seule revenait à ignorer le serveur.
+     * Le cœur de la mise en veille, hors du littéral de méthodes : `follow` s'en sert autant que
+     * `followSecurities`, et un appel par `this` depuis un littéral ne survit pas à la répartition
+     * des méthodes sur le store.
      */
-    isFollowedByReference(ticker: string): boolean {
-      const security = store.catalog.securities().find((s) => s.ticker === ticker);
-      return security ? isSecurityFollowed(security) : isFollowed(ticker);
-    },
-
-    isDeletable(ticker: string): boolean {
-      return isDeletable(ticker);
-    },
-
-    deleteBlockedReason(ticker: string): string {
-      return deleteBlockedReason(ticker);
-    },
-
-    // -- Écritures -----------------------------------------------------------------------------
-
-    /** Tranche sur un titre. */
-    decide(ticker: string, decision: Decision): void {
-      patchState(store, (s) => ({ decisions: { ...s.decisions, [ticker]: decision } }));
-    },
-
-    /**
-     * Rend un ou plusieurs titres négociables.
-     *
-     * Symétrique de `follow`, et pour les mêmes raisons : un ticker inconnu du catalogue est refusé
-     * plutôt qu'inscrit à vide, un titre déjà négociable ne compte pas, et le nombre rendu est celui
-     * qui a effectivement changé d'état. L'écran de recherche verse ainsi une sélection entière
-     * sans avoir à recompter derrière.
-     *
-     * Un titre en suivi peut être rendu négociable : c'est le geste qui le fait passer de la veille
-     * à l'univers. Il reste alors dans les deux listes, le statut de position tranchant l'affichage.
-     */
-    retain(...tickers: readonly string[]): number {
-      const decisions = store.decisionMap();
-      const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
-      /* Comparer à la décision EFFECTIVE, pas à la carte des décisions : un titre déjà `ok` par son
-         statut de référentiel n'a pas de décision enregistrée, et se serait compté comme ajouté. */
-      const add = [...new Set(tickers)]
-        .map((t) => byTicker.get(t))
-        .filter((s): s is Security => !!s && decisionOf(decisions, s) !== 'ok')
-        .map((s) => s.ticker);
-      if (!add.length) return 0;
-      patchState(store, (s) => ({
-        decisions: { ...s.decisions, ...Object.fromEntries(add.map((t) => [t, 'ok' as Decision])) },
-      }));
-      return add.length;
-    },
-
-    /**
-     * Retire un ou plusieurs titres des négociables, sans les supprimer du catalogue.
-     *
-     * `remove()` retire le titre de la liste ; `unretain()` lui retire seulement l'autorisation
-     * d'achat. Les deux sont distincts : le premier est un geste de référentiel, le second une
-     * décision de comité, et on revient d'un `unretain` par un `retain`.
-     */
-    unretain(...tickers: readonly string[]): number {
-      const decisions = store.decisionMap();
-      const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
-      const off = [...new Set(tickers)]
-        .map((t) => byTicker.get(t))
-        .filter((s): s is Security => !!s && decisionOf(decisions, s) === 'ok')
-        .map((s) => s.ticker);
-      if (!off.length) return 0;
-      patchState(store, (s) => ({
-        decisions: { ...s.decisions, ...Object.fromEntries(off.map((t) => [t, 'none' as Decision])) },
-      }));
-      return off.length;
-    },
-
-    /**
-     * Retire un titre des négociables. Rend `false` si la règle s'y oppose, plutôt que de laisser
-     * l'appelant deviner : c'est au domaine de refuser, pas à la vue de désactiver un bouton et
-     * d'espérer que personne ne passe outre.
-     */
-    remove(ticker: string): boolean {
-      if (!isDeletable(ticker)) return false;
-      if (store.deletedSet().has(ticker)) return true;
-      patchState(store, (s) => ({ deleted: [...s.deleted, ticker] }));
-      return true;
-    },
-
-    /**
-     * Met un ou plusieurs titres en suivi.
-     *
-     * ## Deux temps, et c'est voulu
-     *
-     * L'état de session est écrit **avant** l'appel au référentiel, puis la révision est poussée
-     * quand la fournée est passée. Le tableau bouge donc au clic — `followedSet` est un signal
-     * dont `watchlist` dérive — et se refait une seconde fois sur ce que le serveur a retenu. Un
-     * geste qui n'afficherait son effet qu'au retour du réseau donnerait l'impression d'un bouton
-     * mort ; un geste qui ne se relirait jamais laisserait croire à un enregistrement.
-     *
-     * ## Ce que le compte-rendu distingue
-     *
-     * `added` est ce qui a changé d'état, `persisted` ce que le référentiel a accepté. Les deux
-     * diffèrent dès que l'API est muette ou que le titre vient du catalogue embarqué, qui n'a pas
-     * d'identifiant et n'est donc l'image d'aucune ressource. L'écran doit pouvoir dire laquelle
-     * des deux situations il vient de produire.
-     *
-     * Un titre déjà suivi — livré par le référentiel ou mis en suivi plus tôt — ne compte pas, et
-     * un ticker inconnu du catalogue est refusé plutôt qu'inscrit à vide.
-     */
-    async follow(...tickers: readonly string[]): Promise<FollowReport> {
+    const mettreEnVeille = async (securities: readonly SecurityElement[]): Promise<FollowReport> => {
       const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
       const already = store.followedSet();
-      const add = [...new Set(tickers)]
-        .map((t) => byTicker.get(t))
-        .filter((s): s is Security => !!s && !isSecurityFollowed(s, already));
+      const add = [...new Map(securities.map((s) => [s.ticker, s])).values()]
+        .map((s) => byTicker.get(s.ticker) ?? s)
+        .filter((s) => !isSecurityFollowed(s, already));
       if (!add.length) return { added: 0, persisted: 0, reason: '' };
 
-      patchState(store, (s) => ({ followed: [...s.followed, ...add.map((x) => x.ticker)] }));
+      const hors = add.filter((s) => !byTicker.has(s.ticker));
+      patchState(store, (s) => ({
+        followed: [...s.followed, ...add.map((x) => x.ticker)],
+        adopted: [...s.adopted, ...hors],
+      }));
 
       const outcomes = await Promise.all(add.map((s) => store.catalog.setFollowed(s, true)));
       const persisted = outcomes.filter((o) => o.kind === 'persisted').length;
@@ -463,49 +379,262 @@ export const SecurityUniverseStore = signalStore(
       if (persisted) store.catalog.refresh();
       const reasons = outcomes.flatMap((o) => (o.kind === 'local' ? [o.reason] : []));
       return { added: add.length, persisted, reason: reasons[0] ?? '' };
-    },
+    };
 
-    /**
-     * Retire un titre du suivi.
-     *
-     * Le retrait porte là où la mise en veille a porté : sur le référentiel si c'est lui qui la
-     * déclare, sur la session sinon. Un titre suivi côté serveur se dé-suit donc vraiment — il
-     * suffit de le lui dire —, là où l'ancienne règle refusait tout net au motif qu'on ne pouvait
-     * qu'empiler par-dessus une constante figée dans le code.
-     *
-     * Reste un cas où le refus demeure : un titre que seul le catalogue embarqué déclare en
-     * veille. Il n'est l'image d'aucune ressource, rien ne peut l'enregistrer, et le retirer en
-     * séance le ferait réapparaître au rechargement suivant — un retrait qui ne tient pas est
-     * pire qu'un retrait refusé.
-     */
-    async unfollow(ticker: string): Promise<boolean> {
-      const security = store.catalog.securities().find((s) => s.ticker === ticker);
-      const inSession = store.followedSet().has(ticker);
-      const byReference = security ? isSecurityFollowed(security) : isFollowed(ticker);
+    /** Le cœur de la mise en négociable — même raison d'être que `mettreEnVeille`. */
+    const retenir = (securities: readonly SecurityElement[]): number => {
+      const decisions = store.decisionMap();
+      const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
+      /* Comparer à la décision EFFECTIVE, pas à la carte des décisions : un titre déjà `ok` par
+         son statut de référentiel n'a pas de décision enregistrée, et se serait compté comme
+         ajouté. */
+      const add = [...new Map(securities.map((s) => [s.ticker, s])).values()]
+        .map((s) => byTicker.get(s.ticker) ?? s)
+        .filter((s) => decisionOf(decisions, s) !== 'ok');
+      if (!add.length) return 0;
 
-      if (!security) return false;
-      if (!inSession && !byReference) return false;
+      const hors = add.filter((s) => !byTicker.has(s.ticker));
+      patchState(store, (s) => ({
+        decisions: {
+          ...s.decisions,
+          ...Object.fromEntries(add.map((x) => [x.ticker, 'ok' as Decision])),
+        },
+        adopted: [...s.adopted, ...hors],
+      }));
+      return add.length;
+    };
 
-      if (byReference) {
-        const outcome = await store.catalog.setFollowed(security, false);
-        if (outcome.kind !== 'persisted') return false;
-      }
+    return {
+      // -- Lectures ------------------------------------------------------------------------------
 
-      if (inSession) {
-        patchState(store, (s) => ({ followed: s.followed.filter((t) => t !== ticker) }));
-      }
-      if (byReference) store.catalog.refresh();
-      return true;
-    },
+      /** Le catalogue complet, tel qu'il a été récupéré — suppressions comprises. */
+      all(): readonly SecurityElement[] {
+        return store.catalog.securities();
+      },
 
-    /** Remet un titre supprimé à la liste. */
-    restore(ticker: string): void {
-      patchState(store, (s) => ({ deleted: s.deleted.filter((t) => t !== ticker) }));
-    },
+      /**
+       * Retrouve un titre par son mnémonique — catalogue D'ABORD, puis les adoptés.
+       *
+       * Ne consulter que le catalogue laissait sans fiche tout titre pris en séance : un composant
+       * d'indice versé aux suivis s'affichait dans les tableaux, et son ouverture ne faisait
+       * simplement rien. Un titre visible dont la fiche ne s'ouvre pas passe pour une panne.
+       *
+       * L'ordre compte : le catalogue fait foi dès qu'il connaît le titre, l'adopté n'étant qu'une
+       * copie de séance, plus pauvre.
+       */
+      find(ticker: string): SecurityElement | null {
+        return (
+          store.catalog.securities().find((s) => s.ticker === ticker) ??
+          store.adopted().find((s) => s.ticker === ticker) ??
+          null
+        );
+      },
 
-    /** Efface les décisions de la session ; les suppressions ne sont pas concernées. */
-    resetDecisions(): void {
-      patchState(store, { decisions: {} });
-    },
-  })),
+      /** Demande le catalogue. À appeler par le premier écran qui en a besoin. */
+      load(): void {
+        store.catalog.load();
+      },
+
+      statusOf(security: SecurityElement): PositionStatusKey {
+        return positionStatusOf(store.decisionMap(), security, store.followedSet());
+      },
+
+      /** Libellé, couleurs et infobulle du statut — référentiel de présentation, pas une décision. */
+      statusDef(security: SecurityElement) {
+        return POSITION_STATUS[
+          positionStatusOf(store.decisionMap(), security, store.followedSet())
+        ];
+      },
+
+      isFollowed(ticker: string): boolean {
+        return isFollowed(ticker, store.followedSet());
+      },
+
+      /**
+       * Le suivi vient-il du référentiel plutôt que de la session ?
+       *
+       * La question se pose au titre et non à son mnémonique : c'est le référentiel qui tranche dès
+       * qu'il répond, et la constante `FOLLOWED` n'est plus qu'un repli pour le catalogue embarqué,
+       * qui ne porte pas le champ. Interroger la constante seule revenait à ignorer le serveur.
+       */
+      isFollowedByReference(ticker: string): boolean {
+        const security = store.catalog.securities().find((s) => s.ticker === ticker);
+        return security ? isSecurityFollowed(security) : isFollowed(ticker);
+      },
+
+      isDeletable(ticker: string): boolean {
+        return isDeletable(ticker);
+      },
+
+      deleteBlockedReason(ticker: string): string {
+        return deleteBlockedReason(ticker);
+      },
+
+      // -- Écritures -----------------------------------------------------------------------------
+
+      /** Tranche sur un titre. */
+      decide(ticker: string, decision: Decision): void {
+        patchState(store, (s) => ({ decisions: { ...s.decisions, [ticker]: decision } }));
+      },
+
+      /**
+       * Rend un ou plusieurs titres négociables.
+       *
+       * Symétrique de `follow`, et pour les mêmes raisons : un ticker inconnu du catalogue est refusé
+       * plutôt qu'inscrit à vide, un titre déjà négociable ne compte pas, et le nombre rendu est celui
+       * qui a effectivement changé d'état. L'écran de recherche verse ainsi une sélection entière
+       * sans avoir à recompter derrière.
+       *
+       * Un titre en suivi peut être rendu négociable : c'est le geste qui le fait passer de la veille
+       * à l'univers. Il reste alors dans les deux listes, le statut de position tranchant l'affichage.
+       */
+      retain(...tickers: readonly string[]): number {
+        const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
+        return retenir([...new Set(tickers)].map((t) => byTicker.get(t)).filter((s): s is SecurityElement => !!s));
+      },
+
+      /**
+       * Rend négociables des titres **donnés**, et non des tickers à résoudre.
+       *
+       * Exact pendant de `followSecurities`, et pour la même raison : `retain` résout dans le
+       * catalogue, qui sert quinze titres là où une composition en aligne quarante. Depuis les
+       * résultats d'un indice, « ajouter à l'univers » ne pouvait donc rien ajouter — la décision
+       * portait sur un ticker que la liste des négociables n'aurait de toute façon pas su rendre.
+       *
+       * Les deux boutons du panneau de résultats font le même geste vers deux destinations : ils
+       * doivent avoir la même portée, sans quoi l'un marche sur l'indice et l'autre pas.
+       */
+      retainSecurities(...securities: readonly SecurityElement[]): number {
+        return retenir(securities);
+      },
+
+      /**
+       * Retire un ou plusieurs titres des négociables, sans les supprimer du catalogue.
+       *
+       * `remove()` retire le titre de la liste ; `unretain()` lui retire seulement l'autorisation
+       * d'achat. Les deux sont distincts : le premier est un geste de référentiel, le second une
+       * décision de comité, et on revient d'un `unretain` par un `retain`.
+       */
+      unretain(...tickers: readonly string[]): number {
+        const decisions = store.decisionMap();
+        const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
+        const off = [...new Set(tickers)]
+          .map((t) => byTicker.get(t))
+          .filter((s): s is SecurityElement => !!s && decisionOf(decisions, s) === 'ok')
+          .map((s) => s.ticker);
+        if (!off.length) return 0;
+        patchState(store, (s) => ({
+          decisions: {
+            ...s.decisions,
+            ...Object.fromEntries(off.map((t) => [t, 'none' as Decision])),
+          },
+        }));
+        return off.length;
+      },
+
+      /**
+       * Retire un titre des négociables. Rend `false` si la règle s'y oppose, plutôt que de laisser
+       * l'appelant deviner : c'est au domaine de refuser, pas à la vue de désactiver un bouton et
+       * d'espérer que personne ne passe outre.
+       */
+      remove(ticker: string): boolean {
+        if (!isDeletable(ticker)) return false;
+        if (store.deletedSet().has(ticker)) return true;
+        patchState(store, (s) => ({ deleted: [...s.deleted, ticker] }));
+        return true;
+      },
+
+      /**
+       * Met un ou plusieurs titres en suivi.
+       *
+       * ## Deux temps, et c'est voulu
+       *
+       * L'état de session est écrit **avant** l'appel au référentiel, puis la révision est poussée
+       * quand la fournée est passée. Le tableau bouge donc au clic — `followedSet` est un signal
+       * dont `watchlist` dérive — et se refait une seconde fois sur ce que le serveur a retenu. Un
+       * geste qui n'afficherait son effet qu'au retour du réseau donnerait l'impression d'un bouton
+       * mort ; un geste qui ne se relirait jamais laisserait croire à un enregistrement.
+       *
+       * ## Ce que le compte-rendu distingue
+       *
+       * `added` est ce qui a changé d'état, `persisted` ce que le référentiel a accepté. Les deux
+       * diffèrent dès que l'API est muette ou que le titre vient du catalogue embarqué, qui n'a pas
+       * d'identifiant et n'est donc l'image d'aucune ressource. L'écran doit pouvoir dire laquelle
+       * des deux situations il vient de produire.
+       *
+       * Un titre déjà suivi — livré par le référentiel ou mis en suivi plus tôt — ne compte pas, et
+       * un ticker inconnu du catalogue est refusé plutôt qu'inscrit à vide.
+       */
+      async follow(...tickers: readonly string[]): Promise<FollowReport> {
+        const byTicker = new Map(store.catalog.securities().map((s) => [s.ticker, s]));
+        return mettreEnVeille(
+          [...new Set(tickers)].map((t) => byTicker.get(t)).filter((s): s is SecurityElement => !!s),
+        );
+      },
+
+      /**
+       * Met en suivi des titres **donnés**, et non des tickers à résoudre.
+       *
+       * C'est la porte d'entrée des composants d'indice. Le catalogue ne les connaît pas — il sert
+       * quinze titres, une composition en aligne quarante — donc `follow` les refusait un par un, et
+       * charger un indice dans la liste ne mettait rien en veille. L'appelant, lui, a déjà l'objet :
+       * l'écran des titres le fabrique pour son propre tableau. Autant le passer.
+       *
+       * Un titre que le catalogue connaît est repris DEPUIS le catalogue, jamais depuis l'objet
+       * reçu : l'appelant peut en tenir une copie synthétique, appauvrie — sans ISIN, sans
+       * notation —, et l'inscrire par-dessus le vrai appauvrirait le référentiel au lieu de
+       * l'enrichir. Les autres sont adoptés pour la séance.
+       *
+       * Le reste ne change pas : état écrit avant l'appel réseau pour que le tableau bouge au clic,
+       * une seule poussée de révision par fournée, et `added` / `persisted` qui disent laquelle des
+       * deux promesses a été tenue.
+       */
+      followSecurities(...securities: readonly SecurityElement[]): Promise<FollowReport> {
+        return mettreEnVeille(securities);
+      },
+
+      /**
+       * Retire un titre du suivi.
+       *
+       * Le retrait porte là où la mise en veille a porté : sur le référentiel si c'est lui qui la
+       * déclare, sur la session sinon. Un titre suivi côté serveur se dé-suit donc vraiment — il
+       * suffit de le lui dire —, là où l'ancienne règle refusait tout net au motif qu'on ne pouvait
+       * qu'empiler par-dessus une constante figée dans le code.
+       *
+       * Reste un cas où le refus demeure : un titre que seul le catalogue embarqué déclare en
+       * veille. Il n'est l'image d'aucune ressource, rien ne peut l'enregistrer, et le retirer en
+       * séance le ferait réapparaître au rechargement suivant — un retrait qui ne tient pas est
+       * pire qu'un retrait refusé.
+       */
+      async unfollow(ticker: string): Promise<boolean> {
+        const security = store.catalog.securities().find((s) => s.ticker === ticker);
+        const inSession = store.followedSet().has(ticker);
+        const byReference = security ? isSecurityFollowed(security) : isFollowed(ticker);
+
+        if (!security) return false;
+        if (!inSession && !byReference) return false;
+
+        if (byReference) {
+          const outcome = await store.catalog.setFollowed(security, false);
+          if (outcome.kind !== 'persisted') return false;
+        }
+
+        if (inSession) {
+          patchState(store, (s) => ({ followed: s.followed.filter((t) => t !== ticker) }));
+        }
+        if (byReference) store.catalog.refresh();
+        return true;
+      },
+
+      /** Remet un titre supprimé à la liste. */
+      restore(ticker: string): void {
+        patchState(store, (s) => ({ deleted: s.deleted.filter((t) => t !== ticker) }));
+      },
+
+      /** Efface les décisions de la session ; les suppressions ne sont pas concernées. */
+      resetDecisions(): void {
+        patchState(store, { decisions: {} });
+      },
+    };
+  }),
 );

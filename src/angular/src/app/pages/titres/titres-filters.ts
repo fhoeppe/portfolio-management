@@ -9,7 +9,6 @@ import {
   FUNDAMENTALS,
   IG_GRADES,
   IndexDef,
-  IndexMember,
   MANDATES,
   MARKET_INFO,
   POSITION_STATUS,
@@ -21,7 +20,7 @@ import {
   REGIONS,
   SECTORS,
   STATUS,
-  Security,
+  SecurityElement,
   INDICES,
   toneByColor,
 } from './titres-data';
@@ -65,7 +64,7 @@ export function pickedAccountKeys(acctPick: ReadonlySet<string> | null): readonl
   return acctPick === null ? [] : Array.from(acctPick);
 }
 
-export function statusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security): 'ok' | 'none' {
+export function statusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: SecurityElement): 'ok' | 'none' {
   return decisions.get(s.ticker) ?? s.status;
 }
 
@@ -73,7 +72,7 @@ export function statusOf(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Secur
    définitions d'une même règle divergent tôt ou tard. Il ne garde que la mise en forme du tableau. */
 export function posStatusOf(
   decisions: ReadonlyMap<string, 'ok' | 'none'>,
-  s: Security,
+  s: SecurityElement,
   followed: ReadonlySet<string>,
 ): PositionStatusKey {
   return positionStatusOf(decisions, s, followed);
@@ -169,7 +168,7 @@ export interface UniRow {
   readonly deleteTitle: string;
 }
 
-function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: Security, followed: ReadonlySet<string>): UniRow {
+function toUniRow(decisions: ReadonlyMap<string, 'ok' | 'none'>, s: SecurityElement, followed: ReadonlySet<string>): UniRow {
   const mi = MARKET_INFO[s.ticker];
   const ps = posStatusOf(decisions, s, followed);
   const def = POSITION_STATUS[ps];
@@ -202,7 +201,7 @@ export type UniScope = 'tradable' | 'followed';
 
 export interface UniFilterInput {
   readonly scope: UniScope;
-  readonly securities: readonly Security[];
+  readonly securities: readonly SecurityElement[];
   readonly decisions: ReadonlyMap<string, 'ok' | 'none'>;
   /**
    * Les titres mis en veille pendant la session, en plus de ceux que le référentiel livre.
@@ -236,7 +235,7 @@ export function computeUniRows(f: UniFilterInput): readonly UniRow[] {
    * alors que le store et l'API l'y mettaient tous les deux. Le badge garde sa préséance, la
    * partition non : ce sont deux questions différentes.
    */
-  const veille = (s: Security) => isSecurityFollowed(s, f.followed);
+  const veille = (s: SecurityElement) => isSecurityFollowed(s, f.followed);
 
   return f.securities.filter((s) => !f.deleted.has(s.ticker))
     .filter((s) => (f.scope === 'followed' ? veille(s) : !veille(s)))
@@ -301,25 +300,25 @@ export function groupUniRows(rows: readonly UniRow[], grouped: boolean): readonl
 export const STATUS_LABELS: readonly string[] = ['En position', 'Retenu', 'Position soldée', 'Non retenu'];
 const STATUS_LABEL_KEY: Record<string, PositionStatusKey> = { 'En position': 'held', Retenu: 'watch', 'Position soldée': 'settled', 'Non retenu': 'never' };
 
-export function buildTickerOptions(securities: readonly Security[], deleted: ReadonlySet<string>): readonly MultiOption[] {
+export function buildTickerOptions(securities: readonly SecurityElement[], deleted: ReadonlySet<string>): readonly MultiOption[] {
   const alive = securities.filter((x) => !deleted.has(x.ticker));
   const values = Array.from(new Set(alive.map((x) => MARKET_INFO[x.ticker]?.symbol || x.ticker))).sort((a, b) => a.localeCompare(b, 'fr'));
   return values.map((v) => ({ key: v, label: v, count: alive.filter((x) => (MARKET_INFO[x.ticker]?.symbol || x.ticker) === v).length }));
 }
 
-export function buildPlaceOptions(securities: readonly Security[], deleted: ReadonlySet<string>): readonly MultiOption[] {
+export function buildPlaceOptions(securities: readonly SecurityElement[], deleted: ReadonlySet<string>): readonly MultiOption[] {
   const alive = securities.filter((x) => !deleted.has(x.ticker));
   const values = Array.from(new Set(alive.map((x) => MARKET_INFO[x.ticker]?.place || x.market))).sort((a, b) => a.localeCompare(b, 'fr'));
   return values.map((v) => ({ key: v, label: v, count: alive.filter((x) => (MARKET_INFO[x.ticker]?.place || x.market) === v).length }));
 }
 
-export function buildCurrencyOptions(securities: readonly Security[], deleted: ReadonlySet<string>): readonly MultiOption[] {
+export function buildCurrencyOptions(securities: readonly SecurityElement[], deleted: ReadonlySet<string>): readonly MultiOption[] {
   const alive = securities.filter((x) => !deleted.has(x.ticker));
   const values = Array.from(new Set(alive.map((x) => x.currency))).sort((a, b) => a.localeCompare(b, 'fr'));
   return values.map((v) => ({ key: v, label: v, count: alive.filter((x) => x.currency === v).length }));
 }
 
-export function buildStatusOptions(securities: readonly Security[], deleted: ReadonlySet<string>, decisions: ReadonlyMap<string, 'ok' | 'none'>, followed: ReadonlySet<string>): readonly MultiOption[] {
+export function buildStatusOptions(securities: readonly SecurityElement[], deleted: ReadonlySet<string>, decisions: ReadonlyMap<string, 'ok' | 'none'>, followed: ReadonlySet<string>): readonly MultiOption[] {
   const alive = securities.filter((x) => !deleted.has(x.ticker));
   return STATUS_LABELS.map((label) => {
     const key = STATUS_LABEL_KEY[label];
@@ -352,7 +351,7 @@ export function accountNote(n: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Titres suivis (watchlist) — même Security, autre périmètre de filtrage
+// Titres suivis (watchlist) — même SecurityElement, autre périmètre de filtrage
 // ---------------------------------------------------------------------------
 
 
@@ -426,7 +425,7 @@ export const SECTOR_OPTIONS: readonly { readonly value: string; readonly label: 
   .map((x) => ({ value: x.name, label: x.icon + '  ' + x.name }));
 /* Fonction et non constante : la liste des places se déduit du catalogue, qui n'est plus connu au
    chargement du module. Une constante l'aurait figée à vide. */
-export function placeOptions(securities: readonly Security[]): readonly { readonly value: string; readonly label: string }[] {
+export function placeOptions(securities: readonly SecurityElement[]): readonly { readonly value: string; readonly label: string }[] {
   return Array.from(new Set(securities.map((x) => MARKET_INFO[x.ticker]?.place || x.market)))
     .sort((a, b) => a.localeCompare(b, 'fr'))
     .map((p) => ({ value: p, label: p }));
@@ -443,7 +442,7 @@ export const ESG_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'T
 export const CONSENSUS_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Tous les consensus' }, ...CONSENSUS_OPTIONS] }];
 export const DIV_FREQ_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Toutes les fréquences' }, ...DIV_FREQ_OPTIONS] }];
 export const SECTOR_SELECT_GROUPS = [{ label: '', items: [{ value: 'all', label: 'Tous les secteurs' }, ...SECTOR_OPTIONS] }];
-export function placeSelectGroups(securities: readonly Security[]) {
+export function placeSelectGroups(securities: readonly SecurityElement[]) {
   return [{ label: '', items: [{ value: 'all', label: 'Toutes les places' }, ...placeOptions(securities)] }];
 }
 
@@ -460,22 +459,26 @@ export function placeSelectGroups(securities: readonly Security[]) {
  * l'indice entier.
  */
 export function buildSearchPool(
-  securities: readonly Security[],
+  securities: readonly SecurityElement[],
   fromIndex: boolean,
   idx: IndexDef,
   keep?: readonly string[],
-): readonly Security[] {
+): readonly SecurityElement[] {
   if (!fromIndex) return securities;
-  const retenus = keep && keep.length ? new Set(keep) : null;
+  /* `keep` fourni fait foi, **y compris vide** : les résultats de la source « indice » ne
+     contiennent que ce qu'un « Charger dans la liste » y a mis. Une liste vide traitée comme
+     l'absence de restriction rendait la composition entière — quarante valeurs que personne
+     n'avait demandées —, ce qui vidait l'aperçu de sa raison d'être. Seul `undefined` veut
+     encore dire « pas de restriction ». */
+  const retenus = keep ? new Set(keep) : null;
   const members = retenus ? idx.members.filter((m) => retenus.has(m.ticker)) : idx.members;
-  return members.map(
-    (m) =>
-      securities.find((x) => x.ticker === m.ticker) || {
-        ticker: m.ticker, name: m.name, isin: '—', market: idx.place, assetClass: 'Action', currency: idx.currency,
-        rating: '—', liquidity: 'Composant ' + idx.name, esg: 'Non renseigné', domicile: '—', complexity: 'Non complexe', cap: 0, held: 0,
-        mandates: [], reviewed: '—', by: idx.name, status: 'none' as const, note: 'Composant de ' + idx.name + ' non encore évalué.',
-      },
-  );
+  /* Plus rien à fabriquer : un membre EST un titre, complet, depuis que `IndexDef.members` porte
+     des `SecurityElement`. La synthèse qui vivait ici perdait l'ISIN, le secteur et le poids que
+     la composition connaissait pourtant — un titre versé dans l'univers arrivait amputé, et la
+     watchlist affichait « — » en guise d'ISIN.
+     Le catalogue garde la priorité quand il connaît le titre : il en sait davantage — notation,
+     liquidité, mandats, plafond — et c'est lui le référentiel. */
+  return members.map((m) => securities.find((x) => x.ticker === m.ticker) ?? m);
 }
 
 export interface SearchColFilters {
@@ -504,7 +507,7 @@ export interface SearchRow {
 }
 
 export interface SearchFilterInput {
-  readonly pool: readonly Security[];
+  readonly pool: readonly SecurityElement[];
   readonly fromIndex: boolean;
   readonly search: SearchState;
   readonly resCol: SearchColFilters;
@@ -554,7 +557,7 @@ export function computeSearchRows(f: SearchFilterInput): readonly SearchRow[] {
     return true;
   });
 
-  const getters: Record<string, (x: Security) => string> = {
+  const getters: Record<string, (x: SecurityElement) => string> = {
     security: (x) => x.name,
     cls: (x) => x.assetClass,
     currency: (x) => x.currency,
@@ -578,7 +581,7 @@ export function computeSearchRows(f: SearchFilterInput): readonly SearchRow[] {
 
 const RES_STATUS_ORDER: readonly PositionStatusKey[] = ['held', 'settled', 'watch', 'followed', 'never'];
 
-export function buildResStatusOptions(pool: readonly Security[], decisions: ReadonlyMap<string, 'ok' | 'none'>, followed: ReadonlySet<string>): readonly MultiOption[] {
+export function buildResStatusOptions(pool: readonly SecurityElement[], decisions: ReadonlyMap<string, 'ok' | 'none'>, followed: ReadonlySet<string>): readonly MultiOption[] {
   return RES_STATUS_ORDER.map((k) => {
     const def = POSITION_STATUS[k];
     return { key: k, label: def.label, count: pool.filter((x) => posStatusOf(decisions, x, followed) === k).length, badgeBg: def.bg, badgeFg: def.fg, dotColor: k === 'followed' ? '#a37a00' : def.fg };
@@ -589,20 +592,22 @@ export function buildResStatusOptions(pool: readonly Security[], decisions: Read
 // Panneau « Indices de référence » + modale d'aperçu
 // ---------------------------------------------------------------------------
 
-export function refOf(securities: readonly Security[], refs: ReadonlyMap<string, 'ok' | 'none'>, idxKey: string, m: IndexMember, decisions: ReadonlyMap<string, 'ok' | 'none'>): 'ok' | 'none' {
+export function refOf(securities: readonly SecurityElement[], refs: ReadonlyMap<string, 'ok' | 'none'>, idxKey: string, m: SecurityElement, decisions: ReadonlyMap<string, 'ok' | 'none'>): 'ok' | 'none' {
   const override = refs.get(idxKey + '/' + m.ticker);
   if (override) return override;
   const known = securities.find((x) => x.ticker === m.ticker);
   if (known && statusOf(decisions, known) !== 'none') return 'ok';
-  return m.ref;
+  /* Sans avis de la liste d'origine, la valeur n'y est pas retenue : c'est la lecture la plus
+     prudente, et celle que portait `ref` absent avant que le champ ne devienne facultatif. */
+  return m.ref ?? 'none';
 }
 
-export function inCount(securities: readonly Security[], idx: IndexDef, members: readonly IndexMember[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): number {
+export function inCount(securities: readonly SecurityElement[], idx: IndexDef, members: readonly SecurityElement[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): number {
   return members.filter((m) => refOf(securities, refs, idx.key, m, decisions) === 'ok').length;
 }
 
 export function buildIndexGroups(
-  securities: readonly Security[],
+  securities: readonly SecurityElement[],
   refs: ReadonlyMap<string, 'ok' | 'none'>,
   decisions: ReadonlyMap<string, 'ok' | 'none'>,
 ): readonly { readonly label: string; readonly items: readonly { readonly value: string; readonly label: string }[] }[] {
@@ -658,16 +663,16 @@ export interface PreviewData {
   readonly footer: string;
 }
 
-export function computePreview(securities: readonly Security[], idx: IndexDef, members: readonly IndexMember[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): PreviewData {
-  const ref = (m: IndexMember) => refOf(securities, refs, idx.key, m, decisions);
+export function computePreview(securities: readonly SecurityElement[], idx: IndexDef, members: readonly SecurityElement[], refs: ReadonlyMap<string, 'ok' | 'none'>, decisions: ReadonlyMap<string, 'ok' | 'none'>): PreviewData {
+  const ref = (m: SecurityElement) => refOf(securities, refs, idx.key, m, decisions);
   const elig = members.filter((m) => ref(m) === 'ok');
-  const posOf = (m: IndexMember, retained: boolean): PositionStatusDef => {
+  const posOf = (m: SecurityElement, retained: boolean): PositionStatusDef => {
     const link = PORTFOLIO_LINKS[m.ticker];
     if (link?.held) return POSITION_STATUS.held;
     if (link?.history) return POSITION_STATUS.settled;
     return retained ? POSITION_STATUS.watch : POSITION_STATUS.never;
   };
-  const weight = elig.reduce((n, m) => n + m.weight, 0);
+  const weight = elig.reduce((n, m) => n + (m.weight ?? 0), 0);
   return {
     title: idx.name + ' — ' + idx.place,
     detail: idx.name + ' compte ' + idx.count + ' composant(s) · ' + members.length + ' chargé(s) dans le référentiel · ' + idx.region,
@@ -689,7 +694,7 @@ export function computePreview(securities: readonly Security[], idx: IndexDef, m
         const st = posOf(m, on);
         const locked = isLockedInUniverse(m.ticker, on);
         return {
-          name: m.name, ticker: m.ticker, isin: m.isin, sector: m.sector,
+          name: m.name, ticker: m.ticker, isin: m.isin, sector: m.sector ?? 'Non classé',
           weight: m.weight ? m.weight.toFixed(1).replace('.', ',') + ' %' : '—',
           eligible: st.label, posHint: st.hint,
           switchTitle: locked
@@ -735,7 +740,7 @@ export interface SecuritySheet {
   readonly rows: readonly { readonly label: string; readonly value: string }[];
 }
 
-export function buildSecuritySheet(cur: Security, decisions: ReadonlyMap<string, 'ok' | 'none'>): SecuritySheet {
+export function buildSecuritySheet(cur: SecurityElement, decisions: ReadonlyMap<string, 'ok' | 'none'>): SecuritySheet {
   const info = MARKET_INFO[cur.ticker];
   const st = STATUS[statusOf(decisions, cur)];
   return {
@@ -772,7 +777,7 @@ export interface CriterionRow {
   readonly color: string;
 }
 
-export function computeCriteria(cur: Security): readonly CriterionRow[] {
+export function computeCriteria(cur: SecurityElement): readonly CriterionRow[] {
   const list = [
     { label: 'Notation minimale', detail: cur.rating === '—' ? 'Non applicable aux fonds actions' : 'Exigence contractuelle BBB− · titre noté ' + cur.rating, ok: cur.ticker !== 'HYBND' },
     { label: 'Liquidité', detail: cur.liquidity, ok: cur.liquidity.indexOf('Faible') < 0 && cur.liquidity.indexOf('Illiquide') < 0 },
