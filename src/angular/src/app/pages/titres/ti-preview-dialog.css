@@ -178,6 +178,14 @@
   padding-left: 18px;
 }
 
+/* Fond alterné : l'œil retrouve sa rangée sur quarante composants et six colonnes, sans la règle
+   horizontale qui alourdirait le tableau. `--color-neutral-100` et non une valeur en dur — c'est
+   déjà le fond de l'en-tête, et il se retourne tout seul en thème sombre, où il passe SOUS la
+   surface au lieu de la dépasser : l'alternance reste lisible dans les deux sens. */
+.ti-pv-table tr.mat-mdc-row:nth-child(even) td.mat-mdc-cell {
+  background: var(--color-neutral-100);
+}
+
 .ti-pv-member-name {
   display: block;
   font-weight: 600;
@@ -206,6 +214,36 @@
 .ti-pv-table td.ti-pv-weight,
 .ti-pv-table td.ti-pv-status-cell {
   vertical-align: top;
+}
+
+/**
+ * La bascule et la pastille étaient les deux seuls objets de la rangée à ne pas rejoindre la
+ * première ligne : la bascule 10 px plus bas, la pastille 2 px. Le correctif ci-dessus ne les
+ * atteignait pas — il ne cite que les cellules à contenu textuel.
+ *
+ * La bascule d'abord. Sa cellule n'a pas de classe à nous : MatTable la marque `mat-column-<nom>`,
+ * d'après le `matColumnDef="bascule"` du gabarit. Restée en `vertical-align: middle`, elle centrait
+ * un objet de 32 px dans une rangée de 47 — huit pixels sous le nom. `top` seul ne suffit pas : la
+ * bascule est plus haute qu'une ligne de texte, et son centre reste 6 px trop bas ; la marge
+ * négative les reprend. Mesuré à 0,0 px sur les quarante rangées, hauteurs inchangées.
+ *
+ * L'en-tête, lui, n'est pas touché : sa bascule est déjà d'aplomb avec les libellés (0,2 px).
+ */
+.ti-pv-table td.mat-column-bascule {
+  vertical-align: top;
+}
+
+.ti-pv-table td.mat-column-bascule mat-slide-toggle {
+  display: block;
+  margin-top: -6px;
+}
+
+/* La pastille ensuite. `inline-flex` avec 2 px de rembourrage haut : son texte tombe 2 px sous
+   celui du nom. Le décalage vient de la boîte, pas du flux — un rembourrage dissymétrique n'y
+   changeait rien (mesuré), un déplacement relatif oui, et sans toucher à la hauteur de rangée. */
+.ti-pv-status-badge {
+  position: relative;
+  top: -2px;
 }
 
 .ti-pv-sector {
@@ -285,11 +323,32 @@
   width: 130px;
 }
 
-.ti-pv-venue-cell {
+/**
+ * La pile vit dans `.ti-pv-venue-stack`, un enfant, et NON sur le `td` : c'était le vrai défaut
+ * d'alignement de cette colonne. Un `td` en `display: flex` n'est plus une cellule de tableau —
+ * il quitte la mise en page tabulaire et cesse de s'étirer à la hauteur de la rangée. Mesuré :
+ * 56,8 px contre 59,0 pour ses cinq voisines, donc un bord bas et un fond qui s'arrêtaient
+ * 2,2 px trop haut. Le fond alterné rend ce décrochement franchement lisible.
+ *
+ * Deux compensations empiriques ont vécu ici — 13 px de rembourrage, 6,5 px d'écart de pile.
+ * Elles traitaient les symptômes de cette cause-là. La cellule redevenue normale, elles n'ont
+ * plus lieu d'être : `vertical-align: top` la range avec les quatre autres colonnes.
+ */
+.ti-pv-table td.ti-pv-venue-cell {
+  vertical-align: top;
+}
+
+/* Interligne de 20 px et aucun écart : exactement le rythme de la pile du nom, dont les deux
+   spans portent eux aussi 20 px. Les deux piles démarrent déjà au même pixel — la cellule
+   redevenue normale s'en charge —, donc à interlignes égaux leurs deux lignes coïncident par
+   construction, sans compensation chiffrée. C'est ce que les corps plus petits (11 et 10 px
+   contre 12 et 11) faisaient rater : centré dans une ligne de 14,3 px au lieu de 20, le code de
+   place remontait de 2,85 px. La pile totalise 40 px comme sa voisine, les rangées ne bougent pas. */
+.ti-pv-venue-stack {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  line-height: 1.3;
+  gap: 0;
+  line-height: 20px;
 }
 
 .ti-pv-mic {

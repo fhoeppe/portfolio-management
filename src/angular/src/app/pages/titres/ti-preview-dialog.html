@@ -52,10 +52,14 @@
           </button>
         </th>
         <td mat-cell *matCellDef="let r" class="ti-pv-venue-cell">
-          <span class="ti-pv-mic">{{ r.listing }}</span>
-          @if (r.country) {
-            <span class="ti-pv-country"><span class="ti-pv-flag">{{ r.flag }}</span>{{ r.country }}</span>
-          }
+          <!-- La pile est dans un enfant, pas sur le `td` : une cellule passée en `display: flex`
+               cesse d'être une cellule de tableau et ne s'étire plus à la hauteur de la rangée. -->
+          <div class="ti-pv-venue-stack">
+            <span class="ti-pv-mic">{{ r.listing }}</span>
+            @if (r.country) {
+              <span class="ti-pv-country"><span class="ti-pv-flag">{{ r.flag }}</span>{{ r.country }}</span>
+            }
+          </div>
         </td>
       </ng-container>
       <ng-container matColumnDef="secteur">
