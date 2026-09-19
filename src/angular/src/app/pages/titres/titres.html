@@ -244,7 +244,6 @@
                 }
               </span>
               <span class="ti-pick-note">{{ pickNote() }}</span>
-              <span class="ti-pick-status" [style.color]="pickStatusColor()">{{ pickStatus() }}</span>
               <button type="button" matIconButton class="ti-add-picked-btn" [disabled]="noPick()" matTooltip="Ajouter les titres sélectionnés à l'univers d'investissement" (click)="addPickedOk()">
                 <mat-icon svgIcon="plus" style="font-size:17px"></mat-icon>
               </button>
@@ -254,6 +253,11 @@
               <button type="button" matIconButton class="ti-reset-picked-btn" matTooltip="Réinitialiser ce panneau : sa sélection, les filtres de colonnes, le tri et les résultats affichés" (click)="resetPicked()">
                 <mat-icon svgIcon="rotate-left" style="font-size:16px"></mat-icon>
               </button>
+              <!-- Après les boutons, et sur sa propre ligne : un compte rendu de longueur variable
+                   placé avant eux les déplaçait à chaque message. -->
+              @if (pickStatus()) {
+                <span class="ti-pick-status" [style.color]="pickStatusColor()">{{ pickStatus() }}</span>
+              }
             </div>
 
             <div class="ti-table-scroll">

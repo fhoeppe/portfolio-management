@@ -427,3 +427,40 @@
   font-size: 11px;
   color: var(--ink-ok-2);
 }
+
+/**
+ * Onglet « Structure » : l'objet brut, sur fond noir.
+ *
+ * Le fond sombre n'est pas décoratif — il dit que ce panneau-ci n'est pas une lecture mise en
+ * forme comme les deux autres, mais la donnée telle qu'elle est. Il est le même dans les deux
+ * thèmes, pour la même raison : un bloc de code ne suit pas l'habillage de la page, il tranche
+ * avec.
+ *
+ * `overflow-x: auto` et non un retour à la ligne : une valeur coupée au milieu se relit mal, et
+ * une note longue vaut mieux défiler que se replier sur quatre lignes.
+ *
+ * L'onglet ne porte que ce bloc — pas de légende, pas de compte de champs : le JSON se décrit
+ * lui-même, et un commentaire au-dessus n'aurait fait que redire ce qui se lit en dessous.
+ */
+.ti-sec-json {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #14161a;
+  color: #e6e6e6;
+  font-family: 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-x: auto;
+  /* Le panneau latéral est haut mais pas infini : le bloc défile chez lui plutôt que d'allonger
+     la page, et la note au-dessus reste visible. */
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+  tab-size: 2;
+}
+
+.ti-sec-json code {
+  font: inherit;
+  color: inherit;
+  white-space: pre;
+}

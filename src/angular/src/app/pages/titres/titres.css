@@ -512,8 +512,20 @@
   color: var(--ink-brand);
 }
 
+/* Sa propre ligne, sous la barre : `flex-basis: 100%` force le passage à la ligne dans un
+   conteneur qui enveloppe déjà. Le compte rendu varie en longueur — « 1 titre(s) ajouté(s) » ou
+   la phrase entière sur le référentiel injoignable — et le laisser dans la rangée déplaçait les
+   trois boutons à chaque message. La marge remplace le `gap` de la rangée, qui ne s'applique
+   qu'entre voisins de même ligne. */
 .ti-pick-status {
+  flex: 0 0 100%;
+  /* Marge négative : le `row-gap` de 10 px de la barre vaut pour des voisins de rangée, pas pour
+     une ligne repliée sous les boutons — il y ajoutait 32 px de hauteur pour un texte de 11. La
+     marge le ramène à 4 px, et l'interligne serré évite qu'une ligne de 20 px porte 11 px d'encre. */
+  margin-top: -6px;
+  text-align: right;
   font-size: 11px;
+  line-height: 1.2;
   font-weight: 600;
 }
 
@@ -530,8 +542,9 @@
   color: #a37a00;
 }
 
+/* Pas de marge propre : les trois boutons sont espacés par le seul `gap` de la barre. Un
+   `margin-left: 20px` ne s'appliquait qu'à celui-ci et rompait l'alignement des trois. */
 .ti-reset-picked-btn {
-  margin-left: 20px;
   border-radius: 999px !important;
 }
 

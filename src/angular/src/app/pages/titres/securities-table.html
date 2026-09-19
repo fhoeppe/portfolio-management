@@ -74,9 +74,14 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="ti-th ti-th-actions">Action</th>
       <td mat-cell *matCellDef="let row" class="ti-td ti-td-actions">
-        <button type="button" class="ti-del-btn" [disabled]="row.r.lockDelete" [matTooltip]="row.r.deleteTitle" (click)="$event.stopPropagation(); requestRemove(row.r.ticker)">
-          <mat-icon svgIcon="shopping-bag" style="font-size:14px"></mat-icon>
-        </button>
+        <span class="ti-row-actions">
+          <button type="button" class="ti-eye-btn" matTooltip="Ouvrir la fiche du titre" (click)="requestOpen(row.r.ticker)">
+            <mat-icon svgIcon="eye" style="font-size:14px"></mat-icon>
+          </button>
+          <button type="button" class="ti-del-btn" [disabled]="row.r.lockDelete" [matTooltip]="row.r.deleteTitle" (click)="requestRemove(row.r.ticker)">
+            <mat-icon svgIcon="shopping-bag" style="font-size:14px"></mat-icon>
+          </button>
+        </span>
       </td>
     </ng-container>
 
@@ -130,7 +135,10 @@
     <tr mat-header-row *matHeaderRowDef="columns" class="ti-table-header-row"></tr>
     <tr mat-header-row *matHeaderRowDef="filterColumns" class="ti-filter-row"></tr>
     <tr mat-row *matRowDef="let row; columns: groupColumns; when: isGroupRow" class="ti-group-row"></tr>
-    <tr mat-row *matRowDef="let row; columns: columns" class="ti-row" matTooltip="Ouvrir le détail du titre" (click)="requestOpen(row.r.ticker)"></tr>
+    <!-- La ligne n'ouvre plus rien : c'est le bouton œil de la colonne Action qui le fait. Une
+         ligne entière cliquable rendait tout clic risqué — sélectionner un ISIN pour le copier
+         ouvrait le panneau — et n'annonçait le geste que par une infobulle. Le bouton le dit. -->
+    <tr mat-row *matRowDef="let row; columns: columns" class="ti-row"></tr>
   </table>
 </div>
 @if (isEmpty()) {

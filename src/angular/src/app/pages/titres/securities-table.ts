@@ -5,7 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ViewStateService } from '../../shell/view-state.service';
 import { SecurityUniverseStore } from '../../domain/security-universe.store';
-import type { Security } from '../../domain/security-reference';
+import type { SecurityElement } from '../../domain/security-reference';
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
 import {
   buildCurrencyOptions,
@@ -74,7 +74,7 @@ export class SecuritiesTable {
    * liaison est posée. Les deux appelants passent la liste ; ce qui manquait n'était pas la
    * garantie, c'était la tolérance à l'ordre d'évaluation.
    */
-  readonly securities = input<readonly Security[]>([]);
+  readonly securities = input<readonly SecurityElement[]>([]);
 
   /**
    * Quelle moitié de l'univers ce tableau montre.

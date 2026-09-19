@@ -59,7 +59,8 @@
 }
 
 .ti-th-actions {
-  width: 64px;
+  /* 64 px suffisaient pour un bouton ; il en faut deux, plus leur écart. */
+  width: 96px;
   text-align: right;
   padding: 0 24px 0 16px;
 }
@@ -164,7 +165,9 @@
 
 .ti-row {
   height: 36px;
-  cursor: pointer;
+  /* Plus de `cursor: pointer` : la ligne n'est plus cliquable, et une main qui promet un geste
+     inexistant est pire qu'un curseur neutre. Le survol reste, lui — il sert à suivre la ligne
+     du regard jusqu'à la colonne Action, pas à annoncer un clic. */
 }
 
 .ti-row:hover {
@@ -229,6 +232,37 @@
   width: 6px;
   height: 6px;
   border-radius: 999px;
+}
+
+/* Les deux boutons de la colonne Action : l'œil d'abord, la sortie ensuite. Alignés à droite
+   comme la cellule, et séparés d'un écart franc — deux gestes sans rapport, dont l'un est
+   irréversible, ne doivent pas se toucher. */
+.ti-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Même gabarit que le bouton de sortie — même taille, même contour, même rayon — pour que la
+   colonne reste une colonne. Seule la teinte change : celle de la marque, puisque c'est le geste
+   ordinaire, là où le rouge signale celui qui retire. */
+.ti-eye-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink-brand);
+  cursor: pointer;
+}
+
+.ti-eye-btn:hover {
+  border-color: var(--ink-brand);
+  background: rgba(0, 61, 165, 0.06);
 }
 
 .ti-del-btn {

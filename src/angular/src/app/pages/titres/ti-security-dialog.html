@@ -10,6 +10,11 @@
       <mat-icon svgIcon="verified" style="font-size:15px"></mat-icon>
       Évaluation du titre
     </button>
+    <button type="button" mat-tab-link class="ti-sec-tab" [active]="secTab() === 'json'"
+      [class.ti-sec-tab-active]="secTab() === 'json'" (click)="setSecTab('json')">
+      <mat-icon svgIcon="list-dots" style="font-size:15px"></mat-icon>
+      Structure
+    </button>
   </nav>
 
   <mat-tab-nav-panel #tiSecTabPanel>
@@ -93,7 +98,11 @@
         }
       </div>
     </div>
-  } @else {
+  }
+  <!-- Condition explicite, et non l'`@else` de « Fiche » : ce sinon-là attrapait TOUT onglet qui
+       n'était pas la fiche, donc « Structure » aussi — l'évaluation s'affichait sous le bloc JSON.
+       Trois `@if` nommés se lisent mieux et ne piègent pas le prochain onglet ajouté. -->
+  @if (secTab() === 'eval') {
     <div class="ti-sec-body">
       <div class="ti-sec-panel">
         <div class="ti-sec-panel-head">
@@ -121,6 +130,11 @@
           <span class="ti-sec-status">{{ status() }}</span>
         </div>
       </div>
+    </div>
+  }
+  @if (secTab() === 'json') {
+    <div class="ti-sec-body">
+      <pre class="ti-sec-json"><code>{{ json() }}</code></pre>
     </div>
   }
 </mat-tab-nav-panel>
