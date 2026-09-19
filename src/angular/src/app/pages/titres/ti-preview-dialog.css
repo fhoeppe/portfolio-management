@@ -189,6 +189,25 @@
   color: var(--color-neutral-700);
 }
 
+/**
+ * Les colonnes à une seule ligne s'alignent sur la PREMIÈRE ligne des colonnes qui en empilent
+ * deux, et non sur le milieu de la rangée.
+ *
+ * « Composant » et « Cotation » empilent un nom et son ISIN, une cotation et son pays. Centrées
+ * verticalement, ces piles placent leur première ligne au-dessus du milieu — tandis que le
+ * secteur, le poids et le statut, eux, tombaient pile au milieu. Le nom d'un titre se lisait donc
+ * huit pixels plus haut que son secteur et son poids, sur les quarante lignes.
+ *
+ * `vertical-align: top` suffit, et c'est tout ce qu'il faut : mesuré, l'écart passe de 8 px à 0 et
+ * la hauteur des rangées ne bouge pas. Y ajouter un `padding-top` le rouvrait — 1,6 px à 11, 2,4 px
+ * à 12 — et faisait grandir d'un pixel les rangées dont le secteur passe à la ligne.
+ */
+.ti-pv-table td.ti-pv-sector,
+.ti-pv-table td.ti-pv-weight,
+.ti-pv-table td.ti-pv-status-cell {
+  vertical-align: top;
+}
+
 .ti-pv-sector {
   color: var(--color-text);
 }

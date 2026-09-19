@@ -90,7 +90,7 @@
             </span>
           </button>
         </th>
-        <td mat-cell *matCellDef="let r">
+        <td mat-cell *matCellDef="let r" class="ti-pv-status-cell">
           <span class="ti-pv-status-badge" [style.background]="r.tagBg" [style.color]="r.tagFg" [matTooltip]="r.posHint">
             <span class="ti-pv-status-dot" [style.background]="r.tagFg"></span>
             {{ r.eligible }}
