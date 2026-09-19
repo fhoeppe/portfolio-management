@@ -52,19 +52,34 @@ export type IndexFeedStatus =
 /**
  * Où lire les compositions. Chaîne vide pour ne rien charger du tout — ce que fait un test, ou un
  * déploiement qui assume le socle.
- *
- * Le défaut vise l'API du contrat. Un déploiement sans back-end bascule sur `/data/indices.json`
- * en redéclarant ce jeton, sans autre changement.
  */
 export const INDEX_FEED_URL = new InjectionToken<string>('INDEX_FEED_URL', {
   providedIn: 'root',
   factory: () => '/v1/market/indices',
 });
 
+/**
+ * Où lire les compositions quand la première source ne répond pas. Chaîne vide pour n'en pas avoir.
+ *
+ * Le fichier déposé sur le serveur statique tient ce rôle, et ce n'est pas un luxe : `npm start`
+ * lance `ng serve` sans proxy, donc sans API, et la source principale y répond 502. Sans ce
+ * repli, l'application retombait sur son socle embarqué — dix valeurs pour le CAC 40 au lieu de
+ * quarante — et se présentait comme incomplète à qui la démarre simplement.
+ *
+ * L'ordre a son sens : l'API sait ne livrer que ce qu'on lui demande et date sa réponse, le
+ * fichier ne demande aucun back-end. On prend la première qui répond, et le socle ne sert plus
+ * que si les deux se taisent.
+ */
+export const INDEX_FEED_FALLBACK_URL = new InjectionToken<string>('INDEX_FEED_FALLBACK_URL', {
+  providedIn: 'root',
+  factory: () => '/data/indices.json',
+});
+
 @Injectable({ providedIn: 'root' })
 export class IndexFeedService {
   private readonly http = inject(HttpClient);
   private readonly url = inject(INDEX_FEED_URL);
+  private readonly fallbackUrl = inject(INDEX_FEED_FALLBACK_URL);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly state = signal<IndexFeedStatus>('seed');
@@ -109,24 +124,40 @@ export class IndexFeedService {
    * bonne réponse pour une page servie avant toute interaction.
    */
   async load(): Promise<IndexFeedStatus> {
-    if (!this.isBrowser || !this.url) return this.state();
+    const sources = [this.url, this.fallbackUrl].filter((u) => !!u);
+    if (!this.isBrowser || !sources.length) return this.state();
 
     this.state.set('loading');
     this.failure.set('');
 
+    /* Les sources sont essayées dans l'ordre, et la première qui rend une composition exploitable
+       l'emporte. Le motif d'échec retenu est celui de la DERNIÈRE tentative : c'est la seule que
+       l'exploitant puisse corriger une fois la chaîne épuisée. */
+    for (const url of sources) {
+      const issue = await this.tryLoad(url);
+      if (!issue) return 'loaded';
+      this.failure.set(issue);
+    }
+
+    this.state.set('error');
+    return 'error';
+  }
+
+  /**
+   * Essaie une source. Rend la chaîne vide en cas de succès, le motif d'échec sinon.
+   */
+  private async tryLoad(url: string): Promise<string> {
     try {
-      const payload = await firstValueFrom(this.http.get<IndexFeedDto>(this.url));
+      const payload = await firstValueFrom(this.http.get<IndexFeedDto>(url));
       const parse = parseIndexFeed(payload, new Map(SEED_INDICES.map((i) => [i.key, i])));
-      this.issues.set(parse.warnings);
 
       if (!parse.indices.length) {
         /* Une charge lisible mais vide n'est pas une panne de réseau : c'est une source qui n'a
            rien à dire. On le distingue, parce que le geste correctif n'est pas le même. */
-        this.failure.set(parse.warnings[0] ?? 'charge vide');
-        this.state.set('error');
-        return 'error';
+        return parse.warnings[0] ?? 'charge vide';
       }
 
+      this.issues.set(parse.warnings);
       applyIndices(parse.indices);
       this.detail.set({
         source: parse.source,
@@ -136,11 +167,9 @@ export class IndexFeedService {
         memberCount: parse.memberCount,
       });
       this.state.set('loaded');
-      return 'loaded';
+      return '';
     } catch (err: unknown) {
-      this.failure.set(message(err));
-      this.state.set('error');
-      return 'error';
+      return message(err);
     }
   }
 
