@@ -451,9 +451,23 @@ export function placeSelectGroups(securities: readonly Security[]) {
 // Résultats de recherche
 // ---------------------------------------------------------------------------
 
-export function buildSearchPool(securities: readonly Security[], fromIndex: boolean, idx: IndexDef): readonly Security[] {
+/**
+ * Le vivier interrogé par les résultats.
+ *
+ * `keep` restreint la composition aux mnémoniques cités — ce que verse « Charger dans la liste »,
+ * qui ne remonte que les titres retenus pendant l'ouverture de l'aperçu. Absent, toute la
+ * composition est servie : c'est ce que fait un simple changement d'indice, où l'on veut voir
+ * l'indice entier.
+ */
+export function buildSearchPool(
+  securities: readonly Security[],
+  fromIndex: boolean,
+  idx: IndexDef,
+  keep?: readonly string[],
+): readonly Security[] {
   if (!fromIndex) return securities;
-  const members = idx.members;
+  const retenus = keep && keep.length ? new Set(keep) : null;
+  const members = retenus ? idx.members.filter((m) => retenus.has(m.ticker)) : idx.members;
   return members.map(
     (m) =>
       securities.find((x) => x.ticker === m.ticker) || {

@@ -65,6 +65,17 @@ export class TiPreviewDialog {
     computePreview(this.universe.all(), this.idx, this.members(), this.data.refs(), this.universe.decisionMap()),
   );
 
+  /**
+   * Ce qui était déjà retenu à l'ouverture.
+   *
+   * Lu une seule fois, à la construction : c'est la référence qui permet de dire, à la fermeture,
+   * lesquels sont *nouveaux*. Un `computed` ne conviendrait pas — il suivrait les bascules et
+   * n'aurait plus rien à comparer.
+   */
+  private readonly retenusALOuverture = new Set(
+    this.preview().rows.filter((r) => r.on).map((r) => r.ticker),
+  );
+
   /* La composition vient du service, sur la liste effectivement chargée : c'est lui qui sait où
      l'indice cote, de quel pays chaque composant est émis et ce que l'univers en connaît. La modale
      se contentait du nom, du secteur et du poids. */
@@ -162,9 +173,17 @@ export class TiPreviewDialog {
    * fermait le dialogue et rien d'autre, alors que son libellé promet une action. Rendre `true`
    * est le minimum pour que l'écran sache lequel des deux a été pressé — c'est lui qui décide
    * ensuite quoi en faire, le dialogue n'ayant pas à connaître le panneau de résultats.
+   *
+   * Ce qui remonte, ce sont les titres retenus **pendant cette ouverture**, et eux seuls. Verser
+   * la composition entière noierait le geste : on vient d'en cocher deux sur quarante, et c'est
+   * ces deux-là qu'on veut retrouver dans la liste. Ceux qui étaient déjà retenus avant n'ont pas
+   * été choisis maintenant — ils sont déjà dans l'univers, ils n'ont pas à revenir.
    */
   protected load(): void {
-    this.dialogRef.close(true);
+    const nouveaux = this.preview().rows
+      .filter((r) => r.on && !this.retenusALOuverture.has(r.ticker))
+      .map((r) => r.ticker);
+    this.dialogRef.close(nouveaux);
   }
 
   /**

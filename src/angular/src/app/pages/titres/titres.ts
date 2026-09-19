@@ -331,7 +331,9 @@ export class Titres {
 
   protected setIndex(key: string): void {
     this.index.set(key);
-    /* Changer d'indice relance la recherche du panneau qui s'en nourrit. */
+    /* Changer d'indice relance la recherche du panneau qui s'en nourrit, et lève la restriction
+       posée par un « Charger dans la liste » précédent : elle portait sur l'indice d'avant. */
+    this.indexCharges.set([]);
     this.shownBySource.update((p) => ({ ...p, index: true }));
   }
 
@@ -348,15 +350,18 @@ export class Titres {
    */
   protected openPreview(): void {
     this.dialog
-      .open<TiPreviewDialog, TiPreviewDialogData, boolean | undefined>(TiPreviewDialog, {
+      .open<TiPreviewDialog, TiPreviewDialogData, readonly string[] | undefined>(TiPreviewDialog, {
         data: { idx: this.selectedIndex(), refs: this.refs },
         maxWidth: '96vw',
         maxHeight: '90vh',
         autoFocus: false,
       })
       .afterClosed()
-      .subscribe((charger) => {
-        if (!charger) return;
+      .subscribe((nouveaux) => {
+        /* `undefined` = fermé sans charger. Un tableau vide, lui, est une réponse : on a pressé
+           « Charger » sans avoir rien retenu de nouveau, et la liste le dira. */
+        if (!nouveaux) return;
+        this.indexCharges.set(nouveaux);
         this.resSource.set('index');
         this.shownBySource.update((p) => ({ ...p, index: true }));
         /* Le panneau se déplie s'il était replié : charger une liste pour la laisser cachée
@@ -498,7 +503,18 @@ export class Titres {
     { key: 'index', label: "Selon l'indice retenu" },
   ];
 
-  protected readonly searchPool = computed(() => buildSearchPool(this.securities(), this.resSource() === 'index', this.selectedIndex()));
+  /**
+   * Les titres que le dernier « Charger dans la liste » a versés.
+   *
+   * Vide tant que personne n'a chargé, et remis à vide dès qu'on change d'indice : la sélection
+   * d'un indice ne dit rien de ce qu'on a retenu dans un autre, et garder la restriction
+   * afficherait une liste vide sans qu'on comprenne pourquoi.
+   */
+  private readonly indexCharges = signal<readonly string[]>([]);
+
+  protected readonly searchPool = computed(() =>
+    buildSearchPool(this.securities(), this.resSource() === 'index', this.selectedIndex(), this.indexCharges()),
+  );
 
   /**
    * Décisions telles qu'elles s'appliquent aux résultats.
