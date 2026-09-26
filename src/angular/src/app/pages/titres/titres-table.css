@@ -11,6 +11,19 @@
  * dans le composant aurait doublé 12 ko de CSS pour en utiliser un cinquième.
  */
 
+/* Fonds de ligne — survol et sélection. En jetons parce que les trois valeurs doivent bouger
+   ensemble d'un thème à l'autre, et parce que la feuille est partagée par deux composants. */
+:host {
+  --ti-row-hover-bg: rgba(0, 0, 0, 0.04);
+  --ti-row-picked-bg: rgba(0, 61, 165, 0.34);
+  --ti-row-picked-hover-bg: rgba(0, 61, 165, 0.48);
+}
+
+:host-context([data-theme='dark']) {
+  --ti-row-hover-bg: rgba(255, 255, 255, 0.06);
+  --ti-row-picked-hover-bg: rgba(120, 165, 235, 0.40);
+}
+
 .ti-table-scroll {
   overflow-x: auto;
 }
@@ -171,11 +184,20 @@
 }
 
 .ti-row:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--ti-row-hover-bg);
 }
 
 .ti-row-picked {
-  background: rgba(0, 61, 165, 0.34);
+  background: var(--ti-row-picked-bg);
+}
+
+/* Le survol d'une ligne cochée : sans cette règle, `.ti-row:hover` (0-2-0) passait devant
+   `.ti-row-picked` (0-1-0) et remplaçait le bleu de la sélection par le gris neutre du survol
+   — sur fond clair, la ligne cochée redevenait blanche sous la souris. Le survol doit ici
+   renforcer la sélection, pas l'effacer : même bleu, plus dense en thème clair, plus lumineux
+   en thème sombre où un bleu plus foncé se confondrait avec le fond. */
+.ti-row-picked:hover {
+  background: var(--ti-row-picked-hover-bg);
 }
 
 .ti-td {
