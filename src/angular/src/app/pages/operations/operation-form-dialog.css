@@ -221,7 +221,13 @@ mat-tab-nav-panel {
 .pm-order-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  /* Colonnes et rangées ne demandent pas le même écart : 12px séparent bien deux champs voisins,
+     mais entre deux rangées s'ajoutent déjà la ligne d'aide de la rangée du dessus et le libellé
+     de celle du dessous — l'écart perçu valait le double, et le bloc se lisait comme une suite de
+     champs isolés plutôt que comme un formulaire. La rangée descend donc à 6px, les colonnes
+     gardent leurs 12. */
+  column-gap: 12px;
+  row-gap: 6px;
   padding: 14px;
 }
 
@@ -725,15 +731,70 @@ mat-tab-nav-panel {
    imposerait son cadre M3 (hauteur ~56px, libellé flottant) et casserait la compacité des
    champs du prototype. */
 .pm-datepicker {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 2px;
+  min-width: 0;
+  /* Le cadre appartient au conteneur, plus à l'<input> : le bouton calendrier se range **dans**
+     le champ, contre son bord droit, au lieu de flotter à côté. Mêmes cadre, hauteur et fond que
+     `.pm-date-input` / `.pm-text-input` pour que la rangée reste d'un seul dessin. `border-box` :
+     sans lui, bordure et rembourrage s'ajouteraient à la hauteur et le champ ferait 36px au
+     milieu de champs de 34. */
+  box-sizing: border-box;
+  height: 34px;
+  padding-right: 2px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
 }
 
-.pm-datepicker .mat-mdc-icon-button {
-  --mat-icon-button-icon-size: 16px;
+/* Un élément flex garde `min-width: auto` et ne descend donc jamais sous la largeur intrinsèque
+   de son contenu : l'<input> de date restait à ses 168px par défaut quelle que soit la colonne,
+   et poussait le bouton calendrier hors du champ — dans la rangée d'exécution, large de 148px, le
+   bouton se posait par-dessus le champ voisin « Quantité exécutée ». `flex: 1 1 0` le laisse
+   occuper ce qui reste une fois le bouton placé ; base à 0 plutôt que `width: 100%`, qui, en
+   `content-box`, aurait ajouté rembourrage et bordure aux 100 % et débordé à nouveau.
+
+   Cadre et fond retirés : ils sont passés au conteneur ci-dessus. */
+.pm-datepicker .pm-date-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 0 10px;
+  border: 0;
+  border-radius: 6px 0 0 6px;
+  background: transparent;
+}
+
+/* L'anneau de focus suit le cadre : posé par défaut sur l'<input>, désormais sans bordure, il se
+   dessinait à l'intérieur du champ et chevauchait son bord gauche. `outline: auto` reprend
+   l'anneau natif du navigateur, comme sur les autres saisies de la boîte. */
+.pm-datepicker .pm-date-input:focus {
+  outline: none;
+}
+
+.pm-datepicker:focus-within {
+  outline: auto;
+}
+
+.pm-datepicker .mat-datepicker-toggle {
   flex: none;
-  width: 28px;
-  height: 28px;
-  padding: 6px;
+  display: flex;
+  align-items: center;
+}
+
+/* `::ng-deep` est nécessaire : le bouton appartient au gabarit de `mat-datepicker-toggle`, il ne
+   porte donc pas l'attribut d'encapsulation de cette boîte et la règle scopée ne l'atteignait
+   pas — les 28px demandés restaient lettre morte, le bouton mesurait 40px et le cadre du
+   datepicker 40px de haut au milieu de champs de 34px, ce qui décalait les libellés de la rangée
+   (alignée par le bas). La taille se règle par `--mat-icon-button-state-layer-size`, seul jeton
+   que Material 3 consulte pour dimensionner un bouton icône (même recette que dans `comptes.css`).
+   La couleur est reprise aussi : Material peint l'icône en gris foncé quel que soit le fond, ce
+   qui la rend presque invisible en thème sombre. */
+.pm-datepicker ::ng-deep .mat-mdc-icon-button {
+  --mat-icon-button-icon-size: 16px;
+  --mat-icon-button-state-layer-size: 28px;
+  --mat-icon-button-icon-color: var(--color-neutral-700);
+  color: var(--color-neutral-700);
+  flex: none;
+  padding: 4px;
 }

@@ -96,7 +96,10 @@
                 <span class="pm-datepicker"><input [matDatepicker]="opPicker2" [value]="isoToDate(r.date)" [max]="isoToDate(today)" (dateChange)="setExecRow($index, { date: dateToIso($event.value) })" class="pm-date-input" /><mat-datepicker-toggle [for]="opPicker2"></mat-datepicker-toggle><mat-datepicker #opPicker2></mat-datepicker></span>
               </label>
               <label class="pm-field">Quantité exécutée
-                <input [value]="r.qty" (input)="setExecQty($index, $any($event.target).value)" class="pm-text-input" />
+                <!-- Même champ à boutons +/- que les quantités et montants de la définition de
+                     l'ordre : `setExecQty` filtrait déjà la saisie aux chiffres, ce que le
+                     composant fait de son côté avec `integer`. -->
+                <app-ops-stepper-input [value]="r.qty" [integer]="true" [step]="1" (valueChange)="setExecQty($index, $event)" />
               </label>
               <label class="pm-field">Prix d'exécution
                 <input [value]="r.price" (input)="setExecRow($index, { price: $any($event.target).value })" class="pm-text-input" />
