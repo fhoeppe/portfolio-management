@@ -127,7 +127,7 @@
             <div class="ti-panel-body-row">
               <label class="ti-index-select-field">
                 Indice
-                <app-ti-select [groups]="indexGroups()" [value]="index()" panelClass="pm-sel-panel pm-sel-panel-banded pm-unfold" (valueChange)="setIndex($event)"></app-ti-select>
+                <app-ti-select [groups]="indexGroups()" [value]="index()" panelClass="pm-sel-panel pm-sel-panel-banded pm-unfold" (opened)="loadIndexList()" (valueChange)="setIndex($event)"></app-ti-select>
               </label>
               <button type="button" mat-flat-button class="ti-preview-btn" (click)="openPreview()">
                 <mat-icon svgIcon="eye" style="font-size:14px"></mat-icon>

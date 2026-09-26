@@ -26,7 +26,7 @@
  *   dépôt index par index : livrer le seul CAC 40 complet ne vide pas les vingt-sept autres.
  */
 
-import { securityElementOf, type IndexDef, type IndexMemberInput } from './indices';
+import { securityElementOf, type IndexDef, type IndexIdentity, type IndexMemberInput } from './indices';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  Format d'échange
@@ -90,6 +90,37 @@ export interface IndexFeedParse {
    * Ce qui a été écarté, en clair. Rien n'est passé sous silence : une charge à moitié lue sans que
    * personne ne le sache est le pire des deux mondes — l'écran a l'air juste et ne l'est pas.
    */
+  readonly warnings: readonly string[];
+}
+
+/** Un indice sans sa composition, tel que la liste abrégée le livre. */
+export interface IndexSummaryDto {
+  readonly key?: string;
+  readonly name?: string;
+  readonly region?: string;
+  readonly place?: string;
+  readonly mic?: string;
+  readonly currency?: string;
+  readonly count?: number;
+  readonly memberCount?: number;
+  readonly detail?: string;
+  readonly asOf?: string;
+}
+
+/** L'enveloppe de la liste abrégée : même provenance que la composition, entrées sans `members`. */
+export interface IndexSummaryFeedDto {
+  readonly version?: string;
+  readonly source?: string;
+  readonly asOf?: string;
+  readonly indices?: readonly IndexSummaryDto[];
+}
+
+/** Résultat de la lecture d'une liste abrégée. */
+export interface IndexSummaryParse {
+  readonly identities: readonly IndexIdentity[];
+  readonly source: string;
+  readonly asOf: string;
+  readonly version: string;
   readonly warnings: readonly string[];
 }
 
@@ -276,4 +307,78 @@ function readMembers(key: string, raw: unknown, warnings: string[]): readonly In
   }
 
   return out;
+}
+
+/**
+ * Lit une liste abrégée — les indices, sans leur composition.
+ *
+ * Même tolérance que `parseIndexFeed` : une entrée mal formée est écartée et signalée, les autres
+ * passent. La différence tient à ce qu'une entrée sans `members` n'est pas un défaut ici mais le
+ * propos ; ce qui est exigé, c'est de quoi nommer et situer l'indice — clé, nom, région —, faute de
+ * quoi l'entrée ne servirait qu'à faire nombre dans un sélecteur.
+ */
+export function parseIndexSummaries(payload: unknown, known: ReadonlyMap<string, IndexDef>): IndexSummaryParse {
+  const warnings: string[] = [];
+  const empty: IndexSummaryParse = { identities: [], source: '', asOf: '', version: '', warnings };
+
+  if (!isRecord(payload)) {
+    warnings.push('La charge n’est pas un objet JSON.');
+    return empty;
+  }
+
+  const rows = payload['indices'];
+  if (!Array.isArray(rows)) {
+    warnings.push('Champ « indices » absent ou non tableau.');
+    return empty;
+  }
+
+  const feedAsOf = text(payload['asOf']);
+  const identities: IndexIdentity[] = [];
+
+  for (const [position, row] of rows.entries()) {
+    if (!isRecord(row)) {
+      warnings.push(`Indice n° ${position + 1} : entrée ignorée, ce n’est pas un objet.`);
+      continue;
+    }
+
+    const key = text(row['key']);
+    if (!key) {
+      warnings.push(`Indice n° ${position + 1} : clé absente, entrée ignorée.`);
+      continue;
+    }
+
+    const base = known.get(key) ?? null;
+    const name = text(row['name']) || base?.name || '';
+    const region = text(row['region']) || base?.region || '';
+    if (!name || !region) {
+      warnings.push(`« ${key} » : indice inconnu du socle et incomplet (nom ou région manquant), ignoré.`);
+      continue;
+    }
+
+    const currency = (text(row['currency']) || base?.currency || 'EUR').toUpperCase();
+    const declared = Number(row['count']);
+    const count = Number.isFinite(declared) && declared > 0 ? Math.trunc(declared) : base?.count ?? 0;
+
+    identities.push({
+      key,
+      name,
+      region,
+      place: text(row['place']) || base?.place,
+      mic: text(row['mic']).toUpperCase() || base?.mic,
+      currency,
+      count,
+      detail: text(row['detail']) || base?.detail,
+      asOf: text(row['asOf']) || feedAsOf || undefined,
+    });
+  }
+
+  if (!identities.length) warnings.push('Aucun indice exploitable dans la liste.');
+
+  return {
+    identities,
+    source: text(payload['source']),
+    asOf: feedAsOf,
+    version: text(payload['version']),
+    warnings,
+  };
 }

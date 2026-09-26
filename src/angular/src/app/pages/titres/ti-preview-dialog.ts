@@ -7,6 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from '../../shell/theme.service';
 import { IndexCompositionService } from '../../domain/index-composition.service';
+import { indexOf } from '../../domain/indices';
 import { SecurityUniverseStore } from '../../domain/security-universe.store';
 import { IndexDef } from './titres-data';
 import {
@@ -58,8 +59,10 @@ export class TiPreviewDialog {
   protected readonly previewColumns = ['composant', 'cotation', 'secteur', 'poids', 'bascule', 'statut'];
 
   /* La composition vient du référentiel et de lui seul : l'écran ne tient plus de copie locale
-     depuis que la source la fournit. */
-  private readonly members = computed(() => this.idx.members);
+     depuis que la source la fournit. Relue par la clé et non prise sur l'objet reçu : celui-ci a
+     été capturé à l'ouverture, et le chargement à la demande le remplace dans le référentiel —
+     l'aperçu resterait sinon sur la composition d'avant. */
+  private readonly members = computed(() => indexOf(this.idx.key)?.members ?? this.idx.members);
 
   protected readonly preview = computed(() =>
     computePreview(this.universe.all(), this.idx, this.members(), this.data.refs(), this.universe.decisionMap()),

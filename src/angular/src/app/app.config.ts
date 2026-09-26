@@ -7,7 +7,6 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, type MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { IconRegistryService } from './shell/icon-registry.service';
-import { IndexFeedService } from './domain/index-feed.service';
 import { SecurityUniverseStore } from './domain/security-universe.store';
 
 /**
@@ -56,10 +55,11 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => void inject(IconRegistryService)),
     // Le référentiel des indices est embarqué mais partiel ; le chargeur va chercher la vraie
     // composition — fichier déposé ou API du contrat — et remplace ce que le socle disait.
-    // `void` est délibéré : rendre la promesse ferait attendre le premier rendu qu'un fichier
-    // réponde, alors que l'application sait déjà tout afficher sans lui. Le chargement part en
-    // parallèle du bootstrap, et les écrans se corrigent d'eux-mêmes quand il aboutit.
-    provideAppInitializer(() => void inject(IndexFeedService).load()),
+    // Les compositions d'indices ne sont plus chargées ici. Elles l'étaient au démarrage, pour
+    // tout le monde et quelle que soit la page ouverte, alors qu'un seul panneau d'un seul écran
+    // les affiche — Titres › Recherche › Indices de référence. La liste part désormais à
+    // l'ouverture de son sélecteur (`TitresPage.loadIndexList`) et chaque composition à la
+    // consultation de son indice ; le socle embarqué nomme les vingt-huit indices d'ici là.
     // Même dispositif pour le référentiel des titres, et pour une raison qui n'est pas l'écran
     // Titres — il demande son catalogue lui-même. C'est le menu latéral : sa pastille annonce le
     // nombre de titres référencés, et elle le tient du store. Sans cet amorçage elle n'aurait rien

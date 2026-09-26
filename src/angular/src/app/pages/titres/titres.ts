@@ -1,4 +1,4 @@
-import { Component, WritableSignal, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +14,7 @@ import { SecurityElement } from '../../domain/security-reference';
 import { SecurityUniverseStore } from '../../domain/security-universe.store';
 
 import { nextSort, sortHeaderView } from '../positions/positions-sort';
-import { ACCOUNT_OPEN, PORTFOLIO_LINKS, PositionStatusKey, REGIONS, INDICES } from './titres-data';
+import { ACCOUNT_OPEN, PositionStatusKey, REGIONS, INDICES } from './titres-data';
 import {
   accountNote as accountNoteText,
   accountTriggerLabel,
@@ -100,6 +100,25 @@ export class Titres {
      rien, il n'a pas à guetter un cycle de vie. */
   constructor() {
     this.universe.load();
+
+    /* La composition de l'indice affiché est demandée au moment où elle est affichée, et non plus
+       reçue d'avance avec les vingt-sept autres : le chargement se fait en deux temps — la liste
+       des indices à l'ouverture du sélecteur, une composition par indice consulté. L'effet est
+       conditionné au panneau : replié, il ne montre aucune composition, et en charger une serait
+       payer un aller-retour pour un écran que personne ne regarde. Ouvert, il suit la sélection, y
+       compris celle restaurée d'une visite précédente ; le service ne redemande jamais deux fois
+       la même clé. */
+    effect(() => {
+      if (this.panels().index) void this.indexFeed.loadIndex(this.index());
+    });
+
+    /* Préchargement de la liste dès que l'onglet de recherche devient actif : c'est là que vit le
+       sélecteur d'indices, et l'attendre à son ouverture ferait payer le réseau au moment précis
+       où l'on veut lire une liste. Le service ne redemande rien si la dernière réponse a moins de
+       cinq minutes — revenir d'un onglet à l'autre ne relance donc aucune requête. */
+    effect(() => {
+      if (this.tab() === 'search') void this.indexFeed.load();
+    });
   }
 
   /** Le catalogue courant — vide tant qu'il n'est pas arrivé, d'où le passage par un signal. */
@@ -325,6 +344,17 @@ export class Titres {
   });
 
   private readonly universeCoverage = computed(() => this.indexService.universeCoverage(this.selectedIndex().key));
+
+  /**
+   * Charge la liste des indices, à l'ouverture du sélecteur qui l'affiche.
+   *
+   * Le sélecteur s'ouvre sur ce que le socle embarqué sait déjà — les vingt-huit indices y sont
+   * nommés — et se corrige quand la source répond. Le service ne charge qu'une fois : ouvrir et
+   * refermer la liste dix fois ne fait pas dix requêtes.
+   */
+  protected loadIndexList(): void {
+    void this.indexFeed.load();
+  }
 
   protected togglePanel(key: 'index' | 'crit' | 'res'): void {
     this.panels.update((p) => ({ ...p, [key]: !p[key] }));

@@ -514,6 +514,79 @@ export function applyIndices(loaded: readonly IndexDef[]): void {
   source.set([...merged, ...loaded.filter((i) => !known.has(i.key))]);
 }
 
+/**
+ * Identité d'un indice, sans sa composition : ce que la liste abrégée de l'API livre.
+ *
+ * C'est `IndexDef` moins `members`. Le type existe parce que les deux chargements ne rendent pas
+ * la même chose — la liste dit quels indices existent, la composition dit ce qu'il y a dedans —
+ * et les confondre reviendrait à vider un indice chaque fois qu'on rafraîchit la liste.
+ */
+export interface IndexIdentity {
+  readonly key: string;
+  readonly name: string;
+  readonly region: string;
+  readonly place?: string;
+  readonly mic?: string;
+  readonly currency: string;
+  readonly count: number;
+  readonly detail?: string;
+  readonly asOf?: string;
+}
+
+/**
+ * Rafraîchit l'identité des indices cités **sans toucher à leur composition**.
+ *
+ * Réservé au chargeur, comme `applyIndices`. C'est la moitié « liste » du chargement en deux
+ * temps : `/market/indices2` dit quels indices existent et ce qu'ils pèsent, `/market/indices/{clé}`
+ * dira leur contenu quand on en aura besoin. Un indice déjà connu garde donc ses valeurs — celles
+ * du socle, ou celles qu'une composition a déjà apportées —, et un indice inédit entre avec une
+ * composition vide plutôt que d'être ignoré : son nom doit figurer dans les sélecteurs avant même
+ * que quiconque ait demandé son contenu.
+ *
+ * `count` ne peut pas descendre sous le nombre de valeurs détenues : une liste qui annoncerait
+ * moins de composants qu'on n'en détient rendrait un taux de couverture supérieur à 100 %.
+ */
+export function applyIndexIdentities(identities: readonly IndexIdentity[]): void {
+  if (!identities.length) return;
+  const incoming = new Map(identities.map((i) => [i.key, i]));
+  const current = source();
+  const known = new Set(current.map((i) => i.key));
+
+  const refreshed = current.map((index) => {
+    const id = incoming.get(index.key);
+    if (!id) return index;
+    return {
+      ...index,
+      name: id.name || index.name,
+      region: id.region || index.region,
+      place: id.place || index.place,
+      mic: id.mic || index.mic,
+      currency: id.currency || index.currency,
+      count: Math.max(id.count, index.members.length),
+      detail: id.detail || index.detail,
+      asOf: id.asOf || index.asOf,
+      members: index.members,
+    } satisfies IndexDef;
+  });
+
+  const added = identities
+    .filter((id) => !known.has(id.key))
+    .map((id) => ({
+      key: id.key,
+      name: id.name,
+      region: id.region,
+      place: id.place ?? '',
+      mic: id.mic,
+      currency: id.currency || 'EUR',
+      count: id.count,
+      detail: id.detail ?? `${id.count} valeurs · devise ${id.currency || 'EUR'}`,
+      asOf: id.asOf,
+      members: [],
+    } satisfies IndexDef));
+
+  source.set([...refreshed, ...added]);
+}
+
 /** Revient au référentiel embarqué — pour annuler un chargement ou repartir propre en test. */
 export function resetIndices(): void {
   source.set(SEED_INDICES);

@@ -32,6 +32,7 @@ export interface TiSelectGroup {
         [panelClass]="panelClass()"
         [value]="value()"
         (valueChange)="valueChange.emit($event)"
+        (openedChange)="$event && opened.emit()"
         [placeholder]="placeholder()"
       >
         @for (g of groups(); track g.label) {
@@ -56,6 +57,14 @@ export class TiSelect {
   readonly groups = input.required<readonly TiSelectGroup[]>();
   readonly value = input('');
   readonly placeholder = input('—');
+  /**
+   * Émis à l'ouverture du panneau, et non à sa fermeture.
+   *
+   * De quoi charger une liste au moment où elle est demandée plutôt qu'au démarrage : le sélecteur
+   * s'ouvre sur ce qu'il sait déjà, et se corrige quand la source répond. Les appelants qui n'en
+   * ont pas l'usage l'ignorent — le sélecteur, lui, ne sait rien de ce qu'il déclenche.
+   */
+  readonly opened = output<void>();
   /* Le panneau vit dans le cdk-overlay-container : une règle scopée au composant ne l'atteint
      jamais, et `panelClass` est le seul moyen de lui adjoindre un habillage particulier. */
   readonly panelClass = input('pm-sel-panel pm-unfold');
