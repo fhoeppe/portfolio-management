@@ -1,4 +1,4 @@
-import { Component, HostBinding, Signal, WritableSignal, computed, inject, signal } from '@angular/core';
+import { Component, HostBinding, Signal, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';

@@ -324,16 +324,6 @@ export const COUNTRIES: readonly Country[] = [
   { alpha2: 'ZW', alpha3: 'ZWE', numeric: '716', name: 'Zimbabwe', flag: '🇿🇼', continent: 'Afrique', region: 'Afrique de l’Est', currency: 'ZWG', timeZone: 'Africa/Harare', utcOffset: 'UTC+02:00', utcOffsets: ['UTC+02:00'], dst: false, un: true, eu: false, eurozone: false },
 ];
 
-export const CONTINENT_ORDER: readonly Continent[] = [
-  'Europe',
-  'Amérique du Nord',
-  'Amérique du Sud',
-  'Asie',
-  'Afrique',
-  'Océanie',
-  'Antarctique',
-];
-
 const BY_ALPHA2 = new Map<string, Country>(COUNTRIES.map((c) => [c.alpha2, c]));
 const BY_ALPHA3 = new Map<string, Country>(COUNTRIES.map((c) => [c.alpha3, c]));
 
@@ -356,58 +346,6 @@ export function countryFlag(code: string): string {
   const k = (code || '').trim().toUpperCase();
   if (k === 'EU') return '🇪🇺';
   return countryOf(k)?.flag ?? '';
-}
-
-/** Devise ayant cours légal, chaîne vide si le pays est inconnu ou n'en a pas. */
-export function countryCurrency(code: string): string {
-  return countryOf(code)?.currency ?? '';
-}
-
-/** Décalage d'heure standard, sous la forme `UTC+01:00` ; chaîne vide si le pays est inconnu. */
-export function countryUtcOffset(code: string): string {
-  return countryOf(code)?.utcOffset ?? '';
-}
-
-/**
- * Décalage effectif à une date donnée, heure d'été comprise — celui qu'il faut pour convertir une
- * heure locale, là où `utcOffset` ne décrit que l'heure standard. Calculé par l'ICU à partir du
- * fuseau de référence, comme le fait déjà l'écran Cours marché pour les heures de séance.
- */
-export function countryOffsetOn(code: string, date: Date = new Date()): string {
-  const zone = countryOf(code)?.timeZone;
-  if (!zone) return '';
-  const name = new Intl.DateTimeFormat('en', { timeZone: zone, timeZoneName: 'longOffset' })
-    .formatToParts(date)
-    .find((p) => p.type === 'timeZoneName')?.value;
-  if (!name) return '';
-  return name === 'GMT' ? 'UTC+00:00' : name.replace('GMT', 'UTC');
-}
-
-/** États souverains seulement — sans les territoires et dépendances. */
-export function sovereignCountries(): readonly Country[] {
-  return COUNTRIES.filter((c) => c.un);
-}
-
-export function euCountries(): readonly Country[] {
-  return COUNTRIES.filter((c) => c.eu);
-}
-
-export function eurozoneCountries(): readonly Country[] {
-  return COUNTRIES.filter((c) => c.eurozone);
-}
-
-/**
- * Pays groupés par continent, dans l'ordre d'affichage, chaque groupe trié par nom. Les groupes
- * vides sont écartés : filtrer sur les seuls États souverains ne doit pas laisser un intertitre
- * « Antarctique » sans rien dessous.
- */
-export function countriesByContinent(
-  list: readonly Country[] = COUNTRIES,
-): readonly { readonly continent: Continent; readonly countries: readonly Country[] }[] {
-  return CONTINENT_ORDER.map((continent) => ({
-    continent,
-    countries: list.filter((c) => c.continent === continent),
-  })).filter((g) => g.countries.length > 0);
 }
 
 /**

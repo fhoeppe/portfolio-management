@@ -93,8 +93,6 @@ export const TIF: readonly { readonly value: string; readonly label: string }[] 
   { value: 'OPG', label: 'OPG' }, { value: 'MOC', label: 'MOC' },
 ];
 
-export const LIMIT_STRATEGIES: readonly string[] = ['LMT', 'STPLMT', 'LOO', 'LOC', 'PEG'];
-
 export const ORDER_STRATEGY: readonly { readonly value: string; readonly label: string }[] = [
   { value: 'MKT', label: 'MKT' }, { value: 'LMT', label: 'LMT' }, { value: 'STP', label: 'STP' },
   { value: 'STPLMT', label: 'STP LMT' }, { value: 'TS', label: 'TS' }, { value: 'MOO', label: 'MOO' },
@@ -120,11 +118,6 @@ export const TIF_HINT =
   "DAY jusqu'à la clôture · GTC jusqu'à annulation · GTD jusqu'à une date · " +
   "IOC immédiat ou annulé · FOK tout ou rien immédiat · AON tout ou rien · " +
   "OPG à l'ouverture · MOC à la clôture";
-
-export const FILL_STATUS: readonly { readonly value: string; readonly label: string }[] = [
-  { value: 'full', label: 'Totale' },
-  { value: 'partial', label: 'Partielle' },
-];
 
 export interface LegRule {
   readonly legs: number;

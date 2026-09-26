@@ -349,7 +349,7 @@ export class Positions {
   });
 
   protected readonly isCashRow = (_: number, row: { readonly kind: string }) => row.kind === 'cash';
-  protected readonly accountRowTrackBy = (i: number, row: { readonly kind: string; readonly r: { readonly isin: string; readonly ticker: string } | null }) =>
+  protected readonly accountRowTrackBy = (_: number, row: { readonly kind: string; readonly r: { readonly isin: string; readonly ticker: string } | null }) =>
     row.kind === 'cash' ? 'cash' : row.r!.isin + row.r!.ticker;
 
   protected readonly accountColumns = ['isin', 'ticker', 'name', 'lot', 'currency', 'quantity', 'pru', 'costValue', 'price', 'marketValue', 'unrealized', 'unrealizedPct', 'actions'];

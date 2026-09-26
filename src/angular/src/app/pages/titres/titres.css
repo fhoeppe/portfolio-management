@@ -417,11 +417,6 @@
   color: var(--ink-brand-2);
 }
 
-.ti-index-summary {
-  font-size: 11px;
-  color: var(--color-neutral-700);
-}
-
 .ti-crit-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

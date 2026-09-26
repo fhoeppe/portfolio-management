@@ -1,6 +1,5 @@
 import {
   ACCOUNTS_LIST,
-  LIMIT_STRATEGIES,
   MIC_HINT,
   MIC_PLACES,
   MIC_SHORT,
@@ -13,7 +12,6 @@ import {
   TRADABLE_SECURITIES,
   eur,
   parseFr,
-  type NatureKey,
 } from './transactions-data';
 
 export interface FormState {
@@ -208,7 +206,7 @@ export interface FormLeg {
  */
 const PER_EXECUTION_TYPES = new Set(['BUY', 'SELL', 'BUYOPT']);
 
-export function computeLegs(nature: NatureKey, ft: string, f: FormState, legRuleLegs: number): FormLeg[] {
+export function computeLegs(ft: string, f: FormState, legRuleLegs: number): FormLeg[] {
   const qty = parseFr(f.qty);
   const price = parseFr(f.price);
   const fees = parseFr(f.fees);

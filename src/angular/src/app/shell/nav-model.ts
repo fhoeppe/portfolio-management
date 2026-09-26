@@ -194,4 +194,3 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
 ];
 
-export const ALL_NAV_ITEMS: readonly NavItem[] = [HOME_ITEM, ...NAV_SECTIONS.flatMap((s) => s.items)];

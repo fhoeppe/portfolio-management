@@ -22,4 +22,3 @@ export const ICON_SECTOR_ALLOC: Icon = 'sector';
 
 export const ICON_TRENDING: Icon = 'trending-up';
 
-export const ICON_REF: Icon = 'ticket';

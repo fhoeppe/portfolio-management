@@ -471,10 +471,3 @@ export const SEC_EVENTS: Readonly<Record<string, readonly SecEvent[]>> = {
   ],
 };
 
-export const EVENT_STATES: Readonly<Record<string, { readonly bg: string; readonly fg: string }>> = {
-  'Encaissé': { bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
-  'Appliqué': { bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
-  'Voté': { bg: 'rgba(0,61,165,0.10)', fg: 'var(--ink-brand-2)' },
-  'Annoncé': { bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)' },
-  'À instruire': { bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' },
-};

@@ -793,7 +793,7 @@ export class Parametres {
       return {
         section,
         count: `${areas.length} écran(s)`,
-        rows: areas.map((a, i) => ({
+        rows: areas.map((a) => ({
           ...a,
           cells: ROLES.map((r) => {
             const level = this.levelOf(a.id, r.key);

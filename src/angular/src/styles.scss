@@ -909,8 +909,7 @@ body.pm-col-resizing * {
    mode clair et la raison de ce partage). */
 /* `body[...]` et non `[...]` seul : à spécificité égale (0,2,0) la règle du composant, injectée
    au runtime donc plus tardive, l'emporterait. Le sélecteur d'élément fait la différence. */
-body[data-theme='dark'] .tx-msel-item-badge,
-body[data-theme='dark'] .tx-msel-trigger-badge {
+body[data-theme='dark'] .tx-msel-item-badge {
   --ink-brand-2: #b3cdf7;
   --ink-magenta: #f7c6ff;
   --ink-ok: #86e6d7;

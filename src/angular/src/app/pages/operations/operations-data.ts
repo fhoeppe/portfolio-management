@@ -294,11 +294,6 @@ export const CASHFLOW_TYPES: readonly { readonly value: string; readonly label: 
   { value: 'TRANSFER', label: 'TRANSFER', title: 'Virement', text: "Virement d'espèces entre comptes : débit à la source, crédit à l'arrivée. Deux poches distinctes, aucune ne se déduit de l'autre." },
 ];
 
-/** Formatte un montant en devise `fr-FR`, deux décimales, avec le symbole `code`. */
-export function fmtAmount(v: number): string {
-  return v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 export function parseFr(v: string | undefined): number {
   return Number(String(v || '0').replace(/\s/g, '').replace(',', '.')) || 0;
 }

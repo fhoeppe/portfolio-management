@@ -234,8 +234,7 @@
 /* Encre renforcée, identique à celle des pastilles du tableau (voir transactions.css) : les
    couleurs arrivent en ligne sous la forme `var(--ink-*)`, il suffit donc de redéfinir ces
    jetons sur la pastille pour que liste et tableau se lisent de la même façon. */
-.tx-msel-item-badge,
-.tx-msel-trigger-badge {
+.tx-msel-item-badge {
   --ink-brand-2: #002259;
   --ink-magenta: #5c0f6a;
   --ink-ok: #05342f;

@@ -476,7 +476,7 @@ export class Transactions {
       };
     });
   });
-  protected readonly legs = computed(() => computeLegs(this.formNature(), this.ft(), this.form(), this.rule().legs));
+  protected readonly legs = computed(() => computeLegs(this.ft(), this.form(), this.rule().legs));
   protected readonly formLegs = computed(() => this.legs().map((l, i) => ({ ...l, bg: i % 2 ? 'rgba(0,0,0,0.025)' : 'var(--surface)' })));
   protected readonly legsCount = computed(() => (this.legs().length === 0 ? 'Aucune jambe — le fait vit dans les champs de la transaction' : this.legs().length + (this.legs().length > 1 ? ' jambes' : ' jambe')));
 

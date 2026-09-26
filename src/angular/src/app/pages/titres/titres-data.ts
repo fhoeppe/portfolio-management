@@ -8,8 +8,7 @@
 export type { PositionStatusKey, PositionStatusDef, SecurityElement } from '../../domain/security-reference';
 export { FOLLOWED, POSITION_STATUS, PORTFOLIO_LINKS } from '../../domain/security-reference';
 
-import type { PositionStatusKey, PositionStatusDef, SecurityElement } from '../../domain/security-reference';
-import { PORTFOLIO_LINKS } from '../../domain/security-reference';
+import type { SecurityElement } from '../../domain/security-reference';
 
 export interface Mandate {
   readonly value: string;
