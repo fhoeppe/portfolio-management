@@ -156,6 +156,7 @@ paths:
                     currency: EUR
                     manager: F. Hoeppe
                     openedOn: '2019-03-14'
+                    brokerAccountCount: 4
                   - id: INP-011
                     client: Income & Preservation
                     state: active
@@ -165,6 +166,7 @@ paths:
                     currency: EUR
                     manager: A. Meyer
                     openedOn: '2021-09-01'
+                    brokerAccountCount: 3
                   - id: GLG-002
                     client: Global Growth
                     state: onboarding
@@ -174,6 +176,7 @@ paths:
                     currency: USD
                     manager: C. Berger
                     openedOn: '2026-07-22'
+                    brokerAccountCount: 0
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
     post:
@@ -203,8 +206,12 @@ paths:
       tags: [Comptes]
       summary: Détail d'un compte
       description: |
-        Renvoie le compte avec ses titulaires, ses règles de gestion et son historique — tout ce
-        que le panneau latéral de l'écran Comptes affiche d'un seul tenant.
+        Renvoie le compte avec ses titulaires, ses règles de gestion, ses comptes courtiers et son
+        historique — tout ce que le panneau latéral de l'écran Comptes affiche d'un seul tenant.
+
+        C'est ici, et non dans la liste, que viennent les `brokerAccounts` : la liste n'en porte
+        que le nombre, et le tableau qu'elle déplie sous une ligne se charge à l'ouverture, comme
+        la composition d'un indice.
       operationId: getAccount
       responses:
         '200':
@@ -214,6 +221,54 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Account' }
+              # Exemple porté par la réponse, pour la même raison que sur la liste : c'est lui que
+              # sert le bouchon Prism, et un schéma seul rendrait des valeurs inexploitables.
+              example:
+                id: BGM-004
+                client: Balanced Growth
+                state: active
+                profile: Équilibré
+                aum: { amount: 42350000, currency: EUR }
+                performance: 0.0742
+                currency: EUR
+                manager: F. Hoeppe
+                openedOn: '2019-03-14'
+                brokerAccountCount: 4
+                type: Mandat discrétionnaire
+                domicile: Luxembourg
+                custodian: Banque dépositaire LU
+                brokerAccounts:
+                  - broker: Degiro
+                    brokerUrl: https://www.degiro.fr
+                    brokerPlace: Amsterdam, Pays-Bas
+                    brokerCountryCode: NL
+                    reference: DG-CTO
+                    accountType: CTO
+                    valuation: { amount: 13379.69, currency: EUR }
+                    performance: 0.2383
+                    openedOn: '2023-02-09'
+                  - broker: Bourse Direct
+                    brokerUrl: https://www.boursedirect.fr
+                    brokerPlace: Paris, France
+                    brokerCountryCode: FR
+                    reference: BD-CTO
+                    accountType: CTO
+                    valuation: { amount: 0, currency: EUR }
+                    openedOn: '2022-11-02'
+                  - broker: Bourse Direct
+                    brokerUrl: https://www.boursedirect.fr
+                    brokerPlace: Paris, France
+                    brokerCountryCode: FR
+                    reference: BD-PEA
+                    accountType: PEA
+                    valuation: { amount: 12484.60, currency: EUR }
+                    performance: -0.0308
+                    openedOn: '2022-11-02'
+                  # Rattachement décidé, compte pas encore ouvert : ni référence, ni encours.
+                  - broker: Banque de Luxembourg
+                    brokerUrl: https://www.banquedeluxembourg.com
+                    brokerPlace: Luxembourg-Ville, Luxembourg
+                    brokerCountryCode: LU
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
     put:
@@ -1635,6 +1690,17 @@ components:
         currency: { $ref: '#/components/schemas/CurrencyCode' }
         manager: { type: string }
         openedOn: { type: string, format: date }
+        brokerAccountCount:
+          type: integer
+          minimum: 0
+          description: |
+            Nombre de **comptes courtiers** rattachés, et non de courtiers : un même établissement
+            peut en tenir plusieurs — un CTO et un PEA chez le même broker —, qui n'ont ni le même
+            régime ni le même encours.
+
+            Il figure au résumé pour que la liste des comptes affiche la colonne sans charger le
+            détail de chacun ; le détail de ces comptes vient avec `GET /accounts/{accountId}`.
+          example: 4
 
     Account:
       allOf:
@@ -1650,6 +1716,17 @@ components:
             riskProfile: { type: string }
             mifidCategory: { type: string }
             taxRegime: { type: string }
+            brokerAccounts:
+              type: array
+              description: |
+                Les comptes ouverts chez des courtiers pour ce compte client : où les titres sont
+                tenus, sous quelle référence, et ce qu'ils pèsent. Une entrée par compte courtier,
+                y compris quand deux entrées désignent le même établissement.
+
+                Un broker rattaché dont le compte reste à ouvrir figure ici **sans** `reference`
+                ni `valuation` : le rattachement est décidé avant que le compte existe, et le
+                taire donnerait une liste plus courte que `brokerAccountCount`.
+              items: { $ref: '#/components/schemas/BrokerAccount' }
             holders:
               type: array
               items: { $ref: '#/components/schemas/AccountHolder' }
@@ -1693,6 +1770,12 @@ components:
         rules:
           type: array
           items: { $ref: '#/components/schemas/AccountRule' }
+        brokerAccounts:
+          type: array
+          description: |
+            Rattachements aux courtiers. Acceptés dès la création : on décide chez qui les titres
+            seront tenus avant d'ouvrir les comptes, et `reference` reste alors vide.
+          items: { $ref: '#/components/schemas/BrokerAccount' }
 
     AccountPatch:
       description: |
@@ -1716,6 +1799,62 @@ components:
         rules:
           type: array
           items: { $ref: '#/components/schemas/AccountRule' }
+
+    BrokerAccount:
+      description: |
+        Un compte ouvert chez un courtier, tel que l'écran Comptes le déplie sous la ligne du
+        client : l'établissement, la référence du compte, son régime et ce qu'il porte.
+      type: object
+      required: [broker]
+      properties:
+        broker:
+          type: string
+          description: Dénomination de l'établissement, telle que le référentiel des brokers la porte.
+          example: Bourse Direct
+        brokerUrl:
+          type: string
+          format: uri
+          description: Site de l'établissement. Affiché en lien ouvrant un nouvel onglet.
+          example: https://www.boursedirect.fr
+        brokerPlace:
+          type: string
+          description: Ville et pays du siège, en clair.
+          example: Paris, France
+        brokerCountryCode:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: |
+            Pays du siège, ISO 3166-1 alpha-2. Le **code** et non le drapeau : l'emoji se déduit du
+            code dans le référentiel des pays du front, et deux sources pour un même drapeau
+            finiraient par diverger.
+          example: FR
+        reference:
+          type: string
+          description: |
+            Référence du compte chez le courtier. **Absente tant que le compte n'est pas ouvert** —
+            un rattachement décidé n'est pas encore un compte.
+          example: BD-PEA
+        accountType:
+          type: string
+          description: Régime du compte, tel que l'établissement le nomme.
+          example: PEA
+        valuation:
+          description: |
+            Encours du compte, espèces comprises. Absent quand le compte n'est pas ouvert : ne rien
+            détenir et détenir zéro ne se lisent pas pareil.
+          allOf:
+            - $ref: '#/components/schemas/Money'
+        performance:
+          type: number
+          format: double
+          description: |
+            Performance latente du compte, en fraction — `0.2383` pour 23,83 %. Absente quand le
+            compte n'a rien coûté, faute de base de calcul.
+          example: 0.2383
+        openedOn:
+          type: string
+          format: date
+          description: Date d'ouverture chez le courtier.
 
     AccountHolder:
       type: object
