@@ -1,4 +1,4 @@
-import { Component, computed, HostBinding, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, HostBinding, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -119,6 +119,19 @@ export class AppShell {
    */
   protected readonly navTooltipDelay = 3000;
 
+  /**
+   * Faux tant que le client n'a pas rendu une première fois — voir `.pm-content` dans la feuille
+   * de la coque. L'application est prérendue (`ng-server-context="ssg"`) : le serveur ne peut pas
+   * mesurer le panneau, donc MatSidenavContainer ne pose la marge du contenu qu'après
+   * l'hydratation. Sans ce drapeau, ce recalage était joué par la transition destinée au repli du
+   * menu, et la page semblait glisser depuis sous le menu jusqu'à sa place.
+   */
+  protected readonly booted = signal(false);
+
+  constructor() {
+    afterNextRender(() => this.booted.set(true));
+  }
+
   protected readonly collapsed = signal(false);
   protected readonly expandedWidth = signal(269);
   protected readonly navWidth = computed(() => (this.collapsed() ? 72 : this.expandedWidth()));
@@ -142,6 +155,12 @@ export class AppShell {
 
   @HostBinding('attr.data-theme') get themeAttr() {
     return this.theme.mode();
+  }
+
+  /* `afterNextRender` ne s'exécute que dans le navigateur : la classe n'est donc jamais dans le
+     HTML prérendu, et la transition reste éteinte pour le premier rendu. */
+  @HostBinding('class.pm-booted') get bootedClass() {
+    return this.booted();
   }
 
   /* Une seule source pour la largeur du panneau, exposée en propriété CSS sur la coque : le

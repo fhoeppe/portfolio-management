@@ -2,10 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Angular</title>
+    <title>Portfolio Management</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Les deux : le `.ico` pour les rares clients sans SVG, le SVG partout ailleurs. `sizes="any"`
+         sur le SVG n'est pas décoratif — sans lui, Chrome peut lui préférer le `.ico` quand il
+         cherche une taille précise pour l'onglet, et c'est alors la trame matricielle qui s'affiche. -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" sizes="any" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,6 +17,25 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <!--
+      Le thème avant le premier rendu. L'application est prérendue : le serveur ne lit pas
+      `localStorage`, le HTML statique porte donc toujours le thème clair, et un utilisateur en
+      thème sombre voyait un rendu clair jusqu'à l'hydratation — un flash blanc sur toute la page.
+      Ce script s'exécute avant que quoi que ce soit ne soit peint et estampille la racine ; les
+      blocs `[data-theme='dark']` de `styles.scss` et les `:host-context` des composants s'y
+      accrochent. `ThemeService` le tient ensuite à jour (bascule manuelle comprise).
+      Volontairement en ligne et non différé : un fichier séparé serait chargé trop tard.
+    -->
+    <script>
+      try {
+        document.documentElement.setAttribute(
+          'data-theme',
+          localStorage.getItem('pm-theme') === 'dark' ? 'dark' : 'light',
+        );
+      } catch (e) {
+        /* stockage indisponible (navigation privée) : le thème clair du prérendu fait foi */
+      }
+    </script>
   </head>
   <body>
     <app-root></app-root>

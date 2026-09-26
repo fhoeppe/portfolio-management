@@ -51,7 +51,12 @@
   box-sizing: border-box;
 }
 
-:host([data-theme='dark']) {
+/* Deux sélecteurs : l'hôte porte le thème une fois l'application démarrée (liaison sur
+   `theme.mode()`), mais avant l'hydratation il est figé sur le « light » du prérendu et seule la
+   racine est estampillée (script en ligne d'`index.html`) — d'où le `:host-context`, qui accepte
+   l'attribut sur n'importe quel ancêtre. */
+:host([data-theme='dark']),
+:host-context([data-theme='dark']) {
   --ink-brand: #9db6d9;
   --ink-brand-2: #8fb4ee;
   --ink-warn: #f0a868;
@@ -667,9 +672,43 @@ svg {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* `autosize` sur mat-sidenav-container réévalue la marge (debounce 10ms) pendant toute la
-     transition de largeur du panneau ; une transition ici lisse ces petits pas au lieu de
-     les laisser sauter d'incrément en incrément. */
+  /* Marge de départ égale à la largeur du panneau. L'application est prérendue : le serveur ne
+     peut pas mesurer le panneau, MatSidenavContainer ne pose donc sa marge en ligne qu'après
+     l'hydratation, et le premier rendu plaçait tout le contenu à gauche, sous le menu. Cette
+     valeur met le prérendu à la bonne place dès la première image ; le style en ligne que
+     Material pose ensuite vaut la même chose (le menu démarre toujours déployé — `collapsed`
+     part à `false` et n'est pas persisté), donc rien ne bouge.
+
+     `!important` serait inutile ici : le style en ligne de Material l'emporte de toute façon, et
+     c'est bien ce qu'on veut dès que le panneau se replie. */
+  margin-left: var(--pm-nav-w);
+  /* Aucune transition avant le premier rendu client : si un recalage subsiste malgré la marge
+     ci-dessus (fenêtre redimensionnée pendant le chargement, largeur de panneau différente…),
+     il doit se faire d'un coup et non en glissant. */
+  transition: none !important;
+}
+
+/* Material masque entièrement le contenu dans le rendu serveur : `_shouldBeHidden()` ne renvoie
+   vrai qu'en dehors du navigateur, et la classe qu'il pose vaut `opacity: 0`. C'est sa parade au
+   fait qu'il ne sait pas calculer la marge côté serveur — plutôt que de montrer le contenu au
+   mauvais endroit, il ne montre rien. Le prix, ici, était un panneau de droite vide jusqu'à
+   l'hydratation (près d'une seconde en développement), puis une apparition brutale.
+
+   La marge posée ci-dessus rend ce masquage inutile : le contenu prérendu est déjà à sa place, il
+   peut donc rester visible dès la première image. La règle l'emporte sans `!important` — le
+   sélecteur porte l'attribut d'encapsulation de la coque, ce qui lui donne une classe de plus
+   que le `.mat-drawer-content.mat-drawer-content-hidden` de Material. */
+.pm-content.mat-drawer-content-hidden {
+  opacity: 1;
+}
+
+/* `autosize` sur mat-sidenav-container réévalue la marge (debounce 10ms) pendant toute la
+   transition de largeur du panneau ; une transition ici lisse ces petits pas au lieu de les
+   laisser sauter d'incrément en incrément. Elle n'est allumée qu'une fois l'application rendue
+   côté client (`pm-booted`, posé dans `afterNextRender`) : elle sert au repli du menu, pas au
+   démarrage. `!important` pour la même raison que sur `.pm-sidenav` — Material pose sa propre
+   règle `transition` (`.mat-drawer-transition .mat-drawer-content`) qui écraserait celle-ci. */
+:host(.pm-booted) .pm-content {
   transition: margin-left 180ms cubic-bezier(0.2, 0.6, 0.2, 1) !important;
 }
 

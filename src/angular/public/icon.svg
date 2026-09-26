@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Portfolio Management">
+  <!--
+    Icône d'onglet : une mallette, dessinée pleine et non au trait.
+    Les icônes de l'application sont des traits de 1,7 px sur une grille de 24 ; réduites à 16 px
+    dans un onglet, ces traits tombent sous le pixel et l'icône devient une tache grise. D'où un
+    dessin propre au favicon — aplats, contrastes forts, trois formes seulement.
+    Bleus repris des jetons de la coque : le fond porte la valeur de field-brand (#002a6e), la
+    bande celle de ink-brand-2 (#003da5). Écrits sans leurs deux tirets initiaux : un commentaire
+    XML ne peut pas contenir « - - » collés, et l'icône devenait un fichier illisible.
+  -->
+  <rect width="32" height="32" rx="7" fill="#002a6e"/>
+  <!-- Poignée : un U renversé, assez épais pour survivre à la réduction. -->
+  <path d="M12 12V10.5A2.5 2.5 0 0 1 14.5 8h3A2.5 2.5 0 0 1 20 10.5V12h-2.4v-1.3a.8.8 0 0 0-.8-.8h-1.6a.8.8 0 0 0-.8.8V12Z" fill="#ffffff"/>
+  <!-- Corps de la mallette. -->
+  <rect x="5.5" y="12" width="21" height="13.5" rx="2.4" fill="#ffffff"/>
+  <!-- Bande et fermoir : le seul détail conservé, c'est lui qui fait lire « mallette » et non « boîte ». -->
+  <rect x="5.5" y="17.2" width="21" height="1.6" fill="#003da5" opacity="0.25"/>
+  <rect x="13.6" y="16.1" width="4.8" height="3.8" rx="1.2" fill="#002a6e"/>
+</svg>

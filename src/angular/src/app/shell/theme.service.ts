@@ -33,9 +33,21 @@ export class ThemeService {
 
   readonly mode = signal<ThemeMode>(this.stored === 'dark' ? 'dark' : 'light');
 
-  private readonly syncBody = effect(() => {
-    this.document.body.setAttribute('data-theme', this.mode());
-  });
+  /**
+   * `<html>` porte l'attribut dès avant le premier rendu (script en ligne d'`index.html`, pour que
+   * le prérendu clair ne flashe pas chez qui a choisi le sombre) : il faut donc le suivre ici,
+   * sinon une bascule manuelle laisserait la racine sur l'ancien thème et les `:host-context`
+   * qui s'y accrochent resteraient figés.
+   */
+  constructor() {
+    /* Posé dans le constructeur et non dans un champ : l'effet vit tant que le service vit, et
+       personne n'a à le relire — un champ qui ne sert qu'à le retenir passait pour du code mort. */
+    effect(() => {
+      const mode = this.mode();
+      this.document.body.setAttribute('data-theme', mode);
+      this.document.documentElement.setAttribute('data-theme', mode);
+    });
+  }
 
   toggle(): void {
     this.set(this.mode() === 'dark' ? 'light' : 'dark');
