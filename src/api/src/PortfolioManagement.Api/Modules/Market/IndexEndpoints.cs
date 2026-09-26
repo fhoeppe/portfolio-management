@@ -25,6 +25,19 @@ public static class IndexEndpoints
             .WithName("getIndex")
             .WithSummary("Composition d'un indice");
 
+        // Chemin frère et non sous-ressource : `/market/indices/{indexKey}` capture déjà tout
+        // segment placé là, et `/market/indices/summary` serait lu comme l'indice de clé
+        // « summary ».
+        var summaries = group.MapGroup("/market/indices2").WithTags("Marché");
+
+        summaries.MapGet("/", ListSummaries)
+            .WithName("listIndexSummaries")
+            .WithSummary("Liste des indices connus, sans leur composition")
+            .WithDescription(
+                "Les mêmes indices que `/market/indices`, privés de leurs `members` — de quoi peupler "
+                + "un sélecteur sans transporter les quelque quatre mille lignes de composition. "
+                + "Un seul critère, facultatif : `?region=Europe continentale`.");
+
         return group;
     }
 
@@ -53,6 +66,36 @@ public static class IndexEndpoints
     }
 
     /// <summary>
+    /// Sert la liste abrégée : les mêmes indices, sans leur composition.
+    /// </summary>
+    /// <remarks>
+    /// L'enveloppe est celle de la collection complète, délibérément : un appelant qui passe de
+    /// l'une à l'autre ne réapprend rien. Le filtrage, lui, se réduit à <c>region</c>, et il est
+    /// facultatif — sans critère, toute la liste part. Filtrer par clés n'aurait pas de sens ici :
+    /// on demande quels indices existent, or une liste de clés répond déjà à cette question, et qui
+    /// connaît les siennes veut leur composition, servie par <c>/market/indices/{indexKey}</c>.
+    /// </remarks>
+    private static Ok<IndexSummaryFeedResponse> ListSummaries(
+        HttpRequest request,
+        HttpResponse response,
+        IIndexRepository repository)
+    {
+        // Cinq minutes de fraîcheur : le front redemande cette liste à chaque démarrage, et deux
+        // rechargements de page à une minute d'intervalle n'ont aucune raison de la retransporter.
+        response.Freshness(Caching.MarketReference);
+
+        var region = request.Query["region"].FirstOrDefault();
+        var matching = repository.List().Where(i => InRegion(i, region));
+        var metadata = repository.Metadata;
+
+        return TypedResults.Ok(new IndexSummaryFeedResponse(
+            metadata.Version,
+            metadata.Source,
+            metadata.AsOf,
+            [.. matching.Select(i => i.ToSummary())]));
+    }
+
+    /// <summary>
     /// Sert un indice seul.
     /// </summary>
     /// <remarks>
@@ -66,7 +109,12 @@ public static class IndexEndpoints
         var index = repository.Find(indexKey);
         if (index is null) return Problems.NotFound($"Aucun indice ne porte la clé {indexKey}.");
 
+        // Étiquette et fraîcheur répondent à deux questions différentes, et se complètent : la
+        // première dit « voici laquelle », la seconde « inutile de redemander avant cinq minutes ».
+        // Sans la seconde, le client revalidait à chaque consultation d'indice — un aller-retour
+        // pour s'entendre dire que rien n'a bougé.
         response.Headers.ETag = ETags.ForContent(Fingerprint(index));
+        response.Freshness(Caching.MarketReference);
         return TypedResults.Ok(index.ToResponse());
     }
 
@@ -91,9 +139,13 @@ public static class IndexEndpoints
             return false;
         }
 
-        return string.IsNullOrWhiteSpace(query.Region)
-            || string.Equals(index.Region, query.Region.Trim(), StringComparison.OrdinalIgnoreCase);
+        return InRegion(index, query.Region);
     }
+
+    /// <summary>L'indice est-il de cette zone ? Zone absente, tout passe.</summary>
+    private static bool InRegion(MarketIndex index, string? region) =>
+        string.IsNullOrWhiteSpace(region)
+        || string.Equals(index.Region, region.Trim(), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Lit les critères.

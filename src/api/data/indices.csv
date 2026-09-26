@@ -1,0 +1,29 @@
+key,name,region,place,mic,currency,count,memberCount,detail,asOf
+cac40,CAC 40,Europe continentale,Euronext Paris,XPAR,EUR,40,40,40 valeurs · révision trimestrielle · devise EUR,2026-05-31
+dax,DAX 40,Europe continentale,Deutsche Börse,XETR,EUR,40,40,40 valeurs · révision trimestrielle · devise EUR,2026-05-31
+sx5e,EURO STOXX 50,Europe continentale,Zone euro,,EUR,50,50,50 valeurs de la zone euro · révision annuelle,2026-08-31
+spx,S&P 500,Amérique du Nord,NYSE / Nasdaq,,USD,500,479,500 valeurs américaines · révision trimestrielle · devise USD,2026-08-31
+ftse,FTSE 100,Royaume-Uni,London Stock Exchange,XLON,GBP,100,100,100 valeurs britanniques · révision trimestrielle · devise GBP,2026-05-31
+smi,SMI,Suisse,SIX Swiss Exchange,XSWX,CHF,20,20,20 valeurs suisses · révision annuelle · devise CHF,2026-08-31
+bel20,BEL 20,Europe continentale,Euronext Bruxelles,XBRU,EUR,20,20,20 valeurs belges · révision annuelle · devise EUR,2026-08-31
+aex,AEX,Europe continentale,Euronext Amsterdam,XAMS,EUR,25,25,25 valeurs néerlandaises · révision trimestrielle · devise EUR,2026-08-31
+ibex,IBEX 35,Europe continentale,Bolsa de Madrid,XMAD,EUR,35,35,35 valeurs espagnoles · révision semestrielle · devise EUR,2026-08-31
+ftsemib,FTSE MIB,Europe continentale,Borsa Italiana,XMIL,EUR,40,40,40 valeurs italiennes · révision trimestrielle · devise EUR,2026-08-31
+omx,OMX Stockholm 30,Europe continentale,Nasdaq Stockholm,XSTO,SEK,30,30,30 valeurs suédoises · révision semestrielle · devise SEK,2026-08-31
+stoxx600,STOXX Europe 600,Europe continentale,Europe,,EUR,600,600,600 valeurs européennes · révision trimestrielle · devise EUR,2026-08-31
+ftse250,FTSE 250,Royaume-Uni,London Stock Exchange,XLON,GBP,250,113,250 valeurs britanniques de moyenne capitalisation · devise GBP,2026-08-31
+nikkei,Nikkei 225,Asie-Pacifique,Tokyo Stock Exchange,XTKS,JPY,225,114,225 valeurs japonaises · pondération par les prix · devise JPY,2026-05-31
+topix,TOPIX,Asie-Pacifique,Tokyo Stock Exchange,XTKS,JPY,2100,114,Ensemble du premier marché japonais · devise JPY,2026-05-31
+hsi,Hang Seng Index,Asie-Pacifique,Hong Kong,XHKG,HKD,82,69,82 valeurs cotées à Hong Kong · devise HKD,2026-08-31
+asx200,S&P/ASX 200,Asie-Pacifique,Australian Securities Exchange,XASX,AUD,200,34,200 valeurs australiennes · révision trimestrielle · devise AUD,2026-05-31
+kospi,KOSPI 200,Asie-Pacifique,Korea Exchange,XKRX,KRW,200,29,200 valeurs coréennes · devise KRW,2026-05-31
+nasdaq100,Nasdaq 100,Amérique du Nord,Nasdaq,XNAS,USD,100,100,100 valeurs non financières du Nasdaq · devise USD,2026-05-31
+djia,Dow Jones Industrial Average,Amérique du Nord,NYSE,,USD,30,30,30 valeurs américaines · pondération par les prix · devise USD,2026-05-31
+russell2000,Russell 2000,Amérique du Nord,NYSE / Nasdaq,,USD,2000,3,2 000 petites capitalisations américaines · révision annuelle,2026-05-31
+tsx,S&P/TSX 60,Amérique du Nord,Toronto Stock Exchange,XTSE,CAD,60,60,60 grandes valeurs canadiennes · devise CAD,2026-08-31
+msciem,MSCI Emerging Markets,Marchés émergents,Mondial,,USD,1400,153,Environ 1 400 valeurs de 24 pays émergents · devise USD,2026-08-31
+sensex,BSE SENSEX,Marchés émergents,Bombay Stock Exchange,XBOM,INR,30,30,30 valeurs indiennes · devise INR,2026-05-31
+bovespa,Ibovespa,Marchés émergents,B3 São Paulo,BVMF,BRL,87,26,87 valeurs brésiliennes · révision trimestrielle · devise BRL,2026-05-31
+msciworld,MSCI World,Mondial,Mondial,,USD,1500,1337,Environ 1 500 valeurs de 23 pays développés · devise USD,2026-08-31
+msciacwi,MSCI ACWI,Mondial,Mondial,,USD,2900,300,Marchés développés et émergents réunis · devise USD,2026-08-31
+ftseallworld,FTSE All-World,Mondial,Mondial,,USD,4200,300,"Environ 4 200 valeurs, grandes et moyennes capitalisations mondiales",2026-08-31

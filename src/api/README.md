@@ -28,6 +28,20 @@ curl 'http://localhost:8080/v1/securities?pageSize=5'
 curl http://localhost:8080/v1/openapi.yaml
 ```
 
+## Swagger
+
+<http://localhost:8080/swagger> affiche le contrat et permet de l'essayer.
+
+C'est l'**interface** de Swagger seule (`Swashbuckle.AspNetCore.SwaggerUI`, sans le générateur) :
+elle lit `/v1/openapi.yaml`, le document écrit à la main, et ne produit rien. Les 18 chemins pas
+encore servis y figurent donc, et répondent `404` — l'écart entre ce qui est promis et ce qui est
+rendu reste visible, ce qui est tout l'intérêt d'un contrat qu'on n'a pas généré depuis le code.
+
+« Try it out » fonctionne sans se connecter en développement, où toute requête est authentifiée ;
+le bouton **Authorize** sert au jeton porteur hors développement. Le contrat déclarant la
+production en premier serveur, un intercepteur réémet chaque essai vers l'origine qui sert la page
+— l'essai porte donc toujours sur le serveur qu'on a sous la main.
+
 Les deux listes de l'écran Titres s'obtiennent par composition de critères, et non par deux
 sous-ressources :
 
@@ -50,7 +64,7 @@ API arrêtée** — le catalogue embarqué prend le relais.
 dotnet test
 ```
 
-44 tests, dont la suite HTTP complète montée sur `WebApplicationFactory` : un hôte par test, pour
+78 tests, dont la suite HTTP complète montée sur `WebApplicationFactory` : un hôte par test, pour
 qu'aucun ne dépende de ce qu'un autre a écrit.
 
 ## Structure

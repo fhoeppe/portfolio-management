@@ -26,6 +26,19 @@ public static class IndexMapping
         index.AsOf,
         [.. index.Members.Select(ToResponse)]);
 
+    /// <summary>L'indice sans sa composition, tel qu'il est servi.</summary>
+    public static IndexSummaryResponse ToSummary(this MarketIndex index) => new(
+        index.Key,
+        index.Name,
+        index.Region,
+        index.Place,
+        string.IsNullOrWhiteSpace(index.Mic) ? null : index.Mic,
+        index.Currency,
+        index.Count,
+        index.Members.Count,
+        index.Detail,
+        index.AsOf);
+
     /// <summary>La valeur, telle qu'elle est servie.</summary>
     public static IndexMemberResponse ToResponse(this IndexMember member) => new(
         member.Name,

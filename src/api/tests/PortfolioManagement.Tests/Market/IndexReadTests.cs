@@ -170,4 +170,135 @@ public sealed class IndexReadTests
 
         Assert.Equal(viaCollection.GetRawText(), viaDetail.GetRawText());
     }
+
+    // ── Liste abrégée ──────────────────────────────────────────────────────────────────────
+
+    private static async Task<JsonElement> SummariesAsync(HttpClient client, string query = "")
+        => await ApiFactory.ReadJsonAsync(await client.GetAsync("/v1/market/indices2" + query));
+
+    [Fact]
+    public async Task Liste_abregee_sert_les_memes_indices_sans_composition()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        var abregee = await SummariesAsync(client);
+        var complete = await FeedAsync(client);
+
+        Assert.Equal(KeysOf(complete), KeysOf(abregee));
+        // Le point de l'opération : aucune entrée ne porte sa composition.
+        Assert.All(
+            abregee.GetProperty("indices").EnumerateArray(),
+            i => Assert.False(i.TryGetProperty("members", out _)));
+    }
+
+    [Fact]
+    public async Task Liste_abregee_garde_la_provenance_et_le_taux_de_couverture()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        var abregee = await SummariesAsync(client);
+        var cac = abregee.GetProperty("indices").EnumerateArray()
+            .First(i => i.GetProperty("key").GetString() == "cac40");
+
+        // La provenance vaut pour la liste abrégée comme pour la composition : c'est la même
+        // donnée vue de plus loin.
+        Assert.False(string.IsNullOrWhiteSpace(abregee.GetProperty("source").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(abregee.GetProperty("asOf").GetString()));
+
+        Assert.Equal("CAC 40", cac.GetProperty("name").GetString());
+        Assert.Equal(40, cac.GetProperty("count").GetInt32());
+        // Sans `memberCount`, retirer les membres retirerait aussi le moyen de calculer la part
+        // couverte — ce que les écrans affichent.
+        Assert.Equal(40, cac.GetProperty("memberCount").GetInt32());
+    }
+
+    [Fact]
+    public async Task Liste_abregee_annonce_une_couverture_partielle()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        var spx = (await SummariesAsync(client)).GetProperty("indices").EnumerateArray()
+            .First(i => i.GetProperty("key").GetString() == "spx");
+
+        // Le S&P 500 est le cas qui justifie les deux compteurs : 500 valeurs à l'indice, moins
+        // que cela de lignes détenues.
+        Assert.Equal(500, spx.GetProperty("count").GetInt32());
+        Assert.True(spx.GetProperty("memberCount").GetInt32() < spx.GetProperty("count").GetInt32());
+    }
+
+    [Fact]
+    public async Task Liste_abregee_restreint_a_une_zone()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        var europe = await SummariesAsync(client, "?region=Europe%20continentale");
+        var regions = europe.GetProperty("indices").EnumerateArray()
+            .Select(i => i.GetProperty("region").GetString()).Distinct().ToList();
+
+        Assert.Equal(["Europe continentale"], regions);
+        Assert.Contains("cac40", KeysOf(europe));
+        Assert.DoesNotContain("spx", KeysOf(europe));
+    }
+
+    [Fact]
+    public async Task Liste_abregee_rend_tout_sans_critere()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        // `region` est facultatif, et l'appel sans critère est l'usage principal : c'est ainsi que
+        // le front demande la liste au démarrage.
+        Assert.Equal(28, KeysOf(await SummariesAsync(client)).Count);
+    }
+
+    [Fact]
+    public async Task Liste_abregee_ignore_un_filtre_par_cle()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        // `key` n'est pas un critère de cette opération : le contrat n'en décrit qu'un. Un
+        // paramètre étranger est ignoré, il ne restreint rien et ne fait pas échouer l'appel —
+        // c'est ce que le client doit pouvoir constater plutôt que de croire à un filtre muet.
+        Assert.Equal(28, KeysOf(await SummariesAsync(client, "?key=cac40")).Count);
+    }
+
+    // ── Fraîcheur ──────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("/v1/market/indices2")]
+    [InlineData("/v1/market/indices/cac40")]
+    public async Task Annonce_cinq_minutes_de_fraicheur(string chemin)
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        var response = await client.GetAsync(chemin);
+        var cache = response.Headers.CacheControl;
+
+        Assert.NotNull(cache);
+        Assert.Equal(TimeSpan.FromMinutes(5), cache!.MaxAge);
+        // `private` et non `public` : la réponse n'est servie qu'à un porteur de jeton, un cache
+        // partagé n'a pas à en garder copie pour la rendre au suivant.
+        Assert.True(cache.Private);
+        Assert.False(cache.Public);
+    }
+
+    [Fact]
+    public async Task La_composition_garde_son_etiquette_avec_la_fraicheur()
+    {
+        using var app = new ApiFactory();
+        using var client = app.CreateApiClient();
+
+        var response = await client.GetAsync("/v1/market/indices/cac40");
+
+        // Les deux en-têtes répondent à deux questions distinctes — « laquelle » et « pour combien
+        // de temps » — et poser la seconde ne doit pas faire disparaître la première.
+        Assert.NotNull(response.Headers.ETag);
+        Assert.Equal(TimeSpan.FromMinutes(5), response.Headers.CacheControl!.MaxAge);
+    }
 }

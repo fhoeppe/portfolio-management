@@ -55,6 +55,49 @@ public sealed record IndexFeedResponse(
     DateOnly? AsOf,
     IReadOnlyList<IndexResponse> Indices);
 
+/// <summary>Un indice réduit à son identité, sans sa composition.</summary>
+/// <remarks>
+/// Les champs sont ceux d'<see cref="IndexResponse"/> moins <c>Members</c>, plus
+/// <see cref="MemberCount"/> : retirer la composition retirerait aussi le seul moyen de savoir
+/// quelle part de l'indice on détient, et c'est cette part que les écrans affichent.
+/// </remarks>
+/// <param name="Key">Clé stable, en minuscules sans espace.</param>
+/// <param name="Name">Dénomination d'usage.</param>
+/// <param name="Region">Zone géographique.</param>
+/// <param name="Place">Nom d'usage de la place.</param>
+/// <param name="Mic">MIC de la place. Absent pour un indice réparti sur plusieurs places.</param>
+/// <param name="Currency">Devise de cotation, code ISO 4217.</param>
+/// <param name="Count">Effectif réel de l'indice — 40 pour le CAC 40.</param>
+/// <param name="MemberCount">Nombre de lignes de composition détenues pour cet indice.</param>
+/// <param name="Detail">Précision d'usage.</param>
+/// <param name="AsOf">Date d'arrêté de cette composition.</param>
+public sealed record IndexSummaryResponse(
+    string Key,
+    string Name,
+    string Region,
+    string? Place,
+    string? Mic,
+    string? Currency,
+    int Count,
+    int MemberCount,
+    string? Detail,
+    DateOnly? AsOf);
+
+/// <summary>Enveloppe de la liste abrégée.</summary>
+/// <remarks>
+/// Même provenance et même date d'arrêté que la collection complète : la liste sans composition
+/// n'est pas une autre donnée, c'est la même vue de plus loin.
+/// </remarks>
+/// <param name="Version">Version du format.</param>
+/// <param name="Source">D'où vient la donnée, en clair.</param>
+/// <param name="AsOf">Date d'arrêté générale.</param>
+/// <param name="Indices">Les indices, sans leur composition.</param>
+public sealed record IndexSummaryFeedResponse(
+    string? Version,
+    string? Source,
+    DateOnly? AsOf,
+    IReadOnlyList<IndexSummaryResponse> Indices);
+
 /// <summary>Critères de la liste des indices.</summary>
 /// <param name="Keys">Clés retenues. Vide, la liste n'est pas restreinte.</param>
 /// <param name="Region">Zone géographique retenue, le cas échéant.</param>
