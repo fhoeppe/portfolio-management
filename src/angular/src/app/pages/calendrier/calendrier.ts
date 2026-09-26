@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -105,7 +105,15 @@ export class Calendrier {
    * Une aire géographique n'est pas une valeur à part : la cocher revient à cocher les pays
    * qu'elle contient, la décocher à les retirer.
    */
-  protected readonly zones = this.viewState.remember<readonly string[]>('calendrier.zones', ['FR']);
+  protected readonly zones = this.viewState.remember<readonly string[]>(
+    'calendrier.zones',
+    /* Toutes les zones cochées au départ : le calendrier montre alors l'intégralité de ce qu'il
+       connaît, et l'utilisateur retire ce qui ne le concerne pas. L'inverse — partir de la seule
+       zone France — masquait sans le dire les éléments des autres places, et rien à l'écran ne
+       laissait deviner qu'il en manquait. La liste est reprise du menu lui-même plutôt que
+       réécrite, pour qu'une zone ajoutée au référentiel soit cochée sans autre intervention. */
+    this.zoneGroups.flatMap((g) => g.zones.map((z) => z.id)),
+  );
 
   protected readonly zoneLabel = computed(() => {
     const ids = this.zones();
