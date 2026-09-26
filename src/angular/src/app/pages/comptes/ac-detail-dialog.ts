@@ -114,6 +114,7 @@ export class AcDetailDialog {
     return st === 'onboarding' ? 'Entrée en relation en cours'
       : st === 'frozen' ? 'Compte gelé — étapes de vie suspendues'
       : st === 'closing' ? 'Clôture engagée'
+      : st === 'closed' ? 'Compte clôturé — consultation seule'
       : 'Compte en vie courante';
   })();
 

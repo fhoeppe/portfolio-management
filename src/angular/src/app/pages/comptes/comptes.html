@@ -10,13 +10,14 @@
           <mat-icon svgIcon="search" style="font-size:14px" class="ac-search-icon"></mat-icon>
           <input [value]="query()" (input)="setQuery($any($event.target).value)" [disabled]="filtersOff()" placeholder="Client, compte, référence" />
         </span>
-        <select class="ac-status-select" [class.ac-filters-off]="filtersOff()" [value]="statusFilter()" (change)="setStatusFilter($any($event.target).value)" [disabled]="filtersOff()" [matTooltip]="filtersTitle()">
-          <option value="all">Tous les états</option>
-          <option value="active">Actif</option>
-          <option value="onboarding">En ouverture</option>
-          <option value="frozen">Gelé</option>
-          <option value="closing">En clôture</option>
-        </select>
+        <!-- Même filtre qu'au-dessus du tableau, et non un sélecteur à choix unique : un état
+             se règle d'une seule façon dans l'écran, et une liste déroulante ne saurait pas
+             représenter deux états cochés. -->
+        <span class="ac-status-filter" [class.ac-filters-off]="filtersOff()" [matTooltip]="filtersTitle()">
+          <app-ac-multiselect [options]="statusOptions()" [selected]="statusPick()" [allSelected]="statusAllSelected()"
+            [triggerLabel]="filtersOff() ? 'Tous les états' : statusTriggerLabel()" [triggerMore]="filtersOff() ? '' : statusTriggerMore()"
+            panelClass="pm-unfold" (toggle)="toggleStatus($event)" (toggleAll)="toggleAllStatus()"></app-ac-multiselect>
+        </span>
       </span>
     </div>
     <nav mat-tab-nav-bar class="ac-tabs pm-tabnav" [tabPanel]="acTabPanel" [mat-stretch-tabs]="false" disableRipple>
@@ -31,6 +32,12 @@
         <mat-icon svgIcon="pencil" style="font-size:16px"></mat-icon>
         Gérer compte
         <span class="ac-tab-badge">{{ opsBadge() }}</span>
+      </button>
+      <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'accounts'"
+        [class.ac-tab-on]="tab() === 'accounts'" (click)="setTab('accounts')">
+        <mat-icon svgIcon="banknote" style="font-size:16px"></mat-icon>
+        Comptes titre et liquidité
+        <span class="ac-tab-badge">{{ accountsBadge() }}</span>
       </button>
       <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'entry'"
         [class.ac-tab-on]="tab() === 'entry'" (click)="setTab('entry')">
@@ -48,17 +55,69 @@
         <div class="ac-list-head-row">
           <span class="ac-list-head-label">Portefeuilles clients</span>
           <span class="ac-list-note">{{ listNote() }}</span>
+          @if (expanded().size > 1) {
+            <button type="button" class="ac-collapse-all" (click)="collapseAllBrokers()">Replier les {{ expanded().size }} tableaux</button>
+          }
+        </div>
+
+        <!-- Recherche large, au-dessus du tableau : elle cherche un compte sans qu'on ait à dire
+             où chercher. Les filtres de colonne, eux, restreignent une colonne qu'on regarde
+             déjà — deux gestes différents, qui se cumulent. Même signal que le champ du bandeau :
+             deux boîtes qui filtreraient la même liste chacune de son côté se contrediraient. -->
+        <div class="ac-list-search-row">
+          <span class="ac-search ac-list-search">
+            <mat-icon svgIcon="search" style="font-size:14px" class="ac-search-icon"></mat-icon>
+            <input [value]="query()" (input)="setQuery($any($event.target).value)"
+              placeholder="Nom, broker, bénéficiaire, référence" aria-label="Rechercher un compte" />
+          </span>
+          <span class="ac-list-search-hint">Cherche aussi hors colonnes : dépositaire, banque du compte espèces, bénéficiaire effectif.</span>
+          @if (filtersActive()) {
+            <button type="button" class="ac-reset-btn ac-list-reset" (click)="clearFilters()"
+              matTooltip="Effacer la recherche et tous les filtres" aria-label="Effacer les filtres">
+              <mat-icon svgIcon="rotate-left" style="font-size:14px"></mat-icon>
+            </button>
+          }
         </div>
         <div class="ac-list-scroll">
           <div class="ac-list-inner">
             <div class="ac-grid ac-grid-head">
               <span>Client</span>
               <span>Référence</span>
+              <span>Pays</span>
               <span class="ac-right">Encours</span>
               <span class="ac-right">Perf.</span>
               <span class="ac-right">Bénéf.</span>
-              <span>Compte de liquidité</span>
+              <span class="ac-right">Brokers</span>
               <span>Statut</span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <!-- Une cellule par colonne, vides comprises : la rangée reprend la grille de
+                 l'en-tête, et un filtre posé ailleurs qu'au-dessus de sa colonne ne se lirait
+                 pas. Rien sur les trois colonnes chiffrées — on n'y cherche pas un encours par
+                 son libellé, et un filtre par seuil demanderait une autre commande. -->
+            <div class="ac-grid ac-grid-filter">
+              <input class="ac-col-filter" [value]="colClient()" (input)="setColFilter('client', $any($event.target).value)" placeholder="Client ou gestionnaire" aria-label="Filtrer par client" />
+              <input class="ac-col-filter" [value]="colRef()" (input)="setColFilter('ref', $any($event.target).value)" placeholder="Référence" aria-label="Filtrer par référence" />
+              <!-- Liste fermée plutôt que saisie libre : les pays de domiciliation forment un
+                   ensemble connu et court, et les proposer évite de chercher l'orthographe
+                   exacte d'un pays pour filtrer dessus. -->
+              <select class="ac-col-filter ac-col-filter-select" [value]="colCountry()" (change)="setCountryFilter($any($event.target).value)" aria-label="Filtrer par pays">
+                <option value="all">Tous</option>
+                @for (c of countryOptions(); track c.value) {
+                  <option [value]="c.value">{{ c.label }}</option>
+                }
+              </select>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <app-ac-multiselect [options]="statusOptions()" [selected]="statusPick()" [allSelected]="statusAllSelected()"
+                [triggerLabel]="statusTriggerLabel()" [triggerMore]="statusTriggerMore()" panelClass="pm-unfold"
+                (toggle)="toggleStatus($event)" (toggleAll)="toggleAllStatus()"></app-ac-multiselect>
+              <span></span>
               <span></span>
               <span></span>
             </div>
@@ -69,22 +128,27 @@
                   <span class="ac-row-client-meta">{{ a.meta }}</span>
                 </button>
                 <span class="ac-row-ref">{{ a.id }}</span>
+                <span class="ac-row-country">
+                  <span class="ac-row-country-flag">{{ a.countryFlag }}</span>{{ a.country }}
+                </span>
                 <span class="ac-right ac-row-aum">{{ a.aum }}</span>
                 <span class="ac-right ac-row-perf" [style.color]="a.perfColor">{{ a.perf }}</span>
                 <span class="ac-right ac-row-benef" [matTooltip]="a.beneficiariesTitle">{{ a.beneficiaries }}</span>
-                <span class="ac-row-cash">
-                  <span class="ac-row-cash-flag">{{ a.cashFlag }}</span>
-                  <span class="ac-row-cash-body">
-                    <span class="ac-row-cash-bank">{{ a.cashBank }}</span>
-                    <span class="ac-row-cash-meta">{{ a.cashMeta }}</span>
-                  </span>
-                </span>
+                <span class="ac-right ac-row-brokers" [matTooltip]="a.brokersTitle">{{ a.brokerCount }}</span>
                 <span><span class="ac-state-pill" [style.background]="a.stateBg" [style.color]="a.stateFg">{{ a.state }}</span></span>
+                <button type="button" class="ac-icon-btn" [disabled]="a.closed" (click)="toggleBrokers(a.id, $event)"
+                  [class.ac-icon-btn-on]="expanded().has(a.id)"
+                  [matTooltip]="a.closed ? 'Compte clôturé — brokers indisponibles' : expanded().has(a.id) ? 'Replier les brokers' : 'Voir les brokers rattachés : encours et performance'"
+                  aria-label="Voir les brokers">
+                  <mat-icon svgIcon="search" style="font-size:15px"></mat-icon>
+                </button>
                 <button type="button" class="ac-icon-btn" (click)="openDetail(a.id, $event)" matTooltip="Consulter le détail du compte" aria-label="Détail du compte">
                   <mat-icon svgIcon="file-text" style="font-size:15px"></mat-icon>
                 </button>
                 <span class="ac-manage-wrap">
-                  <button type="button" class="ac-icon-btn" [matMenuTriggerFor]="manageMenu" (click)="$event.stopPropagation()" matTooltip="Gérer le compte" aria-label="Gérer le compte">
+                  <button type="button" class="ac-icon-btn" [disabled]="a.closed" [matMenuTriggerFor]="manageMenu" (click)="$event.stopPropagation()"
+                    [matTooltip]="a.closed ? 'Compte clôturé — aucune opération possible' : 'Gérer le compte'"
+                    aria-label="Gérer le compte">
                     <mat-icon svgIcon="pencil" style="font-size:15px"></mat-icon>
                   </button>
                   <mat-menu #manageMenu="matMenu" class="pm-unfold">
@@ -99,6 +163,70 @@
                   </mat-menu>
                 </span>
               </div>
+
+              <!-- Déplié sous sa ligne, comme le registre des transactions déplie les jambes
+                   d'une transaction : la ligne reste à sa place, le détail s'insère dessous. -->
+              @if (expanded().has(a.id)) {
+                <div class="ac-brk-detail pm-unfold-block">
+                  <div class="ac-brk-card">
+                    <div class="ac-brk-head">
+                      <mat-icon svgIcon="library" style="font-size:13px"></mat-icon>
+                      <span class="ac-brk-head-title">Brokers rattachés</span>
+                      <span class="ac-brk-head-note">{{ a.brokersNote }}</span>
+                    </div>
+                    @if (a.brokers.length) {
+                      <table class="ac-brk-table">
+                        <thead>
+                          <tr>
+                            <th>Broker</th>
+                            <th>N° de compte</th>
+                            <th>Type</th>
+                            <th>Site</th>
+                            <th class="ac-brk-num">Encours</th>
+                            <th class="ac-brk-num">Perf.</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (b of a.brokers; track b.label + b.account) {
+                            <tr>
+                              <td>
+                                <span class="ac-brk-name">
+                                  <span class="ac-brk-flag">{{ b.flag }}</span>
+                                  <span class="ac-brk-name-body">
+                                    <span class="ac-brk-label">{{ b.label }}</span>
+                                    <span class="ac-brk-place">{{ b.place }}</span>
+                                  </span>
+                                </span>
+                              </td>
+                              <td class="ac-brk-account">{{ b.account }}</td>
+                              <td>
+                                @if (b.accountType !== '—') {
+                                  <span class="ac-brk-type">{{ b.accountType }}</span>
+                                } @else {
+                                  <span class="ac-brk-muted">—</span>
+                                }
+                              </td>
+                              <td>
+                                <!-- `rel="noreferrer noopener"` avec `target="_blank"` : sans lui,
+                                     la page ouverte garde une poignée sur celle-ci
+                                     (`window.opener`) et peut la faire naviguer. -->
+                                <a class="ac-brk-link" [href]="b.url" target="_blank" rel="noreferrer noopener" [matTooltip]="b.url">
+                                  <span class="ac-brk-host">{{ b.host }}</span>
+                                  <mat-icon svgIcon="external-link" style="font-size:12px"></mat-icon>
+                                </a>
+                              </td>
+                              <td class="ac-brk-num">{{ b.aum }}</td>
+                              <td class="ac-brk-num" [style.color]="b.perfColor">{{ b.perf }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    } @else {
+                      <p class="ac-brk-empty">Aucun broker rattaché à ce compte.</p>
+                    }
+                  </div>
+                </div>
+              }
             }
             @if (noAccounts()) {
               <p class="ac-empty">Aucun compte ne correspond aux critères.</p>
@@ -108,14 +236,20 @@
       </div>
     }
 
-    @if (tab() === 'ops') {
+    <!-- Les deux onglets à étapes partagent la carte : même stepper, même corps d'étape, même
+         barre d'actions. Seules les pastilles Création / Modification / Clôture appartiennent à
+         « Gérer compte » — l'ouverture des comptes n'est pas une opération parmi trois, c'est le
+         seul parcours de son onglet. -->
+    @if (tab() === 'ops' || tab() === 'accounts') {
       <div class="ac-ops">
         <div class="ac-ops-tabs-row">
-          <span class="ac-pill-group">
-            @for (k of opKinds; track k) {
-              <button type="button" class="ac-pill" [class.ac-pill-on]="op() === k" (click)="switchOp(k)">{{ defs()[k].label }}</button>
-            }
-          </span>
+          @if (tab() === 'ops') {
+            <span class="ac-pill-group">
+              @for (k of opKinds; track k) {
+                <button type="button" class="ac-pill" [class.ac-pill-on]="op() === k" (click)="switchOp(k)">{{ defs()[k].label }}</button>
+              }
+            </span>
+          }
           <span class="ac-ops-hint">{{ def().hint }}</span>
         </div>
 

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   ACCOUNTS,
+  ACCOUNT_BROKERS,
   ACCOUNT_CASH,
   BROKERS,
   FIELD_ICONS,
@@ -21,6 +22,7 @@ import {
   TODAY_ISO,
   type Account,
   type AccountState,
+  type Broker,
   fr,
   ibanCheck,
   pct,
@@ -53,13 +55,17 @@ import {
   stageLabel,
 } from './comptes-onboarding';
 import { AcSelect } from './ac-select';
+import { AcMultiSelect, type AcMultiOption } from './ac-multiselect';
+import { FXR, PORTFOLIOS, fr2, pnlTone, signedPct } from '../positions/positions-data';
 import { AcChips } from './ac-chips';
 import { AcDetailDialog, type AcDetailDialogData } from './ac-detail-dialog';
 import { AcRecapDialog, type AcRecapDialogData } from './ac-recap-dialog';
 import { AcCreateDialog, type AcCreateDialogData, type AcCreateDialogResult } from './ac-create-dialog';
 import { SIDE_PANEL_LAYOUT } from '../../ui/side-panel/side-panel-layout';
+import { ViewStateService } from '../../shell/view-state.service';
+import { COUNTRIES } from '../../domain/countries';
 
-type Tab = 'list' | 'ops' | 'entry';
+type Tab = 'list' | 'ops' | 'accounts' | 'entry';
 
 /**
  * Porté depuis `Comptes.dc.html`. Deux onglets réels seulement (`tabs` du prototype, lignes
@@ -72,9 +78,15 @@ type Tab = 'list' | 'ops' | 'entry';
  * `ac-chips.ts`) : ancrage, défilement et fermeture au clic extérieur ou à Échap viennent du
  * CDK overlay plutôt que d'un état applicatif `combo` à fermer à la main.
  */
+/* Le compte porte le NOM de son pays de domiciliation, pas son code ISO : le référentiel des pays
+   est donc indexé par nom pour retrouver le drapeau. Fait une fois au chargement du module — la
+   liste compte plus de deux cents entrées, la parcourir à chaque ligne de tableau serait du
+   gâchis. */
+const FLAG_BY_COUNTRY = new Map(COUNTRIES.map((c) => [c.name.toLowerCase(), c.flag]));
+
 @Component({
   selector: 'app-comptes',
-  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatButtonToggleModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, MatStepperModule, MatTableModule, NgTemplateOutlet, AcSelect, AcChips],
+  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatButtonToggleModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, MatStepperModule, MatTableModule, NgTemplateOutlet, AcSelect, AcChips, AcMultiSelect],
   templateUrl: './comptes.html',
   styleUrl: './comptes.css',
 })
@@ -86,22 +98,113 @@ export class Comptes {
 
   private readonly dialog = inject(MatDialog);
 
+  /* Le routeur détruit cette page à chaque navigation : ce qui relève de l'état d'affichage —
+     onglet ouvert, recherche, filtres, tableaux dépliés, saisie en cours du parcours « Gérer
+     compte » — est emprunté au service plutôt que déclaré ici, sans quoi tout repartirait à zéro
+     au retour sur l'écran. Même recette que Titres et Calendrier. */
+  private readonly viewState = inject(ViewStateService);
+
   // ---- En-tête / liste --------------------------------------------------
-  protected readonly tab = signal<Tab>('list');
-  protected readonly query = signal('');
-  protected readonly statusFilter = signal<'all' | AccountState>('all');
-  protected readonly selected = signal<string>('BGM-004');
+  protected readonly tab = this.viewState.remember<Tab>('comptes.tab', 'list');
+  protected readonly query = this.viewState.remember('comptes.query', '');
+  /**
+   * États retenus. Ensemble vide = aucun filtre, et non « aucun état » : c'est la lecture de tous
+   * les filtres à cases de l'application, et elle évite qu'une liste vide soit le résultat par
+   * défaut d'un filtre qu'on vient d'ouvrir.
+   */
+  protected readonly statusPick = this.viewState.remember<ReadonlySet<AccountState>>('comptes.statusPick', new Set());
+
+  protected readonly statusOptions = computed<readonly AcMultiOption[]>(() =>
+    (['active', 'onboarding', 'frozen', 'closing', 'closed'] as const).map((key) => {
+      const st = STATES[key];
+      return {
+        key,
+        label: st.label,
+        /* La pastille de l'option porte les couleurs de l'état, comme la colonne : on reconnaît
+           « Gelé » à sa teinte avant d'avoir lu le mot. */
+        badgeBg: st.bg,
+        badgeFg: st.fg,
+        count: ACCOUNTS.filter((a) => a.state === key).length,
+      };
+    }),
+  );
+
+  protected readonly statusAllSelected = computed(() => this.statusPick().size === this.statusOptions().length);
+  protected readonly statusTriggerLabel = computed(() => {
+    const picked = this.statusPick();
+    if (!picked.size || picked.size === this.statusOptions().length) return 'Tous';
+    const first = this.statusOptions().find((o) => picked.has(o.key as AccountState));
+    return first ? first.label : 'Tous';
+  });
+  /* « +2 » quand plusieurs états sont cochés : le déclencheur nomme le premier et compte le reste,
+     faute de quoi il faudrait rouvrir le menu pour savoir ce qui filtre. */
+  protected readonly statusTriggerMore = computed(() => (this.statusPick().size > 1 ? '+' + (this.statusPick().size - 1) : ''));
+  protected readonly selected = this.viewState.remember('comptes.selected', 'BGM-004');
 
   protected readonly filtersOff = computed(() => this.tab() !== 'list');
   protected readonly filtersTitle = computed(() => (this.tab() === 'list' ? 'Filtrer la liste des comptes' : "Disponible dans l'onglet Liste des comptes"));
 
+  /* Filtres de colonne, distincts de la recherche : celle-ci cherche un compte sans savoir où,
+     ceux-là restreignent une colonne qu'on regarde. Les deux se cumulent. */
+  /**
+   * Comptes dont le tableau des brokers est déplié.
+   *
+   * Un ensemble et non une clé unique : comparer deux clients suppose de voir leurs brokers en
+   * même temps, et refermer l'un pour ouvrir l'autre obligerait à retenir ce qu'on vient de lire.
+   */
+  protected readonly expanded = this.viewState.remember<ReadonlySet<string>>('comptes.expanded', new Set());
+
+  protected readonly colClient = this.viewState.remember('comptes.colClient', '');
+  protected readonly colRef = this.viewState.remember('comptes.colRef', '');
+  protected readonly colCountry = this.viewState.remember('comptes.colCountry', 'all');
+
+  /**
+   * Les pays effectivement présents, pour que le filtre ne propose jamais une liste vide.
+   *
+   * La valeur reste le nom seul — c'est lui que le compte porte et sur lequel le filtre compare ;
+   * le drapeau n'appartient qu'au libellé affiché, où il sert de repère avant même la lecture.
+   */
+  protected readonly countryOptions = computed(() =>
+    [...new Set(ACCOUNTS.map((a) => a.domicile))]
+      .sort((x, y) => x.localeCompare(y, 'fr'))
+      .map((name) => {
+        const flag = FLAG_BY_COUNTRY.get(name.toLowerCase()) ?? '';
+        return { value: name, label: flag ? `${flag} ${name}` : name };
+      }),
+  );
+
+  protected readonly filtersActive = computed(
+    () => !!this.query().trim() || this.statusPick().size > 0 || !!this.colClient().trim() || !!this.colRef().trim() || this.colCountry() !== 'all',
+  );
+
+  /**
+   * Ce sur quoi la recherche porte : nom, broker, bénéficiaire, référence.
+   *
+   * « Broker » n'est pas un champ du compte — les comptes portent un dépositaire, et leur compte
+   * espèces une banque. Ce sont les deux établissements auxquels un compte est rattaché, et c'est
+   * à eux que la recherche répond : demander « Spuerkeess » ou « dépositaire » doit ramener le
+   * compte, quel que soit celui des deux qui porte le nom.
+   */
+  private searchIndex(a: Account): string {
+    const cash = ACCOUNT_CASH[a.id];
+    const benef = a.holders.filter((h) => h.role.toLowerCase().indexOf('bénéficiaire') >= 0).map((h) => h.name).join(' ');
+    return [a.client, a.custodian, cash?.bank ?? '', benef, a.id, a.domicile].join(' ').toLowerCase();
+  }
+
   protected readonly filteredAccounts = computed(() => {
     const q = this.query().trim().toLowerCase();
-    const sf = this.statusFilter();
+    const picked = this.statusPick();
+    const client = this.colClient().trim().toLowerCase();
+    const ref = this.colRef().trim().toLowerCase();
+    const country = this.colCountry();
+
     return ACCOUNTS.filter((a) => {
-      if (sf !== 'all' && a.state !== sf) return false;
-      if (!q) return true;
-      return (a.client + ' ' + a.id + ' ' + a.profile + ' ' + a.manager).toLowerCase().indexOf(q) >= 0;
+      if (picked.size && !picked.has(a.state)) return false;
+      if (q && this.searchIndex(a).indexOf(q) < 0) return false;
+      if (client && (a.client + ' ' + a.manager).toLowerCase().indexOf(client) < 0) return false;
+      if (ref && a.id.toLowerCase().indexOf(ref) < 0) return false;
+      if (country !== 'all' && a.domicile !== country) return false;
+      return true;
     });
   });
 
@@ -114,10 +217,68 @@ export class Comptes {
     return ACCOUNTS.length + ' comptes · ' + fr(totalAum) + ' M€ sous gestion · ' + onboarding + ' en ouverture';
   });
 
+  /**
+   * Les brokers rattachés au compte, avec ce qu'on tient chez chacun.
+   *
+   * Le rattachement vient de `ACCOUNT_BROKERS` (une graine, voir son commentaire) ; l'encours et
+   * la performance, eux, sont calculés sur les comptes courtiers de l'écran Positions, avec la
+   * formule de cet écran — cours × quantité converti par `FXR`, plus les espèces — pour que deux
+   * écrans ne puissent pas annoncer deux encours différents. Un broker rattaché mais sans compte
+   * courtier chez nous affiche « — » plutôt que zéro : ne rien détenir et détenir zéro ne se
+   * lisent pas pareil.
+   */
+  private brokerRows(a: Account) {
+    const names = ACCOUNT_BROKERS[a.id] ?? [];
+
+    return names
+      .map((name) => BROKERS.find((b) => b.label === name))
+      .filter((b): b is Broker => !!b)
+      .flatMap((b) => {
+        const identite = {
+          label: b.label,
+          flag: b.flag,
+          place: b.place,
+          url: b.url,
+          /* Le domaine seul : l'adresse complète déborderait la colonne, et c'est lui qu'on lit
+             pour reconnaître un établissement. Le lien, lui, garde l'URL entière. */
+          host: b.url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+        };
+
+        const comptes = PORTFOLIOS.filter((pf) => pf.label.startsWith(b.label));
+
+        /* Un broker rattaché sans compte courtier chez nous garde sa ligne : c'est un
+           rattachement déclaré dont il reste à ouvrir le compte, et le taire donnerait une liste
+           plus courte que le décompte de la colonne. */
+        if (!comptes.length) {
+          return [{ ...identite, account: '—', accountType: '—', aum: '—', perf: '—', perfColor: 'var(--color-neutral-600)' }];
+        }
+
+        /* Une ligne par compte, et non par broker : un même courtier en tient plusieurs — CTO et
+           PEA chez Bourse Direct — qui n'ont ni le même régime ni le même encours, et les
+           additionner masquerait précisément ce qu'on vient lire. */
+        return comptes.map((pf) => {
+          const market = pf.positions.reduce((m, p) => m + p.qty * p.price * (FXR[p.currency] || 1), 0);
+          const cost = pf.positions.reduce((m, p) => m + p.qty * p.pru * (FXR[p.currency] || 1), 0);
+          return {
+            ...identite,
+            /* Le jeu de données ne porte pas de numéro de compte chez le courtier : l'identifiant
+               du compte courtier (`DG-CTO`) est ce qui en tient lieu dans toute l'application. */
+            account: pf.id,
+            accountType: pf.id.split('-')[1] ?? '—',
+            aum: fr2(market + pf.cash) + ' EUR',
+            perf: cost ? signedPct(((market - cost) / cost) * 100) : '—',
+            perfColor: cost ? pnlTone(market - cost) : 'var(--color-neutral-600)',
+          };
+        });
+      });
+  }
+
   private buildRow(a: Account) {
     const isBenef = (r: string) => r.toLowerCase().indexOf('bénéficiaire') >= 0;
     const benef = a.holders.filter((h) => isBenef(h.role));
-    const cash = ACCOUNT_CASH[a.id];
+    const brokers = this.brokerRows(a);
+    const etablissements = new Set(brokers.map((b) => b.label)).size;
+    const comptes = brokers.filter((b) => b.account !== '—').length;
     const st = STATES[a.state] || STATES['active'];
     const on = a.id === this.selected();
     return {
@@ -127,11 +288,29 @@ export class Comptes {
       aum: a.aum ? fr(a.aum) + ' M€' : '—',
       perf: a.aum ? pct(a.perf) : 'Non investi',
       perfColor: a.aum === 0 ? 'var(--color-neutral-600)' : a.perf >= 0 ? 'var(--ink-ok-2)' : 'var(--ink-warn-2)',
+      /* Un compte clôturé ne se modifie plus et n'a plus à être isolé pour être travaillé : les
+         deux commandes qui mènent à une suite — la loupe et le crayon — se grisent. Un compte
+         « en clôture », lui, est encore en vie : on y liquide, on y transfère, ses commandes
+         restent actives. La fiche reste ouverte dans les deux cas — consulter un compte fermé est
+         précisément ce qu'on veut pouvoir faire. */
+      closed: a.state === 'closed',
+      brokers,
+      /* Le compte de la colonne est celui des LIGNES du tableau déplié, et non celui des
+         établissements : un chiffre qui annonce trois et ouvre sur quatre lignes fait douter des
+         deux. Bourse Direct compte donc deux fois, une par compte. */
+      brokerCount: brokers.length ? String(brokers.length) : '—',
+      /* L'info-bulle nomme ces mêmes lignes, compte par compte : le nombre seul dit qu'il y en a
+         quatre, pas lesquelles, et c'est souvent la question qu'on se pose avant de déplier. */
+      brokersTitle: brokers.length
+        ? brokers.map((b) => (b.account === '—' ? b.label : b.label + ' — ' + b.account)).join(' · ')
+        : 'Aucun broker rattaché',
+      brokersNote: etablissements
+        ? etablissements + ' broker' + (etablissements > 1 ? 's' : '') + ' · ' + comptes + ' compte' + (comptes > 1 ? 's' : '') + ' ouvert' + (comptes > 1 ? 's' : '')
+        : 'aucun',
+      country: a.domicile,
+      countryFlag: FLAG_BY_COUNTRY.get(a.domicile.toLowerCase()) ?? '',
       beneficiaries: benef.length ? String(benef.length) : '—',
       beneficiariesTitle: benef.length ? benef.map((h) => h.name).join(' · ') : 'Aucun bénéficiaire effectif déclaré',
-      cashFlag: (cash && cash.flag) || '',
-      cashBank: (cash && cash.bank) || 'À rattacher',
-      cashMeta: !cash || !cash.bank ? 'Aucun compte espèces' : cash.currency + ' · ' + cash.iban + (cash.extra ? ' · +' + cash.extra + ' secondaire' + (cash.extra > 1 ? 's' : '') : ''),
       state: st.label, stateBg: st.bg, stateFg: st.fg,
       bg: on ? 'var(--color-neutral-100)' : 'var(--surface)',
       mark: on ? 'var(--ds-brand-fill, var(--ink-brand-2))' : 'transparent',
@@ -143,14 +322,15 @@ export class Comptes {
   protected manageOptionsFor(a: Account): readonly { readonly key: OpKind; readonly label: string; readonly hint: string; readonly disabled: boolean }[] {
     // Projet / En ouverture : création seule. Actif, Gelé, En clôture : modification ou clôture.
     const opening = a.state === 'onboarding';
+    const shut = a.state === 'closed';
     const creatable = opening;
-    const modifiable = !opening;
-    const closable = !opening;
+    const modifiable = !opening && !shut;
+    const closable = !opening && !shut;
     const mk = (key: OpKind, label: string, hint: string, ok: boolean) => ({ key, label, hint: ok ? hint : 'Indisponible — ' + hint, disabled: !ok });
     return [
       mk('create', 'Création', creatable ? "Finaliser l'ouverture du compte" : 'le compte est déjà créé', creatable),
-      mk('modify', 'Modification', modifiable ? 'Avenant sur le compte existant' : "le compte doit d'abord être créé", modifiable),
-      mk('close', 'Clôture', closable ? 'Résiliation et sortie de relation' : "le compte doit d'abord être créé", closable),
+      mk('modify', 'Modification', modifiable ? 'Avenant sur le compte existant' : shut ? 'le compte est clôturé' : "le compte doit d'abord être créé", modifiable),
+      mk('close', 'Clôture', closable ? 'Résiliation et sortie de relation' : shut ? 'le compte est déjà clôturé' : "le compte doit d'abord être créé", closable),
     ];
   }
 
@@ -158,7 +338,7 @@ export class Comptes {
   // ---- Entrée en relation -------------------------------------------------
   protected readonly entryPhases = ENTRY_PHASES;
   protected readonly entryCount = computed(() => ONBOARDING_CASES.length);
-  protected readonly selectedCase = signal(ONBOARDING_CASES[0].id);
+  protected readonly selectedCase = this.viewState.remember('comptes.entryCase', ONBOARDING_CASES[0].id);
 
   private readonly cases = computed(() =>
     ONBOARDING_CASES.map((c) => ({
@@ -225,14 +405,66 @@ export class Comptes {
   protected readonly entryColumns = ['ref', 'case', 'origin', 'stage', 'owner', 'aum', 'progress', 'state'];
 
   protected setTab(t: Tab): void {
+    /* Changer d'onglet remet le parcours à sa première étape quand on passe d'un jeu d'étapes à
+       l'autre : « Gérer compte » et « Comptes titre et liquidité » partagent le même index, et
+       arriver sur le second à l'étape 3 du premier n'aurait aucun sens. Le compte rendu de la
+       dernière validation part avec, pour la même raison. */
+    const parcours = (x: Tab) => x === 'ops' || x === 'accounts';
+    if (parcours(t) && parcours(this.tab()) && t !== this.tab()) {
+      this.opStep.set(0);
+      this.opStatus.set('');
+    }
     this.tab.set(t);
   }
   protected setQuery(v: string): void {
     this.query.set(v);
   }
-  protected setStatusFilter(v: string): void {
-    this.statusFilter.set(v as 'all' | AccountState);
+  protected toggleStatus(key: string): void {
+    this.statusPick.update((cur) => {
+      const next = new Set(cur);
+      if (!next.delete(key as AccountState)) next.add(key as AccountState);
+      return next;
+    });
   }
+  protected toggleAllStatus(): void {
+    this.statusPick.update((cur) =>
+      cur.size === this.statusOptions().length ? new Set<AccountState>() : new Set(this.statusOptions().map((o) => o.key as AccountState)),
+    );
+  }
+  protected setColFilter(key: 'client' | 'ref', v: string): void {
+    ({ client: this.colClient, ref: this.colRef })[key].set(v);
+  }
+  protected setCountryFilter(v: string): void {
+    this.colCountry.set(v);
+  }
+  protected clearFilters(): void {
+    this.query.set('');
+    this.statusPick.set(new Set());
+    this.colClient.set('');
+    this.colRef.set('');
+    this.colCountry.set('all');
+  }
+  /**
+   * Déplie ou replie, sous la ligne, les brokers rattachés au compte — comme le registre des
+   * transactions déplie les jambes d'une transaction sous la sienne.
+   *
+   * Autant de dépliés que voulu : chacun se referme par sa propre loupe.
+   */
+  protected toggleBrokers(id: string, e?: Event): void {
+    if (e) e.stopPropagation();
+    this.selected.set(id);
+    this.expanded.update((cur) => {
+      const next = new Set(cur);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
+
+  /** Referme tout : une seule commande quand plusieurs tableaux sont ouverts. */
+  protected collapseAllBrokers(): void {
+    this.expanded.set(new Set());
+  }
+
   protected pickAccount(id: string): void {
     this.selected.set(id);
   }
@@ -259,24 +491,37 @@ export class Comptes {
 
   // ---- Onglet « Gérer compte » -------------------------------------------
 
-  protected readonly op = signal<OpKind>('create');
-  protected readonly opStep = signal(0);
-  protected readonly opStatus = signal('');
-  protected readonly form = signal<FormState>(blankForm());
-  protected readonly co = signal<CoHolder[]>([]);
-  protected readonly cash = signal<CashEntry[]>([]);
-  protected readonly holderPane = signal('main');
-  protected readonly cashPane = signal(0);
+  protected readonly op = this.viewState.remember<OpKind>('comptes.op', 'create');
+  protected readonly opStep = this.viewState.remember('comptes.opStep', 0);
+  protected readonly opStatus = this.viewState.remember('comptes.opStatus', '');
+  /* La saisie en cours fait partie de l'état de la page, et c'est même le morceau qui coûte le
+     plus cher à perdre : quitter l'écran pour vérifier une référence et revenir devant un
+     formulaire vidé est la façon la plus sûre de faire recommencer quelqu'un. */
+  protected readonly form = this.viewState.remember<FormState>('comptes.form', blankForm());
+  protected readonly co = this.viewState.remember<CoHolder[]>('comptes.co', []);
+  protected readonly cash = this.viewState.remember<CashEntry[]>('comptes.cash', []);
+  protected readonly holderPane = this.viewState.remember('comptes.holderPane', 'main');
+  protected readonly cashPane = this.viewState.remember('comptes.cashPane', 0);
 
   protected readonly opKinds: readonly OpKind[] = ['create', 'modify', 'close'];
   protected readonly defs = computed(() => opDefs());
-  protected readonly def = computed(() => this.defs()[this.op()]);
+  /* L'onglet décide du jeu d'étapes, la pastille ne décide que du genre d'opération : l'ouverture
+     des comptes a son propre onglet et aucune pastille, tout en partageant le même moteur. */
+  protected readonly def = computed(() => this.defs()[this.tab() === 'accounts' ? 'accounts' : this.op()]);
   protected readonly currentStepIndex = computed(() => Math.min(this.opStep(), this.def().steps.length - 1));
   protected readonly currentStep = computed(() => this.def().steps[this.currentStepIndex()]);
   protected readonly isLastStep = computed(() => this.currentStepIndex() === this.def().steps.length - 1);
   protected readonly done = computed(() => !!this.opStatus());
 
-  protected readonly opsBadge = computed(() => this.currentStepIndex() + 1 + '/' + this.def().steps.length);
+  /* Sur l'onglet actif, la pastille dit où l'on en est ; sur l'autre, elle ne dit que le nombre
+     d'étapes — afficher « 2/3 » sur un parcours qu'on ne regarde pas laisserait croire qu'il est
+     commencé. */
+  protected readonly opsBadge = computed(() => this.stepBadge('ops', this.defs()[this.op()].steps.length));
+  protected readonly accountsBadge = computed(() => this.stepBadge('accounts', this.defs().accounts.steps.length));
+
+  private stepBadge(tab: Tab, total: number): string {
+    return this.tab() === tab ? `${this.currentStepIndex() + 1}/${total}` : String(total);
+  }
 
   protected readonly fieldCtx = computed(() => ({
     form: this.form(),

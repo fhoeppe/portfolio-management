@@ -36,7 +36,15 @@ import {
   type JurisdictionRef,
 } from './comptes-data';
 
-export type OpKind = 'create' | 'modify' | 'close';
+/**
+ * Les trois opérations du cycle de vie d'un compte, plus l'ouverture des comptes eux-mêmes.
+ *
+ * `accounts` n'est pas une opération au même titre que les autres — aucune pastille ne le propose,
+ * il a son propre onglet. Il partage en revanche toute la mécanique : mêmes étapes, mêmes champs,
+ * même statut, et c'est ce qui justifie de le faire entrer ici plutôt que de dupliquer un second
+ * moteur à côté.
+ */
+export type OpKind = 'create' | 'modify' | 'close' | 'accounts';
 
 export interface FormState {
   broker: string;
@@ -180,34 +188,6 @@ export function opDefs(): Record<OpKind, OpDef> {
           ],
         },
         {
-          /* Broker et compte titre ne faisaient qu'une décision : on n'ouvre pas un compte sans
-             savoir chez qui, et le numéro comme la date d'ouverture sont ceux du broker. Les deux
-             étapes se répondaient donc en aller-retour ; elles n'en font plus qu'une, en deux
-             rangées — l'établissement, puis le compte ouvert chez lui. */
-          title: 'Compte titre', hint: 'Établissement, type, devise, référence',
-          fields: [
-            'broker', 'jurisdiction', 'url',
-            'accountType', 'currency', 'number',
-            'alias', 'opened',
-            'status',
-          ],
-          checks: [
-            { label: 'La juridiction du broker détermine le régime fiscal et la retenue à la source applicable.', level: 'info' },
-            { label: 'Le numéro de compte est purement numérique et doit correspondre exactement à celui ouvert chez le broker : il sert de clé de réconciliation.', level: 'warn' },
-            { label: 'Le libellé du compte doit être unique parmi les comptes du même client : c\'est lui qui identifie le compte dans toute l\'application.', level: 'warn' },
-            { label: "La date d'ouverture est celle du compte chez le broker, pas celle de la saisie.", level: 'info' },
-          ],
-        },
-        {
-          title: 'Compte de liquidité', hint: 'Compte bancaire externe rattaché',
-          fields: [],
-          checks: [
-            { label: 'Tout compte titre est adossé à un compte de liquidité : il porte les mouvements d\'espèces, les dividendes encaissés et les frais.', level: 'info' },
-            { label: 'La devise du compte espèces doit correspondre à la devise de tenue du compte titre, sauf compte multidevises.', level: 'warn' },
-            { label: "L'IBAN est contrôlé par le MOD-97 algorithm (ISO 7064) : un signal rouge indique une clé erronée avant tout enregistrement.", level: 'info' },
-          ],
-        },
-        {
           title: 'Contrôle', hint: 'Fermeture et statut',
           fields: ['closed', 'status'],
           checks: [
@@ -242,6 +222,41 @@ export function opDefs(): Record<OpKind, OpDef> {
         },
         { title: 'Transfert', hint: 'Compte de destination', fields: ['dotation'], checks: [{ label: 'Coordonnées du compte de destination à faire confirmer par le client.', level: 'warn' }] },
         { title: 'Contrôle', hint: 'Archivage', fields: ['closed', 'status'], checks: [{ label: 'Le compte passe à l\'état Clôturé, les pièces sont archivées pour la durée légale.', level: 'info' }] },
+      ],
+    },
+    accounts: {
+      label: 'Comptes titre et liquidité',
+      hint: 'Ouverture des comptes du client : compte titre chez un broker, compte espèces adossé.',
+      next: 'Ouvrir les comptes',
+      steps: [
+        {
+          /* Broker et compte titre ne faisaient qu'une décision : on n'ouvre pas un compte sans
+             savoir chez qui, et le numéro comme la date d'ouverture sont ceux du broker. Les deux
+             étapes se répondaient donc en aller-retour ; elles n'en font plus qu'une, en deux
+             rangées — l'établissement, puis le compte ouvert chez lui. */
+          title: 'Compte titre', hint: 'Établissement, type, devise, référence',
+          fields: [
+            'broker', 'jurisdiction', 'url',
+            'accountType', 'currency', 'number',
+            'alias', 'opened',
+            'status',
+          ],
+          checks: [
+            { label: 'La juridiction du broker détermine le régime fiscal et la retenue à la source applicable.', level: 'info' },
+            { label: 'Le numéro de compte est purement numérique et doit correspondre exactement à celui ouvert chez le broker : il sert de clé de réconciliation.', level: 'warn' },
+            { label: 'Le libellé du compte doit être unique parmi les comptes du même client : c\'est lui qui identifie le compte dans toute l\'application.', level: 'warn' },
+            { label: "La date d'ouverture est celle du compte chez le broker, pas celle de la saisie.", level: 'info' },
+          ],
+        },
+        {
+          title: 'Compte de liquidité', hint: 'Compte bancaire externe rattaché',
+          fields: [],
+          checks: [
+            { label: 'Tout compte titre est adossé à un compte de liquidité : il porte les mouvements d\'espèces, les dividendes encaissés et les frais.', level: 'info' },
+            { label: 'La devise du compte espèces doit correspondre à la devise de tenue du compte titre, sauf compte multidevises.', level: 'warn' },
+            { label: "L'IBAN est contrôlé par le MOD-97 algorithm (ISO 7064) : un signal rouge indique une clé erronée avant tout enregistrement.", level: 'info' },
+          ],
+        },
       ],
     },
   };
@@ -324,7 +339,9 @@ export interface StatusTone {
 }
 
 export function opStateFor(op: OpKind, done: boolean, form: FormState, last: boolean): StatusTone {
-  if (op === 'create') {
+  /* L'ouverture des comptes suit le statut de la création, et non celui de la clôture où le
+     `return` final l'aurait menée : on y ouvre un compte, le statut va de Projet à Actif. */
+  if (op === 'create' || op === 'accounts') {
     if (done) return { label: 'Actif', bg: 'var(--field-ok)', fg: '#ffffff', hint: 'Compte créé, opérations autorisées' };
     if (form.statusChoice === 'En ouverture') {
       return { label: 'En ouverture', bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok-2)', hint: last ? 'Passera à Actif à la création' : 'Dossier engagé, dotation attendue' };
@@ -364,7 +381,7 @@ const SPAN_ACCOUNT: Record<string, string> = {
   status: '1 / 3',
 };
 
-function statusSpan(isTitulaires: boolean, isKyc: boolean, isAccount: boolean, hasOpened: boolean): string {
+function statusSpan(isTitulaires: boolean, isKyc: boolean, isAccount: boolean): string {
   if (isTitulaires) return SPAN_TITULAIRES['status'];
   if (isKyc) return SPAN_KYC['status'];
   if (isAccount) return SPAN_ACCOUNT['status'];
@@ -489,12 +506,13 @@ export function buildField(key: string, ctx: FieldCtx): AcField {
     };
   }
   if (key === 'status') {
-    const editable = ctx.op === 'create' && !ctx.done && ['Compte titre', 'Compte de liquidité', 'Contrôle'].includes(ctx.stepTitle);
+    const creating = ctx.op === 'create' || ctx.op === 'accounts';
+    const editable = creating && !ctx.done && ['Compte titre', 'Compte de liquidité', 'Contrôle'].includes(ctx.stepTitle);
     if (editable) {
       const chosen = ctx.form.statusChoice || 'Projet';
       const cur = STATUS_CYCLE.find((c) => c.label === chosen) || STATUS_CYCLE[0];
       return {
-        kind: 'combo', key, label: 'Statut du compte', span: statusSpan(isTitulaires, isKyc, isAccount, ctx.stepFields.includes('opened')),
+        kind: 'combo', key, label: 'Statut du compte', span: statusSpan(isTitulaires, isKyc, isAccount),
         value: cur.label, leadFlag: '', place: cur.hint, asBadge: true, badgeBg: cur.bg, badgeFg: cur.fg,
         checkOk: false, checkBad: false, checkMessage: '',
         groups: [{
@@ -509,7 +527,7 @@ export function buildField(key: string, ctx: FieldCtx): AcField {
     }
     const opState = opStateFor(ctx.op, ctx.done, ctx.form, ctx.last);
     return {
-      kind: 'badge', key, label: 'Statut du compte', span: statusSpan(isTitulaires, isKyc, isAccount, ctx.stepFields.includes('opened')),
+      kind: 'badge', key, label: 'Statut du compte', span: statusSpan(isTitulaires, isKyc, isAccount),
       value: opState.label, badgeBg: opState.bg, badgeFg: opState.fg, hint: opState.hint,
     };
   }

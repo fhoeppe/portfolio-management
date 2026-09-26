@@ -31,7 +31,14 @@ export interface AccountFlag {
   readonly level: 'warn' | 'info';
 }
 
-export type AccountState = 'active' | 'onboarding' | 'frozen' | 'closing';
+/**
+ * Les états d'un compte.
+ *
+ * `closing` et `closed` ne se confondent pas : le premier est une clôture engagée — le compte vit
+ * encore, on liquide et on transfère —, le second un compte fermé, dont il ne reste que la
+ * consultation. Les commandes de la liste s'appuient sur cette différence.
+ */
+export type AccountState = 'active' | 'onboarding' | 'frozen' | 'closing' | 'closed';
 
 export interface Account {
   readonly id: string;
@@ -236,11 +243,35 @@ export const ACCOUNTS: readonly Account[] = [
   },
 ];
 
+/**
+ * Brokers rattachés à chaque compte.
+ *
+ * **Cette table est une graine, pas une donnée dérivée.** Le lien compte → broker n'existait
+ * nulle part : un compte porte un dépositaire (`custodian`) et la banque de son compte espèces
+ * (`ACCOUNT_CASH`), ni l'un ni l'autre n'étant le courtier chez qui les titres sont tenus. Les
+ * comptes courtiers de l'écran Positions (`PORTFOLIOS`) forment, eux, un jeu séparé qui n'a jamais
+ * été réconcilié avec les comptes clients. Le rattachement est donc déclaré ici, explicitement,
+ * plutôt que deviné par un rapprochement de noms qui aurait l'air d'une règle sans en être une.
+ *
+ * Les libellés sont ceux de `BROKERS` : une clé absente du référentiel ne s'affichera pas.
+ */
+export const ACCOUNT_BROKERS: Record<string, readonly string[]> = {
+  'BGM-004': ['Degiro', 'Bourse Direct', 'Banque de Luxembourg'],
+  'INP-011': ['Bourse Direct', 'Interactive Brokers Ireland'],
+  'GLG-002': [],
+  'BGM-002': ['Degiro', 'Swissquote'],
+  'INP-008': ['Bourse Direct'],
+  'GLG-005': ['Saxo Bank'],
+};
+
 export const STATES: Record<string, { label: string; bg: string; fg: string }> = {
   active: { label: 'Actif', bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
   onboarding: { label: 'En ouverture', bg: 'rgba(0,61,165,0.10)', fg: 'var(--ink-brand-2)' },
   frozen: { label: 'Gelé', bg: 'rgba(180,83,9,0.12)', fg: 'var(--ink-warn-2)' },
   closing: { label: 'En clôture', bg: 'var(--color-neutral-200)', fg: 'var(--color-neutral-700)' },
+  /* Même teinte que le statut « Clôturé » du parcours de clôture (`opStateFor`) : un compte fermé
+     se reconnaît au même aplat sombre, qu'on le lise dans la liste ou dans le formulaire. */
+  closed: { label: 'Clôturé', bg: '#3f3b39', fg: '#ffffff' },
 };
 
 export const KYC: Record<string, { bg: string; fg: string }> = {

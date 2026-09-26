@@ -93,17 +93,6 @@
   outline: none;
   font-family: inherit;
 }
-.ac-status-select {
-  height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--color-neutral-300);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--color-text);
-  font-size: 12px;
-  font-family: inherit;
-  outline: none;
-}
 .ac-filters-off {
   background: var(--color-neutral-100);
   opacity: 0.55;
@@ -190,6 +179,22 @@
   text-transform: uppercase;
   color: var(--color-neutral-700);
 }
+/* Repli global : n'apparaît qu'à partir de deux tableaux ouverts — un seul se referme par sa
+   propre loupe, et un bouton qui doublerait ce geste ne ferait qu'encombrer la rangée. */
+.ac-collapse-all {
+  padding: 3px 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-brand-2);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.ac-collapse-all:hover {
+  background: rgba(0, 61, 165, 0.07);
+}
+
 .ac-list-note {
   margin-left: auto;
   font-size: 11px;
@@ -199,12 +204,14 @@
   overflow-x: auto;
 }
 .ac-list-inner {
-  min-width: 900px;
+  min-width: 985px;
 }
 
 .ac-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) 96px 96px 84px 74px minmax(150px, 1.15fr) 108px 34px 34px;
+  /* Huit colonnes depuis le retrait du compte de liquidité : le client prend la place libérée,
+     c'est lui qu'on lit en premier et il portait jusqu'ici des noms tronqués. */
+  grid-template-columns: minmax(220px, 2fr) 100px 120px 94px 80px 70px 72px 100px 34px 34px 34px;
   gap: 10px;
   align-items: center;
   padding: 9px 14px;
@@ -223,6 +230,243 @@
 }
 .ac-right {
   text-align: right;
+}
+
+/* Même traitement que le compte de bénéficiaires : chiffre sobre, gris quand il n'y a rien. */
+.ac-row-brokers {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
+.ac-row-country {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+.ac-row-country-flag {
+  flex: none;
+  /* Les drapeaux sont des emoji : ils suivent la taille du texte et n'ont pas besoin d'être
+     colorés, mais un chouïa plus grands ils se lisent mieux à côté d'un libellé de 12px. */
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Détail déplié sous une ligne — même dessin que la carte de détail du registre des
+   transactions : cadre bleuté, en-tête teinté, table sobre à 11px. */
+.ac-brk-detail {
+  padding: 0 14px 10px 17px;
+}
+.ac-brk-card {
+  border: 1px solid rgba(0, 61, 165, 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+/* Bandeau plein, et non teinté : c'est le dessin des en-têtes de bloc de l'application — la barre
+   « TITRES NÉGOCIABLES », les têtes de panneau de Titres, le bandeau du panneau latéral. Posé en
+   aplat, il ferme visiblement le tableau déplié et le détache des lignes de la liste, qui sont,
+   elles, sur fond clair. */
+.ac-brk-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Même retrait horizontal que les cellules du tableau (10px) : avec 12px, le décompte de
+     droite tombait deux pixels en dedans de la colonne Perf. et le titre deux pixels en dehors
+     de la colonne Broker — un décalage qui ne se voit pas isolément mais saute aux yeux dès que
+     deux tableaux sont dépliés l'un sous l'autre. */
+  padding: 9px 10px;
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+}
+.ac-brk-head mat-icon {
+  color: #ffffff;
+}
+.ac-brk-head-note {
+  /* Sur l'aplat, la note passe en blanc atténué : le gris des jetons neutres y devient illisible. */
+  color: rgba(255, 255, 255, 0.82);
+}
+.ac-brk-head-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ac-brk-head-note {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.ac-brk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  background: transparent;
+}
+.ac-brk-table th {
+  height: 30px;
+  text-align: left;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-brand);
+}
+.ac-brk-table td {
+  height: 36px;
+  padding: 0 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.ac-brk-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ac-brk-flag {
+  flex: none;
+  font-size: 13px;
+  line-height: 1;
+}
+.ac-brk-name-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ac-brk-label {
+  font-weight: 600;
+}
+.ac-brk-place {
+  font-size: 10px;
+  color: var(--color-neutral-600);
+}
+
+/* Numéro de compte : chasse tabulaire, comme partout où une référence se compare d'une ligne
+   à l'autre. */
+.ac-brk-account {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-800, var(--color-text));
+}
+/* Type de compte : pastille sobre, le même repère que les régimes portent ailleurs. */
+.ac-brk-type {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.1);
+  color: var(--ink-brand-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.ac-brk-muted {
+  color: var(--color-neutral-600);
+}
+
+.ac-brk-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-brand-2);
+  text-decoration: none;
+}
+.ac-brk-link:hover .ac-brk-host {
+  text-decoration: underline;
+}
+
+/* `.ac-brk-table th` (0-1-1 : une classe et un type) l'emportait sur `.ac-brk-num` (0-1-0) :
+   les en-têtes Encours et Perf. restaient à gauche au-dessus de chiffres alignés à droite. Le
+   sélecteur est donc porté à la même forme que celui qu'il doit dépasser. */
+.ac-brk-num,
+.ac-brk-table th.ac-brk-num,
+.ac-brk-table td.ac-brk-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ac-brk-empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 11px;
+  color: var(--color-neutral-700);
+}
+
+/* Rangée de recherche, entre le titre de la liste et le tableau. */
+/* Le filtre d'état du bandeau : même gabarit que l'ancien sélecteur qu'il remplace, pour que la
+   rangée du haut garde son alignement. Grisé hors de l'onglet Liste, comme la recherche. */
+.ac-status-filter {
+  display: flex;
+  width: 168px;
+}
+.ac-status-filter.ac-filters-off {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.ac-list-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-list-search {
+  /* Plus large que la boîte du bandeau : c'est ici la recherche principale de l'écran, et quatre
+     critères tiennent mal dans 230px de gabarit. */
+  width: 320px;
+  height: 30px;
+}
+.ac-list-search-hint {
+  min-width: 0;
+  font-size: 11px;
+  color: var(--color-neutral-600);
+  /* La phrase dit sur quoi la recherche porte ; coupée plutôt que repliée, pour que la rangée
+     garde sa hauteur quelle que soit la largeur de la fenêtre. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-list-reset {
+  flex: none;
+  margin-left: auto;
+}
+
+/* Rangée de filtres : même grille que l'en-tête, un cran plus clair pour qu'on la lise comme une
+   commande et non comme une ligne de données. */
+.ac-grid-filter {
+  background: var(--color-neutral-100);
+  border-bottom: 1px solid var(--color-neutral-200);
+  padding: 7px 14px;
+  align-items: center;
+}
+.ac-col-filter {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 11px;
+}
+.ac-col-filter::placeholder {
+  color: var(--color-neutral-600);
+}
+.ac-col-filter:focus {
+  border-color: var(--ink-brand-2);
+  box-shadow: 0 0 0 1px rgba(0, 61, 165, 0.28);
+  outline: none;
+}
+.ac-col-filter-select {
+  /* Le sélecteur natif garde son chevron : `appearance: none` obligerait à le redessiner pour
+     rien, la rangée n'a pas à imiter les sélecteurs de formulaire. */
+  padding-left: 6px;
+  cursor: pointer;
 }
 
 .ac-row {
@@ -275,37 +519,6 @@
   font-variant-numeric: tabular-nums;
   color: var(--color-neutral-800);
 }
-.ac-row-cash {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.ac-row-cash-flag {
-  flex: none;
-  font-size: 12px;
-  line-height: 1;
-}
-.ac-row-cash-body {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.ac-row-cash-bank {
-  font-size: 11px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ac-row-cash-meta {
-  font-size: 10px;
-  color: var(--color-neutral-600);
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .ac-state-pill {
   padding: 2px 8px;
   border-radius: 999px;
@@ -327,9 +540,25 @@
   color: var(--ink-brand);
   cursor: pointer;
 }
-.ac-icon-btn:hover {
+.ac-icon-btn:hover:not(:disabled) {
   background: var(--ds-brand-fill, var(--field-brand));
   color: #ffffff;
+}
+/* Commande hors d'usage : le contour et le signe s'effacent, le curseur le dit avant le clic.
+   `:hover` est exclu plus haut plutôt que neutralisé ici — un bouton grisé qui s'allume au
+   survol promet un geste qu'il ne rendra pas. */
+/* Loupe active : le bouton reste allumé tant que son tableau est déplié, sinon rien ne dit
+   laquelle des six lignes a ouvert celui qu'on lit. */
+.ac-icon-btn-on {
+  background: var(--ds-brand-fill, var(--field-brand));
+  color: #ffffff;
+}
+
+.ac-icon-btn:disabled {
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-500);
+  background: var(--color-neutral-100);
+  cursor: not-allowed;
 }
 .ac-manage-wrap {
   display: flex;
@@ -451,51 +680,21 @@
   background: var(--surface);
   border: 1px solid var(--color-neutral-300);
   border-radius: 6px;
-}
-
-.ac-stepper {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--color-neutral-200);
-}
-.ac-step {
-  flex: 0 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.ac-step-btn {
-  display: flex;
-  align-items: center;
-  gap: 9px;
+  /* Dernier filet de sécurité du cadre : aucun champ, aucune rangée d'étapes ne doit en sortir,
+     quelle que soit la largeur intrinsèque de son contenu. `min-width: 0` pour que la carte
+     elle-même puisse se comprimer dans sa colonne. */
   min-width: 0;
   overflow: hidden;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
 }
-.ac-step-badge {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  background: var(--color-neutral-300);
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-}
-.ac-step-badge-done,
-.ac-step-badge-current {
-  background: var(--ds-brand-fill, var(--field-brand));
+
+/* `<mat-stepper>` n'est plus la rangée d'étapes elle-même mais le conteneur de tout le
+   composant Material (en-tête + corps) : le `display: flex` et le rembourrage hérités de
+   l'ancien gabarit maison en faisaient un conteneur flex de 1111px dans une carte de 1075px
+   — `width: 100%` en `content-box` ajoutait les 36px de rembourrage — et son enfant, libre de
+   s'étendre à sa largeur intrinsèque, emportait les champs hors du cadre. Rembourrage et
+   filet appartiennent désormais à l'en-tête seul (plus bas). */
+.ac-stepper {
+  display: block;
 }
 .ac-step-text {
   min-width: 0;
@@ -510,7 +709,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ac-step-title-current {
+/* MatStepper marque l'étape courante sur son propre en-tête : le libellé de l'étape
+   sélectionnée passe par `.mat-step-header[aria-selected='true']` et non plus par une classe
+   posée à la main sur le titre. */
+.ac-stepper ::ng-deep .mat-step-header[aria-selected='true'] .ac-step-title {
   font-weight: 500;
   color: var(--color-text);
 }
@@ -521,13 +723,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.ac-step-line {
-  flex: 1 1 24px;
-  min-width: 24px;
-  margin: 0 8px;
-  height: 1px;
-  background: rgba(0, 0, 0, 0.12);
 }
 
 .ac-step-body {
@@ -1212,11 +1407,13 @@
   .ac-fields-grid {
     gap: 10px;
   }
-  .ac-stepper {
+  /* L'en-tête Material passe à la ligne plutôt que de comprimer cinq libellés dans 980px ;
+     les filets de liaison, qui ne relieraient plus rien d'une ligne à l'autre, disparaissent. */
+  .ac-stepper ::ng-deep .mat-horizontal-stepper-header-container {
     flex-wrap: wrap;
     gap: 10px 16px;
   }
-  .ac-step-line {
+  .ac-stepper ::ng-deep .mat-stepper-horizontal-line {
     display: none;
   }
 }
@@ -1232,39 +1429,50 @@
   font-family: inherit;
 }
 
-.ac-stepper .mat-horizontal-stepper-header-container {
+/* `::ng-deep` obligatoire : tout ce qui suit vise le gabarit interne de MatStepper, dont les
+   éléments portent l'attribut d'encapsulation de Material et non celui de cet écran — sans lui,
+   ces règles ne s'appliquaient à aucun élément, en silence (même piège que
+   `.ac-field-datepicker` plus haut). C'est pourquoi le rembourrage Material de 24px et les
+   largeurs intrinsèques tenaient toujours, et que les champs sortaient de la carte. */
+.ac-stepper ::ng-deep .mat-horizontal-stepper-header-container {
   padding: 14px 18px 0;
   border-bottom: 1px solid var(--color-neutral-200);
 }
 
-.ac-stepper .mat-horizontal-stepper-header {
+.ac-stepper ::ng-deep .mat-horizontal-stepper-header {
   height: auto;
   padding: 0 8px 14px;
 }
 
 /* Le corps garde son propre rembourrage (.ac-step-body) : celui de Material s'y ajouterait. */
-.ac-stepper .mat-horizontal-content-container {
+.ac-stepper ::ng-deep .mat-horizontal-content-container {
   padding: 0;
 }
 
 /* Material dimensionne en-tête et contenu sur leur largeur intrinsèque, sans les contraindre
    au conteneur : mesuré, l'en-tête débordait la carte de 152px et le corps de 147px. Les
    `.ac-step` d'origine, eux, étaient en `flex: 0 1 auto; min-width: 0` et se comprimaient avec
-   ellipse. On restitue ce comportement. */
-.ac-stepper,
-.ac-stepper .mat-horizontal-content-container,
-.ac-stepper .mat-horizontal-stepper-content {
+   ellipse. On restitue ce comportement — `min-width: 0` compris, sans quoi la valeur `auto` par
+   défaut d'un élément flex l'empêche de descendre sous la largeur minimale de son contenu. */
+.ac-stepper ::ng-deep .mat-horizontal-stepper-wrapper,
+.ac-stepper ::ng-deep .mat-horizontal-content-container,
+.ac-stepper ::ng-deep .mat-horizontal-stepper-content {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ac-stepper ::ng-deep .mat-horizontal-stepper-header-container {
   min-width: 0;
 }
 
-.ac-stepper .mat-step-header {
+.ac-stepper ::ng-deep .mat-step-header {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
 }
 
-.ac-stepper .mat-step-label {
+.ac-stepper ::ng-deep .mat-step-label {
   min-width: 0;
   overflow: hidden;
 }
