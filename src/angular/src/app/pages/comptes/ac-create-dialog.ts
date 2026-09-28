@@ -7,16 +7,16 @@ import {
   CREATE_FINAL_DELAY_MS,
   CREATE_STAGES,
   CREATE_STAGE_DELAY_MS,
-  type CashEntry,
   type CreateIssue,
   type FormState,
   createIssues,
   createSummaryRows,
+  type TitreEntry,
 } from './comptes-form';
 
 export interface AcCreateDialogData {
   readonly form: Signal<FormState>;
-  readonly cash: Signal<readonly CashEntry[]>;
+  readonly titres: Signal<readonly TitreEntry[]>;
 }
 
 export type AcCreateDialogResult = 'ok' | 'cancelled';
@@ -58,7 +58,7 @@ export class AcCreateDialog implements OnDestroy {
     const n = this.errors().length;
     return n + (n > 1 ? ' anomalies bloquent l\'enregistrement.' : ' anomalie bloque l\'enregistrement.');
   });
-  protected readonly rows = computed(() => createSummaryRows(this.data.form(), this.data.cash()));
+  protected readonly rows = computed(() => createSummaryRows(this.data.form(), this.data.titres()));
 
   private timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -85,7 +85,7 @@ export class AcCreateDialog implements OnDestroy {
     });
     this.timers.push(
       setTimeout(() => {
-        const issues = createIssues(this.data.form(), this.data.cash());
+        const issues = createIssues(this.data.form(), this.data.titres());
         if (issues.length) {
           this.phase.set('fail');
           this.errors.set(issues);

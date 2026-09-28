@@ -1,33 +1,39 @@
-import { Component, HostBinding, Signal, computed, inject, signal } from '@angular/core';
+import { Component, HostBinding, Signal, computed, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatMenuModule } from '@angular/material/menu';
 import { SidePanel } from '../../ui/side-panel/side-panel';
 import { ThemeService } from '../../shell/theme.service';
 import type { Icon } from '../../shell/icon-shapes';
 import {
-  type CashEntry,
   type CoHolder,
   type FormState,
-  buildRecapBanks,
+  type TitreEntry,
   buildRecapGroups,
-  buildRecapPeople,
+  buildTitresRecapGroups,
   fullName,
   recapVerdict,
+  titreIssues,
 } from './comptes-form';
 
 export interface AcRecapDialogData {
   readonly form: Signal<FormState>;
   readonly co: Signal<readonly CoHolder[]>;
-  readonly cash: Signal<readonly CashEntry[]>;
+  readonly titres: Signal<readonly TitreEntry[]>;
+  /** Intitulé du panneau. */
+  readonly title?: string;
+  /** `titres` : ne relire que les comptes titre et leurs comptes de liquidité. */
+  readonly scope?: 'all' | 'titres';
+  /** Intitulé du bouton de validation — « Ajouter » quand la relecture précède un ajout. */
+  readonly submitLabel?: string;
 }
 
 const ICON_RECAP: Icon = 'checklist';
 
 /**
  * « Vérifier la saisie » (`recapOpen` du prototype, lignes 918-991) : relecture des
- * informations saisies avant création, avec un sélecteur de titulaire affiché et, pour le
- * groupe Compte de liquidité, un sélecteur de compte bancaire affiché.
+ * informations saisies avant création : le titulaire principal champ pour champ, chaque personne
+ * rattachée dans la liste des titulaires, et le statut du dossier. Les comptes ne s'y relisent
+ * pas : leur étape les montre en entier.
  *
  * Les données viennent des signaux vivants du composant hôte (`Comptes`), passés tels quels
  * via `MAT_DIALOG_DATA` plutôt que figés à l'ouverture, pour rester réactives si l'état
@@ -35,7 +41,7 @@ const ICON_RECAP: Icon = 'checklist';
  */
 @Component({
   selector: 'app-ac-recap-dialog',
-  imports: [MatIconModule, SidePanel, MatMenuModule],
+  imports: [MatIconModule, SidePanel],
   templateUrl: './ac-recap-dialog.html',
   styleUrl: './ac-recap-dialog.css',
 })
@@ -49,30 +55,37 @@ export class AcRecapDialog {
   }
 
   protected readonly icon = ICON_RECAP;
+  protected readonly panelTitle = this.data.title || 'Récapitulatif de la saisie Compte';
+  protected readonly submitLabel = this.data.submitLabel || 'OK';
 
-  protected readonly recapHolder = signal('main');
-  protected readonly recapBank = signal('main');
 
-  protected readonly people = computed(() => buildRecapPeople(this.data.form(), this.data.co()));
-  protected readonly who = computed(() => this.people().find((p) => p.key === this.recapHolder()) || this.people()[0]);
-  protected readonly banks = computed(() => buildRecapBanks(this.data.form(), this.data.cash()));
-  protected readonly bank = computed(() => this.banks().find((b) => b.key === this.recapBank()) || this.banks()[0]);
-  protected readonly groups = computed(() => buildRecapGroups(this.data.form(), this.data.co(), this.who(), this.bank(), this.data.cash()));
-  protected readonly verdict = computed(() => recapVerdict(this.data.form()));
+  protected readonly groups = computed(() =>
+    this.data.scope === 'titres'
+      ? buildTitresRecapGroups(this.data.titres())
+      : buildRecapGroups(this.data.form(), this.data.co(), this.data.titres()),
+  );
+  protected readonly verdict = computed(() => {
+    if (this.data.scope !== 'titres') return recapVerdict(this.data.form(), this.data.co());
+    const titres = this.data.titres();
+    if (!titres.length) return "Aucun compte titre — « Ajouter » en ouvre un.";
+    const inc = titres.filter((t) => titreIssues(t, t.cash).length).length;
+    return inc
+      ? `${inc} compte${inc > 1 ? 's' : ''} titre à compléter sur ${titres.length}.`
+      : `${titres.length} compte${titres.length > 1 ? 's' : ''} titre — tous complets.`;
+  });
   protected readonly subtitle = computed(() => {
     const f = this.data.form();
-    return (fullName(f.lastName, f.firstName) || '—') + ' · ' + (f.clientRef || 'référence à saisir');
+    return (fullName(f.lastName, f.firstName) || '—') + ' · ' + (f.clientRef || 'référence attribuée à la création');
   });
 
-  protected pickHolder(key: string): void {
-    this.recapHolder.set(key);
-  }
-  protected pickBank(key: string): void {
-    this.recapBank.set(key);
-  }
 
   protected close(): void {
     this.dialogRef.close();
+  }
+  /* « OK » dit que la relecture est validée ; l'écran en tire ce qu'il veut — passer à l'étape
+     suivante quand la vérification est passée. « Annuler » referme sans rien dire. */
+  protected confirm(): void {
+    this.dialogRef.close('ok');
   }
   protected onPinnedChange(pinned: boolean): void {
     this.dialogRef.disableClose = pinned;

@@ -124,7 +124,7 @@ export const GROUPS: readonly LegendGroup[] = [
   {
     key: 'states',
     title: 'Rang des comptes de liquidité',
-    note: 'Page Comptes · onglet Gérer compte',
+    note: 'Page Comptes · onglet Gérer compte portefeuille',
     rows: [
       { kind: 'chip', label: 'P', bg: 'var(--field-brand)', fg: '#ffffff', meaning: "Compte principal : il porte les mouvements d'espèces par défaut et ne peut pas être supprimé.", where: 'Toujours en tête de la liste des établissements bancaires' },
       { kind: 'chip', label: 'S', bg: 'var(--color-neutral-300)', fg: 'var(--color-neutral-800)', meaning: 'Compte secondaire : rattaché au compte titre, supprimable, promouvable en principal.', where: 'Le passage de S à P échange le rang avec le compte principal' },

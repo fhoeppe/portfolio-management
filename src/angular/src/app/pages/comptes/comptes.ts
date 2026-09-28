@@ -1,14 +1,13 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatStepperModule } from '@angular/material/stepper';
-import { MatTableModule } from '@angular/material/table';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   ACCOUNTS,
@@ -17,14 +16,12 @@ import {
   BROKERS,
   FIELD_ICONS,
   QUALITIES,
-  STAGES,
   STATES,
   TODAY_ISO,
   type Account,
   type AccountState,
   type Broker,
   fr,
-  ibanCheck,
   pct,
 } from './comptes-data';
 import {
@@ -39,25 +36,23 @@ import {
   buildCashRows,
   buildCoRow,
   buildField,
+  blankTitre,
+  blankTitreFields,
   cashCurrencyGroups,
+  holderIssues,
+  titreFields,
+  titreFromForm,
+  titreIssues,
+  type TitreEntry,
+  holderKey,
+  nextClientRef,
   opCols,
   opDefs,
-  opRowGap,
 } from './comptes-form';
 import { dateToIso, isoToDate } from '../../shell/date-bridge';
-import {
-  ENTRY_LAST_STAGE,
-  ENTRY_PHASES,
-  KIND_LABEL,
-  ONBOARDING_CASES,
-  phaseOfStage,
-  progress,
-  stageLabel,
-} from './comptes-onboarding';
 import { AcSelect } from './ac-select';
 import { AcMultiSelect, type AcMultiOption } from './ac-multiselect';
 import { FXR, PORTFOLIOS, fr2, pnlTone, signedPct } from '../positions/positions-data';
-import { AcChips } from './ac-chips';
 import { AcDetailDialog, type AcDetailDialogData } from './ac-detail-dialog';
 import { AcRecapDialog, type AcRecapDialogData } from './ac-recap-dialog';
 import { AcCreateDialog, type AcCreateDialogData, type AcCreateDialogResult } from './ac-create-dialog';
@@ -65,7 +60,7 @@ import { SIDE_PANEL_LAYOUT } from '../../ui/side-panel/side-panel-layout';
 import { ViewStateService } from '../../shell/view-state.service';
 import { COUNTRIES } from '../../domain/countries';
 
-type Tab = 'list' | 'ops' | 'accounts' | 'entry';
+type Tab = 'list' | 'ops';
 
 /**
  * Porté depuis `Comptes.dc.html`. Deux onglets réels seulement (`tabs` du prototype, lignes
@@ -75,7 +70,7 @@ type Tab = 'list' | 'ops' | 'accounts' | 'entry';
  *
  * Toute la géométrie de positionnement manuel des menus du prototype (`measureAnchor`/
  * `comboGeo`/`openCombo`/`state.combo`) disparaît avec de vrais `MatMenu` (voir `ac-select.ts`/
- * `ac-chips.ts`) : ancrage, défilement et fermeture au clic extérieur ou à Échap viennent du
+ * `ac-multiselect.ts`) : ancrage, défilement et fermeture au clic extérieur ou à Échap viennent du
  * CDK overlay plutôt que d'un état applicatif `combo` à fermer à la main.
  */
 /* Le compte porte le NOM de son pays de domiciliation, pas son code ISO : le référentiel des pays
@@ -86,7 +81,7 @@ const FLAG_BY_COUNTRY = new Map(COUNTRIES.map((c) => [c.name.toLowerCase(), c.fl
 
 @Component({
   selector: 'app-comptes',
-  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatButtonToggleModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, MatStepperModule, MatTableModule, NgTemplateOutlet, AcSelect, AcChips, AcMultiSelect],
+  imports: [MatTabsModule, MatIconModule, MatButtonModule, MatButtonToggleModule, MatMenuModule, MatTooltipModule, MatDatepickerModule, MatStepperModule, NgTemplateOutlet, AcSelect, AcMultiSelect],
   templateUrl: './comptes.html',
   styleUrl: './comptes.css',
 })
@@ -334,86 +329,7 @@ export class Comptes {
     ];
   }
 
-
-  // ---- Entrée en relation -------------------------------------------------
-  protected readonly entryPhases = ENTRY_PHASES;
-  protected readonly entryCount = computed(() => ONBOARDING_CASES.length);
-  protected readonly selectedCase = this.viewState.remember('comptes.entryCase', ONBOARDING_CASES[0].id);
-
-  private readonly cases = computed(() =>
-    ONBOARDING_CASES.map((c) => ({
-      ...c,
-      kindLabel: KIND_LABEL[c.kind],
-      phase: phaseOfStage(c.stage),
-      stageLabel: stageLabel(c.stage),
-      progress: progress(c.stage),
-      aum: `${fr(c.aumTarget / 1000000, 1)} M€`,
-      tone: c.blocked ? 'warn' : 'ok',
-    })),
-  );
-
-  /* Le vivier est présenté par phase plutôt qu'à plat : c'est la phase qui dit à qui la main
-     revient — le gérant, la conformité, la direction, le back office. */
-  protected readonly entryPipeline = computed(() =>
-    ENTRY_PHASES.map((p) => {
-      const cases = this.cases().filter((c) => c.stage >= p.from && c.stage <= p.upTo);
-      return { label: p.label, count: cases.length, cases };
-    }),
-  );
-
-  protected readonly entryKpis = computed(() => {
-    const all = this.cases();
-    const bloques = all.filter((c) => c.blocked).length;
-    const avance = all.reduce((n, c) => n + c.progress, 0) / (all.length || 1);
-    const pieces = all.reduce((n, c) => n + c.missingDocs.length, 0);
-    return [
-      { label: 'Dossiers en cours', value: String(all.length), note: `${ENTRY_PHASES.length} phases d'entrée`, tone: 'neutral' },
-      { label: 'Avancement moyen', value: `${Math.round(avance)} %`, note: `sur ${ENTRY_LAST_STAGE + 1} étapes`, tone: 'neutral' },
-      { label: 'Dossiers bloqués', value: String(bloques), note: bloques ? 'Action de conformité attendue' : 'Aucun blocage', tone: bloques ? 'warn' : 'ok' },
-      { label: 'Pièces manquantes', value: String(pieces), note: 'Tous dossiers confondus', tone: pieces ? 'warn' : 'ok' },
-    ];
-  });
-
-  protected readonly currentCase = computed(
-    () => this.cases().find((c) => c.id === this.selectedCase()) ?? this.cases()[0],
-  );
-
-  /* Le détail reprend les étapes du cycle de vie d'un compte, arrêtées à l'apport initial :
-     l'entrée en relation n'est pas un parcours à part, c'en est la première moitié. */
-  protected readonly caseStages = computed(() => {
-    const c = this.currentCase();
-    return STAGES.slice(0, ENTRY_LAST_STAGE + 1).map((s, i) => ({
-      ...s,
-      index: i,
-      done: i < c.stage,
-      current: i === c.stage,
-      phase: phaseOfStage(i),
-    }));
-  });
-
-  protected selectCase(id: string): void {
-    this.selectedCase.set(id);
-  }
-
-  /* La liste reprend les memes dossiers que le vivier, a plat et tries par avancement
-     decroissant : le vivier sert a voir ou chaque dossier en est dans le parcours, la liste a
-     les comparer entre eux. Cliquer une ligne selectionne le meme dossier que le vivier. */
-  protected readonly entryRows = computed(() =>
-    [...this.cases()].sort((a, b) => b.progress - a.progress || a.name.localeCompare(b.name, 'fr')),
-  );
-
-  protected readonly entryColumns = ['ref', 'case', 'origin', 'stage', 'owner', 'aum', 'progress', 'state'];
-
   protected setTab(t: Tab): void {
-    /* Changer d'onglet remet le parcours à sa première étape quand on passe d'un jeu d'étapes à
-       l'autre : « Gérer compte » et « Comptes titre et liquidité » partagent le même index, et
-       arriver sur le second à l'étape 3 du premier n'aurait aucun sens. Le compte rendu de la
-       dernière validation part avec, pour la même raison. */
-    const parcours = (x: Tab) => x === 'ops' || x === 'accounts';
-    if (parcours(t) && parcours(this.tab()) && t !== this.tab()) {
-      this.opStep.set(0);
-      this.opStatus.set('');
-    }
     this.tab.set(t);
   }
   protected setQuery(v: string): void {
@@ -489,39 +405,61 @@ export class Comptes {
     });
   }
 
-  // ---- Onglet « Gérer compte » -------------------------------------------
+  // ---- Onglet « Gérer compte portefeuille » --------------------------------
 
   protected readonly op = this.viewState.remember<OpKind>('comptes.op', 'create');
   protected readonly opStep = this.viewState.remember('comptes.opStep', 0);
   protected readonly opStatus = this.viewState.remember('comptes.opStatus', '');
+  /* Compte créé : le dossier reste affiché, verrouillé en lecture seule, jusqu'à ce qu'on
+     demande une nouvelle création. Remettre le formulaire à blanc dès la création rendait tous
+     les champs saisissables à l'instant même où le compte venait d'être figé — et effaçait ce
+     qu'on venait de vérifier. */
+  protected readonly created = this.viewState.remember('comptes.created', false);
+  protected readonly locked = computed(() => this.op() === 'create' && this.created());
   /* La saisie en cours fait partie de l'état de la page, et c'est même le morceau qui coûte le
      plus cher à perdre : quitter l'écran pour vérifier une référence et revenir devant un
      formulaire vidé est la façon la plus sûre de faire recommencer quelqu'un. */
   protected readonly form = this.viewState.remember<FormState>('comptes.form', blankForm());
   protected readonly co = this.viewState.remember<CoHolder[]>('comptes.co', []);
   protected readonly cash = this.viewState.remember<CashEntry[]>('comptes.cash', []);
+  /* Les comptes titre déjà versés au dossier ; le bloc de saisie n'en est que le brouillon du
+     prochain. */
+  protected readonly titres = this.viewState.remember<TitreEntry[]>('comptes.titres', []);
+  /* Le compte titre déplié — celui que les champs du formulaire et le tableau des comptes de
+     liquidité éditent. -1 : tous repliés. Un seul à la fois : les champs sont un tampon unique,
+     partagé par tous les comptes, chargé au dépliage et recopié vers le compte à chaque frappe. */
+  protected readonly activeTitre = this.viewState.remember('comptes.activeTitre', -1);
+  /* Ce que valait le compte déplié à son ouverture — « Annuler » y revient — et s'il vient d'être
+     ouvert par « Ajouter » : alors « Annuler » le retire, et le bouton de validation s'appelle
+     « Ajouter » plutôt qu'« OK ». `titreTried` : « OK » a été demandé sur un compte incomplet, la
+     liste des manques s'affiche sous ses champs. */
+  private readonly titreSnapshot = this.viewState.remember<TitreEntry | null>('comptes.titreSnapshot', null);
+  protected readonly titreIsNew = this.viewState.remember('comptes.titreIsNew', false);
+  protected readonly titreTried = this.viewState.remember('comptes.titreTried', false);
   protected readonly holderPane = this.viewState.remember('comptes.holderPane', 'main');
-  protected readonly cashPane = this.viewState.remember('comptes.cashPane', 0);
 
   protected readonly opKinds: readonly OpKind[] = ['create', 'modify', 'close'];
   protected readonly defs = computed(() => opDefs());
   /* L'onglet décide du jeu d'étapes, la pastille ne décide que du genre d'opération : l'ouverture
      des comptes a son propre onglet et aucune pastille, tout en partageant le même moteur. */
-  protected readonly def = computed(() => this.defs()[this.tab() === 'accounts' ? 'accounts' : this.op()]);
+  protected readonly def = computed(() => this.defs()[this.op()]);
   protected readonly currentStepIndex = computed(() => Math.min(this.opStep(), this.def().steps.length - 1));
   protected readonly currentStep = computed(() => this.def().steps[this.currentStepIndex()]);
   protected readonly isLastStep = computed(() => this.currentStepIndex() === this.def().steps.length - 1);
-  protected readonly done = computed(() => !!this.opStatus());
+  /* « Terminé » ne se déduit plus du compte rendu de pied de page : tout message y passe
+     (« Titulaires vérifiés », « Saisie effacée »…) et chacun figeait le statut sur Actif comme si
+     le compte existait. Seule une opération réellement aboutie — compte créé, avenant ou clôture
+     enregistrés — le déclare. */
+  private readonly opDone = this.viewState.remember('comptes.opDone', false);
+  protected readonly done = computed(() => this.opDone());
 
-  /* Sur l'onglet actif, la pastille dit où l'on en est ; sur l'autre, elle ne dit que le nombre
+  /* Sur l'onglet actif, la pastille dit où l'on en est ; ailleurs, elle ne dit que le nombre
      d'étapes — afficher « 2/3 » sur un parcours qu'on ne regarde pas laisserait croire qu'il est
      commencé. */
-  protected readonly opsBadge = computed(() => this.stepBadge('ops', this.defs()[this.op()].steps.length));
-  protected readonly accountsBadge = computed(() => this.stepBadge('accounts', this.defs().accounts.steps.length));
-
-  private stepBadge(tab: Tab, total: number): string {
-    return this.tab() === tab ? `${this.currentStepIndex() + 1}/${total}` : String(total);
-  }
+  protected readonly opsBadge = computed(() => {
+    const total = this.def().steps.length;
+    return this.tab() === 'ops' ? `${this.currentStepIndex() + 1}/${total}` : String(total);
+  });
 
   protected readonly fieldCtx = computed(() => ({
     form: this.form(),
@@ -536,18 +474,18 @@ export class Comptes {
     if (this.currentStep().title === 'Titulaires' && this.holderPane() !== 'main') return [];
     return this.currentStep().fields.map((k) => buildField(k, this.fieldCtx()));
   });
+  /* Le statut conclut les deux blocs de l'étape des comptes : il ne figure pas dans la grille
+     du compte titre, il vient après le compte de liquidité, seul sur sa ligne. */
   protected readonly opCashStatusField = computed<AcField | null>(() =>
-    this.currentStep().title === 'Compte de liquidité' ? buildField('status', this.fieldCtx()) : null,
+    this.currentStep().withCash ? buildField('status', this.fieldCtx()) : null,
   );
   protected readonly opColsValue = computed(() => opCols(this.currentStep().fields));
-  protected readonly opRowGapValue = computed(() => opRowGap(this.currentStep().fields));
   /* Repère d'étape porté par la grille, pour les rares réglages qui ne valent que sur l'une
      d'elles — la largeur du statut à l'étape de contrôle. Déduit des champs plutôt que du titre :
      un intitulé se réécrit, la composition d'une étape non. */
   protected readonly opStepKey = computed(() => {
     const f = this.currentStep().fields;
     if (f.includes('lastName')) return 'titulaires';
-    if (f.includes('kycId')) return 'kyc';
     if (f.includes('broker')) return 'compte-titre';
     if (f.includes('closed')) return 'controle';
     return 'autre';
@@ -567,10 +505,194 @@ export class Comptes {
     })),
   );
 
-  protected readonly onCashStep = computed(() => this.currentStep().title === 'Compte de liquidité');
+  protected readonly onCashStep = computed(() => !!this.currentStep().withCash);
   protected readonly onHolderStep = computed(() => this.currentStep().title === 'Titulaires');
   protected readonly onCoPane = computed(() => this.onHolderStep() && this.holderPane() !== 'main');
-  protected readonly onCheckStep = computed(() => this.currentStep().title === 'Contrôle');
+  /* Le rappel « Vérifier la saisie » ouvre le récapitulatif : sur l'étape Contrôle des
+     opérations qui en ont une, et sur l'étape des comptes quand elle conclut le parcours — c'est
+     elle qui crée le compte, désormais. */
+  protected readonly onCheckStep = computed(() => this.currentStep().title === 'Contrôle' || (this.onCashStep() && this.isLastStep()));
+
+  // ---- Comptes titre du dossier -------------------------------------------
+
+  constructor() {
+    /* Recopie du tampon vers le compte déplié : chaque modification des champs ou du tableau des
+       comptes de liquidité met à jour le compte titre concerné, sans étape « enregistrer ». */
+    effect(() => {
+      const i = this.activeTitre();
+      if (i < 0) return;
+      const entry = titreFromForm(this.form(), this.cash());
+      this.titres.update((list) => (i < list.length ? list.map((t, j) => (j === i ? entry : t)) : list));
+    });
+  }
+
+  protected readonly titreViews = computed(() =>
+    this.titres().map((t, index) => {
+      const missing = titreIssues(t, t.cash);
+      const b = BROKERS.find((x) => x.label === t.broker);
+      const parts = [t.broker ? (b ? b.flag + ' ' : '') + t.broker : '', t.accountType, t.number ? 'n° ' + t.number : ''].filter(Boolean);
+      return {
+        index,
+        title: t.alias || 'Compte titre ' + (index + 1),
+        hint: parts.length ? parts.join(' · ') : 'À renseigner',
+        missing,
+        state: missing.length ? `${missing.length} à compléter` : 'Complet',
+        open: index === this.activeTitre(),
+      };
+    }),
+  );
+  protected readonly titresIncomplete = computed(() => this.titreViews().filter((t) => t.missing.length).length);
+  /* Un seul compte titre en cours à la fois : tant qu'un bloc est ouvert, « Ajouter » reste
+     grisé — c'est « Valider » qui le rend disponible, une fois le compte versé au dossier. En
+     ouvrir un second par-dessus laisserait le premier à moitié renseigné sans rien dire. */
+  protected readonly titreAddDisabled = computed(() => this.activeTitre() >= 0);
+  protected readonly titreAddNote = computed(() => {
+    const n = this.titres().length;
+    if (this.titreAddDisabled()) {
+      const name = this.titres()[this.activeTitre()]?.alias;
+      return `Validez ${name ? '« ' + name + ' »' : 'le compte titre ouvert'} pour pouvoir en ajouter un autre.`;
+    }
+    if (!n) return "Aucun compte titre au dossier — « Ajouter » en ouvre un, à renseigner avec son compte de liquidité.";
+    const inc = this.titresIncomplete();
+    return `${n} compte${n > 1 ? 's' : ''} titre au dossier` + (inc ? ` · ${inc} à compléter.` : ' · tous complets.') + " « Ajouter » en ouvre un autre.";
+  });
+  /* Charge le compte `i` dans le tampon de saisie — ou vide le tampon quand plus rien n'est
+     déplié, pour qu'aucune valeur d'un compte ne traîne dans les champs d'un autre. */
+  private loadTitre(i: number, isNew = false): void {
+    const t = this.titres()[i];
+    this.activeTitre.set(t ? i : -1);
+    this.titreSnapshot.set(t ?? null);
+    this.titreIsNew.set(!!t && isNew);
+    this.titreTried.set(false);
+    this.patchForm(t ? titreFields(t) : blankTitreFields());
+    this.cash.set(t ? [...t.cash] : []);
+  }
+  /* « Ajouter » ouvre un compte titre vierge, déplié, prêt à être renseigné. */
+  protected addTitre(): void {
+    this.titres.update((list) => [...list, blankTitre()]);
+    this.loadTitre(this.titres().length - 1, true);
+    this.opStatus.set('');
+  }
+  protected toggleTitre(index: number): void {
+    this.loadTitre(index === this.activeTitre() ? -1 : index);
+  }
+  /* Vérification du compte déplié : « Ajouter » ne s'allume qu'une fois la saisie relue et
+     validée dans le panneau. L'empreinte est le contenu même du compte — le modifier après coup
+     périme la vérification, et il faut la repasser. */
+  private readonly titreVerifiedKey = this.viewState.remember('comptes.titreVerifiedKey', '');
+  private readonly activeTitreKey = computed(() => {
+    const t = this.titres()[this.activeTitre()];
+    return t ? JSON.stringify(t) : '';
+  });
+  protected readonly titreVerified = computed(() => !!this.activeTitreKey() && this.titreVerifiedKey() === this.activeTitreKey());
+  protected readonly titreConfirmBlocked = computed(() => this.activeTitre() < 0 || !this.titreVerified());
+  protected readonly titreConfirmNote = computed(() => {
+    if (!this.titreConfirmBlocked()) return 'Verse ce compte titre et son compte de liquidité au dossier';
+    return this.activeTitreIssues().length
+      ? 'À renseigner : ' + this.activeTitreIssues().join(', ') + ' — puis « Vérifier la saisie ».'
+      : 'Vérifiez la saisie et validez-la dans le panneau pour activer « Ajouter ».';
+  });
+
+  /* Manques du compte déplié, tels que « Valider » les a constatés. */
+  protected readonly activeTitreIssues = computed(() => {
+    const t = this.titreViews()[this.activeTitre()];
+    return t ? t.missing : [];
+  });
+  /* « OK » / « Ajouter » : le compte est validé s'il est complet — il se replie, et le dossier le
+     compte ; sinon il reste ouvert et dit ce qui manque. */
+  protected confirmTitre(): void {
+    const i = this.activeTitre();
+    if (i < 0) return;
+    if (this.titreConfirmBlocked()) {
+      this.titreTried.set(true);
+      return;
+    }
+    const alias = this.titres()[i]?.alias || 'Compte titre ' + (i + 1);
+    const wasNew = this.titreIsNew();
+    this.loadTitre(-1);
+    this.opStatus.set(`Compte titre « ${alias} » ${wasNew ? 'ajouté' : 'validé'} — ${this.titres().length} au dossier.`);
+  }
+  /* « Vérifier la saisie » du bloc : relit ce seul compte titre — le broker et ses comptes de
+     liquidité — et conclut par « Ajouter », qui vaut le bouton du bloc. */
+  protected verifyTitre(): void {
+    this.openRecap('Récapitulatif des comptes titres', 'titres', 'Valider')
+      .afterClosed()
+      .subscribe((result) => {
+        if (result !== 'ok') return;
+        /* Validé : « Ajouter » s'allume si le compte est complet ; sinon la relecture n'a fait
+           que confirmer ce qui manque, et le bloc l'affiche. */
+        if (this.activeTitreIssues().length) {
+          this.titreTried.set(true);
+          return;
+        }
+        this.titreVerifiedKey.set(this.activeTitreKey());
+        this.titreTried.set(false);
+      });
+  }
+
+  /* « Annuler » : un compte qui vient d'être ajouté est retiré ; un compte existant retrouve ce
+     qu'il valait à l'ouverture. Dans les deux cas le bloc se replie. */
+  protected cancelTitre(): void {
+    const i = this.activeTitre();
+    if (i < 0) return;
+    if (this.titreIsNew()) {
+      this.removeTitre(i);
+      return;
+    }
+    const snap = this.titreSnapshot();
+    this.activeTitre.set(-1);
+    if (snap) this.titres.update((list) => list.map((t, j) => (j === i ? snap : t)));
+    this.loadTitre(-1);
+    this.opStatus.set('');
+  }
+  protected removeTitre(index: number, event?: Event): void {
+    event?.stopPropagation();
+    const active = this.activeTitre();
+    this.activeTitre.set(-1);
+    this.titres.update((list) => list.filter((_, j) => j !== index));
+    if (active > index) this.loadTitre(active - 1);
+    else if (active === index) this.loadTitre(-1);
+    else this.loadTitre(active);
+    this.opStatus.set('');
+  }
+
+  // ---- Vérification de l'étape Titulaires ---------------------------------
+
+  /* « Vérifier la saisie » sur l'étape Titulaires : Suivant reste inactif tant que la saisie
+     n'a pas été vérifiée — et vérifiée telle qu'elle est. La vérification est attachée à une
+     empreinte des champs contrôlés : modifier un nom après coup la périme, et il faut vérifier
+     de nouveau. Un échec est lui aussi attaché à son empreinte, pour que la liste des manques
+     s'efface dès qu'on corrige quelque chose plutôt que de rester affichée à tort. */
+  private readonly holderVerifiedKey = this.viewState.remember('comptes.holderVerifiedKey', '');
+  private readonly holderFailedKey = this.viewState.remember('comptes.holderFailedKey', '');
+  private readonly holderStateKey = computed(() => holderKey(this.form(), this.co()));
+  protected readonly holderIssuesView = computed(() => holderIssues(this.form(), this.co()));
+  protected readonly holderCheck = computed<'none' | 'ok' | 'fail'>(() => {
+    const key = this.holderStateKey();
+    if (this.holderVerifiedKey() === key) return 'ok';
+    if (this.holderFailedKey() === key) return 'fail';
+    return 'none';
+  });
+  /* Le contrôle rend son verdict dans le bandeau de l'étape, puis ouvre le récapitulatif : c'est
+     là qu'on relit ce qui a été vérifié — et, en cas de manque, qu'on voit précisément quelle
+     ligne est « À renseigner ». Le même geste que sur la dernière étape, avec le verdict en plus. */
+  protected verifyHolders(): void {
+    const key = this.holderStateKey();
+    if (this.holderIssuesView().length) {
+      this.holderFailedKey.set(key);
+      this.opStatus.set('');
+    } else {
+      this.holderVerifiedKey.set(key);
+      this.opStatus.set('Titulaires vérifiés — vous pouvez passer aux comptes.');
+    }
+    /* Récapitulatif validé par « OK » sur une saisie vérifiée : on enchaîne sur l'étape suivante
+       sans repasser par « Suivant » — le bouton s'active de toute façon, pour qui referme par
+       « Annuler » et veut relire l'étape avant. */
+    this.openRecap().afterClosed().subscribe((result) => {
+      if (result === 'ok' && this.holderCheck() === 'ok' && this.onHolderStep()) this.opNext();
+    });
+  }
+  private readonly holderBlocked = computed(() => this.onHolderStep() && !this.locked() && this.holderCheck() !== 'ok');
 
   protected readonly opChecksView = computed(() =>
     this.currentStep().checks.map((c) => ({ label: c.label, color: c.level === 'warn' ? 'var(--ink-warn-2)' : 'var(--ds-brand-fill, var(--ink-brand-2))' })),
@@ -579,24 +701,10 @@ export class Comptes {
   // ---- Compte(s) de liquidité --------------------------------------------
 
   protected readonly cashRows = computed(() => buildCashRows(this.form(), this.cash()));
-  protected readonly cashSelected = computed(() => {
-    const rows = this.cashRows();
-    return [rows[this.cashPane()] ?? rows[0]];
-  });
-  protected readonly cashTabsView = computed(() => {
-    const on = this.cashPane() || 0;
-    const f = this.form();
-    return [{ key: 0, chip: 'P', label: f.cashLabel || 'Compte principal' }, ...this.cash().map((c, i) => ({ key: i + 1, chip: 'S', label: c.bank || 'Établissement ' + (i + 2) }))]
-      .map((t) => ({ ...t, active: t.key === on }));
-  });
   protected readonly bankGroupsList: readonly AcSelectGroup[] = bankGroups();
   protected readonly cashCurrencyGroupsList: readonly AcSelectGroup[] = cashCurrencyGroups();
 
-  protected pickCashTab(key: number): void {
-    this.cashPane.set(key);
-  }
   protected addCash(): void {
-    this.cashPane.set(this.cash().length + 1);
     this.cash.update((list) => [...list, { bank: '', iban: '', currency: 'EUR' }]);
   }
   protected removeCash(index: number): void {
@@ -698,14 +806,10 @@ export class Comptes {
   protected setClosedDate(value: string): void {
     this.patchForm({ closed: value || '—' });
   }
-  protected setKycExpiry(value: string): void {
-    this.patchForm({ kycIdExpiry: value });
-  }
 
   protected setDateField(key: string, value: string): void {
     if (key === 'opened') { this.setOpenedDate(value); return; }
     if (key === 'closed') { this.setClosedDate(value); return; }
-    if (key === 'kycIdExpiry') { this.setKycExpiry(value); return; }
     this.patchForm({ [key]: value } as Partial<FormState>);
   }
 
@@ -714,37 +818,50 @@ export class Comptes {
     this.patchForm({ [key]: value } as Partial<FormState>);
   }
 
-  protected toggleKycOrigin(value: string): void {
-    const chips = this.form().kycOrigin.split(' · ').filter(Boolean);
-    const next = chips.includes(value) ? chips.filter((x) => x !== value) : chips.concat([value]);
-    this.patchForm({ kycOrigin: next.join(' · ') });
-  }
-
   // ---- Navigation de l'assistant ------------------------------------------
 
   protected switchOp(k: OpKind): void {
     this.op.set(k);
     this.opStep.set(0);
     this.opStatus.set('');
+    this.opDone.set(false);
   }
   protected goStep(i: number): void {
     this.opStep.set(i);
   }
 
-  protected readonly ibanMainState = computed(() => ibanCheck(this.form().cashIban).state);
-  protected readonly opNextBlocked = computed(() => this.currentStep().title === 'Compte de liquidité' && this.ibanMainState() !== 'ok');
+  /* Créer le compte suppose au moins un compte titre, et tous complets — IBAN vérifiés compris. */
+  private readonly titresBlocked = computed(() => this.onCashStep() && !this.locked() && (!this.titres().length || this.titresIncomplete() > 0));
+  protected readonly opNextBlocked = computed(() => this.holderBlocked() || this.titresBlocked() || (this.locked() && this.isLastStep()));
+  protected readonly opNextBlockedNote = computed(() => {
+    if (this.locked() && this.isLastStep()) return 'Compte déjà créé — « Nouvelle création » pour ouvrir un autre dossier.';
+    if (this.holderBlocked()) return this.holderCheck() === 'fail' ? 'Saisie incomplète — corrigez les manques listés, puis vérifiez de nouveau.' : 'Vérifiez la saisie des titulaires avant de passer aux comptes.';
+    if (this.titresBlocked()) {
+      const inc = this.titresIncomplete();
+      return this.titres().length
+        ? `${inc} compte${inc > 1 ? 's' : ''} titre à compléter avant de créer le compte.`
+        : 'Ajoutez au moins un compte titre — avec son compte de liquidité — avant de créer le compte.';
+    }
+    return '';
+  });
   protected readonly opNextLabel = computed(() => (this.isLastStep() ? this.def().next : 'Suivant'));
-  protected readonly opPrevLabel = computed(() => (this.currentStepIndex() === 0 ? 'Annuler' : 'Précédent'));
-  protected readonly opDraftDisabled = computed(() => this.currentStepIndex() === 0);
+  protected readonly opPrevLabel = computed(() => (this.currentStepIndex() === 0 ? (this.locked() ? 'Nouvelle création' : 'Annuler') : 'Précédent'));
 
   protected opPrev(): void {
     if (this.opStep() > 0) {
       this.opStep.update((s) => s - 1);
       return;
     }
+    const wasLocked = this.locked();
     this.form.set(blankForm());
     this.co.set([]);
-    this.opStatus.set('Saisie effacée — le formulaire est prêt pour une prochaine création.');
+    this.cash.set([]);
+    this.titres.set([]);
+    this.activeTitre.set(-1);
+    this.created.set(false);
+    this.opDone.set(false);
+    this.holderPane.set('main');
+    this.opStatus.set(wasLocked ? 'Nouvelle création — le formulaire est prêt.' : 'Saisie effacée — le formulaire est prêt pour une prochaine création.');
   }
 
   protected opNext(): void {
@@ -755,35 +872,46 @@ export class Comptes {
     if (this.currentStepIndex() < this.def().steps.length - 1) {
       this.opStep.update((s) => s + 1);
       this.opStatus.set('');
+      /* Passer aux comptes fait sortir le dossier du stade « Projet » : il est « En ouverture »
+         dès lors, c'est le seul statut que cette étape sache choisir. */
+      if (this.op() === 'create' && this.onCashStep() && this.form().statusChoice !== 'En ouverture') this.patchForm({ statusChoice: 'En ouverture' });
       return;
     }
     if (this.op() === 'create') {
       this.openCreateDialog();
       return;
     }
+    this.opDone.set(true);
     this.opStatus.set(this.def().label + ' enregistrée — dossier transmis au contrôle interne.');
-  }
-
-  protected opDraft(): void {
-    if (this.opDraftDisabled()) return;
-    this.opStatus.set('Brouillon enregistré — la saisie sera reprise à l\'étape ' + this.currentStep().title + '.');
   }
 
   protected opReset(): void {
     this.form.set(blankForm());
     this.co.set([]);
     this.cash.set([]);
+    this.titres.set([]);
+    this.activeTitre.set(-1);
     this.opStep.set(0);
     this.holderPane.set('main');
-    this.cashPane.set(0);
+    this.created.set(false);
+    this.opDone.set(false);
     this.opStatus.set('Saisie réinitialisée.');
   }
 
   // ---- Récapitulatif / création ------------------------------------------
 
-  protected openRecap(): void {
-    this.dialog.open<AcRecapDialog, AcRecapDialogData>(AcRecapDialog, {
-      data: { form: this.form, co: this.co, cash: this.cash },
+  /* Le compte titre déplié, seul : c'est de lui que parle son propre récapitulatif. */
+  private readonly activeTitreOnly = computed(() => {
+    const t = this.titres()[this.activeTitre()];
+    return t ? [t] : [];
+  });
+  protected openRecap(title?: string, scope: 'all' | 'titres' = 'all', submitLabel?: string): MatDialogRef<AcRecapDialog, 'ok' | undefined> {
+    return this.dialog.open<AcRecapDialog, AcRecapDialogData, 'ok' | undefined>(AcRecapDialog, {
+      data: {
+        form: this.form, co: this.co,
+        titres: scope === 'titres' ? this.activeTitreOnly : this.titres,
+        title, scope, submitLabel,
+      },
       panelClass: 'pm-side-panel-overlay',
       position: SIDE_PANEL_LAYOUT.position,
       height: SIDE_PANEL_LAYOUT.height,
@@ -794,19 +922,20 @@ export class Comptes {
 
   protected openCreateDialog(): void {
     const ref = this.dialog.open<AcCreateDialog, AcCreateDialogData, AcCreateDialogResult>(AcCreateDialog, {
-      data: { form: this.form, cash: this.cash },
+      data: { form: this.form, titres: this.titres },
       disableClose: true,
       autoFocus: false,
     });
     ref.afterClosed().subscribe((result) => {
       if (result === 'ok') {
-        this.form.set(blankForm());
-        this.co.set([]);
-        this.cash.set([]);
-        this.opStep.set(0);
-        this.holderPane.set('main');
-        this.cashPane.set(0);
-        this.opStatus.set('Compte créé — le formulaire est réinitialisé pour une nouvelle création.');
+        /* Le dossier créé reste sous les yeux, avec la référence que le référentiel vient de lui
+           attribuer et son statut Actif, mais plus rien ne s'y modifie : `created` verrouille
+           chaque étape. « Nouvelle création » — ou la réinitialisation — rend un formulaire vierge. */
+        const ref = nextClientRef(ACCOUNTS.length);
+        this.form.update((f) => ({ ...f, clientRef: ref, statusChoice: 'Actif' }));
+        this.created.set(true);
+        this.opDone.set(true);
+        this.opStatus.set(`Compte créé — référence client ${ref} attribuée. Dossier verrouillé en lecture seule.`);
       }
     });
   }

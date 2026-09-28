@@ -737,6 +737,146 @@
   color: var(--ink-brand);
 }
 
+/* Blocs de l'étape des comptes : le compte titre et le compte de liquidité se décident ensemble
+   mais ne se confondent pas. Chaque bloc a son cadre, son liseré de marque à gauche et son
+   en-tête — icône, titre, précision — pour qu'on voie où l'un finit et où l'autre commence sans
+   avoir à lire les libellés. `min-width: 0` et `overflow: hidden` : les champs ne sortent jamais
+   de leur cadre, la grille se comprime avec lui. */
+.ac-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--color-neutral-200);
+  border-left: 3px solid var(--ink-brand);
+  border-radius: 8px;
+  background: var(--surface);
+  min-width: 0;
+  overflow: hidden;
+}
+.ac-block-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.ac-block-icon {
+  flex: none;
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  color: var(--ink-brand);
+}
+.ac-block-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-brand);
+}
+.ac-block-hint {
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+/* Bloc englobant du compte en cours de saisie : ses deux parties gardent leur propre cadre, en
+   plus léger — filet plein sans liseré de marque, sur le fond du bloc parent — pour qu'on lise
+   d'abord « un compte », puis « ses deux volets ». */
+.ac-block-outer {
+  gap: 14px;
+}
+/* En-tête repliable : tout l'en-tête est la cible, le chevron n'est qu'un repère et pivote. Replié,
+   le bloc se réduit à son en-tête — le filet du bas disparaît, il n'y a plus rien à séparer. */
+.ac-block-head-toggle {
+  cursor: pointer;
+  user-select: none;
+  margin: -6px -8px;
+  padding: 6px 8px 8px;
+  border-radius: 6px;
+}
+.ac-block-head-toggle:hover {
+  background: rgba(0, 61, 165, 0.05);
+}
+.ac-block-head-toggle:focus-visible {
+  outline: 2px solid var(--ink-brand-2);
+  outline-offset: -2px;
+}
+.ac-block-chevron {
+  flex: none;
+  margin-left: auto;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-brand-2);
+  transition: transform 160ms ease;
+}
+.ac-block-collapsed .ac-block-chevron {
+  transform: rotate(-90deg);
+}
+.ac-block-collapsed .ac-block-head-toggle {
+  border-bottom-color: transparent;
+  padding-bottom: 6px;
+}
+.ac-block-collapsed {
+  gap: 0;
+}
+/* État du compte dans son en-tête, et bouton de retrait — arrêté avant le clic de dépliage. */
+.ac-block-state {
+  flex: none;
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-warn-2);
+  white-space: nowrap;
+}
+.ac-block-state-ok {
+  color: var(--ink-ok);
+}
+.ac-block-remove {
+  flex: none;
+  display: inline-flex;
+}
+.ac-cash-add {
+  margin-left: 0;
+  width: 30px;
+  height: 30px;
+}
+/* Pied du compte déplié : mêmes boutons que le pied de page de l'étape, alignés à droite pour
+   qu'on ne les confonde pas avec « Précédent / Créer le compte ». */
+.ac-block-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+/* « Supprimer » à l'écart, à gauche : c'est le seul geste irréversible de la rangée. */
+.ac-block-delete {
+  margin-right: auto;
+}
+.ac-block-issues {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--field-warn);
+  border-radius: 6px;
+  background: rgba(143, 63, 6, 0.06);
+  color: var(--ink-warn-2);
+  font-size: 11px;
+  font-weight: 600;
+}
+.ac-block-state + .ac-block-remove + .ac-block-chevron {
+  margin-left: 0;
+}
+.ac-block-sub {
+  border-left-width: 1px;
+  border-color: var(--color-neutral-200);
+  background: transparent;
+}
+.ac-block-sub .ac-block-title {
+  font-size: 12px;
+}
+
 .ac-cash-subheader,
 .ac-holder-subheader {
   display: flex;
@@ -802,6 +942,58 @@
   color: var(--color-neutral-700);
   text-wrap: pretty;
 }
+/* Dossier verrouillé après création : le bandeau prend la teinte « ok » du statut Actif, et
+   tout ce qui suit passe en lecture seule — `inert` coupe l'interaction, la feuille ne fait
+   qu'en donner l'air, sans griser les valeurs qu'on veut justement pouvoir relire. */
+.ac-locked-banner,
+.ac-check-callout-ok {
+  border-color: var(--field-ok);
+  background: rgba(15, 118, 110, 0.08);
+}
+.ac-check-callout-ok .ac-check-callout-title {
+  color: var(--ink-ok);
+}
+/* Saisie incomplète : la teinte d'alerte de l'écran, et la liste des manques dans la note. */
+.ac-check-callout-fail {
+  border-color: var(--field-warn);
+  background: rgba(143, 63, 6, 0.06);
+}
+.ac-check-callout-fail .ac-check-callout-title,
+.ac-check-callout-fail .ac-check-callout-note {
+  color: var(--ink-warn-2);
+}
+.ac-locked-banner-icon {
+  flex: none;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--ink-ok-2);
+}
+.ac-locked-banner .ac-check-callout-title {
+  color: var(--ink-ok);
+}
+.ac-lockable {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.ac-lockable-on {
+  cursor: default;
+}
+.ac-lockable-on .ac-field-input,
+.ac-lockable-on .ac-field-iban,
+.ac-lockable-on .ac-field-date,
+.ac-lockable-on .ac-co-field input {
+  background: var(--color-neutral-100);
+}
+.ac-lockable-on .ac-add-btn,
+.ac-lockable-on .ac-cash-remove,
+.ac-lockable-on .ac-co-remove,
+.ac-lockable-on .ac-cash-rank {
+  opacity: 0.45;
+}
+
 .ac-recap-btn {
   margin-left: auto;
   --mat-button-outlined-container-height: 30px;
@@ -845,11 +1037,10 @@
 }
 
 /* Alignement par le haut, et non par le bas : dans une rangée où un seul champ porte une note
-   d'aide sous son contrôle (« Aucun document renseigné » sous la pièce d'identité), `flex-end`
-   collait cette note au niveau des autres contrôles et remontait le contrôle concerné d'une
-   ligne entière — libellés et contrôles décalés de 18px sur toute l'étape KYC. Par le haut, les
-   libellés et les contrôles d'une même rangée sont sur la même ligne et la note déborde en bas,
-   là où elle ne gêne personne. */
+   d'aide sous son contrôle, `flex-end` collait cette note au niveau des autres contrôles et
+   remontait le contrôle concerné d'une ligne entière — libellés et contrôles décalés de 18px sur
+   toute l'étape. Par le haut, les libellés et les contrôles d'une même rangée sont sur la même
+   ligne et la note déborde en bas, là où elle ne gêne personne. */
 .ac-field {
   display: flex;
   flex-direction: column;
@@ -866,7 +1057,9 @@
    commentaire court, un contrôle de 420px pour « Projet » donnait à la ligne un poids qu'elle
    n'a pas. */
 .ac-field-standalone {
-  max-width: 210px;
+  /* 300px et non 210 : la précision « Passera à Actif à la création » tenait sur une ligne
+     tronquée à 210. */
+  max-width: 300px;
 }
 
 /* À l'étape de contrôle, le statut se réduit à sa pastille : la fermeture est la seule saisie de
@@ -1069,6 +1262,13 @@
 .ac-field-iban-bad {
   border-color: var(--field-warn);
 }
+/* IBAN encore vide : le cadre en pointillé dit qu'il manque quelque chose, sans l'alarme du
+   rouge — la clé n'est pas fausse, elle n'est pas là. La vérification est systématique, un
+   compte sans IBAN n'a donc jamais l'air terminé. */
+.ac-field-iban-todo {
+  border-style: dashed;
+  border-color: var(--color-neutral-600);
+}
 .ac-field-iban input {
   flex: 1;
   min-width: 0;
@@ -1109,6 +1309,9 @@
 }
 .ac-check-icon-bad {
   background: var(--field-warn);
+}
+.ac-check-icon-todo {
+  background: var(--color-neutral-600);
 }
 
 .ac-field-datelocked-wrap {
@@ -1360,7 +1563,9 @@
   --mat-button-filled-label-text-color: #ffffff;
   --mat-button-filled-container-color: var(--field-warn);
 }
-.ac-draft-btn {
+/* « Vérifier la saisie » de l'étape Titulaires, à gauche de Suivant : même dessin bordé que les
+   autres actions secondaires du pied de page ; vert une fois la vérification passée. */
+.ac-verify-btn {
   --mat-button-outlined-container-height: 30px;
   --mat-button-outlined-label-text-size: 12px;
   --mat-button-outlined-label-text-weight: 600;
@@ -1369,6 +1574,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.ac-verify-btn-ok {
+  --mat-button-outlined-label-text-color: var(--ink-ok);
+  --mat-button-outlined-outline-color: var(--field-ok);
 }
 .ac-next-btn {
   --mat-button-filled-container-height: 30px;
@@ -1475,550 +1684,4 @@
 .ac-stepper ::ng-deep .mat-step-label {
   min-width: 0;
   overflow: hidden;
-}
-
-/* ===========================================================================
-   Entrée en relation
-   =========================================================================== */
-
-.ac-entry {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px 20px 24px;
-}
-
-.ac-entry-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.ac-entry-kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 12px 14px;
-  border: 1px solid var(--color-neutral-300);
-  border-radius: 6px;
-  background: var(--surface);
-}
-
-/* La teinte ne sert qu'aux vignettes qui appellent une action : un dossier bloqué, une pièce
-   manquante. Les deux autres restent neutres pour ne pas diluer le signal. */
-.ac-entry-kpi-warn {
-  border-color: rgba(180, 83, 9, 0.34);
-  background: rgba(180, 83, 9, 0.06);
-}
-
-.ac-entry-kpi-ok {
-  border-color: rgba(15, 118, 110, 0.30);
-  background: rgba(15, 118, 110, 0.05);
-}
-
-.ac-entry-kpi-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-kpi-value {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.15;
-  font-variant-numeric: tabular-nums;
-}
-
-.ac-entry-kpi-note {
-  font-size: 11px;
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-split {
-  display: grid;
-  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-
-@media (max-width: 1180px) {
-  .ac-entry-split {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .ac-entry-kpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.ac-entry-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-}
-
-.ac-entry-card {
-  border: 1px solid var(--color-neutral-300);
-  border-radius: 6px;
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.ac-entry-card-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-neutral-200);
-}
-
-.ac-entry-card-title {
-  margin: 0;
-  font-size: 15px;
-  color: var(--ink-brand);
-}
-
-.ac-entry-card-note {
-  font-size: 11px;
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-push {
-  margin-left: auto;
-}
-
-.ac-entry-ref,
-.ac-entry-account {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 7px;
-  border-radius: 4px;
-  background: var(--color-neutral-200);
-  color: var(--color-neutral-800, var(--color-text));
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* Le compte porte l'encre de la marque : c'est le seul élément de l'en-tête qui renvoie à un
-   objet déjà existant dans l'application. */
-.ac-entry-account {
-  background: rgba(0, 61, 165, 0.14);
-  color: var(--ink-brand);
-}
-
-/* ---- Vivier ---- */
-
-.ac-entry-phase {
-  border-bottom: 1px solid var(--color-neutral-200);
-}
-
-.ac-entry-phase:last-child {
-  border-bottom: 0;
-}
-
-.ac-entry-phase-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(0, 61, 165, 0.06);
-}
-
-.ac-entry-phase-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-brand);
-}
-
-.ac-entry-phase-count {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--color-neutral-700);
-  font-variant-numeric: tabular-nums;
-}
-
-.ac-entry-phase-empty {
-  display: block;
-  padding: 9px 16px;
-  font-size: 11px;
-  color: var(--color-neutral-600);
-}
-
-.ac-entry-case {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-  padding: 10px 16px;
-  border: 0;
-  border-left: 3px solid transparent;
-  background: var(--surface);
-  color: var(--color-text);
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.ac-entry-case:hover {
-  background: rgba(0, 61, 165, 0.07);
-}
-
-.ac-entry-case-on {
-  border-left-color: var(--ds-brand-fill, var(--ink-brand-2));
-  background: var(--color-neutral-100);
-}
-
-.ac-entry-case-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ac-entry-case-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 12px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ac-entry-case-flag {
-  flex: none;
-  color: var(--ink-warn-2, #b45309);
-}
-
-.ac-entry-case-aum {
-  flex: none;
-  font-size: 11px;
-  color: var(--color-neutral-700);
-  font-variant-numeric: tabular-nums;
-}
-
-.ac-entry-case-meta {
-  font-size: 11px;
-  color: var(--color-neutral-700);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Jauge d'avancement : la part du parcours franchie, en une barre plutôt qu'en pourcentage —
-   la comparaison entre dossiers se fait d'un coup d'œil. */
-.ac-entry-case-bar {
-  height: 3px;
-  border-radius: 999px;
-  background: var(--color-neutral-200);
-  overflow: hidden;
-}
-
-.ac-entry-case-fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--ds-brand-fill, var(--ink-brand-2));
-}
-
-.ac-entry-case-fill-warn {
-  background: var(--ink-warn-2, #b45309);
-}
-
-/* ---- Détail ---- */
-
-.ac-entry-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px 16px;
-  padding: 14px 16px;
-}
-
-.ac-entry-fact {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  font-size: 12px;
-}
-
-.ac-entry-fact-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-blocked {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 11px 16px;
-  border-top: 1px solid var(--color-neutral-200);
-  background: rgba(180, 83, 9, 0.07);
-  color: var(--ink-warn-2, #b45309);
-  font-size: 11px;
-}
-
-.ac-entry-docs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 11px 16px;
-  border-top: 1px solid var(--color-neutral-200);
-}
-
-.ac-entry-docs-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-doc {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 9px;
-  border: 1px dashed var(--color-neutral-400);
-  border-radius: 999px;
-  font-size: 11px;
-  color: var(--color-neutral-800, var(--color-text));
-}
-
-/* ---- Parcours ---- */
-
-.ac-entry-stage {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 11px 16px;
-  border-bottom: 1px solid var(--color-neutral-200);
-}
-
-.ac-entry-stage:last-child {
-  border-bottom: 0;
-}
-
-.ac-entry-stage-mark {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: var(--color-neutral-200);
-  color: var(--color-neutral-700);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.ac-entry-stage-done .ac-entry-stage-mark {
-  background: rgba(15, 118, 110, 0.14);
-  color: var(--ink-ok, #0b5f57);
-}
-
-.ac-entry-stage-current .ac-entry-stage-mark {
-  background: var(--ds-brand-fill, var(--field-brand));
-  color: #ffffff;
-}
-
-/* L'étape en cours est la seule à porter un fond : c'est là que le dossier attend. */
-.ac-entry-stage-current {
-  background: rgba(0, 61, 165, 0.06);
-}
-
-.ac-entry-stage-texts {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ac-entry-stage-label {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.ac-entry-stage-detail {
-  font-size: 11px;
-  color: var(--color-neutral-700);
-  text-wrap: pretty;
-}
-
-.ac-entry-stage-docs {
-  font-size: 10px;
-  color: var(--color-neutral-600);
-  text-wrap: pretty;
-}
-
-.ac-entry-stage-actor {
-  flex: none;
-  width: 140px;
-  text-align: right;
-  font-size: 11px;
-  color: var(--color-neutral-700);
-}
-
-/* ---- Liste a plat des entrees en relation ---- */
-
-.ac-entry-table-scroll {
-  overflow-x: auto;
-}
-
-.ac-entry-table {
-  width: 100%;
-  min-width: 980px;
-  background: var(--surface);
-  font-size: 12px;
-}
-
-.ac-entry-header-row {
-  height: 30px;
-}
-
-/* Le fond de l'en-tête est isolé dans une règle à sélecteur doublé : la remise à zéro globale
-   `table.mat-mdc-table th.mat-mdc-header-cell { background: transparent }` de `styles.scss`
-   pèse 0-2-2 et emporterait un simple `.ac-entry-th`, qui ne pèse que 0-2-0 une fois encapsulé.
-   Seul le fond est remonté — toute la règle passerait sinon devant `.ac-entry-th-num`. */
-.ac-entry-th.ac-entry-th {
-  background: rgba(0, 61, 165, 0.14);
-}
-
-.ac-entry-th {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--color-neutral-200);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-neutral-700);
-  text-align: left;
-}
-
-.ac-entry-th-num {
-  text-align: right;
-}
-
-.ac-entry-th:first-of-type,
-.ac-entry-td:first-of-type {
-  padding-left: 16px;
-}
-
-.ac-entry-row {
-  height: 46px;
-  cursor: pointer;
-}
-
-.ac-entry-row:hover {
-  background: rgba(0, 61, 165, 0.05);
-}
-
-/* La ligne retenue porte le meme liseré que le dossier choisi dans le vivier : les deux vues
-   montrent le meme dossier, la selection doit se lire des deux cotes. */
-.ac-entry-row-on {
-  background: var(--color-neutral-100);
-  box-shadow: inset 3px 0 0 var(--ds-brand-fill, var(--ink-brand-2));
-}
-
-.ac-entry-td {
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--color-neutral-200);
-  color: var(--color-text);
-}
-
-.ac-entry-td-muted {
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-td-num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.ac-entry-ellipsis {
-  max-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ac-entry-col-ref { width: 124px; }
-.ac-entry-col-origin { width: 220px; }
-.ac-entry-col-stage { width: 190px; }
-.ac-entry-col-owner { width: 110px; }
-.ac-entry-col-aum { width: 104px; }
-.ac-entry-col-progress { width: 140px; }
-.ac-entry-col-state { width: 160px; }
-
-.ac-entry-cell-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.ac-entry-cell-main {
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ac-entry-cell-sub {
-  font-size: 11px;
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ac-entry-progress .ac-entry-case-bar {
-  flex: 1;
-  min-width: 0;
-}
-
-.ac-entry-progress-value {
-  flex: none;
-  font-size: 11px;
-  color: var(--color-neutral-700);
-  font-variant-numeric: tabular-nums;
-}
-
-.ac-entry-state {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.ac-entry-state-warn {
-  background: rgba(180, 83, 9, 0.12);
-  color: var(--ink-warn-2, #b45309);
-}
-
-.ac-entry-state-wait {
-  background: var(--color-neutral-200);
-  color: var(--color-neutral-700);
-}
-
-.ac-entry-state-ok {
-  background: rgba(15, 118, 110, 0.12);
-  color: var(--ink-ok, #0b5f57);
 }

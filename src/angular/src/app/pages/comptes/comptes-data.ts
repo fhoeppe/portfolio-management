@@ -467,19 +467,6 @@ export const QUALITIES: readonly string[] = [
   'Personne de confiance',
 ];
 
-export const FUND_ORIGINS: readonly string[] = [
-  'Salaires et revenus professionnels',
-  'Revenus locatifs',
-  'Épargne constituée',
-  "Cession d'actifs mobiliers",
-  'Cession immobilière',
-  "Cession d'entreprise",
-  'Succession ou donation',
-  'Dividendes et revenus de placement',
-  'Indemnités et prestations',
-  'Gains exceptionnels',
-];
-
 export interface HintedOption {
   readonly label: string;
   readonly hint: string;
@@ -509,32 +496,6 @@ export const CIVILITIES: readonly CivilityOption[] = [
  */
 export const STREET_TYPES: readonly string[] = [
   'Rue', 'Avenue', 'Boulevard', 'Allée', 'Chemin', 'Impasse', 'Place', 'Route', 'Square', 'Voie',
-];
-
-export const ID_DOC_TYPES: readonly HintedOption[] = [
-  { label: '—', hint: 'Aucun document renseigné' },
-  { label: 'Passeport', hint: 'Document de voyage en cours de validité' },
-  { label: "Carte nationale d'identité", hint: 'CNI en cours de validité' },
-  { label: 'Titre de séjour', hint: 'Carte de résident ou permis de séjour' },
-  { label: 'Permis de conduire', hint: 'Accepté en complément, non seul' },
-  { label: 'Extrait RCS', hint: 'Personne morale : immatriculation' },
-];
-
-/* Le justificatif de domicile est une pièce normée au même titre que la pièce d'identité : la
-   liste ferme les libellés acceptés par la conformité, là où un champ libre laissait passer
-   « facture » sans dire de quoi ni de quand. */
-export const ADDRESS_PROOF_TYPES: readonly HintedOption[] = [
-  { label: '—', hint: 'Aucun justificatif renseigné' },
-  { label: "Facture d'électricité ou de gaz", hint: 'De moins de trois mois' },
-  { label: "Facture d'eau", hint: 'De moins de trois mois' },
-  { label: 'Facture de téléphone fixe ou internet', hint: 'De moins de trois mois — mobile exclu' },
-  { label: 'Certificat de résidence', hint: 'Délivré par la commune' },
-  { label: 'Quittance de loyer', hint: 'Émise par un bailleur professionnel' },
-  { label: 'Contrat de bail', hint: 'En cours de validité, signé des deux parties' },
-  { label: "Avis d'imposition", hint: 'Dernier avis reçu' },
-  { label: 'Attestation d\'assurance habitation', hint: 'En cours de validité' },
-  { label: 'Relevé bancaire', hint: 'De moins de trois mois, adresse visible' },
-  { label: 'Acte de propriété', hint: 'Pour un titulaire propriétaire de sa résidence' },
 ];
 
 export const ACCOUNT_TYPES: readonly HintedOption[] = [
@@ -589,21 +550,12 @@ export const JURISDICTIONS: readonly JurisdictionRef[] = [
 export const FIELD_LABELS: Record<string, string> = {
   broker: 'Broker', jurisdiction: 'Juridiction', url: 'URL',
   accountType: 'Type de compte', currency: 'Devise de tenue', number: 'Numéro de compte',
-  alias: 'Libellé du compte', opened: "Date d'ouverture",
+  alias: 'Libellé du compte', opened: "Date d'ouverture", brokerStatus: 'Statut',
   civility: 'Civilité',
   lastName: 'Nom de famille', firstName: 'Prénom',
   streetNo: 'Numéro', streetType: 'Type de voie', street: 'Adresse',
   postalCode: 'Code postal', city: 'Ville', country: 'Pays',
-  idDocType: "Pièce d'identité",
   clientRef: 'Référence client', domicile: 'Domiciliation', taxRegime: 'Régime fiscal',
-  /* Les deux pièces du dossier portent les mêmes attributs — numéro, émetteur, date d'émission,
-     date de validité. Les libellés sont donc volontairement identiques d'une rangée à l'autre :
-     c'est la nature du document, à gauche de la rangée, qui les désambiguïse. */
-  kycId: 'Numéro', idIssuer: 'Émetteur', idIssueDate: "Date d'émission", kycIdExpiry: 'Date de validité',
-  kycAddress: 'Justificatif de domicile',
-  addrRef: 'Numéro', addrIssuer: 'Émetteur', addrIssueDate: "Date d'émission", addrExpiry: 'Date de validité',
-  kycOrigin: 'Origine des fonds', fundsAmount: 'Montant approximatif',
-  kycPep: 'Personne politiquement exposée', kycLevel: 'Niveau de vigilance',
   closed: 'Date de fermeture', status: 'Statut',
   profile: 'Profil de risque', horizon: 'Horizon', fee: 'Tarification',
   dotation: 'Compte de dotation ou de destination', reason: 'Motif',
@@ -626,12 +578,6 @@ export const FIELD_ICONS: Record<string, string> = {
   broker: 'library',
   accountType: 'ledger',
   alias: 'ticket',
-  // KYC
-  idDocType: 'id-card',
-  kycAddress: 'home',
-  kycOrigin: 'banknote',
-  kycPep: 'user',
-  kycLevel: 'shield',
 };
 
 export const FIELD_HINTS: Record<string, string> = {
@@ -643,13 +589,7 @@ export const FIELD_HINTS: Record<string, string> = {
   lastName: 'Nom de famille', firstName: 'Prénom',
   streetNo: '12 bis', streetType: 'Rue, avenue, boulevard…', street: 'Nom de la voie',
   postalCode: 'L-1855', city: 'Luxembourg', country: 'Pays de résidence',
-  idDocType: 'Type de document',
-  clientRef: 'CLI-2026-0148', domicile: 'Luxembourg', taxRegime: 'Résident Luxembourg',
-  kycId: 'LU-2019-448210', idIssuer: 'Autorité de délivrance', idIssueDate: 'AAAA-MM-JJ',
-  kycIdExpiry: 'AAAA-MM-JJ', kycAddress: 'Type de justificatif',
-  addrRef: 'Référence du document', addrIssuer: 'Fournisseur, commune, bailleur…',
-  addrIssueDate: 'AAAA-MM-JJ', addrExpiry: 'AAAA-MM-JJ', fundsAmount: 'Ex. 250 000 €',
-  kycOrigin: "Salaires, cession d'actifs, succession…", kycPep: 'Non', kycLevel: 'Standard',
+  domicile: 'Luxembourg', taxRegime: 'Résident Luxembourg',
   dotation: 'IBAN ou référence du compte', reason: 'Motif invoqué',
   target: 'Profil, tarification, titulaires, broker…', effect: 'JJ/MM/AAAA',
 };

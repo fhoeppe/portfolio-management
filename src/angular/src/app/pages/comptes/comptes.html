@@ -30,20 +30,8 @@
       <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'ops'"
         [class.ac-tab-on]="tab() === 'ops'" (click)="setTab('ops')">
         <mat-icon svgIcon="pencil" style="font-size:16px"></mat-icon>
-        Gérer compte
+        Gérer compte portefeuille
         <span class="ac-tab-badge">{{ opsBadge() }}</span>
-      </button>
-      <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'accounts'"
-        [class.ac-tab-on]="tab() === 'accounts'" (click)="setTab('accounts')">
-        <mat-icon svgIcon="banknote" style="font-size:16px"></mat-icon>
-        Comptes titre et liquidité
-        <span class="ac-tab-badge">{{ accountsBadge() }}</span>
-      </button>
-      <button type="button" mat-tab-link class="ac-tab" [active]="tab() === 'entry'"
-        [class.ac-tab-on]="tab() === 'entry'" (click)="setTab('entry')">
-        <mat-icon svgIcon="log-in" style="font-size:16px"></mat-icon>
-        Entrée en relation
-        <span class="ac-tab-badge">{{ entryCount() }}</span>
       </button>
     </nav>
   </div>
@@ -236,20 +224,14 @@
       </div>
     }
 
-    <!-- Les deux onglets à étapes partagent la carte : même stepper, même corps d'étape, même
-         barre d'actions. Seules les pastilles Création / Modification / Clôture appartiennent à
-         « Gérer compte » — l'ouverture des comptes n'est pas une opération parmi trois, c'est le
-         seul parcours de son onglet. -->
-    @if (tab() === 'ops' || tab() === 'accounts') {
+    @if (tab() === 'ops') {
       <div class="ac-ops">
         <div class="ac-ops-tabs-row">
-          @if (tab() === 'ops') {
-            <span class="ac-pill-group">
-              @for (k of opKinds; track k) {
-                <button type="button" class="ac-pill" [class.ac-pill-on]="op() === k" (click)="switchOp(k)">{{ defs()[k].label }}</button>
-              }
-            </span>
-          }
+          <span class="ac-pill-group">
+            @for (k of opKinds; track k) {
+              <button type="button" class="ac-pill" [class.ac-pill-on]="op() === k" (click)="switchOp(k)">{{ defs()[k].label }}</button>
+            }
+          </span>
           <span class="ac-ops-hint">{{ def().hint }}</span>
         </div>
 
@@ -274,44 +256,10 @@
             }
           </mat-stepper>
 
-          <ng-template #stepBody>
-          <div class="ac-step-body">
-            <h2 class="ac-step-heading">{{ opStepTitle() }}</h2>
-
-            @if (onCashStep()) {
-              <div class="ac-cash-subheader">
-                <span class="ac-pill-group ac-pill-group-wrap">
-                  @for (t of cashTabsView(); track t.key) {
-                    <button type="button" class="ac-pill ac-pill-sm" [class.ac-pill-on]="t.active" (click)="pickCashTab(t.key)">
-                      <span class="ac-pill-chip" [class.ac-pill-chip-on]="t.active">{{ t.chip }}</span>{{ t.label }}
-                    </button>
-                  }
-                </span>
-                <span class="ac-cash-principal-note">
-                  <mat-icon svgIcon="lock" style="font-size:13px"></mat-icon>
-                  <span class="ac-pill-chip ac-pill-chip-brand">P</span>
-                  Le premier établissement de la liste est le compte principal
-                </span>
-                <button type="button" class="ac-add-btn" (click)="addCash()" matTooltip="Ajouter un compte bancaire externe" aria-label="Ajouter un compte bancaire externe">
-                  <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
-                </button>
-              </div>
-            }
-
-            @if (onCheckStep()) {
-              <div class="ac-check-callout">
-                <span class="ac-check-callout-text">
-                  <span class="ac-check-callout-title">Contrôle avant enregistrement</span>
-                  <span class="ac-check-callout-note">Ouvrez le récapitulatif pour relire l'ensemble des informations saisies avant de renseigner la fermeture et le statut.</span>
-                </span>
-                <button type="button" mat-stroked-button class="ac-recap-btn" (click)="openRecap()">
-                  <mat-icon svgIcon="log-in" style="font-size:15px"></mat-icon>
-                  Vérifier la saisie
-                </button>
-              </div>
-            }
-
-            <div class="ac-fields-grid" [attr.data-step]="opStepKey()" [style.--ac-cols]="opColsValue()" [style.--ac-rowgap]="opRowGapValue()">
+          <!-- La grille des champs est un gabarit à part : l'étape des comptes la place dans son
+               premier bloc, les autres étapes la posent directement dans leur corps. -->
+          <ng-template #fieldsGrid>
+            <div class="ac-fields-grid" [attr.data-step]="opStepKey()" [style.--ac-cols]="opColsValue()">
               @for (f of opFields(); track f.key) {
                 <label class="ac-field" [attr.data-field]="f.key" [style.--ac-span]="f.span">
                   <span class="ac-field-label">
@@ -323,9 +271,6 @@
                   @switch (f.kind) {
                     @case ('combo') {
                       <app-ac-select [groups]="f.groups" [value]="f.value" [leadFlag]="f.leadFlag" [leadIcon]="f.leadIcon || ''" [place]="f.place" [asBadge]="f.asBadge" [badgeBg]="f.badgeBg" [badgeFg]="f.badgeFg" [checkOk]="f.checkOk" [checkBad]="f.checkBad" [checkMessage]="f.checkMessage" (valueChange)="setField(f.key, $event)" />
-                    }
-                    @case ('chips') {
-                      <app-ac-chips [options]="f.options" [chips]="f.chips" placeholder="Sélectionner une ou plusieurs origines" (toggle)="toggleKycOrigin($event)" />
                     }
                     @case ('badge') {
                       <span class="ac-field-badge-wrap">
@@ -384,55 +329,179 @@
                 </label>
               }
             </div>
+          </ng-template>
 
-            @if (onCashStep()) {
-              <div class="ac-cash-table">
-                <div class="ac-cash-table-head">
-                  <span class="ac-cash-table-head-bank">Établissement bancaire</span>
-                  <span>IBAN</span>
-                  <span>Devise</span>
-                  <span></span>
-                </div>
-                @for (row of cashSelected(); track row.index) {
-                  <div class="ac-cash-table-row">
-                    <span class="ac-cash-bank-cell">
-                      <button type="button" class="ac-cash-rank" [matMenuTriggerFor]="rankMenu">
-                        <span class="ac-cash-rank-chip" [class.ac-cash-rank-chip-main]="row.main">{{ row.rankCode }}</span>
-                        <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
-                      </button>
-                      <mat-menu #rankMenu="matMenu">
-                        <button mat-menu-item [disabled]="row.main" (click)="promoteCash(row.index)">
-                          <span class="ac-cash-rank-chip ac-cash-rank-chip-main">P</span>
-                          {{ row.main ? 'Principal — compte par défaut' : 'Principal — devient le compte par défaut' }}
-                        </button>
-                        <button mat-menu-item disabled>
-                          <span class="ac-cash-rank-chip">S</span>
-                          Secondaire
-                        </button>
-                      </mat-menu>
-                      <app-ac-select class="ac-cash-bank-select" [groups]="bankGroupsList" [value]="row.main && row.bank === 'Établissement à choisir' ? '' : row.bank" [leadFlag]="row.bankFlag" (valueChange)="patchCashField(row.index, { bank: $event })" />
-                    </span>
-                    <span class="ac-field-iban" [class.ac-field-iban-ok]="row.ibanOk" [class.ac-field-iban-bad]="row.ibanBad">
-                      <input [value]="row.iban" (change)="patchCashField(row.index, { iban: $any($event.target).value })" placeholder="NL91 ABNA 0417 1643 00" />
-                      @if (row.ibanOk) {
-                        <span class="ac-check-icon ac-check-icon-ok ac-check-icon-sm"><mat-icon svgIcon="check" style="font-size:10px;color:#ffffff"></mat-icon></span>
-                      }
-                      @if (row.ibanBad) {
-                        <span class="ac-check-icon ac-check-icon-bad ac-check-icon-sm"><mat-icon svgIcon="exclamation" style="font-size:10px;color:#ffffff"></mat-icon></span>
-                      }
-                    </span>
-                    <app-ac-select class="ac-cash-cur-select" [groups]="cashCurrencyGroupsList" [value]="row.currency" [leadFlag]="row.currencyFlag" (valueChange)="patchCashField(row.index, { currency: $event })" />
-                    @if (row.canRemove) {
-                      <button type="button" class="ac-cash-remove" (click)="removeCash(row.index)" matTooltip="Retirer ce compte">
-                        <mat-icon svgIcon="shopping-bag" style="font-size:13px"></mat-icon>
-                      </button>
-                    } @else {
-                      <span></span>
-                    }
-                  </div>
-                }
-                <span class="ac-cash-table-note">Le compte principal, en tête de liste, porte les mouvements par défaut : son remplacement passe par la promotion d'un compte secondaire.</span>
+          <ng-template #stepBody>
+          <div class="ac-step-body">
+            @if (locked()) {
+              <div class="ac-check-callout ac-locked-banner">
+                <mat-icon class="ac-locked-banner-icon" svgIcon="lock"></mat-icon>
+                <span class="ac-check-callout-text">
+                  <span class="ac-check-callout-title">Compte créé — dossier verrouillé</span>
+                  <span class="ac-check-callout-note">Référence client {{ form().clientRef }} · statut Actif. Les champs sont en lecture seule ; « Nouvelle création » ouvre un dossier vierge.</span>
+                </span>
+                <button type="button" mat-stroked-button class="ac-recap-btn" (click)="openRecap()">
+                  <mat-icon svgIcon="log-in" style="font-size:15px"></mat-icon>
+                  Relire le dossier
+                </button>
               </div>
+            } @else if (onCashStep()) {
+              <div class="ac-check-callout">
+                <span class="ac-check-callout-text">
+                  <span class="ac-check-callout-title">Ajouter un compte titre</span>
+                  <span class="ac-check-callout-note">{{ titreAddNote() }}</span>
+                </span>
+                <button type="button" mat-stroked-button class="ac-recap-btn" [disabled]="titreAddDisabled()" (click)="addTitre()" [matTooltip]="titreAddDisabled() ? 'Validez le compte titre ouvert avant d\'en ajouter un autre' : 'Ouvre un nouveau compte titre à renseigner, avec son compte de liquidité'">
+                  <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
+                  Ajouter
+                </button>
+              </div>
+            } @else if (onCheckStep()) {
+              <div class="ac-check-callout">
+                <span class="ac-check-callout-text">
+                  <span class="ac-check-callout-title">Contrôle avant enregistrement</span>
+                  <span class="ac-check-callout-note">Ouvrez le récapitulatif pour relire l'ensemble des informations saisies avant de créer le compte.</span>
+                </span>
+                <button type="button" mat-stroked-button class="ac-recap-btn" (click)="openRecap()">
+                  <mat-icon svgIcon="log-in" style="font-size:15px"></mat-icon>
+                  Vérifier la saisie
+                </button>
+              </div>
+            }
+
+            <!-- `inert` : verrouillé, rien ne se clique ni ne se saisit plus, clavier compris — plus
+                 sûr que de désactiver chaque contrôle un à un, et un contrôle ajouté plus tard est
+                 verrouillé d'office. -->
+            <div class="ac-lockable" [class.ac-lockable-on]="locked()" [attr.inert]="locked() ? '' : null">
+            @if (onCashStep()) {
+              <!-- Un bloc par compte titre du dossier, replié sur son en-tête ; le compte déplié est
+                   celui que les champs éditent — le compte chez le broker, puis le compte de
+                   liquidité qui lui est adossé. Aucun bloc tant qu'« Ajouter » n'en a ouvert. -->
+              @for (t of titreViews(); track t.index) {
+              <section class="ac-block ac-block-outer" [class.ac-block-collapsed]="!t.open">
+                <header class="ac-block-head ac-block-head-toggle" role="button" tabindex="0" [attr.aria-expanded]="t.open" (click)="toggleTitre(t.index)" (keydown.enter)="toggleTitre(t.index)" (keydown.space)="toggleTitre(t.index); $event.preventDefault()" [matTooltip]="t.open ? 'Replier ce compte titre' : 'Déplier ce compte titre'">
+                  <mat-icon class="ac-block-icon" svgIcon="library"></mat-icon>
+                  <span class="ac-block-title">{{ t.title }}</span>
+                  <span class="ac-block-hint">{{ t.hint }}</span>
+                  <span class="ac-block-state" [class.ac-block-state-ok]="!t.missing.length">{{ t.state }}</span>
+                  <button type="button" class="ac-co-remove ac-block-remove" (click)="removeTitre(t.index, $event)" matTooltip="Retirer ce compte titre du dossier" aria-label="Retirer ce compte titre">
+                    <mat-icon svgIcon="minus" style="font-size:14px"></mat-icon>
+                  </button>
+                  <mat-icon class="ac-block-chevron" svgIcon="chevron-down"></mat-icon>
+                </header>
+
+              @if (t.open) {
+              <section class="ac-block ac-block-sub">
+                <header class="ac-block-head">
+                  <mat-icon class="ac-block-icon" svgIcon="library"></mat-icon>
+                  <span class="ac-block-title">Compte chez le broker</span>
+                  <span class="ac-block-hint">Établissement, type, devise, référence</span>
+                </header>
+                <ng-container *ngTemplateOutlet="fieldsGrid"></ng-container>
+              </section>
+
+              <section class="ac-block ac-block-sub">
+                <header class="ac-block-head">
+                  <mat-icon class="ac-block-icon" svgIcon="banknote"></mat-icon>
+                  <span class="ac-block-title">Compte de liquidité</span>
+                  <span class="ac-block-hint">Compte bancaire externe rattaché</span>
+                </header>
+                  <!-- Les comptes de liquidité se lisent les uns sous les autres, tous visibles : le
+                       principal en tête, les secondaires à la suite — pas d'onglet à parcourir. -->
+                  <div class="ac-cash-subheader">
+                    <span class="ac-cash-principal-note">
+                      <mat-icon svgIcon="lock" style="font-size:13px"></mat-icon>
+                      <span class="ac-pill-chip ac-pill-chip-brand">P</span>
+                      Le premier établissement de la liste est le compte principal
+                    </span>
+                  </div>
+                  <div class="ac-cash-table">
+                    <div class="ac-cash-table-head">
+                      <span class="ac-cash-table-head-bank">Établissement bancaire</span>
+                      <span>IBAN</span>
+                      <span>Devise</span>
+                      <span></span>
+                    </div>
+                    @for (row of cashRows(); track row.index) {
+                      <div class="ac-cash-table-row">
+                        <span class="ac-cash-bank-cell">
+                          <button type="button" class="ac-cash-rank" [matMenuTriggerFor]="rankMenu">
+                            <span class="ac-cash-rank-chip" [class.ac-cash-rank-chip-main]="row.main">{{ row.rankCode }}</span>
+                            <mat-icon svgIcon="chevron-down" style="font-size:12px"></mat-icon>
+                          </button>
+                          <mat-menu #rankMenu="matMenu">
+                            <button mat-menu-item [disabled]="row.main" (click)="promoteCash(row.index)">
+                              <span class="ac-cash-rank-chip ac-cash-rank-chip-main">P</span>
+                              {{ row.main ? 'Principal — compte par défaut' : 'Principal — devient le compte par défaut' }}
+                            </button>
+                            <button mat-menu-item disabled>
+                              <span class="ac-cash-rank-chip">S</span>
+                              Secondaire
+                            </button>
+                          </mat-menu>
+                          <app-ac-select class="ac-cash-bank-select" [groups]="bankGroupsList" [value]="row.main && row.bank === 'Établissement à choisir' ? '' : row.bank" [leadFlag]="row.bankFlag" (valueChange)="patchCashField(row.index, { bank: $event })" />
+                        </span>
+                        <span class="ac-field-iban" [class.ac-field-iban-ok]="row.ibanOk" [class.ac-field-iban-bad]="row.ibanBad" [class.ac-field-iban-todo]="row.ibanTodo" [matTooltip]="row.ibanMessage">
+                          <input [value]="row.iban" (change)="patchCashField(row.index, { iban: $any($event.target).value })" placeholder="NL91 ABNA 0417 1643 00" [attr.aria-invalid]="row.ibanOk ? null : true" />
+                          @if (row.ibanTodo) {
+                            <span class="ac-check-icon ac-check-icon-todo ac-check-icon-sm"><mat-icon svgIcon="exclamation" style="font-size:10px;color:#ffffff"></mat-icon></span>
+                          }
+                          @if (row.ibanOk) {
+                            <span class="ac-check-icon ac-check-icon-ok ac-check-icon-sm"><mat-icon svgIcon="check" style="font-size:10px;color:#ffffff"></mat-icon></span>
+                          }
+                          @if (row.ibanBad) {
+                            <span class="ac-check-icon ac-check-icon-bad ac-check-icon-sm"><mat-icon svgIcon="exclamation" style="font-size:10px;color:#ffffff"></mat-icon></span>
+                          }
+                        </span>
+                        <app-ac-select class="ac-cash-cur-select" [groups]="cashCurrencyGroupsList" [value]="row.currency" [leadFlag]="row.currencyFlag" (valueChange)="patchCashField(row.index, { currency: $event })" />
+                        @if (row.canRemove) {
+                          <button type="button" class="ac-cash-remove" (click)="removeCash(row.index)" matTooltip="Retirer ce compte">
+                            <mat-icon svgIcon="shopping-bag" style="font-size:13px"></mat-icon>
+                          </button>
+                        } @else {
+                          <!-- Sur la ligne du compte principal, en face de ses champs : le « + » ajoute un
+                               compte secondaire, qui vient se ranger dessous. -->
+                          <button type="button" class="ac-add-btn ac-cash-add" (click)="addCash()" matTooltip="Ajouter un compte bancaire externe secondaire" aria-label="Ajouter un compte bancaire externe secondaire">
+                            <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
+                          </button>
+                        }
+                      </div>
+                    }
+                    <span class="ac-cash-table-note">Le compte principal, en tête de liste, porte les mouvements par défaut : son remplacement passe par la promotion d'un compte secondaire.</span>
+                  </div>
+
+                  <p class="ac-cash-explain">Rattacher un compte bancaire externe à ce compte titres. C'est par lui que passent les mouvements d'espèces dans les deux sens : les versements qui alimentent le compte titres avant un achat, et les retraits qui rapatrient la liquidité disponible une fois les titres vendus. Sans compte rattaché, aucun mouvement de trésorerie n'est possible — le compte titres peut détenir des positions, mais rien n'y entre ni n'en sort. Le rattachement se contrôle sur la clé de l'IBAN, qui doit être conforme pour être enregistré.</p>
+              </section>
+
+              <!-- Validation du compte déplié : « Annuler » revient en arrière (ou retire un compte
+                   tout juste ajouté), « Ajouter » / « OK » le valide et le replie s'il est complet. -->
+              @if (titreTried() && activeTitreIssues().length) {
+                <div class="ac-block-issues">
+                  <mat-icon svgIcon="exclamation" style="font-size:14px"></mat-icon>
+                  À renseigner : {{ activeTitreIssues().join(', ') }}.
+                </div>
+              }
+              <div class="ac-block-actions">
+                <button type="button" mat-flat-button class="ac-prev-btn ac-prev-btn-cancel ac-block-delete" (click)="removeTitre(activeTitre())" matTooltip="Supprime ce compte titre et son compte de liquidité du dossier">
+                  <mat-icon svgIcon="shopping-bag" style="font-size:14px"></mat-icon>
+                  Supprimer
+                </button>
+                <button type="button" mat-stroked-button class="ac-prev-btn" (click)="cancelTitre()" [matTooltip]="titreIsNew() ? 'Retire ce compte titre du dossier' : 'Abandonne les modifications de ce compte titre'">
+                  <mat-icon svgIcon="close" style="font-size:14px"></mat-icon>
+                  Annuler
+                </button>
+                <button type="button" mat-stroked-button class="ac-verify-btn" (click)="verifyTitre()" matTooltip="Ouvre le récapitulatif des comptes titres dans le panneau latéral">
+                  <mat-icon svgIcon="log-in" style="font-size:14px"></mat-icon>
+                  Vérifier la saisie
+                </button>
+                <button type="button" mat-flat-button class="ac-next-btn" [disabled]="titreConfirmBlocked()" (click)="confirmTitre()" [matTooltip]="titreConfirmNote()">
+                  <mat-icon [svgIcon]="titreIsNew() ? 'plus' : 'check'" style="font-size:14px"></mat-icon>
+                  {{ titreIsNew() ? 'Ajouter' : 'OK' }}
+                </button>
+              </div>
+              }
+              </section>
+              }
 
               @if (opCashStatusField(); as sf) {
                 <label class="ac-field ac-field-standalone">
@@ -441,11 +510,24 @@
                     @case ('combo') {
                       <app-ac-select [groups]="sf.groups" [value]="sf.value" [leadFlag]="sf.leadFlag" [place]="sf.place" [asBadge]="sf.asBadge" [badgeBg]="sf.badgeBg" [badgeFg]="sf.badgeFg" (valueChange)="setField(sf.key, $event)" />
                     }
+                    @case ('badge') {
+                      <span class="ac-field-badge-wrap">
+                        <span class="ac-field-badge" [style.background]="sf.badgeBg" [style.color]="sf.badgeFg">
+                          <span class="ac-field-badge-dot" [style.background]="sf.badgeFg"></span>
+                          {{ sf.value }}
+                        </span>
+                        <span class="ac-field-badge-hint">{{ sf.hint }}</span>
+                      </span>
+                    }
                   }
                 </label>
               }
+            } @else {
+              <h2 class="ac-step-heading">{{ opStepTitle() }}</h2>
+            }
 
-              <p class="ac-cash-explain">Rattacher un compte bancaire externe à ce compte titres. C'est par lui que passent les mouvements d'espèces dans les deux sens : les versements qui alimentent le compte titres avant un achat, et les retraits qui rapatrient la liquidité disponible une fois les titres vendus. Sans compte rattaché, aucun mouvement de trésorerie n'est possible — le compte titres peut détenir des positions, mais rien n'y entre ni n'en sort. Le rattachement se contrôle sur la clé de l'IBAN, qui doit être conforme pour être enregistré.</p>
+            @if (!onCashStep()) {
+              <ng-container *ngTemplateOutlet="fieldsGrid"></ng-container>
             }
 
             @if (onHolderStep()) {
@@ -497,6 +579,29 @@
                 <span class="ac-check-label">{{ c.label }}</span>
               </div>
             }
+            </div>
+
+            <!-- Le verdict de la vérification vit juste au-dessus des boutons qu'il conditionne. -->
+            @if (onHolderStep() && !locked()) {
+              <div class="ac-check-callout" [class.ac-check-callout-ok]="holderCheck() === 'ok'" [class.ac-check-callout-fail]="holderCheck() === 'fail'">
+                <span class="ac-check-callout-text">
+                  @switch (holderCheck()) {
+                    @case ('ok') {
+                      <span class="ac-check-callout-title">Saisie vérifiée</span>
+                      <span class="ac-check-callout-note">Titulaires complets — vous pouvez passer aux comptes. Toute modification demandera une nouvelle vérification.</span>
+                    }
+                    @case ('fail') {
+                      <span class="ac-check-callout-title">Saisie incomplète</span>
+                      <span class="ac-check-callout-note">À renseigner : {{ holderIssuesView().join(', ') }}.</span>
+                    }
+                    @default {
+                      <span class="ac-check-callout-title">Vérification des titulaires</span>
+                      <span class="ac-check-callout-note">Vérifiez la saisie avant de passer aux comptes : « Suivant » reste inactif jusque-là.</span>
+                    }
+                  }
+                </span>
+              </div>
+            }
 
             <div class="ac-footer">
               @if (currentStepIndex() === 0) {
@@ -510,11 +615,19 @@
                   {{ opPrevLabel() }}
                 </button>
               }
-              <button type="button" mat-stroked-button class="ac-draft-btn" [disabled]="opDraftDisabled()" (click)="opDraft()" [matTooltip]="opDraftDisabled() ? 'Disponible dès la deuxième étape, une fois le broker choisi' : 'Conserve la saisie en brouillon, sans créer le compte'">
-                <mat-icon svgIcon="save" style="font-size:14px"></mat-icon>
-                Brouillon
-              </button>
-              <button type="button" mat-flat-button class="ac-next-btn" [disabled]="opNextBlocked()" (click)="opNext()" [matTooltip]="opNextBlocked() ? 'IBAN à corriger : la clé de contrôle doit être conforme pour enregistrer le rattachement' : ''">
+              @if (onCashStep() && !locked()) {
+                <button type="button" mat-stroked-button class="ac-verify-btn" (click)="openRecap()" matTooltip="Ouvre le récapitulatif du dossier — titulaires, comptes titre, statut">
+                  <mat-icon svgIcon="log-in" style="font-size:14px"></mat-icon>
+                  Vérifier la saisie
+                </button>
+              }
+              @if (onHolderStep() && !locked()) {
+                <button type="button" mat-stroked-button class="ac-verify-btn" [class.ac-verify-btn-ok]="holderCheck() === 'ok'" (click)="verifyHolders()" matTooltip="Contrôle la saisie des titulaires ; « Suivant » s'active une fois la vérification passée">
+                  <mat-icon [svgIcon]="holderCheck() === 'ok' ? 'check' : 'log-in'" style="font-size:14px"></mat-icon>
+                  Vérifier la saisie
+                </button>
+              }
+              <button type="button" mat-flat-button class="ac-next-btn" [disabled]="opNextBlocked()" (click)="opNext()" [matTooltip]="opNextBlockedNote()">
                 {{ opNextLabel() }}
                 @if (isLastStep()) {
                   <mat-icon iconPositionEnd svgIcon="check" style="font-size:14px"></mat-icon>
@@ -530,214 +643,6 @@
           </div>
           </ng-template>
         </div>
-      </div>
-    }
-
-    <!-- ───────────────────────── Entrée en relation ───────────────────────── -->
-    @if (tab() === 'entry') {
-      <div class="ac-entry">
-        <div class="ac-entry-kpis">
-          @for (k of entryKpis(); track k.label) {
-            <div class="ac-entry-kpi" [class.ac-entry-kpi-warn]="k.tone === 'warn'" [class.ac-entry-kpi-ok]="k.tone === 'ok'">
-              <span class="ac-entry-kpi-label">{{ k.label }}</span>
-              <span class="ac-entry-kpi-value">{{ k.value }}</span>
-              <span class="ac-entry-kpi-note">{{ k.note }}</span>
-            </div>
-          }
-        </div>
-
-        <div class="ac-entry-split">
-          <!-- Vivier par phase -->
-          <section class="ac-entry-card">
-            <header class="ac-entry-card-head">
-              <h2 class="ac-entry-card-title">Vivier</h2>
-              <span class="ac-entry-card-note">Chaque phase dit à qui la main revient</span>
-            </header>
-
-            @for (p of entryPipeline(); track p.label) {
-              <div class="ac-entry-phase">
-                <span class="ac-entry-phase-head">
-                  <span class="ac-entry-phase-label">{{ p.label }}</span>
-                  <span class="ac-entry-phase-count">{{ p.count }}</span>
-                </span>
-                @if (!p.count) {
-                  <span class="ac-entry-phase-empty">Aucun dossier</span>
-                }
-                @for (c of p.cases; track c.id) {
-                  <button type="button" class="ac-entry-case" [class.ac-entry-case-on]="c.id === currentCase().id"
-                    (click)="selectCase(c.id)">
-                    <span class="ac-entry-case-line">
-                      <span class="ac-entry-case-name">{{ c.name }}</span>
-                      @if (c.blocked) {
-                        <mat-icon class="ac-entry-case-flag" svgIcon="alert-triangle" style="font-size:12px"
-                          [matTooltip]="c.blocked"></mat-icon>
-                      }
-                      <span class="ac-entry-case-aum">{{ c.aum }}</span>
-                    </span>
-                    <span class="ac-entry-case-meta">{{ c.stageLabel }} · {{ c.owner }}</span>
-                    <span class="ac-entry-case-bar">
-                      <span class="ac-entry-case-fill" [style.width.%]="c.progress"
-                        [class.ac-entry-case-fill-warn]="c.blocked"></span>
-                    </span>
-                  </button>
-                }
-              </div>
-            }
-          </section>
-
-          <!-- Détail du dossier retenu -->
-          <div class="ac-entry-col">
-            @if (currentCase(); as c) {
-              <section class="ac-entry-card">
-                <header class="ac-entry-card-head">
-                  <h2 class="ac-entry-card-title">{{ c.name }}</h2>
-                  <span class="ac-entry-ref">{{ c.id }}</span>
-                  @if (c.accountId) {
-                    <span class="ac-entry-account" matTooltip="Compte ouvert chez le dépositaire">{{ c.accountId }}</span>
-                  }
-                  <span class="ac-entry-card-note ac-entry-push">{{ c.progress }} % du parcours</span>
-                </header>
-
-                <div class="ac-entry-facts">
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Nature</span>{{ c.kindLabel }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Origine</span>{{ c.origin }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Responsable</span>{{ c.owner }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Ouvert le</span>{{ c.since }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Dernier mouvement</span>{{ c.lastUpdate }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Encours cible</span>{{ c.aum }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Profil pressenti</span>{{ c.profile }}</span>
-                  <span class="ac-entry-fact"><span class="ac-entry-fact-label">Phase</span>{{ c.phase }}</span>
-                </div>
-
-                @if (c.blocked) {
-                  <div class="ac-entry-blocked">
-                    <mat-icon svgIcon="alert-triangle" style="font-size:14px"></mat-icon>
-                    <span>{{ c.blocked }}</span>
-                  </div>
-                }
-
-                @if (c.missingDocs.length) {
-                  <div class="ac-entry-docs">
-                    <span class="ac-entry-docs-label">Pièces attendues</span>
-                    @for (d of c.missingDocs; track d) {
-                      <span class="ac-entry-doc">{{ d }}</span>
-                    }
-                  </div>
-                }
-              </section>
-
-              <section class="ac-entry-card">
-                <header class="ac-entry-card-head">
-                  <h2 class="ac-entry-card-title">Parcours</h2>
-                  <span class="ac-entry-card-note ac-entry-push">Étapes du cycle de vie, jusqu'à l'apport initial</span>
-                </header>
-
-                @for (s of caseStages(); track s.index) {
-                  <div class="ac-entry-stage" [class.ac-entry-stage-done]="s.done" [class.ac-entry-stage-current]="s.current">
-                    <span class="ac-entry-stage-mark">
-                      @if (s.done) {
-                        <mat-icon svgIcon="check" style="font-size:12px"></mat-icon>
-                      } @else {
-                        {{ s.index + 1 }}
-                      }
-                    </span>
-                    <span class="ac-entry-stage-texts">
-                      <span class="ac-entry-stage-label">{{ s.label }}</span>
-                      <span class="ac-entry-stage-detail">{{ s.detail }}</span>
-                      <span class="ac-entry-stage-docs">{{ s.docs }}</span>
-                    </span>
-                    <span class="ac-entry-stage-actor">{{ s.actor }}</span>
-                  </div>
-                }
-              </section>
-            }
-          </div>
-        </div>
-
-        <!-- Liste a plat, pour comparer les dossiers entre eux -->
-        <section class="ac-entry-card">
-          <header class="ac-entry-card-head">
-            <h2 class="ac-entry-card-title">Liste des entrées en relation</h2>
-            <span class="ac-entry-card-note ac-entry-push">{{ entryRows().length }} dossiers · triés par avancement</span>
-          </header>
-
-          <div class="ac-entry-table-scroll">
-            <table mat-table [dataSource]="entryRows()" class="ac-entry-table">
-              <ng-container matColumnDef="ref">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-ref">Référence</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td">
-                  <span class="ac-entry-ref">{{ c.id }}</span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="case">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th">Dossier</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td">
-                  <span class="ac-entry-cell-stack">
-                    <span class="ac-entry-cell-main">{{ c.name }}</span>
-                    <span class="ac-entry-cell-sub">{{ c.kindLabel }}</span>
-                  </span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="origin">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-origin">Origine</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td ac-entry-td-muted ac-entry-ellipsis">{{ c.origin }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="stage">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-stage">Étape</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td">
-                  <span class="ac-entry-cell-stack">
-                    <span class="ac-entry-cell-main">{{ c.stageLabel }}</span>
-                    <span class="ac-entry-cell-sub">{{ c.phase }}</span>
-                  </span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="owner">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-owner">Responsable</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td ac-entry-td-muted">{{ c.owner }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="aum">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-th-num ac-entry-col-aum">Encours cible</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td ac-entry-td-num">{{ c.aum }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="progress">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-progress">Avancement</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td">
-                  <span class="ac-entry-progress">
-                    <span class="ac-entry-case-bar">
-                      <span class="ac-entry-case-fill" [style.width.%]="c.progress"
-                        [class.ac-entry-case-fill-warn]="c.blocked"></span>
-                    </span>
-                    <span class="ac-entry-progress-value">{{ c.progress }} %</span>
-                  </span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="state">
-                <th mat-header-cell *matHeaderCellDef class="ac-entry-th ac-entry-col-state">État</th>
-                <td mat-cell *matCellDef="let c" class="ac-entry-td">
-                  @if (c.blocked) {
-                    <span class="ac-entry-state ac-entry-state-warn" [matTooltip]="c.blocked">Bloqué</span>
-                  } @else if (c.missingDocs.length) {
-                    <span class="ac-entry-state ac-entry-state-wait">{{ c.missingDocs.length }} pièce(s) attendue(s)</span>
-                  } @else {
-                    <span class="ac-entry-state ac-entry-state-ok">Complet</span>
-                  }
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="entryColumns" class="ac-entry-header-row"></tr>
-              <tr mat-row *matRowDef="let c; columns: entryColumns" class="ac-entry-row"
-                [class.ac-entry-row-on]="c.id === currentCase().id"
-                [matTooltip]="'Voir le parcours de ' + c.name" (click)="selectCase(c.id)"></tr>
-            </table>
-          </div>
-        </section>
       </div>
     }
   </div>
