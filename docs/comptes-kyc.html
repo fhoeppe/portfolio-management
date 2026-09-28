@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Comptes — étape KYC (mise de côté)</title>
+<!--
+  Étape « KYC » de l'assistant Gérer compte (écran Comptes, parcours Création), retirée de
+  l'application le 27 septembre 2026 et conservée ici telle qu'elle se présentait, pour pouvoir
+  être reprise sans la redessiner.
+
+  Page autonome : aucun script, aucune dépendance. Les contrôles sont natifs (select, date,
+  cases à cocher) là où l'application utilisait ses propres composants (`app-ac-select`,
+  `app-ac-chips`). Le gabarit de grille, les libellés, les listes de choix, les règles de saisie
+  et les contrôles de conformité sont ceux du code retiré.
+
+  Ce que l'application portait, pour remonter l'étape :
+
+    Définition d'étape (comptes-form.ts › opDefs().create.steps) :
+      title 'KYC', hint 'Pièces justificatives et vigilance'
+      fields : idDocType, kycId, idIssuer, idIssueDate, kycIdExpiry,
+               kycAddress, addrRef, addrIssuer, addrIssueDate, addrExpiry,
+               kycOrigin, fundsAmount, kycPep, kycLevel, status
+    Champs de FormState (avec leur valeur initiale) :
+      idDocType '—', kycId '', idIssuer '', idIssueDate '', kycIdExpiry '',
+      kycAddress '', addrRef '', addrIssuer '', addrIssueDate '', addrExpiry '',
+      kycOrigin '' (origines jointes par ' · '), fundsAmount '', kycPep 'Non', kycLevel 'Standard'
+    Grille (opCols) : repeat(2, minmax(0,0.72fr)) repeat(4, minmax(0,1fr)) ; row-gap 20px (opRowGap)
+    Colonnes (SPAN_KYC) :
+      idDocType 1/3 · kycId 3/4 · idIssuer 4/5 · idIssueDate 5/6 · kycIdExpiry 6/7
+      kycAddress 1/3 · addrRef 3/4 · addrIssuer 4/5 · addrIssueDate 5/6 · addrExpiry 6/7
+      kycOrigin 1/3 · fundsAmount 3/5
+      kycPep 1/3 · kycLevel 3/5
+      status 1/3
+    Contrôles (buildField) :
+      idDocType / kycAddress : combo sur ID_DOC_TYPES / ADDRESS_PROOF_TYPES, l'aide de l'option en `place`
+      idIssueDate / addrIssueDate : date, max = aujourd'hui (une émission est passée)
+      kycIdExpiry / addrExpiry : date, libre (une validité est à venir)
+      kycOrigin : jetons multi-sélection sur FUND_ORIGINS (composant ac-chips, toggleKycOrigin)
+      kycPep : combo 'Non' | 'Oui — vigilance renforcée' ; kycLevel : combo 'Simplifiée' | 'Standard' | 'Renforcée'
+      kycId, idIssuer, addrRef, addrIssuer, fundsAmount : texte
+    Icônes de libellé (FIELD_ICONS) : idDocType id-card · kycAddress home · kycOrigin banknote · kycPep user · kycLevel shield
+    Récapitulatif (recapGroups › grp('KYC')) : les douze lignes reprises ci-dessous
+    Verdict (recapVerdict) : « KYC » manquant si kycId ou kycIdExpiry est vide
+    Contrôle de l'étape Titulaires retiré avec elle :
+      « Dossier KYC obligatoire pour chaque titulaire et bénéficiaire effectif. » (warn)
+-->
+<style>
+  :root {
+    --navy: #002259;
+    --ink: #1f2933;
+    --muted: #6b7280;
+    --line: #d9dee5;
+    --warn-bg: #fff4d6;
+    --warn-fg: #7a4d00;
+    --info-bg: #e6f0ff;
+    --info-fg: #003a99;
+    --project-bg: #f5d90a;
+    --project-fg: #5c4700;
+    --surface: #ffffff;
+    --ground: #f5f6f8;
+  }
+  html { color-scheme: light; }
+  body {
+    margin: 0;
+    padding: 24px 16px 48px;
+    background: var(--ground);
+    color: var(--ink);
+    font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .page { max-width: 1040px; margin: 0 auto; }
+  .banner {
+    background: var(--warn-bg); color: var(--warn-fg);
+    border: 1px solid #f1d58a; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px;
+    font-size: 12px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 18px; min-width: 0; overflow: hidden;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; color: var(--navy); }
+  h2 { font-size: 13px; margin: 0 0 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .step-title { font-size: 15px; font-weight: 700; margin: 0; }
+  .step-hint { color: var(--muted); margin: 2px 0 16px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 0.72fr)) repeat(4, minmax(0, 1fr));
+    column-gap: 12px; row-gap: 20px;
+  }
+  .field {
+    display: flex; flex-direction: column; justify-content: flex-start; gap: 5px;
+    grid-column: var(--span, auto); min-width: 0;
+    font-size: 11px; font-weight: 600; color: #4b5563;
+  }
+  .field-label { display: inline-flex; align-items: center; gap: 5px; }
+  .field-label svg { width: 13px; height: 13px; stroke: var(--navy); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .field input, .field select {
+    box-sizing: border-box; width: 100%; min-width: 0;
+    height: 30px; padding: 0 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: #fff; color: var(--ink); font: inherit; font-weight: 500;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid #9fb8e6; outline-offset: -1px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: 10.5px; }
+  fieldset.chips { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin: 0; min-width: 0; }
+  fieldset.chips legend { font-size: 10px; color: var(--muted); padding: 0 4px; }
+  .chips-row { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+  .chips-row label { font-weight: 500; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .badge-wrap { display: inline-flex; align-items: center; gap: 8px; height: 30px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px;
+    background: var(--project-bg); color: var(--project-fg); font-size: 11px; font-weight: 700;
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge-hint { font-weight: 400; color: var(--muted); }
+  .checks { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 6px; }
+  .checks li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; padding: 7px 10px; border-radius: 6px; }
+  .checks .warn { background: var(--warn-bg); color: var(--warn-fg); }
+  .checks .info { background: var(--info-bg); color: var(--info-fg); }
+  .checks li::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; margin-top: 5px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; width: 32%; }
+  .req { color: var(--navy); font-weight: 700; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; background: #eef1f5; padding: 1px 4px; border-radius: 4px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr); } .field { grid-column: auto !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="banner">
+    Étape mise de côté le 27/09/2026 — retirée du parcours <strong>Comptes › Gérer compte › Création</strong>
+    (le stepper passe de Titulaires · KYC · Contrôle à Titulaires · Contrôle). Page de conservation, hors application.
+  </div>
+
+  <div class="card">
+    <h1>Gérer compte — Création</h1>
+    <p class="step-title">KYC</p>
+    <p class="step-hint">Pièces justificatives et vigilance</p>
+
+    <form class="grid" onsubmit="return false">
+      <!-- Rangée 1 : pièce d'identité -->
+      <label class="field" style="--span: 1 / 3">
+        <span class="field-label"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.7-1.6 1.9-2.4 3-2.4s2.3.8 3 2.4M14 10h4M14 13h4"/></svg>Pièce d'identité</span>
+        <select name="idDocType">
+          <option>—</option>
+          <option>Passeport</option>
+          <option>Carte nationale d'identité</option>
+          <option>Titre de séjour</option>
+          <option>Permis de conduire</option>
+          <option>Extrait RCS</option>
+        </select>
+        <span class="hint">Aucun document renseigné</span>
+      </label>
+      <label class="field" style="--span: 3 / 4">Numéro<input name="kycId" placeholder="LU-2019-448210" /></label>
+      <label class="field" style="--span: 4 / 5">Émetteur<input name="idIssuer" placeholder="Autorité de délivrance" /></label>
+      <label class="field" style="--span: 5 / 6">Date d'émission<input type="date" name="idIssueDate" max="2026-09-27" /></label>
+      <label class="field" style="--span: 6 / 7">Date de validité<input type="date" name="kycIdExpiry" /></label>
+
+      <!-- Rangée 2 : justificatif de domicile -->
+      <label class="field" style="--span: 1 / 3">
+        <span class="field-label"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Justificatif de domicile</span>
+        <select name="kycAddress">
+          <option>—</option>
+          <option>Facture d'électricité ou de gaz</option>
+          <option>Facture d'eau</option>
+          <option>Facture de téléphone fixe ou internet</option>
+          <option>Certificat de résidence</option>
+          <option>Quittance de loyer</option>
+          <option>Contrat de bail</option>
+          <option>Avis d'imposition</option>
+          <option>Attestation d'assurance habitation</option>
+          <option>Relevé bancaire</option>
+          <option>Acte de propriété</option>
+        </select>
+        <span class="hint">Aucun justificatif renseigné</span>
+      </label>
+      <label class="field" style="--span: 3 / 4">Numéro<input name="addrRef" placeholder="Référence du document" /></label>
+      <label class="field" style="--span: 4 / 5">Émetteur<input name="addrIssuer" placeholder="Fournisseur, commune, bailleur…" /></label>
+      <label class="field" style="--span: 5 / 6">Date d'émission<input type="date" name="addrIssueDate" max="2026-09-27" /></label>
+      <label class="field" style="--span: 6 / 7">Date de validité<input type="date" name="addrExpiry" /></label>
+
+      <!-- Rangée 3 : origine des fonds -->
+      <div class="field" style="--span: 1 / 3">
+        <span class="field-label"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>Origine des fonds</span>
+        <fieldset class="chips">
+          <legend>Sélectionner une ou plusieurs origines</legend>
+          <div class="chips-row">
+            <label><input type="checkbox" name="kycOrigin" value="Salaires et revenus professionnels" />Salaires et revenus professionnels</label>
+            <label><input type="checkbox" name="kycOrigin" value="Revenus locatifs" />Revenus locatifs</label>
+            <label><input type="checkbox" name="kycOrigin" value="Épargne constituée" />Épargne constituée</label>
+            <label><input type="checkbox" name="kycOrigin" value="Cession d'actifs mobiliers" />Cession d'actifs mobiliers</label>
+            <label><input type="checkbox" name="kycOrigin" value="Cession immobilière" />Cession immobilière</label>
+            <label><input type="checkbox" name="kycOrigin" value="Cession d'entreprise" />Cession d'entreprise</label>
+            <label><input type="checkbox" name="kycOrigin" value="Succession ou donation" />Succession ou donation</label>
+            <label><input type="checkbox" name="kycOrigin" value="Dividendes et revenus de placement" />Dividendes et revenus de placement</label>
+            <label><input type="checkbox" name="kycOrigin" value="Indemnités et prestations" />Indemnités et prestations</label>
+            <label><input type="checkbox" name="kycOrigin" value="Gains exceptionnels" />Gains exceptionnels</label>
+          </div>
+        </fieldset>
+      </div>
+      <label class="field" style="--span: 3 / 5">Montant approximatif<input name="fundsAmount" placeholder="Ex. 250 000 €" /></label>
+
+      <!-- Rangée 4 : vigilance -->
+      <label class="field" style="--span: 1 / 3">
+        <span class="field-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>Personne politiquement exposée</span>
+        <select name="kycPep">
+          <option>Non</option>
+          <option>Oui — vigilance renforcée</option>
+        </select>
+      </label>
+      <label class="field" style="--span: 3 / 5">
+        <span class="field-label"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Niveau de vigilance</span>
+        <select name="kycLevel">
+          <option>Simplifiée</option>
+          <option selected>Standard</option>
+          <option>Renforcée</option>
+        </select>
+      </label>
+
+      <!-- Rangée 5 : statut -->
+      <div class="field" style="--span: 1 / 3">
+        Statut du compte
+        <span class="badge-wrap"><span class="badge">Projet</span><span class="badge-hint">Compte non encore créé</span></span>
+      </div>
+    </form>
+
+    <ul class="checks">
+      <li class="warn">Aucun compte ne peut passer à l'état Actif sans dossier KYC complet : pièce d'identité en cours de validité, justificatif de domicile de moins de trois mois et origine des fonds documentée.</li>
+      <li class="warn">Le statut de personne politiquement exposée impose une vigilance renforcée et une validation de la conformité.</li>
+      <li class="info">Le dossier est à renouveler à chaque expiration de pièce et à chaque revue périodique.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Récapitulatif — groupe « KYC »</h2>
+    <table>
+      <tr><th>Pièce d'identité <span class="req">*</span></th><td><code>idDocType</code> (vide si « — »)</td></tr>
+      <tr><th>Numéro de la pièce <span class="req">*</span></th><td><code>kycId</code></td></tr>
+      <tr><th>Émetteur de la pièce</th><td><code>idIssuer</code></td></tr>
+      <tr><th>Validité de la pièce <span class="req">*</span></th><td><code>kycIdExpiry</code></td></tr>
+      <tr><th>Justificatif de domicile <span class="req">*</span></th><td><code>kycAddress</code> (vide si « — »)</td></tr>
+      <tr><th>Numéro du justificatif</th><td><code>addrRef</code></td></tr>
+      <tr><th>Émetteur du justificatif</th><td><code>addrIssuer</code></td></tr>
+      <tr><th>Validité du justificatif</th><td><code>addrExpiry</code></td></tr>
+      <tr><th>Origine des fonds <span class="req">*</span></th><td><code>kycOrigin</code>, origines jointes par « · »</td></tr>
+      <tr><th>Montant approximatif</th><td><code>fundsAmount</code></td></tr>
+      <tr><th>Personne exposée</th><td><code>kycPep</code></td></tr>
+      <tr><th>Niveau de vigilance</th><td><code>kycLevel</code></td></tr>
+    </table>
+    <p class="hint" style="margin:10px 0 0">
+      <span class="req">*</span> champ requis au récapitulatif. Verdict : « KYC » est listé parmi les éléments
+      à compléter dès que <code>kycId</code> ou <code>kycIdExpiry</code> est vide.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Règles de saisie</h2>
+    <table>
+      <tr><th>Pièce d'identité</th><td>Passeport · Carte nationale d'identité (CNI en cours de validité) · Titre de séjour (carte de résident ou permis de séjour) · Permis de conduire (accepté en complément, non seul) · Extrait RCS (personne morale : immatriculation)</td></tr>
+      <tr><th>Justificatif de domicile</th><td>Factures d'énergie, d'eau, de téléphone fixe ou internet (moins de trois mois, mobile exclu) · Certificat de résidence (commune) · Quittance de loyer (bailleur professionnel) · Contrat de bail signé · Dernier avis d'imposition · Attestation d'assurance habitation · Relevé bancaire de moins de trois mois, adresse visible · Acte de propriété</td></tr>
+      <tr><th>Dates</th><td>Une date d'émission est bornée au jour même ; une date de validité reste libre, elle est à venir.</td></tr>
+      <tr><th>Libellés</th><td>Les deux pièces portent les mêmes attributs — Numéro, Émetteur, Date d'émission, Date de validité — volontairement identiques d'une rangée à l'autre : c'est la nature du document, à gauche, qui les distingue.</td></tr>
+      <tr><th>Grille</th><td>Les deux premières colonnes (nature du document) sont plus étroites (0,72 fr) que les quatre suivantes ; les rangées sont espacées de 20 px au lieu de 10, car chacune est un bloc.</td></tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>
