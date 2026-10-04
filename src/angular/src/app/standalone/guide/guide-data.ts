@@ -422,7 +422,7 @@ export const GUIDE_TOPICS: readonly GuideTopic[] = [
       },
       {
         q: 'Puis-je travailler en anglais ?',
-        a: "Oui, le sélecteur FR / EN du menu du compte bascule l'ensemble de l'interface, y compris les libellés des tableaux.",
+        a: "Le sélecteur FR / EN du menu du compte et celui de ce guide sont liés : le guide existe dans les deux langues. Les écrans de l'application, eux, restent en français.",
       },
     ],
   },

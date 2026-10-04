@@ -6,26 +6,26 @@
           <svg class="gd-title-icon" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1.25 2C.56 2 0 2.56 0 3.25v8.5C0 12.44.56 13 1.25 13H5c.896 0 1.475.205 1.809.448.317.23.441.51.441.802a.75.75 0 001.5 0c0-.292.124-.572.441-.802.334-.243.913-.448 1.809-.448h3.75c.69 0 1.25-.56 1.25-1.25v-8.5C16 2.56 15.44 2 14.75 2H11c-1.154 0-2.106.354-2.772 1-.081.08-.157.161-.228.246A3.131 3.131 0 007.772 3C7.106 2.354 6.154 2 5 2H1.25zm7.5 9.967c.61-.309 1.372-.467 2.25-.467h3.5v-8H11c-.846 0-1.394.253-1.728.577-.335.325-.522.787-.522 1.34v6.55zm-1.5 0v-6.55c0-.553-.187-1.015-.522-1.34C6.394 3.753 5.846 3.5 5 3.5H1.5v8H5c.878 0 1.64.158 2.25.467z" clip-rule="evenodd"></path></svg>
           GUIDE
         </h1>
-        <p>{{ showAnnexes() ? "Référentiel des codes, indicateurs et légendes employés par l'application" : subtitle() }}</p>
+        <p>{{ showAnnexes() ? ui().annexesSubtitle : subtitle() }}</p>
       </div>
       <div class="gd-head-tools">
         @if (!showAnnexes()) {
           <label class="gd-search">
             <mat-icon svgIcon="search" style="font-size:14px"></mat-icon>
-            <input type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Rechercher dans le guide">
+            <input type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" [placeholder]="ui().search">
           </label>
         }
         <mat-button-toggle-group class="gd-toggle" [value]="lang()" (change)="setLang($event.value)"
-          hideSingleSelectionIndicator aria-label="Langue du guide">
+          hideSingleSelectionIndicator [attr.aria-label]="ui().langLabel">
           <mat-button-toggle value="fr">FR</mat-button-toggle>
           <mat-button-toggle value="en">EN</mat-button-toggle>
         </mat-button-toggle-group>
         <mat-button-toggle-group class="gd-toggle gd-toggle-icon" [value]="theme.mode()" (change)="theme.set($event.value)"
-          hideSingleSelectionIndicator aria-label="Thème du guide">
-          <mat-button-toggle value="light" aria-label="Jour" matTooltip="Jour">
+          hideSingleSelectionIndicator [attr.aria-label]="ui().themeLabel">
+          <mat-button-toggle value="light" [attr.aria-label]="ui().light" [matTooltip]="ui().light">
             <mat-icon svgIcon="sun" style="font-size:14px"></mat-icon>
           </mat-button-toggle>
-          <mat-button-toggle value="dark" aria-label="Nuit" matTooltip="Nuit">
+          <mat-button-toggle value="dark" [attr.aria-label]="ui().dark" [matTooltip]="ui().dark">
             <mat-icon svgIcon="moon" style="font-size:14px"></mat-icon>
           </mat-button-toggle>
         </mat-button-toggle-group>
@@ -33,7 +33,7 @@
     </div>
 
     <nav mat-tab-nav-bar class="gd-tabs pm-tabnav" [tabPanel]="gdTabPanel" [mat-stretch-tabs]="false" disableRipple>
-      @for (t of topics; track t.key) {
+      @for (t of topics(); track t.key) {
         <button type="button" mat-tab-link class="gd-tab" [active]="!showAnnexes() && activeKey() === t.key"
           [class.gd-tab-active]="!showAnnexes() && activeKey() === t.key" (click)="selectTopic(t.key)">
           {{ t.label }}
@@ -41,7 +41,7 @@
       }
       <button type="button" mat-tab-link class="gd-tab" [active]="showAnnexes()"
         [class.gd-tab-active]="showAnnexes()" (click)="openAnnexes()">
-        Annexes et légendes
+        {{ ui().annexes }}
       </button>
     </nav>
   </div>
@@ -108,13 +108,13 @@
             </div>
           }
           @if (sections().length === 0) {
-            <p class="gd-empty">Aucune section ne correspond à la recherche dans cette thématique.</p>
+            <p class="gd-empty">{{ ui().empty }}</p>
           }
         </div>
 
         <div class="gd-card">
           <div class="gd-card-head">
-            <h3>Questions fréquentes</h3>
+            <h3>{{ ui().faq }}</h3>
           </div>
           <!-- `displayMode="flat"` : le mode par défaut détache chaque panneau en carte ombrée,
                alors que la FAQ est une liste continue séparée de simples filets. -->
@@ -136,7 +136,7 @@
       <div class="gd-aside">
         <div class="gd-card">
           <div class="gd-card-head">
-            <h3>Points clés</h3>
+            <h3>{{ ui().keys }}</h3>
           </div>
           @for (k of activeTopic().keys; track k) {
             <div class="gd-key-row">
@@ -148,7 +148,7 @@
 
         <div class="gd-card">
           <div class="gd-card-head">
-            <h3>Raccourcis utiles</h3>
+            <h3>{{ ui().links }}</h3>
           </div>
           @for (l of activeTopic().links; track l) {
             <div class="gd-link-row">
@@ -160,7 +160,7 @@
 
         <div class="gd-card">
           <div class="gd-card-head">
-            <h3>Toutes les thématiques</h3>
+            <h3>{{ ui().allTopics }}</h3>
           </div>
           @for (t of topicList(); track t.key) {
             <button type="button" class="gd-topic-row" [class.gd-topic-row-active]="t.active" (click)="selectTopic(t.key)">

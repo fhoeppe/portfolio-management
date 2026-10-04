@@ -7,8 +7,10 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ThemeService } from '../../shell/theme.service';
+import { LangService, type Lang } from '../../shell/lang.service';
 import { Annexes } from '../annexes/annexes';
 import { GUIDE_TOPICS } from './guide-data';
+import { GUIDE_TOPICS_EN } from './guide-data.en';
 
 /**
  * Porté depuis `Guide.dc.html` (`data-component="GuidePage"` dans la source — une page, pas
@@ -36,6 +38,15 @@ import { GUIDE_TOPICS } from './guide-data';
  * reporte lui-même dans `guide.css`, et porte son propre `[data-theme]` (lu depuis
  * `ThemeService`, qui lit `localStorage` en direct) plutôt que de compter sur celui — absent
  * ici — de la coque.
+ *
+ * Le Guide existe en deux langues : `GUIDE_TOPICS` (français) et `GUIDE_TOPICS_EN`, de même
+ * forme. La langue est celle de `LangService`, partagée avec le sélecteur du menu compte de la
+ * coque et persistée dans `localStorage` — comme le thème, c'est le seul lien entre l'onglet de
+ * l'application et celui du Guide. Les clés de thématique sont identiques des deux côtés, si
+ * bien qu'un changement de langue conserve la thématique ouverte ; seule la FAQ dépliée est
+ * refermée, ses libellés ayant changé. Les libellés propres au gabarit (« Points clés »,
+ * « Questions fréquentes »…) suivent par `ui()`. « Annexes et légendes », lui, reste en
+ * français : `Annexes` est un référentiel de codes qui n'a pas d'édition anglaise.
  */
 @Component({
   selector: 'app-guide',
@@ -47,11 +58,16 @@ export class Guide {
   /* `protected` et non `private` : la page s'ouvrant hors de la coque, elle porte sa propre
      bascule Jour/Nuit dans son en-tête — le menu latéral, qui porte celle de l'application,
      n'est pas là. Le service est partagé, donc le choix fait ici suit l'utilisateur dans
-     l'onglet de l'application (localStorage), et inversement. */
+     l'onglet de l'application (localStorage), et inversement. Même chose pour la langue. */
   protected readonly theme = inject(ThemeService);
+  private readonly langService = inject(LangService);
 
   @HostBinding('attr.data-theme') protected get themeAttr() {
     return this.theme.mode();
+  }
+
+  @HostBinding('attr.lang') protected get langAttr() {
+    return this.lang();
   }
 
   /* Onglet distinct du navigateur (pas seulement une route dans l'onglet de l'appli) : mérite
@@ -62,27 +78,65 @@ export class Guide {
     inject(Title).setTitle('Guide — Portfolio Management');
   }
 
-  protected readonly topics = GUIDE_TOPICS;
+  protected readonly lang = this.langService.lang;
+
+  protected setLang(value: Lang): void {
+    this.langService.set(value);
+    this.openFaq.set(null);
+  }
+
+  protected readonly topics = computed(() => (this.lang() === 'en' ? GUIDE_TOPICS_EN : GUIDE_TOPICS));
+
+  /* Libellés du gabarit lui-même, hors contenu des thématiques. */
+  protected readonly ui = computed(() =>
+    this.lang() === 'en'
+      ? {
+          search: 'Search the guide',
+          langLabel: 'Guide language',
+          themeLabel: 'Guide theme',
+          light: 'Light',
+          dark: 'Dark',
+          annexes: 'Appendices and legends',
+          annexesSubtitle: 'Reference of the codes, indicators and legends used by the application',
+          topicsWord: 'topics',
+          sectionsWord: 'sections',
+          faq: 'Frequently asked questions',
+          keys: 'Key points',
+          links: 'Useful shortcuts',
+          allTopics: 'All topics',
+          empty: 'No section in this topic matches the search.',
+        }
+      : {
+          search: 'Rechercher dans le guide',
+          langLabel: 'Langue du guide',
+          themeLabel: 'Thème du guide',
+          light: 'Jour',
+          dark: 'Nuit',
+          annexes: 'Annexes et légendes',
+          annexesSubtitle: "Référentiel des codes, indicateurs et légendes employés par l'application",
+          topicsWord: 'thématiques',
+          sectionsWord: 'sections',
+          faq: 'Questions fréquentes',
+          keys: 'Points clés',
+          links: 'Raccourcis utiles',
+          allTopics: 'Toutes les thématiques',
+          empty: 'Aucune section ne correspond à la recherche dans cette thématique.',
+        },
+  );
 
   protected readonly activeKey = signal(GUIDE_TOPICS[0].key);
   protected readonly query = signal('');
   protected readonly openFaq = signal<number | null>(null);
   protected readonly showAnnexes = signal(false);
 
-  /* Purement visuel, comme le sélecteur FR/EN du menu compte (voir `setLang` dans
-     app-shell.ts) : aucun écran n'est traduit aujourd'hui, le choix n'est donc pas propagé.
-     À brancher sur une vraie i18n Angular le jour où le besoin est réel. */
-  protected readonly lang = signal<'fr' | 'en'>('fr');
-
-  protected setLang(value: 'fr' | 'en'): void {
-    this.lang.set(value);
-  }
-
-  protected readonly activeTopic = computed(() => this.topics.find((t) => t.key === this.activeKey()) ?? this.topics[0]);
+  protected readonly activeTopic = computed(() => {
+    const topics = this.topics();
+    return topics.find((t) => t.key === this.activeKey()) ?? topics[0];
+  });
 
   private readonly normalizedQuery = computed(() => this.query().trim().toLowerCase());
 
-  protected readonly subtitle = computed(() => `${this.activeTopic().label} · ${this.topics.length} thématiques`);
+  protected readonly subtitle = computed(() => `${this.activeTopic().label} · ${this.topics().length} ${this.ui().topicsWord}`);
 
   protected readonly sections = computed(() => {
     const q = this.normalizedQuery();
@@ -95,10 +149,10 @@ export class Guide {
   protected readonly faqRows = computed(() => this.activeTopic().faq.map((f, i) => ({ ...f, open: this.openFaq() === i })));
 
   protected readonly topicList = computed(() =>
-    this.topics.map((t) => ({
+    this.topics().map((t) => ({
       key: t.key,
       label: t.label,
-      count: `${t.sections.length} sections`,
+      count: `${t.sections.length} ${this.ui().sectionsWord}`,
       active: t.key === this.activeKey(),
     })),
   );

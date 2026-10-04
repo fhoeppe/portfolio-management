@@ -14,6 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { HOME_ITEM, NAV_SECTIONS, type NavBadge, type NavItem } from './nav-model';
 import { SecurityUniverseStore } from '../domain/security-universe.store';
 import { ThemeService } from './theme.service';
+import { LangService, type Lang } from './lang.service';
 import { MaskingService } from './masking.service';
 import { ProfileDialog } from './profile-dialog';
 import { AccountPreferencesDialog } from './account-preferences-dialog';
@@ -31,11 +32,11 @@ import { ICON_EXPORT, ICON_EYE, ICON_EYE_OFF, ICON_LOGOUT, ICON_REFRESH } from '
  *   clic délégué : `routerLinkActive` et les données de route (`data.section`/`data.crumb`)
  *   portent cette information nativement ;
  * - le survol des items de menu redevient du CSS (`:hover`), plus un handler JS ;
- * - le sélecteur FR/EN du menu compte (repris pour coller au style du prototype) ne fait que
- *   mémoriser le choix visuel dans `lang` : le mécanisme du prototype (réécriture de tous les
- *   nœuds texte du DOM à la volée) n'est pas repris, et aucun écran du domaine n'est
- *   aujourd'hui traduit. À brancher sur une vraie i18n Angular (ou pipe de traduction) si le
- *   besoin redevient réel — voir `setLang()`.
+ * - le sélecteur FR/EN du menu compte écrit dans `LangService` (persisté, partagé avec le
+ *   Guide, qui est traduit) : le mécanisme du prototype (réécriture de tous les nœuds texte du
+ *   DOM à la volée) n'est pas repris, et les écrans du domaine restent en français. À brancher
+ *   sur une vraie i18n Angular (ou pipe de traduction) le jour où ils le seront — voir
+ *   `setLang()`.
  */
 @Component({
   selector: 'app-shell',
@@ -203,10 +204,12 @@ export class AppShell {
     this.dialog.open(AccountPreferencesDialog, { panelClass: 'pm-compact-dialog-overlay' });
   }
 
-  protected readonly lang = signal<'fr' | 'en'>('fr');
+  /* Partagé avec le Guide (onglet séparé) via `LangService`, persisté dans `localStorage`. */
+  private readonly langService = inject(LangService);
+  protected readonly lang = this.langService.lang;
 
-  protected setLang(value: 'fr' | 'en'): void {
-    this.lang.set(value);
+  protected setLang(value: Lang): void {
+    this.langService.set(value);
   }
 
   protected readonly logout = () => {
