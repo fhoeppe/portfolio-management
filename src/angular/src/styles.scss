@@ -515,6 +515,25 @@ mat-checkbox {
   color: var(--color-neutral-600);
 }
 
+/* Icône d'en-tête de groupe : projetée dans l'étiquette de l'`optgroup` (voir ac-select.ts).
+   Couleur littérale — le panneau vit dans le cdk-overlay-container, où les jetons de la page ne
+   sont pas définis. */
+.pm-sel-panel .mat-mdc-optgroup-label .mdc-list-item__primary-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pm-sel-panel .ac-sel-group-icon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+  color: #4a5b74;
+}
+body[data-theme='dark'] .pm-sel-panel .ac-sel-group-icon {
+  color: #9db3d6;
+}
+
 /* Bandeau de continent dans la liste des indices de référence : chaque région y forme une
    section, et l'étiquette d'`optgroup` seule ne la détachait pas des indices qu'elle coiffe.
    Posé après la règle générique ci-dessus et non avant : les deux ont la même spécificité

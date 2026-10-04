@@ -11,8 +11,8 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   ACCOUNTS,
-  ACCOUNT_BROKERS,
-  ACCOUNT_CASH,
+  ACCOUNT_TITRES,
+  ACCOUNT_TITRES_COUNT,
   BROKERS,
   FIELD_ICONS,
   QUALITIES,
@@ -37,12 +37,16 @@ import {
   buildCoRow,
   buildField,
   blankTitre,
+  nextTitreRef,
+  peekTitreRef,
   blankTitreFields,
   cashCurrencyGroups,
+  modifyTargetGroups,
   holderIssues,
   titreFields,
   titreFromForm,
   titreIssues,
+  type ModifyItem,
   type TitreEntry,
   holderKey,
   nextClientRef,
@@ -181,9 +185,12 @@ export class Comptes {
    * compte, quel que soit celui des deux qui porte le nom.
    */
   private searchIndex(a: Account): string {
-    const cash = ACCOUNT_CASH[a.id];
+    /* Toutes les banques du dossier, et non plus une seule : un dossier porte un compte de
+       liquidité par compte titre, et chercher « Spuerkeess » doit ramener le dossier même si
+       c'est le deuxième compte qui y est tenu. */
+    const banques = (ACCOUNT_TITRES[a.id] ?? []).flatMap((t) => t.cash.map((c) => c.bank));
     const benef = a.holders.filter((h) => h.role.toLowerCase().indexOf('bénéficiaire') >= 0).map((h) => h.name).join(' ');
-    return [a.client, a.custodian, cash?.bank ?? '', benef, a.id, a.domicile].join(' ').toLowerCase();
+    return [a.client, a.custodian, ...banques, benef, a.id, a.domicile].join(' ').toLowerCase();
   }
 
   protected readonly filteredAccounts = computed(() => {
@@ -213,59 +220,50 @@ export class Comptes {
   });
 
   /**
-   * Les brokers rattachés au compte, avec ce qu'on tient chez chacun.
+   * Les comptes titre du dossier, avec ce qu'on tient chez chacun.
    *
-   * Le rattachement vient de `ACCOUNT_BROKERS` (une graine, voir son commentaire) ; l'encours et
-   * la performance, eux, sont calculés sur les comptes courtiers de l'écran Positions, avec la
-   * formule de cet écran — cours × quantité converti par `FXR`, plus les espèces — pour que deux
-   * écrans ne puissent pas annoncer deux encours différents. Un broker rattaché mais sans compte
-   * courtier chez nous affiche « — » plutôt que zéro : ne rien détenir et détenir zéro ne se
+   * Une ligne par compte titre de la graine (`ACCOUNT_TITRES`) : c'est elle qui dit quels comptes
+   * un dossier porte, et chez qui. L'établissement, son adresse et son site se retrouvent par
+   * `BROKERS` à partir du seul libellé.
+   *
+   * L'encours et la performance sont calculés sur le portefeuille que le compte **déclare**
+   * (`portfolio`), avec la formule de l'écran Positions — cours × quantité converti par `FXR`,
+   * plus les espèces — pour que deux écrans ne puissent pas annoncer deux encours différents. Le
+   * rapprochement se faisait auparavant sur le nom du courtier : il donnait le même portefeuille à
+   * plusieurs dossiers et prêtait un PEA à des personnes morales luxembourgeoises. Un compte sans
+   * portefeuille déclaré affiche « — » plutôt que zéro : ne rien valoriser et valoir zéro ne se
    * lisent pas pareil.
    */
   private brokerRows(a: Account) {
-    const names = ACCOUNT_BROKERS[a.id] ?? [];
+    return (ACCOUNT_TITRES[a.id] ?? []).map((t) => {
+      const b = BROKERS.find((x) => x.label === t.broker);
+      const identite = {
+        label: t.broker,
+        flag: b ? b.flag : '',
+        place: b ? b.place : '',
+        url: b ? b.url : '',
+        /* Le domaine seul : l'adresse complète déborderait la colonne, et c'est lui qu'on lit
+           pour reconnaître un établissement. Le lien, lui, garde l'URL entière. */
+        host: b ? b.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : '',
+        /* Le numéro ouvert chez le courtier, que la graine porte désormais : c'est la clé de
+           réconciliation, et c'est lui qu'on cherche sur un relevé. */
+        account: t.number,
+        accountType: t.accountType,
+        status: t.brokerStatus,
+      };
 
-    return names
-      .map((name) => BROKERS.find((b) => b.label === name))
-      .filter((b): b is Broker => !!b)
-      .flatMap((b) => {
-        const identite = {
-          label: b.label,
-          flag: b.flag,
-          place: b.place,
-          url: b.url,
-          /* Le domaine seul : l'adresse complète déborderait la colonne, et c'est lui qu'on lit
-             pour reconnaître un établissement. Le lien, lui, garde l'URL entière. */
-          host: b.url.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-        };
+      const pf = t.portfolio ? PORTFOLIOS.find((x) => x.id === t.portfolio) : undefined;
+      if (!pf) return { ...identite, aum: '—', perf: '—', perfColor: 'var(--color-neutral-600)' };
 
-        const comptes = PORTFOLIOS.filter((pf) => pf.label.startsWith(b.label));
-
-        /* Un broker rattaché sans compte courtier chez nous garde sa ligne : c'est un
-           rattachement déclaré dont il reste à ouvrir le compte, et le taire donnerait une liste
-           plus courte que le décompte de la colonne. */
-        if (!comptes.length) {
-          return [{ ...identite, account: '—', accountType: '—', aum: '—', perf: '—', perfColor: 'var(--color-neutral-600)' }];
-        }
-
-        /* Une ligne par compte, et non par broker : un même courtier en tient plusieurs — CTO et
-           PEA chez Bourse Direct — qui n'ont ni le même régime ni le même encours, et les
-           additionner masquerait précisément ce qu'on vient lire. */
-        return comptes.map((pf) => {
-          const market = pf.positions.reduce((m, p) => m + p.qty * p.price * (FXR[p.currency] || 1), 0);
-          const cost = pf.positions.reduce((m, p) => m + p.qty * p.pru * (FXR[p.currency] || 1), 0);
-          return {
-            ...identite,
-            /* Le jeu de données ne porte pas de numéro de compte chez le courtier : l'identifiant
-               du compte courtier (`DG-CTO`) est ce qui en tient lieu dans toute l'application. */
-            account: pf.id,
-            accountType: pf.id.split('-')[1] ?? '—',
-            aum: fr2(market + pf.cash) + ' EUR',
-            perf: cost ? signedPct(((market - cost) / cost) * 100) : '—',
-            perfColor: cost ? pnlTone(market - cost) : 'var(--color-neutral-600)',
-          };
-        });
-      });
+      const market = pf.positions.reduce((m, p) => m + p.qty * p.price * (FXR[p.currency] || 1), 0);
+      const cost = pf.positions.reduce((m, p) => m + p.qty * p.pru * (FXR[p.currency] || 1), 0);
+      return {
+        ...identite,
+        aum: fr2(market + pf.cash) + ' EUR',
+        perf: cost ? signedPct(((market - cost) / cost) * 100) : '—',
+        perfColor: cost ? pnlTone(market - cost) : 'var(--color-neutral-600)',
+      };
+    });
   }
 
   private buildRow(a: Account) {
@@ -273,7 +271,9 @@ export class Comptes {
     const benef = a.holders.filter((h) => isBenef(h.role));
     const brokers = this.brokerRows(a);
     const etablissements = new Set(brokers.map((b) => b.label)).size;
-    const comptes = brokers.filter((b) => b.account !== '—').length;
+    /* Ouverts au sens du broker, et non « dont on connaît l'encours » : un compte suspendu existe
+       et se compte, il ne se meut simplement plus. */
+    const comptes = brokers.filter((b) => b.status === 'Ouvert').length;
     const st = STATES[a.state] || STATES['active'];
     const on = a.id === this.selected();
     return {
@@ -297,8 +297,8 @@ export class Comptes {
       /* L'info-bulle nomme ces mêmes lignes, compte par compte : le nombre seul dit qu'il y en a
          quatre, pas lesquelles, et c'est souvent la question qu'on se pose avant de déplier. */
       brokersTitle: brokers.length
-        ? brokers.map((b) => (b.account === '—' ? b.label : b.label + ' — ' + b.account)).join(' · ')
-        : 'Aucun broker rattaché',
+        ? brokers.map((b) => b.label + ' — ' + b.accountType + ' n° ' + b.account).join(' · ')
+        : 'Aucun compte titre ouvert',
       brokersNote: etablissements
         ? etablissements + ' broker' + (etablissements > 1 ? 's' : '') + ' · ' + comptes + ' compte' + (comptes > 1 ? 's' : '') + ' ouvert' + (comptes > 1 ? 's' : '')
         : 'aucun',
@@ -392,6 +392,14 @@ export class Comptes {
     this.opStatus.set('');
   }
 
+  /* « Changer de dossier » renvoie à la liste, où le crayon désigne le dossier et rouvre cet
+     onglet sur le bon parcours. Un sélecteur dans l'encart aurait dupliqué la liste et ses
+     filtres — la liste est déjà l'écran qui sait choisir un dossier, et elle seule sait aussi
+     refuser : on ne clôture pas un dossier déjà clôturé, son crayon est inactif. */
+  protected backToList(): void {
+    this.tab.set('list');
+  }
+
   protected openDetail(id: string, e?: Event): void {
     if (e) e.stopPropagation();
     this.selected.set(id);
@@ -446,6 +454,9 @@ export class Comptes {
   protected readonly currentStepIndex = computed(() => Math.min(this.opStep(), this.def().steps.length - 1));
   protected readonly currentStep = computed(() => this.def().steps[this.currentStepIndex()]);
   protected readonly isLastStep = computed(() => this.currentStepIndex() === this.def().steps.length - 1);
+  /* Au-delà d'une étape, la rangée d'étapes sert à se situer et à revenir en arrière. À une seule,
+     elle n'annonce qu'elle-même. */
+  protected readonly multiStep = computed(() => this.def().steps.length > 1);
   /* « Terminé » ne se déduit plus du compte rendu de pied de page : tout message y passe
      (« Titulaires vérifiés », « Saisie effacée »…) et chacun figeait le statut sur Actif comme si
      le compte existait. Seule une opération réellement aboutie — compte créé, avenant ou clôture
@@ -458,8 +469,53 @@ export class Comptes {
      commencé. */
   protected readonly opsBadge = computed(() => {
     const total = this.def().steps.length;
+    /* Un parcours d'une seule étape n'a pas d'avancement à annoncer : « 1/1 » occupe la place
+       d'un repère sans en être un. La pastille se tait alors, des deux côtés. */
+    if (total === 1) return '';
     return this.tab() === 'ops' ? `${this.currentStepIndex() + 1}/${total}` : String(total);
   });
+
+  /**
+   * Le dossier sur lequel porte l'opération, tel que l'encart le montre.
+   *
+   * `pickManage` — le crayon de la liste — désigne le dossier avant de basculer sur cet onglet :
+   * c'est lui que l'avenant modifie et que la clôture résilie. Sans l'encart, le parcours ne le
+   * disait nulle part, et trois champs d'identité verrouillés annonçaient « Du dossier client »
+   * sans qu'on sache lequel.
+   */
+  protected readonly opSubject = computed(() => {
+    const a = ACCOUNTS.find((x) => x.id === this.selected());
+    if (!a) return null;
+    const st = STATES[a.state] || STATES['active'];
+    const titres = ACCOUNT_TITRES[a.id] ?? [];
+    /* Ouverts au sens du broker : un compte suspendu existe et se compte, il ne se meut plus.
+       Le dire ici évite d'ouvrir l'étape des comptes pour savoir sur quoi l'avenant va porter. */
+    const ouverts = titres.filter((t) => t.brokerStatus === 'Ouvert').length;
+    return {
+      id: a.id,
+      client: a.client,
+      state: st.label,
+      stateBg: st.bg,
+      stateFg: st.fg,
+      country: a.domicile,
+      countryFlag: FLAG_BY_COUNTRY.get(a.domicile.toLowerCase()) ?? '',
+      manager: a.manager,
+      aum: a.aum ? fr(a.aum) + ' M€' : 'Non investi',
+      kind: a.type,
+      opened: a.opened === '—' ? 'Pas encore ouvert' : a.opened,
+      titres: titres.length
+        ? `${titres.length} · ${ouverts} ouvert${ouverts > 1 ? 's' : ''}`
+        : 'Aucun',
+      titresTitle: titres.length
+        ? titres.map((t) => `${t.alias} — ${t.brokerStatus.toLowerCase()}`).join(' · ')
+        : 'Aucun compte titre ouvert à ce jour',
+    };
+  });
+  /* L'encart s'affiche partout où l'opération porte sur un dossier qui existe — l'avenant et la
+     clôture. La Création en est exclue par ce qu'elle est : elle n'a pas de dossier à montrer,
+     elle en fabrique un. Écrit comme une exclusion plutôt qu'une liste de parcours : un quatrième
+     parcours portera lui aussi sur un dossier existant, et l'oubli ne se verrait pas. */
+  protected readonly subjectCard = computed(() => (this.op() === 'create' ? null : this.opSubject()));
 
   protected readonly fieldCtx = computed(() => ({
     form: this.form(),
@@ -483,11 +539,18 @@ export class Comptes {
   /* Repère d'étape porté par la grille, pour les rares réglages qui ne valent que sur l'une
      d'elles — la largeur du statut à l'étape de contrôle. Déduit des champs plutôt que du titre :
      un intitulé se réécrit, la composition d'une étape non. */
+  protected onStepKey(key: string): boolean {
+    return this.opStepKey() === key;
+  }
   protected readonly opStepKey = computed(() => {
     const f = this.currentStep().fields;
+    if (f.includes('target') && this.op() === 'modify') return 'objet';
     if (f.includes('lastName')) return 'titulaires';
     if (f.includes('broker')) return 'compte-titre';
-    if (f.includes('closed')) return 'controle';
+    /* La clôture se reconnaît à sa date d'effet, seule étape du formulaire à en porter une. Le
+       repère disait « controle » du temps où l'étape s'appelait ainsi ; elle s'appelle « Clôture »
+       depuis qu'elle a fusionné avec le motif, et le repère suit. */
+    if (f.includes('effect')) return 'cloture';
     return 'autre';
   });
   protected labelIcon(key: string): string {
@@ -508,10 +571,13 @@ export class Comptes {
   protected readonly onCashStep = computed(() => !!this.currentStep().withCash);
   protected readonly onHolderStep = computed(() => this.currentStep().title === 'Titulaires');
   protected readonly onCoPane = computed(() => this.onHolderStep() && this.holderPane() !== 'main');
-  /* Le rappel « Vérifier la saisie » ouvre le récapitulatif : sur l'étape Contrôle des
-     opérations qui en ont une, et sur l'étape des comptes quand elle conclut le parcours — c'est
-     elle qui crée le compte, désormais. */
-  protected readonly onCheckStep = computed(() => this.currentStep().title === 'Contrôle' || (this.onCashStep() && this.isLastStep()));
+  /* Le rappel « Vérifier la saisie » ouvre le récapitulatif : partout où l'étape porte la date
+     de fermeture et le statut, et sur l'étape des comptes quand elle conclut le parcours — c'est
+     elle qui crée le compte, désormais. Reconnu à la composition de l'étape et non à son
+     intitulé : la clôture a fondu son « Contrôle » dans une étape unique, et un rappel accroché
+     au mot « Contrôle » aurait disparu avec lui, sans que rien ne le signale. */
+  protected readonly onObjetStep = computed(() => this.onStepKey('objet'));
+  protected readonly onCheckStep = computed(() => this.onStepKey('cloture') || (this.onCashStep() && this.isLastStep()));
 
   // ---- Comptes titre du dossier -------------------------------------------
 
@@ -521,8 +587,9 @@ export class Comptes {
     effect(() => {
       const i = this.activeTitre();
       if (i < 0) return;
-      const entry = titreFromForm(this.form(), this.cash());
-      this.titres.update((list) => (i < list.length ? list.map((t, j) => (j === i ? entry : t)) : list));
+      /* La référence est acquise : elle n'est pas dans le formulaire, elle est reportée telle
+         quelle à chaque recopie. */
+      this.titres.update((list) => (i < list.length ? list.map((t, j) => (j === i ? titreFromForm(this.form(), this.cash(), t.ref) : t)) : list));
     });
   }
 
@@ -533,6 +600,7 @@ export class Comptes {
       const parts = [t.broker ? (b ? b.flag + ' ' : '') + t.broker : '', t.accountType, t.number ? 'n° ' + t.number : ''].filter(Boolean);
       return {
         index,
+        ref: t.ref,
         title: t.alias || 'Compte titre ' + (index + 1),
         hint: parts.length ? parts.join(' · ') : 'À renseigner',
         missing,
@@ -542,19 +610,15 @@ export class Comptes {
     }),
   );
   protected readonly titresIncomplete = computed(() => this.titreViews().filter((t) => t.missing.length).length);
-  /* Un seul compte titre en cours à la fois : tant qu'un bloc est ouvert, « Ajouter » reste
-     grisé — c'est « Valider » qui le rend disponible, une fois le compte versé au dossier. En
-     ouvrir un second par-dessus laisserait le premier à moitié renseigné sans rien dire. */
-  protected readonly titreAddDisabled = computed(() => this.activeTitre() >= 0);
+  /* « Ajouter » reste toujours disponible : un compte titre en cours de saisie n'empêche pas
+     d'en ouvrir un autre — chaque bloc annonce son état, et « Créer les comptes Broker » attend de toute
+     façon qu'ils soient tous complets. */
   protected readonly titreAddNote = computed(() => {
     const n = this.titres().length;
-    if (this.titreAddDisabled()) {
-      const name = this.titres()[this.activeTitre()]?.alias;
-      return `Validez ${name ? '« ' + name + ' »' : 'le compte titre ouvert'} pour pouvoir en ajouter un autre.`;
-    }
-    if (!n) return "Aucun compte titre au dossier — « Ajouter » en ouvre un, à renseigner avec son compte de liquidité.";
+    const next = ` Prochaine référence : ${peekTitreRef(ACCOUNT_TITRES_COUNT)}.`;
+    if (!n) return "Aucun compte titre au dossier — « Ajouter » en ouvre un, à renseigner avec son compte de liquidité." + next;
     const inc = this.titresIncomplete();
-    return `${n} compte${n > 1 ? 's' : ''} titre au dossier` + (inc ? ` · ${inc} à compléter.` : ' · tous complets.') + " « Ajouter » en ouvre un autre.";
+    return `${n} compte${n > 1 ? 's' : ''} titre au dossier` + (inc ? ` · ${inc} à compléter.` : ' · tous complets.') + next;
   });
   /* Charge le compte `i` dans le tampon de saisie — ou vide le tampon quand plus rien n'est
      déplié, pour qu'aucune valeur d'un compte ne traîne dans les champs d'un autre. */
@@ -569,7 +633,7 @@ export class Comptes {
   }
   /* « Ajouter » ouvre un compte titre vierge, déplié, prêt à être renseigné. */
   protected addTitre(): void {
-    this.titres.update((list) => [...list, blankTitre()]);
+    this.titres.update((list) => [...list, blankTitre(nextTitreRef(ACCOUNT_TITRES_COUNT))]);
     this.loadTitre(this.titres().length - 1, true);
     this.opStatus.set('');
   }
@@ -666,7 +730,7 @@ export class Comptes {
   private readonly holderVerifiedKey = this.viewState.remember('comptes.holderVerifiedKey', '');
   private readonly holderFailedKey = this.viewState.remember('comptes.holderFailedKey', '');
   private readonly holderStateKey = computed(() => holderKey(this.form(), this.co()));
-  protected readonly holderIssuesView = computed(() => holderIssues(this.form(), this.co()));
+  protected readonly holderIssuesView = computed(() => holderIssues(this.form(), this.co(), this.op()));
   protected readonly holderCheck = computed<'none' | 'ok' | 'fail'>(() => {
     const key = this.holderStateKey();
     if (this.holderVerifiedKey() === key) return 'ok';
@@ -803,14 +867,36 @@ export class Comptes {
   protected setOpenedDate(value: string): void {
     this.patchForm({ opened: value && value > TODAY_ISO ? TODAY_ISO : value });
   }
-  protected setClosedDate(value: string): void {
-    this.patchForm({ closed: value || '—' });
-  }
-
+  /* Une seule date de saisie reste au formulaire — l'ouverture du compte chez le broker. Le
+     renvoi par clé subsiste pour la suivante : c'est lui qui porte la règle propre à chacune,
+     ici qu'on n'ouvre pas un compte dans le futur. */
   protected setDateField(key: string, value: string): void {
     if (key === 'opened') { this.setOpenedDate(value); return; }
-    if (key === 'closed') { this.setClosedDate(value); return; }
     this.patchForm({ [key]: value } as Partial<FormState>);
+  }
+
+  /* Objet d'un avenant : autant de lignes que d'éléments modifiés, chacune avec son motif — un
+     changement de profil et un changement de tarification ne s'invoquent pas pour la même raison.
+     Les lignes vivent à part du formulaire, comme les co-titulaires et les comptes de liquidité,
+     et s'y recopient jointes par « · » pour que le récapitulatif et l'historique les lisent. */
+  protected readonly objets = this.viewState.remember<ModifyItem[]>('comptes.objets', [{ target: '', reason: '' }]);
+  protected readonly targetGroups: readonly AcSelectGroup[] = modifyTargetGroups();
+  private syncObjets(list: readonly ModifyItem[]): void {
+    this.objets.set([...list]);
+    this.patchForm({
+      target: list.map((o) => o.target).filter(Boolean).join(' · '),
+      reason: list.map((o) => o.reason).filter(Boolean).join(' · '),
+    });
+  }
+  protected patchObjet(index: number, patch: Partial<ModifyItem>): void {
+    this.syncObjets(this.objets().map((o, i) => (i === index ? { ...o, ...patch } : o)));
+  }
+  protected addObjet(): void {
+    this.syncObjets([...this.objets(), { target: '', reason: '' }]);
+  }
+  protected removeObjet(index: number): void {
+    const next = this.objets().filter((_, i) => i !== index);
+    this.syncObjets(next.length ? next : [{ target: '', reason: '' }]);
   }
 
   protected setTextField(key: string, value: string): void {
@@ -830,7 +916,8 @@ export class Comptes {
     this.opStep.set(i);
   }
 
-  /* Créer le compte suppose au moins un compte titre, et tous complets — IBAN vérifiés compris. */
+  /* Fermer le parcours sur cette étape suppose au moins un compte titre, et tous complets — IBAN
+     vérifiés compris. Vaut pour la création comme pour l'avenant : les deux s'y terminent. */
   private readonly titresBlocked = computed(() => this.onCashStep() && !this.locked() && (!this.titres().length || this.titresIncomplete() > 0));
   protected readonly opNextBlocked = computed(() => this.holderBlocked() || this.titresBlocked() || (this.locked() && this.isLastStep()));
   protected readonly opNextBlockedNote = computed(() => {
@@ -839,8 +926,8 @@ export class Comptes {
     if (this.titresBlocked()) {
       const inc = this.titresIncomplete();
       return this.titres().length
-        ? `${inc} compte${inc > 1 ? 's' : ''} titre à compléter avant de créer le compte.`
-        : 'Ajoutez au moins un compte titre — avec son compte de liquidité — avant de créer le compte.';
+        ? `${inc} compte${inc > 1 ? 's' : ''} titre à compléter avant « ${this.def().next} ».`
+        : `Ajoutez au moins un compte titre — avec son compte de liquidité — avant « ${this.def().next} ».`;
     }
     return '';
   });
@@ -882,7 +969,10 @@ export class Comptes {
       return;
     }
     this.opDone.set(true);
-    this.opStatus.set(this.def().label + ' enregistrée — dossier transmis au contrôle interne.');
+    /* « Enregistrée », et rien de plus : l'écran ne transmet le dossier à personne, et annoncer
+       un contrôle interne qui n'existe pas donnait pour acquise une suite qui n'a pas lieu. Les
+       trois libellés de parcours sont féminins, l'accord tient pour chacun. */
+    this.opStatus.set(this.def().label + ' enregistrée.');
   }
 
   protected opReset(): void {
@@ -910,7 +1000,7 @@ export class Comptes {
       data: {
         form: this.form, co: this.co,
         titres: scope === 'titres' ? this.activeTitreOnly : this.titres,
-        title, scope, submitLabel,
+        title, scope, submitLabel, op: this.op(),
       },
       panelClass: 'pm-side-panel-overlay',
       position: SIDE_PANEL_LAYOUT.position,

@@ -31,7 +31,11 @@
         [class.ac-tab-on]="tab() === 'ops'" (click)="setTab('ops')">
         <mat-icon svgIcon="pencil" style="font-size:16px"></mat-icon>
         Gérer compte portefeuille
-        <span class="ac-tab-badge">{{ opsBadge() }}</span>
+        <!-- Vidée, la pastille laissait son fond : un trait clair sans contenu, qu'on lit comme
+             une valeur manquante. Un parcours d'une seule étape n'en affiche donc aucune. -->
+        @if (opsBadge()) {
+          <span class="ac-tab-badge">{{ opsBadge() }}</span>
+        }
       </button>
     </nav>
   </div>
@@ -235,26 +239,89 @@
           <span class="ac-ops-hint">{{ def().hint }}</span>
         </div>
 
+        <!-- Le dossier sur lequel porte l'opération — l'avenant comme la clôture. Posé hors de la
+             carte des étapes, et non dedans : il ne change pas d'une étape à l'autre, et c'est
+             précisément ce qu'on veut garder sous les yeux en passant de l'une à la suivante. -->
+        @if (subjectCard(); as s) {
+          <section class="ac-subject" aria-label="Dossier concerné par l'opération">
+            <header class="ac-subject-head">
+              <mat-icon class="ac-subject-icon" svgIcon="id-badge"></mat-icon>
+              <span class="ac-subject-client">{{ s.client }}</span>
+              <span class="ac-subject-ref">{{ s.id }}</span>
+              <span class="ac-state-pill" [style.background]="s.stateBg" [style.color]="s.stateFg">{{ s.state }}</span>
+              <span class="ac-subject-actions">
+                <button type="button" mat-stroked-button class="ac-subject-btn" (click)="openDetail(s.id)"
+                  matTooltip="Ouvrir la fiche complète du dossier">
+                  <mat-icon svgIcon="file-text" style="font-size:15px"></mat-icon>
+                  Voir la fiche
+                </button>
+                <button type="button" mat-stroked-button class="ac-subject-btn" (click)="backToList()"
+                  matTooltip="Revenir à la liste pour travailler sur un autre dossier">
+                  <mat-icon svgIcon="chevron-left" style="font-size:15px"></mat-icon>
+                  Changer de dossier
+                </button>
+              </span>
+            </header>
+            <div class="ac-subject-facts">
+              <span class="ac-subject-fact">
+                <span class="ac-subject-label">Domiciliation</span>
+                <span class="ac-subject-value">
+                  <span class="ac-subject-flag">{{ s.countryFlag }}</span>{{ s.country }}
+                </span>
+              </span>
+              <span class="ac-subject-fact">
+                <span class="ac-subject-label">Gestion</span>
+                <span class="ac-subject-value">{{ s.kind }}</span>
+              </span>
+              <span class="ac-subject-fact">
+                <span class="ac-subject-label">Encours</span>
+                <span class="ac-subject-value">{{ s.aum }}</span>
+              </span>
+              <span class="ac-subject-fact">
+                <span class="ac-subject-label">Comptes titre</span>
+                <span class="ac-subject-value" [matTooltip]="s.titresTitle">{{ s.titres }}</span>
+              </span>
+              <span class="ac-subject-fact">
+                <span class="ac-subject-label">Gestionnaire</span>
+                <span class="ac-subject-value">{{ s.manager }}</span>
+              </span>
+              <span class="ac-subject-fact">
+                <span class="ac-subject-label">Ouvert le</span>
+                <span class="ac-subject-value">{{ s.opened }}</span>
+              </span>
+            </div>
+          </section>
+        }
+
         <div class="ac-ops-card">
-          <!-- MatStepper pilote l'en-tête ; le corps reste un gabarit unique piloté par
-               `currentStep()`, réinjecté dans l'étape sélectionnée via `matStepContent` (rendu
-               paresseux : sans lui, les 6 étapes instancieraient chacune tout le formulaire). -->
-          <mat-stepper class="ac-stepper" [selectedIndex]="currentStepIndex()"
-            (selectionChange)="goStep($event.selectedIndex)">
-            @for (s of opSteps(); track s.title) {
-              <mat-step [completed]="s.isDone">
-                <ng-template matStepLabel>
-                  <span class="ac-step-text">
-                    <span class="ac-step-title">{{ s.title }}</span>
-                    <span class="ac-step-hint">{{ s.hint }}</span>
-                  </span>
-                </ng-template>
-                <ng-template matStepContent>
-                  <ng-container *ngTemplateOutlet="stepBody"></ng-container>
-                </ng-template>
-              </mat-step>
-            }
-          </mat-stepper>
+          <!-- Pas de rangée d'étapes pour un parcours qui n'en a qu'une : elle n'annoncerait que
+               sa propre existence, et « Suivant » n'y mène nulle part. Le corps est le même
+               gabarit dans les deux cas — ce qui change, c'est seulement qui le porte. -->
+          @if (multiStep()) {
+            <!-- MatStepper pilote l'en-tête ; le corps reste un gabarit unique piloté par
+                 `currentStep()`, réinjecté dans l'étape sélectionnée via `matStepContent` (rendu
+                 paresseux : sans lui, chaque étape instancierait tout le formulaire). -->
+            <mat-stepper class="ac-stepper" [selectedIndex]="currentStepIndex()"
+              (selectionChange)="goStep($event.selectedIndex)">
+              @for (s of opSteps(); track s.title) {
+                <mat-step [completed]="s.isDone">
+                  <ng-template matStepLabel>
+                    <span class="ac-step-text">
+                      <span class="ac-step-title">{{ s.title }}</span>
+                      <span class="ac-step-hint">{{ s.hint }}</span>
+                    </span>
+                  </ng-template>
+                  <ng-template matStepContent>
+                    <ng-container *ngTemplateOutlet="stepBody"></ng-container>
+                  </ng-template>
+                </mat-step>
+              }
+            </mat-stepper>
+          } @else {
+            <div class="ac-solo-step">
+              <ng-container *ngTemplateOutlet="stepBody"></ng-container>
+            </div>
+          }
 
           <!-- La grille des champs est un gabarit à part : l'étape des comptes la place dans son
                premier bloc, les autres étapes la posent directement dans leur corps. -->
@@ -351,7 +418,7 @@
                   <span class="ac-check-callout-title">Ajouter un compte titre</span>
                   <span class="ac-check-callout-note">{{ titreAddNote() }}</span>
                 </span>
-                <button type="button" mat-stroked-button class="ac-recap-btn" [disabled]="titreAddDisabled()" (click)="addTitre()" [matTooltip]="titreAddDisabled() ? 'Validez le compte titre ouvert avant d\'en ajouter un autre' : 'Ouvre un nouveau compte titre à renseigner, avec son compte de liquidité'">
+                <button type="button" mat-stroked-button class="ac-recap-btn" (click)="addTitre()" matTooltip="Ouvre un nouveau compte titre à renseigner, avec son compte de liquidité">
                   <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
                   Ajouter
                 </button>
@@ -360,7 +427,7 @@
               <div class="ac-check-callout">
                 <span class="ac-check-callout-text">
                   <span class="ac-check-callout-title">Contrôle avant enregistrement</span>
-                  <span class="ac-check-callout-note">Ouvrez le récapitulatif pour relire l'ensemble des informations saisies avant de créer le compte.</span>
+                  <span class="ac-check-callout-note">Ouvrez le récapitulatif pour relire l'ensemble des informations saisies avant de créer les comptes.</span>
                 </span>
                 <button type="button" mat-stroked-button class="ac-recap-btn" (click)="openRecap()">
                   <mat-icon svgIcon="log-in" style="font-size:15px"></mat-icon>
@@ -380,8 +447,11 @@
               @for (t of titreViews(); track t.index) {
               <section class="ac-block ac-block-outer" [class.ac-block-collapsed]="!t.open">
                 <header class="ac-block-head ac-block-head-toggle" role="button" tabindex="0" [attr.aria-expanded]="t.open" (click)="toggleTitre(t.index)" (keydown.enter)="toggleTitre(t.index)" (keydown.space)="toggleTitre(t.index); $event.preventDefault()" [matTooltip]="t.open ? 'Replier ce compte titre' : 'Déplier ce compte titre'">
-                  <mat-icon class="ac-block-icon" svgIcon="library"></mat-icon>
+                  <mat-icon class="ac-block-icon" svgIcon="ledger-book"></mat-icon>
                   <span class="ac-block-title">{{ t.title }}</span>
+                  @if (t.ref) {
+                    <span class="ac-block-ref">{{ t.ref }}</span>
+                  }
                   <span class="ac-block-hint">{{ t.hint }}</span>
                   <span class="ac-block-state" [class.ac-block-state-ok]="!t.missing.length">{{ t.state }}</span>
                   <button type="button" class="ac-co-remove ac-block-remove" (click)="removeTitre(t.index, $event)" matTooltip="Retirer ce compte titre du dossier" aria-label="Retirer ce compte titre">
@@ -526,8 +596,36 @@
               <h2 class="ac-step-heading">{{ opStepTitle() }}</h2>
             }
 
-            @if (!onCashStep()) {
+            @if (!onCashStep() && !onObjetStep()) {
               <ng-container *ngTemplateOutlet="fieldsGrid"></ng-container>
+            }
+
+            <!-- Objet d'un avenant : une ligne par élément modifié — l'élément, son motif, et la
+                 corbeille qui retire la ligne. Le « + » de la dernière en ouvre une autre. -->
+            @if (onObjetStep()) {
+              <div class="ac-objet-table">
+                <div class="ac-objet-head">
+                  <span>Élément concerné</span>
+                  <span>Motif</span>
+                  <span></span>
+                </div>
+                @for (o of objets(); track $index) {
+                  <div class="ac-objet-row">
+                    <app-ac-select [groups]="targetGroups" [value]="o.target" placeholder="Élément concerné" (valueChange)="patchObjet($index, { target: $event })" />
+                    <input class="ac-field-input" [value]="o.reason" placeholder="Motif invoqué" (change)="patchObjet($index, { reason: $any($event.target).value })" />
+                    <span class="ac-objet-actions">
+                      <button type="button" class="ac-cash-remove" (click)="removeObjet($index)" matTooltip="Retirer cette ligne" aria-label="Retirer cette ligne">
+                        <mat-icon svgIcon="shopping-bag" style="font-size:13px"></mat-icon>
+                      </button>
+                      @if ($last) {
+                        <button type="button" class="ac-add-btn ac-objet-add" (click)="addObjet()" matTooltip="Ajouter un élément concerné et son motif" aria-label="Ajouter un élément concerné et son motif">
+                          <mat-icon svgIcon="plus" style="font-size:15px"></mat-icon>
+                        </button>
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
             }
 
             @if (onHolderStep()) {
@@ -613,12 +711,6 @@
                 <button type="button" mat-stroked-button class="ac-prev-btn" (click)="opPrev()" matTooltip="Revenir à l'étape précédente">
                   <mat-icon svgIcon="chevron-left" style="font-size:14px"></mat-icon>
                   {{ opPrevLabel() }}
-                </button>
-              }
-              @if (onCashStep() && !locked()) {
-                <button type="button" mat-stroked-button class="ac-verify-btn" (click)="openRecap()" matTooltip="Ouvre le récapitulatif du dossier — titulaires, comptes titre, statut">
-                  <mat-icon svgIcon="log-in" style="font-size:14px"></mat-icon>
-                  Vérifier la saisie
                 </button>
               }
               @if (onHolderStep() && !locked()) {

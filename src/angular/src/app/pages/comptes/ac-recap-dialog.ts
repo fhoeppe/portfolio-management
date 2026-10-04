@@ -7,6 +7,7 @@ import type { Icon } from '../../shell/icon-shapes';
 import {
   type CoHolder,
   type FormState,
+  type OpKind,
   type TitreEntry,
   buildRecapGroups,
   buildTitresRecapGroups,
@@ -19,6 +20,8 @@ export interface AcRecapDialogData {
   readonly form: Signal<FormState>;
   readonly co: Signal<readonly CoHolder[]>;
   readonly titres: Signal<readonly TitreEntry[]>;
+  /** Le genre d'opération : le verdict ne réclame pas ce que le parcours verrouille. */
+  readonly op?: OpKind;
   /** Intitulé du panneau. */
   readonly title?: string;
   /** `titres` : ne relire que les comptes titre et leurs comptes de liquidité. */
@@ -62,10 +65,10 @@ export class AcRecapDialog {
   protected readonly groups = computed(() =>
     this.data.scope === 'titres'
       ? buildTitresRecapGroups(this.data.titres())
-      : buildRecapGroups(this.data.form(), this.data.co(), this.data.titres()),
+      : buildRecapGroups(this.data.form(), this.data.co()),
   );
   protected readonly verdict = computed(() => {
-    if (this.data.scope !== 'titres') return recapVerdict(this.data.form(), this.data.co());
+    if (this.data.scope !== 'titres') return recapVerdict(this.data.form(), this.data.co(), this.data.op);
     const titres = this.data.titres();
     if (!titres.length) return "Aucun compte titre — « Ajouter » en ouvre un.";
     const inc = titres.filter((t) => titreIssues(t, t.cash).length).length;

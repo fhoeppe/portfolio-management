@@ -674,6 +674,111 @@
   color: #ffffff;
 }
 
+/* ---- Encart du dossier modifié ------------------------------------------ */
+
+/* Posé entre la rangée des parcours et la carte des étapes : c'est le contexte de l'avenant, pas
+   un contenu d'étape. `min-width: 0` comme la carte — rien ne doit en sortir, quelle que soit la
+   longueur d'une raison sociale. */
+.ac-subject {
+  flex: none;
+  min-width: 0;
+  padding: 10px 14px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-left: 3px solid var(--ds-brand-fill, var(--field-brand));
+  border-radius: 6px;
+  background: rgba(0, 61, 165, 0.04);
+}
+
+.ac-subject-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.ac-subject-icon {
+  flex: none;
+  color: var(--ink-brand-2);
+}
+/* Le nom du client porte l'encart : c'est lui qu'on cherche des yeux en revenant d'une étape.
+   Il se comprime et se coupe plutôt que de pousser la pastille de statut hors du cadre. */
+.ac-subject-client {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-brand);
+}
+.ac-subject-ref {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.12);
+  color: var(--ink-brand-2);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ac-subject-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ac-subject-btn {
+  --mat-button-outlined-label-text-color: var(--ink-brand-2);
+  --mat-button-outlined-icon-color: var(--ink-brand-2);
+  --mat-button-outlined-horizontal-padding: 10px;
+  --mat-button-outlined-container-height: 28px;
+  --mat-button-outlined-label-text-size: 11px;
+  --mat-icon-button-icon-size: 15px;
+  white-space: nowrap;
+}
+
+/* Une grille qui se replie, et non une rangée flex : à l'étroit les faits passent à la ligne par
+   colonnes entières, au lieu de laisser un libellé seul sous sa valeur. */
+.ac-subject-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 8px 16px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-neutral-300);
+}
+.ac-subject-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ac-subject-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+/* Même traitement que le pays d'une ligne de la liste : le drapeau est un emoji, il suit la
+   taille du texte, et sans gouttière il vient coller au libellé. */
+.ac-subject-flag {
+  flex: none;
+  margin-right: 6px;
+  font-size: 13px;
+  line-height: 1;
+}
+.ac-subject-value {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--color-neutral-800, var(--color-text));
+}
+
 .ac-ops-card {
   flex: none;
   position: relative;
@@ -723,6 +828,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Le porteur du corps quand il n'y a pas de rangée d'étapes. Aucun rembourrage ici : c'est
+   `.ac-step-body` qui le porte, dans les deux cas — le dédoubler creuserait la carte de la seule
+   clôture. `min-width: 0` pour que la carte puisse se comprimer, comme avec le stepper. */
+.ac-solo-step {
+  min-width: 0;
 }
 
 .ac-step-body {
@@ -777,6 +889,19 @@
 .ac-block-hint {
   font-size: 11px;
   color: var(--color-neutral-600);
+}
+/* Référence du compte titre : attribuée, jamais saisie — d'où le fond neutre et les chiffres
+   tabulaires, qui la distinguent du libellé choisi par le gestionnaire. */
+.ac-block-ref {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 61, 165, 0.1);
+  color: var(--ink-brand-2);
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 /* Bloc englobant du compte en cours de saisie : ses deux parties gardent leur propre cadre, en
    plus léger — filet plein sans liseré de marque, sur le fond du bloc parent — pour qu'on lise
@@ -1056,16 +1181,54 @@
    moitié de l'ancienne borne suffit — « Statut du compte » ne montre qu'une pastille et son
    commentaire court, un contrôle de 420px pour « Projet » donnait à la ligne un poids qu'elle
    n'a pas. */
+/* Objet d'un avenant : un tableau d'une ligne par élément modifié — même gabarit de colonnes pour
+   l'en-tête et les lignes, comme le tableau des comptes de liquidité. */
+.ac-objet-table {
+  --ac-objet-cols: minmax(0, 1fr) minmax(0, 1fr) 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.ac-objet-head,
+.ac-objet-row {
+  display: grid;
+  grid-template-columns: var(--ac-objet-cols);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.ac-objet-head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+.ac-objet-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ac-objet-add {
+  margin-left: 0;
+  width: 30px;
+  height: 30px;
+}
+
 .ac-field-standalone {
   /* 300px et non 210 : la précision « Passera à Actif à la création » tenait sur une ligne
      tronquée à 210. */
   max-width: 300px;
 }
 
-/* À l'étape de contrôle, le statut se réduit à sa pastille : la fermeture est la seule saisie de
-   la rangée, et un contrôle en lecture large de 870px à côté d'elle déséquilibrait l'étape. */
-.ac-fields-grid[data-step='controle'] .ac-field[data-field='status'] {
-  max-width: 210px;
+/* À l'étape de clôture, le statut reste étroit : c'est une lecture, pas une saisie, et l'étaler
+   sur toute sa colonne le mettait au même poids que les champs qu'on remplit.
+   300px et non 210 : à 210 la précision « Passera à Clôturé à la validation » perdait plus de la
+   moitié de sa longueur dans les points de suspension. Même arbitrage, et même valeur, que
+   `.ac-field-standalone` plus haut — pour exactement la même phrase. */
+.ac-fields-grid[data-step='cloture'] .ac-field[data-field='status'] {
+  max-width: 300px;
 }
 
 /* La civilité tient en un mot : lui laisser toute une colonne dilate un contrôle qui n'affiche
@@ -1138,6 +1301,17 @@
   display: flex;
   align-items: center;
   gap: 2px;
+  min-width: 0;
+}
+/* L'entrée prend la place qui reste, et non toute la largeur : `width: 100%` plus le bouton
+   calendrier à côté faisaient 100% + 26px, et la rangée sortait de sa colonne. */
+.ac-field-datepicker .ac-field-date {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.ac-field-datepicker mat-datepicker-toggle {
+  flex: none;
 }
 
 /* `::ng-deep` est nécessaire : le bouton appartient au gabarit de `mat-datepicker-toggle`, il ne
@@ -1330,6 +1504,13 @@
   background: var(--color-neutral-200);
   color: var(--color-neutral-600);
   font-size: 13px;
+  /* Hauteur fixe : un libellé qui passe à la ligne sort du cadre au lieu de le grandir. Les
+     colonnes de la grille n'ont pas toutes la même largeur et la valeur vient du dossier —
+     on ne sait pas d'avance ce qu'elle mesure. Une ligne, et la coupe en bout. */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ac-field-sub {
   display: flex;

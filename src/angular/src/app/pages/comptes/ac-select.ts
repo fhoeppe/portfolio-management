@@ -65,7 +65,14 @@ import type { AcSelectGroup } from './comptes-form';
 
         @for (g of groups(); track g.heading) {
           @if (g.heading) {
-            <mat-optgroup [label]="g.flag ? g.flag + ' ' + g.heading : g.heading">
+            <!-- Libellé vide et contenu projeté : le gabarit de MatOptgroup rend son label, puis
+                 un ng-content qui capte tout ce qui n'est pas une option — c'est le seul endroit
+                 où une icône peut entrer dans l'en-tête d'un groupe. -->
+            <mat-optgroup [label]="''">
+              @if (g.icon) {
+                <mat-icon class="ac-sel-group-icon" [svgIcon]="g.icon"></mat-icon>
+              }
+              <span class="ac-sel-group-text">{{ g.flag ? g.flag + ' ' + g.heading : g.heading }}</span>
               @for (o of g.options; track o.value) {
                 <mat-option [value]="o.value" [disabled]="o.disabled" [matTooltip]="o.title || ''">
                   <ng-container *ngTemplateOutlet="optionBody; context: { $implicit: o }" />

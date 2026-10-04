@@ -27,9 +27,14 @@ import {
   FIELD_HINTS,
   FIELD_LABELS,
   JURISDICTIONS,
+  MODIFY_TARGETS,
+  MODIFY_TARGET_ICONS,
   STREET_TYPES,
   TODAY_ISO,
+  ACCOUNT_TITRES,
   ibanCheck,
+  mod97Key,
+  type AccountTitre,
   type JurisdictionRef,
 } from './comptes-data';
 
@@ -47,7 +52,6 @@ export interface FormState {
   opened: string;
   /** État du compte chez le broker — Ouvert, Suspendu, Fermé — distinct du statut du dossier. */
   brokerStatus: string;
-  closed: string;
   civility: string;
   lastName: string;
   firstName: string;
@@ -67,7 +71,6 @@ export interface FormState {
   profile: string;
   horizon: string;
   fee: string;
-  dotation: string;
   reason: string;
   target: string;
   effect: string;
@@ -77,12 +80,12 @@ export function blankForm(): FormState {
   return {
     broker: '', jurisdiction: '', url: '',
     accountType: '', currency: 'EUR', number: '', alias: '',
-    opened: TODAY_ISO, brokerStatus: 'Ouvert', closed: '—', civility: '', lastName: '', firstName: '',
+    opened: TODAY_ISO, brokerStatus: 'Ouvert', civility: '', lastName: '', firstName: '',
     streetNo: '', streetType: '', street: '', postalCode: '', city: '', country: '',
     clientRef: '', domicile: '', taxRegime: '',
     cashLabel: '', cashIban: '', cashCurrency: 'EUR',
     profile: 'Équilibré', horizon: '8 ans', fee: '0,85 %',
-    dotation: '', reason: '', target: '', effect: '',
+    reason: '', target: '', effect: '',
   };
 }
 
@@ -90,6 +93,12 @@ export interface CashEntry {
   readonly bank: string;
   readonly iban: string;
   readonly currency: string;
+}
+
+/** Un élément qu'un avenant modifie, avec le motif invoqué pour lui. */
+export interface ModifyItem {
+  readonly target: string;
+  readonly reason: string;
 }
 
 export interface CoHolder {
@@ -125,8 +134,33 @@ export interface OpDef {
 }
 
 /**
- * L'étape « Comptes titre et liquidité », seconde et dernière du parcours Création. Nommée à part
- * parce qu'elle a été un onglet à elle seule et que sa définition — deux blocs, un statut, le
+ * L'étape « Titulaires », partagée par la création et par l'avenant : mêmes champs, mêmes
+ * contrôles, même vérification. Un avenant sur les titulaires se saisit comme une ouverture —
+ * deux formulaires à tenir d'accord auraient divergé au premier champ ajouté.
+ */
+function holdersStep(): OpStepDef {
+  return {
+    title: 'Titulaires', hint: 'Titulaire principal, domiciliation, bénéficiaires',
+    /* Deux rangées : la civilité et l'identité du titulaire d'abord, puis ce qui le rattache à un
+       régime fiscal et à une référence. Le statut ferme l'étape — « Projet » tant que le compte
+       n'est pas créé. */
+    fields: [
+      'civility', 'lastName', 'firstName',
+      'streetNo', 'streetType', 'street',
+      'postalCode', 'city', 'country',
+      'domicile', 'taxRegime', 'clientRef',
+      'status',
+    ],
+    checks: [
+      { label: "La référence client est attribuée automatiquement à la création du compte, sous la forme CLI-année-moisjour-rang-clé : la clé est celle du MOD 97-10 (ISO 7064), qui permet de contrôler une référence recopiée sans interroger le référentiel. Les co-titulaires reçoivent une référence rattachée, dérivée de celle-ci.", level: 'info' },
+      { label: 'La domiciliation et le régime fiscal déterminent la retenue à la source appliquée aux dividendes et coupons.', level: 'info' },
+    ],
+  };
+}
+
+/**
+ * L'étape « Comptes titre et liquidité », qui ferme la Création comme la Modification. Nommée à
+ * part parce qu'elle a été un onglet à elle seule et que sa définition — deux blocs, un statut, le
  * blocage sur les IBAN — se lit mieux hors de la liste des parcours.
  */
 function accountsStep(): OpStepDef {
@@ -161,25 +195,9 @@ export function opDefs(): Record<OpKind, OpDef> {
     create: {
       label: 'Création',
       hint: "Ouverture d'un nouveau compte : entrée en relation jusqu'à la première dotation.",
-      next: 'Créer le compte',
+      next: 'Créer les comptes Broker',
       steps: [
-        {
-          title: 'Titulaires', hint: 'Titulaire principal, domiciliation, bénéficiaires',
-          /* Deux rangées : la civilité et l'identité du titulaire d'abord, puis ce qui le
-             rattache à un régime fiscal et à une référence. Le statut ferme l'étape — « Projet » tant que
-             le compte n'est pas créé. */
-          fields: [
-            'civility', 'lastName', 'firstName',
-            'streetNo', 'streetType', 'street',
-            'postalCode', 'city', 'country',
-            'domicile', 'taxRegime', 'clientRef',
-            'status',
-          ],
-          checks: [
-            { label: 'La référence client est attribuée automatiquement à la création du compte ; les co-titulaires reçoivent une référence rattachée, dérivée de celle-ci.', level: 'info' },
-            { label: 'La domiciliation et le régime fiscal déterminent la retenue à la source appliquée aux dividendes et coupons.', level: 'info' },
-          ],
-        },
+        holdersStep(),
         /* Les comptes se décident dans le même parcours que le titulaire : l'étape de contrôle
            qui fermait la création ne portait qu'une date de fermeture — vide par construction à
            l'ouverture — et le statut, que l'étape des comptes porte déjà. Le récapitulatif de
@@ -193,25 +211,45 @@ export function opDefs(): Record<OpKind, OpDef> {
       next: "Enregistrer l'avenant",
       steps: [
         { title: 'Objet', hint: 'Élément modifié', fields: ['target', 'reason'], checks: [{ label: 'Tout changement de profil requiert un avenant signé.', level: 'warn' }] },
-        { title: 'Nouvelles valeurs', hint: 'Paramètres révisés', fields: ['alias', 'profile', 'fee', 'horizon'], checks: [{ label: "Les bandes d'allocation sont recalculées à la date d'effet.", level: 'info' }] },
-        { title: 'Contrôle', hint: "Date d'effet et traçabilité", fields: ['effect'], checks: [{ label: 'La modification est inscrite à l\'historique de la relation.', level: 'info' }] },
+        holdersStep(),
+        /* Un avenant se termine sur les comptes eux-mêmes, comme la création. L'étape de contrôle
+           qui fermait le parcours ne portait qu'une date d'effet : elle ne montrait rien de ce que
+           l'avenant change, alors que le broker, le numéro, le libellé et le compte de liquidité
+           sont précisément ce qu'on vient modifier. Même étape qu'à la création — un second
+           formulaire aurait divergé au premier champ ajouté. */
+        accountsStep(),
       ],
     },
+    /* Une seule étape, et donc pas de rangée d'étapes.
+
+       « Liquidation » et « Transfert » ne portaient qu'un champ chacune — l'élément liquidé, le
+       compte de destination — et aucune ne décidait quoi que ce soit : dénouer les positions et
+       virer le solde se font dans Opérations et Trésorerie, ce formulaire ne faisait que les
+       déclarer. Restaient « Motif » et « Contrôle », quatre champs à elles deux, qu'on remplit
+       d'un trait : le motif et la date d'effet d'un côté, la date de fermeture et le statut de
+       l'autre. Les séparer imposait un « Suivant » entre deux rangées de la même décision, et une
+       rangée d'étapes pour annoncer qu'il y en avait deux.
+
+       Un seul rappel : la condition qui peut arrêter la clôture. Le préavis, le décompte des frais,
+       le virement du solde, l'archivage sont vrais aussi — mais ce formulaire ne les décide pas
+       plus qu'il ne les exécute, et le statut dit déjà, sous les yeux, ce que la validation
+       produira. Un rappel qui n'avertit de rien se lit comme une notice, et finit par ne plus se
+       lire du tout, celui qui compte avec. */
     close: {
       label: 'Clôture',
-      hint: 'Résiliation et sortie de relation : liquidation, transfert du solde, archivage.',
+      hint: 'Résiliation et sortie de relation : motif, date d\'effet et archivage.',
       next: 'Engager la clôture',
       steps: [
-        { title: 'Motif', hint: 'Origine de la résiliation', fields: ['reason', 'effect'], checks: [{ label: 'Préavis contractuel de 30 jours à respecter.', level: 'warn' }] },
         {
-          title: 'Liquidation', hint: 'Positions et opérations en cours', fields: ['target'],
+          /* Pas de « Date de fermeture » à côté de la date d'effet : c'est la même date dite deux
+             fois. L'art. 241 veut une date à laquelle la résiliation prend effet — la fermeture
+             du compte n'en est pas une autre, elle en est la conséquence. */
+          title: 'Clôture', hint: 'Motif, date d\'effet et archivage',
+          fields: ['reason', 'effect', 'status'],
           checks: [
             { label: 'Les opérations sur titres en cours doivent être dénouées avant la clôture.', level: 'warn' },
-            { label: 'Les frais de gestion courent jusqu\'à la date d\'effet.', level: 'info' },
           ],
         },
-        { title: 'Transfert', hint: 'Compte de destination', fields: ['dotation'], checks: [{ label: 'Coordonnées du compte de destination à faire confirmer par le client.', level: 'warn' }] },
-        { title: 'Contrôle', hint: 'Archivage', fields: ['closed', 'status'], checks: [{ label: 'Le compte passe à l\'état Clôturé, les pièces sont archivées pour la durée légale.', level: 'info' }] },
       ],
     },
   };
@@ -237,6 +275,8 @@ export interface AcSelectOption {
 export interface AcSelectGroup {
   readonly heading: string;
   readonly flag: string;
+  /** Icône du registre SVG, pour les groupes qui n'ont pas de drapeau à montrer. */
+  readonly icon?: string;
   readonly options: readonly AcSelectOption[];
 }
 
@@ -282,10 +322,12 @@ export interface StatusTone {
 export function opStateFor(op: OpKind, done: boolean, form: FormState, last: boolean): StatusTone {
   if (op === 'create') {
     if (done) return { label: 'Actif', bg: 'var(--field-ok)', fg: '#ffffff', hint: 'Compte créé, opérations autorisées' };
-    if (form.statusChoice === 'En ouverture') {
-      return { label: 'En ouverture', bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok-2)', hint: last ? 'Passera à Actif à la création' : 'Dossier engagé, dotation attendue' };
-    }
-    return { label: 'Projet', bg: '#f5d90a', fg: 'var(--ink-5c4700)', hint: last ? 'Passera à Actif à la création' : 'Compte non encore créé' };
+    /* Le statut affiché est celui qui a été choisi, quel qu'il soit : lu dans la même table que
+       le sélecteur, pour qu'une pastille en lecture seule ne contredise jamais le choix fait à
+       l'étape des comptes. */
+    const chosen = STATUS_CYCLE.find((c) => c.label === form.statusChoice && c.ok) || STATUS_CYCLE[0];
+    const willBeActive = last && (chosen.label === 'Projet' || chosen.label === 'En ouverture');
+    return { label: chosen.label, bg: chosen.bg, fg: chosen.fg, hint: willBeActive ? 'Passera à Actif à la création' : chosen.hint };
   }
   if (op === 'modify') {
     return done
@@ -303,8 +345,8 @@ export function opStateFor(op: OpKind, done: boolean, form: FormState, last: boo
 const STATUS_CYCLE: readonly { label: string; bg: string; fg: string; ok: boolean; hint: string; why: string }[] = [
   { label: 'Projet', bg: '#f5d90a', fg: 'var(--ink-5c4700, #5c4700)', ok: false, hint: 'Compte non encore créé', why: 'Le dossier a dépassé le stade du projet : ses comptes sont en cours d\'ouverture' },
   { label: 'En ouverture', bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok-2, #0f766e)', ok: true, hint: 'Dossier engagé, passera à Actif à la création', why: '' },
-  { label: 'Actif', bg: 'var(--field-ok, #0b5f57)', fg: '#ffffff', ok: false, hint: 'Compte créé, opérations autorisées', why: 'Attribué automatiquement à la création du compte' },
-  { label: 'Gelé', bg: 'var(--field-warn, #8f3f06)', fg: '#ffffff', ok: false, hint: 'Mouvements suspendus', why: 'Sur instruction ou décision de conformité, après création' },
+  { label: 'Actif', bg: 'var(--field-ok, #0b5f57)', fg: '#ffffff', ok: true, hint: 'Compte créé, opérations autorisées', why: '' },
+  { label: 'Gelé', bg: 'var(--field-warn, #8f3f06)', fg: '#ffffff', ok: true, hint: 'Mouvements suspendus sur instruction ou décision de conformité', why: '' },
   { label: 'En clôture', bg: 'var(--color-neutral-300, #d8d5d2)', fg: 'var(--color-neutral-800, #35322f)', ok: false, hint: 'Résiliation engagée', why: 'Depuis l\'onglet Gérer compte portefeuille, opération Clôture' },
   { label: 'Clôturé', bg: '#3f3b39', fg: '#ffffff', ok: false, hint: 'État final', why: 'État final, non atteignable à la création' },
 ];
@@ -351,6 +393,17 @@ export function buildField(key: string, ctx: FieldCtx): AcField {
   const isAccount = ctx.stepFields.includes('broker');
   const span = (isTitulaires ? SPAN_TITULAIRES[key] : isAccount ? SPAN_ACCOUNT[key] : undefined) ?? 'auto';
 
+  /* Civilité, nom et prénom : figés sur un avenant. Un avenant porte sur le compte — profil,
+     tarification, dépositaire, comptes titre — et non sur l'identité de la personne. La laisser
+     saisissable ici aurait permis de renommer le titulaire sans que rien n'en garde trace, et de
+     dissocier le dossier de la personne qu'il désigne ; un changement d'état civil passe par le
+     référentiel client. Même rendu verrouillé que la référence client, trois lignes plus bas. */
+  if (ctx.op === 'modify' && (key === 'civility' || key === 'lastName' || key === 'firstName')) {
+    /* « Du dossier client » plutôt que « Repris du dossier client » : la colonne de la civilité
+       est la plus étroite des trois et le libellé long y passait à la ligne, débordant du cadre.
+       La tournure est aussi neutre en genre — la civilité est féminine, le nom et le prénom non. */
+    return { kind: 'dateLocked', key, label, span, lockedValue: value || 'Du dossier client', hint: 'Ne se modifie pas par avenant' };
+  }
   if (key === 'civility') {
     /* Combo plutôt que segment : la liste est appelée à s'allonger — civilités de personne
        morale, formes étrangères — et un segment ne tient pas au-delà de trois choix. */
@@ -395,7 +448,7 @@ export function buildField(key: string, ctx: FieldCtx): AcField {
     /* Lecture seule : la référence est attribuée par le référentiel à la création, et non saisie.
        Un champ libre invitait à en inventer une, que le référentiel aurait ensuite contredite. Le
        même rendu verrouillé que la date de fermeture — cadenas, valeur, explication. */
-    return { kind: 'dateLocked', key, label, span, lockedValue: value || 'Attribuée à la création', hint: 'Attribuée automatiquement par le référentiel' };
+    return { kind: 'dateLocked', key, label, span, lockedValue: value || 'Attribuée à la création', hint: 'CLI-année-moisjour-rang-clé, attribuée par le référentiel' };
   }
   if (key === 'brokerStatus') {
     const cur = BROKER_ACCOUNT_STATES.find((s) => s.label === value) || BROKER_ACCOUNT_STATES[0];
@@ -431,11 +484,6 @@ export function buildField(key: string, ctx: FieldCtx): AcField {
     const raw = value.trim();
     const valid = /^https?:\/\/[^\s]+\.[^\s]+/i.test(raw);
     return { kind: 'url', key, label, span, value, placeholder, href: valid ? raw : '', valid };
-  }
-  if (key === 'closed') {
-    const openable = ctx.op === 'close';
-    if (openable) return { kind: 'dateOpen', key, label, span, value: value && value !== '—' ? value : '', max: '' };
-    return { kind: 'dateLocked', key, label, span, lockedValue: value && value !== '—' ? value : 'Compte ouvert', hint: 'Renseignée uniquement lors de la clôture du compte' };
   }
   if (key === 'opened') {
     return { kind: 'dateOpen', key, label, span, value: value || TODAY_ISO, max: TODAY_ISO };
@@ -488,7 +536,7 @@ export function buildField(key: string, ctx: FieldCtx): AcField {
     };
   }
   // Défaut : champ texte simple (lastName, firstName, alias,
-  // profile, fee, horizon, target, reason, effect, dotation).
+  // profile, fee, horizon, target, reason, effect).
   return { kind: 'input', key, label, span, value, placeholder };
 }
 
@@ -601,6 +649,20 @@ export function buildCashRows(form: FormState, cash: readonly CashEntry[]): Cash
    sélecteur de broker. La liste à plat mêlait BIL et Belfius, Santander et Société Générale :
    on cherche une banque en sachant d'abord où elle est. Le drapeau monte sur l'en-tête du
    groupe, il n'a plus à se répéter sur chaque ligne. */
+/* Groupes par nature, natures et éléments en ordre alphabétique — comme les brokers et les
+   banques : on cherche ce qu'on modifie en sachant d'abord de quoi il s'agit. */
+export function modifyTargetGroups(): AcSelectGroup[] {
+  const byLabel = (a: string, b: string) => a.localeCompare(b, 'fr');
+  return Object.keys(MODIFY_TARGETS)
+    .sort(byLabel)
+    .map((heading) => ({
+      heading,
+      flag: '',
+      icon: MODIFY_TARGET_ICONS[heading] || '',
+      options: [...MODIFY_TARGETS[heading]].sort(byLabel).map((label) => ({ value: label, label })),
+    }));
+}
+
 export function bankGroups(): AcSelectGroup[] {
   const byLabel = (a: string, b: string) => a.localeCompare(b, 'fr');
   const countries = Array.from(new Set(BANKS.map((b) => b.country))).sort(byLabel);
@@ -644,11 +706,16 @@ export function buildCoRow(index: number, h: CoHolder, clientRef: string): CoHol
  * chaque personne rattachée dont l'identité ou la qualité est vide. Le contrôle ne juge que
  * cette étape — les comptes ont le leur, sur leur propre étape.
  */
-export function holderIssues(f: FormState, co: readonly CoHolder[]): string[] {
+export function holderIssues(f: FormState, co: readonly CoHolder[], op: OpKind = 'create'): string[] {
   const out: string[] = [];
-  if (!f.civility) out.push('civilité');
-  if (!f.lastName.trim()) out.push('nom de famille');
-  if (!f.firstName.trim()) out.push('prénom');
+  /* L'identité n'est réclamée que là où elle se saisit : sur un avenant, civilité, nom et prénom
+     sont verrouillés — les exiger aurait fermé « Suivant » sur trois champs qu'aucune saisie ne
+     peut remplir. */
+  if (op !== 'modify') {
+    if (!f.civility) out.push('civilité');
+    if (!f.lastName.trim()) out.push('nom de famille');
+    if (!f.firstName.trim()) out.push('prénom');
+  }
   if (!f.domicile) out.push('domiciliation');
   if (!f.taxRegime) out.push('régime fiscal');
   co.forEach((h, i) => {
@@ -671,14 +738,45 @@ export interface CreateIssue {
 }
 
 /**
- * Référence client attribuée à la création : millésime et rang, à la suite des comptes connus.
+ * Référence client attribuée à la création, en quatre groupes après le préfixe :
+ *
+ *     CLI-2026-0930-0007-47
+ *          │    │    │    └─ clé MOD 97-10 (ISO 7064) des douze chiffres qui précèdent
+ *          │    │    └────── rang incrémental, à la suite des dossiers connus
+ *          │    └─────────── mois et jour de l'attribution
+ *          └──────────────── année de l'attribution
+ *
+ * La date d'attribution est dans la référence plutôt qu'à côté : elle situe le dossier sans
+ * jointure, et elle borne le rang — celui-ci n'a besoin d'être unique que dans l'année, non
+ * depuis l'origine. La clé ferme la référence : une référence recopiée à la main, dictée au
+ * téléphone ou lue sur un courrier se contrôle sans interroger le référentiel, et un chiffre
+ * changé au passage se voit immédiatement. Même arithmétique que la clé d'un IBAN.
+ *
  * Le rang avance à chaque attribution — deux créations dans la même session ne partagent pas la
  * même référence.
  */
 let clientRefSeq = 0;
-export function nextClientRef(known: number): string {
+export function nextClientRef(known: number, now: Date = new Date()): string {
   clientRefSeq += 1;
-  return `CLI-${new Date().getFullYear()}-${String(known + clientRefSeq).padStart(4, '0')}`;
+  const year = String(now.getFullYear());
+  const monthDay = String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+  const seq = String(known + clientRefSeq).padStart(4, '0');
+  return `CLI-${year}-${monthDay}-${seq}-${mod97Key(year + monthDay + seq)}`;
+}
+
+/**
+ * Contrôle d'une référence client : la forme, puis la clé. Le pendant de `ibanCheck` — c'est
+ * précisément ce que la clé sert à rendre possible, et une clé qu'on ne vérifie nulle part ne
+ * serait qu'un ornement.
+ */
+export function clientRefCheck(raw: string | undefined): { state: 'empty' | 'ok' | 'bad'; message: string } {
+  const v = String(raw || '').trim().toUpperCase();
+  if (!v) return { state: 'empty', message: '' };
+  const m = /^CLI-(\d{4})-(\d{4})-(\d{4})-(\d{2})$/.exec(v);
+  if (!m) return { state: 'bad', message: 'Format invalide : CLI-AAAA-MMJJ-NNNN-CC.' };
+  const expected = mod97Key(m[1] + m[2] + m[3]);
+  if (m[4] !== expected) return { state: 'bad', message: 'Clé de contrôle erronée : ' + m[4] + ' saisi, ' + expected + ' attendu.' };
+  return { state: 'ok', message: 'Clé de contrôle valide — MOD 97-10 (ISO 7064).' };
 }
 
 /**
@@ -687,6 +785,8 @@ export function nextClientRef(known: number): string {
  * chez autant de brokers, et n'en porte aucun tant qu'on n'en a pas ajouté.
  */
 export interface TitreEntry {
+  /** Référence du compte titre au référentiel, attribuée à son ouverture. */
+  readonly ref: string;
   readonly broker: string;
   readonly jurisdiction: string;
   readonly url: string;
@@ -702,8 +802,9 @@ export interface TitreEntry {
   readonly cash: readonly CashEntry[];
 }
 
-export function titreFromForm(f: FormState, cash: readonly CashEntry[]): TitreEntry {
+export function titreFromForm(f: FormState, cash: readonly CashEntry[], ref = ''): TitreEntry {
   return {
+    ref,
     broker: f.broker, jurisdiction: f.jurisdiction, url: f.url,
     accountType: f.accountType, currency: f.currency, number: f.number, alias: f.alias,
     opened: f.opened, brokerStatus: f.brokerStatus || 'Ouvert',
@@ -711,9 +812,63 @@ export function titreFromForm(f: FormState, cash: readonly CashEntry[]): TitreEn
   };
 }
 
-/** Un compte titre vierge, tel qu'« Ajouter » l'ouvre. */
-export function blankTitre(): TitreEntry {
-  return titreFromForm(blankForm(), []);
+/**
+ * Un compte titre du référentiel, tel que le formulaire le manipule.
+ *
+ * La juridiction et l'adresse du broker se retrouvent ici par `BROKERS`, à partir du seul libellé :
+ * c'est exactement ce que fait le champ « Broker » quand on en choisit un, et la graine n'a donc
+ * pas à les porter. Le premier compte de liquidité est le principal — le formulaire le tient à
+ * part des secondaires, parce que c'est lui qui porte les mouvements par défaut.
+ */
+export function titreFromSeed(t: AccountTitre): TitreEntry {
+  const b = BROKERS.find((x) => x.label === t.broker);
+  const [principal, ...secondaires] = t.cash;
+  return {
+    ref: t.ref,
+    broker: t.broker,
+    jurisdiction: b ? b.country : '',
+    url: b ? b.url : '',
+    accountType: t.accountType,
+    currency: t.currency,
+    number: t.number,
+    alias: t.alias,
+    opened: t.opened,
+    brokerStatus: t.brokerStatus,
+    cashLabel: principal ? principal.bank : '',
+    cashIban: principal ? principal.iban : '',
+    cashCurrency: principal ? principal.currency : t.currency,
+    cash: secondaires.map((c) => ({ bank: c.bank, iban: c.iban, currency: c.currency })),
+  };
+}
+
+/** Les comptes titre d'un dossier, prêts pour le formulaire. Un dossier en ouverture n'en a
+ *  aucun : c'est un état normal, pas une absence de données. */
+export function titresOfAccount(accountId: string): TitreEntry[] {
+  return (ACCOUNT_TITRES[accountId] ?? []).map(titreFromSeed);
+}
+
+/** Un compte titre vierge, tel qu'« Ajouter » l'ouvre, sous la référence qu'il reçoit. */
+export function blankTitre(ref: string): TitreEntry {
+  return titreFromForm(blankForm(), [], ref);
+}
+
+/**
+ * Références des comptes titre — millésime et rang, à la suite des comptes connus. Attribuées à
+ * l'ouverture du compte et non à la création du dossier : c'est par elle qu'on désigne un compte
+ * dans la liste avant même qu'il porte un libellé, et elle ne bouge plus ensuite — retirer un
+ * compte ne renumérote pas les autres.
+ */
+let titreRefSeq = 0;
+function titreRefAt(rank: number): string {
+  return `CTO-${new Date().getFullYear()}-${String(rank).padStart(4, '0')}`;
+}
+export function nextTitreRef(known: number): string {
+  titreRefSeq += 1;
+  return titreRefAt(known + titreRefSeq);
+}
+/** La prochaine référence, sans la consommer — ce que « Ajouter » ouvrira. */
+export function peekTitreRef(known: number): string {
+  return titreRefAt(known + titreRefSeq + 1);
 }
 
 /** Les champs du compte titre, pour charger un compte dans le tampon de saisie ou le vider. */
@@ -794,7 +949,7 @@ export function createSummaryRows(f: FormState, titres: readonly TitreEntry[]): 
     { label: 'Référence client', value: f.clientRef || 'Attribuée à la création' },
     { label: 'Comptes titre', value: titres.length ? String(titres.length) : 'Aucun' },
     ...titres.map((t) => ({
-      label: t.alias || 'Compte titre',
+      label: (t.alias || 'Compte titre') + (t.ref ? ' · ' + t.ref : ''),
       value: `${flagB(t.broker)} ${t.broker || '—'} · ${t.accountType || '—'} · ${flagC(t.currency)} ${t.currency} · n° ${t.number || '—'} · ${flagK(t.cashLabel)} ${t.cashLabel || '—'}`
         + (t.cash.length ? ' + ' + t.cash.length + ' secondaire(s)' : ''),
     })),
@@ -887,6 +1042,7 @@ export function buildTitresRecapGroups(titres: readonly TitreEntry[]): RecapGrou
   return titres.flatMap((t, i) => {
     const name = t.alias || 'Compte titre ' + (i + 1);
     const brokerGroup = grp(name, [
+      row('Référence du compte', t.ref),
       withFlag(row('Broker', t.broker, true), (BROKERS.find((b) => b.label === t.broker) || { flag: '' }).flag),
       withFlag(row('Juridiction', t.jurisdiction), flagInText(t.jurisdiction)),
       { ...row('Site du broker', t.url), href: /^https?:\/\//i.test(t.url || '') ? t.url : '' },
@@ -916,7 +1072,7 @@ export function buildTitresRecapGroups(titres: readonly TitreEntry[]): RecapGrou
   });
 }
 
-export function buildRecapGroups(f: FormState, co: readonly CoHolder[], titres: readonly TitreEntry[] = []): RecapGroup[] {
+export function buildRecapGroups(f: FormState, co: readonly CoHolder[]): RecapGroup[] {
 
   /* Le titulaire principal, champ pour champ dans l'ordre de l'étape Titulaires — civilité,
      identité, adresse, rattachement fiscal — puis chaque personne rattachée dans son propre
@@ -956,61 +1112,31 @@ export function buildRecapGroups(f: FormState, co: readonly CoHolder[], titres: 
     ),
   ]);
 
-  const statusValue = f.statusChoice || 'Projet';
-  const statusTone = statusValue === 'Actif' ? { bg: 'var(--field-ok)', fg: '#ffffff' }
-    : statusValue === 'En ouverture' ? { bg: 'rgba(15,118,110,0.14)', fg: 'var(--ink-ok-2)' }
-    : { bg: '#f5d90a', fg: 'var(--ink-5c4700)' };
-  const statusHint = statusValue === 'Projet' ? 'Compte non encore créé'
-    : statusValue === 'En ouverture' ? 'Dossier engagé, dotation attendue'
-    : 'Compte créé, opérations autorisées';
+  /* Même table que le sélecteur et que la pastille de l'écran : un statut ajouté aux choix se
+     relit ici sans autre intervention. */
+  const chosen = STATUS_CYCLE.find((c) => c.label === f.statusChoice) || STATUS_CYCLE[0];
+  const statusValue = chosen.label;
+  const statusTone = { bg: chosen.bg, fg: chosen.fg };
+  const statusHint = chosen.hint;
 
   /* Ni compte titre ni compte de liquidité : le récapitulatif relit les titulaires — c'est de
      leur étape qu'il s'ouvre — et le statut du dossier. Les comptes se relisent sur leur étape,
      où chaque champ est sous les yeux. */
-  /* Les comptes titre du dossier, une ligne chacun — ce que l'étape des comptes a ajouté, tel
-     qu'on le relit avant de créer : établissement, type, numéro, compte de liquidité, et ce qui
-     manque encore le cas échéant. Aucune ligne tant qu'aucun compte n'a été ajouté. */
-  const titresIncomplete = titres.filter((t) => titreIssues(t, t.cash).length).length;
-  const titresGroup: RecapGroup = titres.length
-    ? {
-        ...grp('Comptes titre', titres.map((t, i) => {
-        const missing = titreIssues(t, t.cash);
-        const flagB = (BROKERS.find((b) => b.label === t.broker) || { flag: '' }).flag;
-        const flagK = (BANKS.find((b) => b.label === t.cashLabel) || { flag: '' }).flag;
-        const summary = [
-          t.broker ? (flagB ? flagB + ' ' : '') + t.broker : '',
-          t.accountType ? t.accountType + ' · ' + t.currency : '',
-          t.number ? 'n° ' + t.number : '',
-          t.cashLabel ? (flagK ? flagK + ' ' : '') + t.cashLabel + (t.cash.length ? ' + ' + t.cash.length + ' secondaire(s)' : '') : '',
-        ].filter(Boolean).join(' · ');
-        return missing.length
-          ? { label: t.alias || 'Compte titre ' + (i + 1), value: (summary ? summary + ' — ' : '') + 'à compléter : ' + missing.join(', '), color: 'var(--ink-warn-2)' }
-          : { label: t.alias || 'Compte titre ' + (i + 1), value: summary, color: 'var(--color-text)' };
-      })),
-        /* L'état du groupe compte les comptes incomplets, et non les lignes vides : une ligne
-           « à compléter » porte déjà un résumé. */
-        state: titresIncomplete ? titresIncomplete + ' à compléter' : 'Complet',
-        stateColor: titresIncomplete ? 'var(--ink-warn-2)' : 'var(--ink-ok)',
-      }
-    : { title: 'Comptes titre', rows: [{ label: 'Comptes titre', value: 'Aucun — « Ajouter » en ouvre un sur l\'étape des comptes', color: 'var(--ink-warn-2)' }], state: 'À ajouter', stateColor: 'var(--ink-warn-2)' };
-
   const groups: RecapGroup[] = [
     titulaireGroup,
     holdersGroup,
-    titresGroup,
     grp('Statut du compte', [
       { label: 'Statut', value: statusHint, color: 'var(--color-text)', badge: statusValue, badgeBg: statusTone.bg, badgeFg: statusTone.fg },
-      row('Date de fermeture', f.closed === '—' ? 'Compte ouvert' : f.closed, false),
     ]),
   ];
   return groups;
 }
 
-export function recapVerdict(f: FormState, co: readonly CoHolder[]): string {
+export function recapVerdict(f: FormState, co: readonly CoHolder[], op: OpKind = 'create'): string {
   /* Un dossier déjà créé n'a plus rien « à compléter » : il est relu, pas jugé. */
   if (f.statusChoice === 'Actif' && f.clientRef) return `Compte créé — référence client ${f.clientRef}. Dossier verrouillé en lecture seule.`;
   /* Le verdict porte sur ce que le récapitulatif montre — les titulaires — et sur eux seuls :
      annoncer un IBAN manquant sous une liste qui n'en parle pas laissait chercher la ligne. */
-  const missing = holderIssues(f, co);
+  const missing = holderIssues(f, co, op);
   return missing.length ? 'À compléter : ' + missing.join(', ') + '.' : 'Titulaires complets — vous pouvez passer aux comptes.';
 }

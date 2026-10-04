@@ -24,7 +24,7 @@ export type AcCreateDialogResult = 'ok' | 'cancelled';
 type CreatePhase = 'busy' | 'ok' | 'fail';
 
 /**
- * Modale de progression « Créer le compte » (`createOpen`/`runCreate()` du prototype, lignes
+ * Modale de progression « Créer les comptes Broker » (`createOpen`/`runCreate()` du prototype, lignes
  * 834-916 et 1651-1679) — un `MatDialog` centré classique (pas un panneau latéral) : spinner +
  * barre de progression animée à texte d'étape variable, puis état de réussite (récapitulatif)
  * ou d'échec (liste d'anomalies, avec reprise via « Relancer »).

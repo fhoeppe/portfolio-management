@@ -65,14 +65,6 @@ export interface Account {
   readonly flags: readonly AccountFlag[];
 }
 
-export const ACCOUNT_CASH: Record<string, { bank: string; flag: string; iban: string; currency: string; extra: number }> = {
-  'BGM-004': { bank: 'Banque de Luxembourg', flag: '🇱🇺', iban: 'LU28 0019 4006 4475 0000', currency: 'EUR', extra: 1 },
-  'INP-011': { bank: 'BGL BNP Paribas', flag: '🇱🇺', iban: 'LU12 0010 2345 6789 4471', currency: 'EUR', extra: 0 },
-  'GLG-002': { bank: '', flag: '', iban: '', currency: 'USD', extra: 0 },
-  'BGM-002': { bank: 'Spuerkeess', flag: '🇱🇺', iban: 'LU45 0021 1188 4416 0000', currency: 'EUR', extra: 0 },
-  'INP-008': { bank: 'Banque Raiffeisen', flag: '🇱🇺', iban: 'LU63 0099 7800 1042 0000', currency: 'EUR', extra: 0 },
-  'GLG-005': { bank: 'ING Luxembourg', flag: '🇱🇺', iban: 'LU77 0141 9022 3355 0000', currency: 'EUR', extra: 2 },
-};
 
 export const ACCOUNTS: readonly Account[] = [
   {
@@ -244,25 +236,155 @@ export const ACCOUNTS: readonly Account[] = [
 ];
 
 /**
- * Brokers rattachés à chaque compte.
- *
- * **Cette table est une graine, pas une donnée dérivée.** Le lien compte → broker n'existait
- * nulle part : un compte porte un dépositaire (`custodian`) et la banque de son compte espèces
- * (`ACCOUNT_CASH`), ni l'un ni l'autre n'étant le courtier chez qui les titres sont tenus. Les
- * comptes courtiers de l'écran Positions (`PORTFOLIOS`) forment, eux, un jeu séparé qui n'a jamais
- * été réconcilié avec les comptes clients. Le rattachement est donc déclaré ici, explicitement,
- * plutôt que deviné par un rapprochement de noms qui aurait l'air d'une règle sans en être une.
- *
- * Les libellés sont ceux de `BROKERS` : une clé absente du référentiel ne s'affichera pas.
+ * Un compte de liquidité adossé à un compte titre. Le premier de la liste est le compte
+ * principal — celui qui porte les mouvements par défaut ; les suivants sont secondaires.
  */
-export const ACCOUNT_BROKERS: Record<string, readonly string[]> = {
-  'BGM-004': ['Degiro', 'Bourse Direct', 'Banque de Luxembourg'],
-  'INP-011': ['Bourse Direct', 'Interactive Brokers Ireland'],
+export interface AccountCash {
+  /** Établissement : un libellé de `BANKS`, sinon la liste ne sait pas l'afficher. */
+  readonly bank: string;
+  /** IBAN au format groupé par quatre. Sa clé doit passer `ibanCheck` — voir le commentaire
+   *  d'`ACCOUNT_TITRES`. */
+  readonly iban: string;
+  readonly currency: string;
+}
+
+/**
+ * Un compte titre d'un dossier, tel que le référentiel le tient.
+ *
+ * Ne portent ici que les faits propres au compte. La juridiction et l'adresse du broker n'y
+ * sont **pas** : elles se déduisent du libellé par `BROKERS`, et les recopier ici aurait donné
+ * deux vérités qui finissent par diverger — c'est la raison d'être d'un référentiel.
+ */
+export interface AccountTitre {
+  /** Référence au référentiel, attribuée à l'ouverture. Millésime de l'ouverture, puis rang. */
+  readonly ref: string;
+  /** Libellé de `BROKERS` : une clé absente du référentiel ne s'affichera pas. */
+  readonly broker: string;
+  readonly accountType: string;
+  readonly currency: string;
+  /** Purement numérique, tel qu'ouvert chez le broker : c'est la clé de réconciliation. */
+  readonly number: string;
+  /** Libellé du compte, unique parmi ceux du même client. */
+  readonly alias: string;
+  /** Date d'ouverture chez le broker, au format ISO. */
+  readonly opened: string;
+  /** Un libellé de `BROKER_ACCOUNT_STATES`. */
+  readonly brokerStatus: string;
+  /** Au moins un compte de liquidité : sans lui, rien n'entre ni ne sort du compte titre. */
+  readonly cash: readonly AccountCash[];
+  /**
+   * Le portefeuille de l'écran Positions (`PORTFOLIOS`) qui valorise ce compte, s'il en existe un.
+   *
+   * Déclaré, et non deviné. Le rapprochement se faisait jusqu'ici sur le nom du courtier, ce qui
+   * donnait le même portefeuille à plusieurs dossiers à la fois — les trois portefeuilles de
+   * Positions se retrouvaient comptés dans quatre dossiers — et prêtait un PEA à une personne
+   * morale luxembourgeoise. Un portefeuille ne vaut que pour un compte titre : sans rattachement,
+   * l'encours et la performance s'affichent « — », ce qui dit ce qui est, à savoir qu'on ne
+   * valorise pas ce compte ici.
+   */
+  readonly portfolio?: string;
+}
+
+/**
+ * Les comptes titre de chaque dossier.
+ *
+ * **Cette table est une graine, pas une donnée dérivée.** Le lien dossier → compte titre
+ * n'existait nulle part : un dossier porte un dépositaire (`custodian`), qui n'est pas le
+ * courtier chez qui les titres sont tenus, et les comptes courtiers de l'écran Positions
+ * (`PORTFOLIOS`) forment un jeu séparé, jamais réconcilié avec les dossiers clients. Le
+ * rattachement est donc déclaré ici, explicitement, plutôt que deviné par un rapprochement de
+ * noms qui aurait l'air d'une règle sans en être une.
+ *
+ * Trois choses que cette table tient, et qu'il faut tenir en l'étendant :
+ *
+ * - **Les IBAN sont vrais au sens de la clé.** Chacun passe `ibanCheck` — MOD 97-10 (ISO 7064).
+ *   Le formulaire refuse une clé non conforme : une graine approximative serait inutilisable à
+ *   l'instant où un avenant la chargerait. Quatre des cinq IBAN de la table qui précédait avaient
+ *   une clé fausse ; ils n'étaient jamais lus, ce qui est précisément pourquoi personne ne l'a vu.
+ * - **Aucun PEA.** Les six dossiers sont des personnes morales domiciliées au Luxembourg. Un PEA
+ *   suppose une personne physique résidente fiscale française : il n'en existe pas ici.
+ * - **Le statut du compte suit celui du dossier.** Un dossier gelé n'a pas de compte titre
+ *   « Ouvert » chez le broker — les mouvements y sont suspendus, et c'est le compte qui le dit.
+ */
+export const ACCOUNT_TITRES: Record<string, readonly AccountTitre[]> = {
+  'BGM-004': [
+    {
+      ref: 'CTO-2026-0007', broker: 'Degiro', accountType: 'CTO', currency: 'EUR',
+      number: '62411903', alias: 'Degiro — CTO Cheval Blanc', opened: '2026-02-18', brokerStatus: 'Ouvert',
+      cash: [{ bank: 'Spuerkeess', iban: 'LU86 0016 2411 9030 0006', currency: 'EUR' }],
+      portfolio: 'DG-CTO',
+    },
+    {
+      ref: 'CTO-2026-0008', broker: 'Bourse Direct', accountType: 'CTO', currency: 'EUR',
+      number: '30199264', alias: 'Bourse Direct — CTO Cheval Blanc', opened: '2026-03-04', brokerStatus: 'Ouvert',
+      cash: [{ bank: 'Banque Internationale à Luxembourg', iban: 'LU72 0023 0199 2640 0007', currency: 'EUR' }],
+    },
+    {
+      ref: 'CTO-2026-0009', broker: 'Banque de Luxembourg', accountType: 'CTO', currency: 'EUR',
+      number: '10044725', alias: 'Banque de Luxembourg — CTO Cheval Blanc', opened: '2026-04-15', brokerStatus: 'Ouvert',
+      /* Deux comptes de liquidité : le principal porte les mouvements, le second isole les
+         appels de fonds de la SCI. Le seul IBAN dont la clé était juste dans l'ancienne table. */
+      cash: [
+        { bank: 'Spuerkeess', iban: 'LU28 0019 4006 4475 0000', currency: 'EUR' },
+        { bank: 'Banque Internationale à Luxembourg', iban: 'LU22 0021 0044 7250 0008', currency: 'EUR' },
+      ],
+    },
+  ],
+  'INP-011': [
+    {
+      ref: 'CTO-2023-0003', broker: 'Bourse Direct', accountType: 'CTO', currency: 'EUR',
+      number: '30187412', alias: 'Bourse Direct — CTO Fondation Ravel', opened: '2023-09-11', brokerStatus: 'Ouvert',
+      cash: [{ bank: 'Spuerkeess', iban: 'LU66 0013 0187 4120 0004', currency: 'EUR' }],
+      portfolio: 'BD-CTO',
+    },
+    {
+      ref: 'CTO-2023-0004', broker: 'Interactive Brokers Ireland', accountType: 'CTO', currency: 'EUR',
+      number: '48220913', alias: 'Interactive Brokers — CTO Fondation Ravel', opened: '2023-10-02', brokerStatus: 'Ouvert',
+      /* Compte espèces tenu dans le pays du broker : la banque suit la juridiction du courtier,
+         qui est aussi celle qui détermine la retenue à la source. */
+      cash: [{ bank: 'Bank of Ireland', iban: 'IE79 BOFI 9038 1248 2209', currency: 'EUR' }],
+    },
+  ],
+  /* Dossier en ouverture : aucun compte titre encore ouvert. C'est un état normal, et le seul
+     du jeu — sans lui, rien ne vérifierait que les écrans savent ne rien montrer. */
   'GLG-002': [],
-  'BGM-002': ['Degiro', 'Swissquote'],
-  'INP-008': ['Bourse Direct'],
-  'GLG-005': ['Saxo Bank'],
+  'BGM-002': [
+    {
+      ref: 'CTO-2024-0005', broker: 'Degiro', accountType: 'CTO', currency: 'EUR',
+      number: '62330481', alias: 'Degiro — CTO Hoffmann Patrimoine', opened: '2024-06-24', brokerStatus: 'Ouvert',
+      cash: [{ bank: 'Spuerkeess', iban: 'LU17 0016 2330 4810 0005', currency: 'EUR' }],
+    },
+    {
+      ref: 'CTO-2024-0006', broker: 'Swissquote', accountType: 'CTO', currency: 'EUR',
+      number: '55901276', alias: 'Swissquote — CTO Hoffmann Patrimoine', opened: '2024-09-03', brokerStatus: 'Ouvert',
+      cash: [{ bank: 'UBS', iban: 'CH79 0020 9559 0127 600', currency: 'EUR' }],
+    },
+  ],
+  'INP-008': [
+    {
+      /* Succession en cours : le dossier est gelé, et le compte chez le broker l'est avec lui. */
+      ref: 'CTO-2021-0001', broker: 'Bourse Direct', accountType: 'CTO', currency: 'EUR',
+      number: '30124887', alias: 'Bourse Direct — CTO Succession Lentz', opened: '2021-03-15', brokerStatus: 'Suspendu',
+      cash: [{ bank: 'Spuerkeess', iban: 'LU44 0013 0124 8870 0001', currency: 'EUR' }],
+    },
+  ],
+  'GLG-005': [
+    {
+      ref: 'CTO-2022-0002', broker: 'Saxo Bank', accountType: 'CTO', currency: 'EUR',
+      number: '71204553', alias: 'Saxo Bank — CTO Atlas Industries', opened: '2022-02-01', brokerStatus: 'Ouvert',
+      /* Dossier en clôture : le second compte reçoit ce qui est rapatrié à mesure que les
+         positions sont liquidées, sans mêler les flux au compte principal. */
+      cash: [
+        { bank: 'Banque Internationale à Luxembourg', iban: 'LU43 0027 1204 5530 0002', currency: 'EUR' },
+        { bank: 'Spuerkeess', iban: 'LU33 0017 1204 5530 0003', currency: 'EUR' },
+      ],
+    },
+  ],
 };
+
+/** Le nombre de comptes titre déjà attribués, toutes références confondues : le rang à partir
+ *  duquel la prochaine ouverture numérote. */
+export const ACCOUNT_TITRES_COUNT = Object.values(ACCOUNT_TITRES).reduce((n, list) => n + list.length, 0);
 
 export const STATES: Record<string, { label: string; bg: string; fg: string }> = {
   active: { label: 'Actif', bg: 'rgba(15,118,110,0.12)', fg: 'var(--ink-ok-2)' },
@@ -417,6 +539,20 @@ export function ibanCheck(raw: string | undefined): { state: 'empty' | 'ok' | 'b
   return { state: 'ok', message: 'Clé de contrôle valide — MOD-97 algorithm (ISO 7064).' };
 }
 
+/**
+ * Clé de contrôle MOD 97-10 (ISO 7064) sur une suite de chiffres : deux zéros sont ajoutés en
+ * queue, et la clé vaut 98 moins le reste de la division par 97. C'est la même arithmétique que
+ * la clé d'un IBAN — deux chiffres qui détectent toute faute de frappe isolée et la quasi-totalité
+ * des inversions de chiffres voisins. Le calcul se fait chiffre à chiffre : une référence de
+ * quatorze chiffres dépasse l'entier exact du JavaScript.
+ */
+export function mod97Key(digits: string): string {
+  let rest = 0;
+  const probe = digits + '00';
+  for (let i = 0; i < probe.length; i++) rest = (rest * 10 + +probe.charAt(i)) % 97;
+  return String(98 - rest).padStart(2, '0');
+}
+
 export interface BankRef {
   readonly label: string;
   readonly country: string;
@@ -455,6 +591,28 @@ export const BANKS: readonly BankRef[] = [
   { label: 'UniCredit', country: 'Italie', flag: '🇮🇹' },
   { label: 'Zürcher Kantonalbank', country: 'Suisse', flag: '🇨🇭' },
 ].slice().sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+
+/**
+ * Ce qu'un avenant peut changer sur un compte, par nature de l'élément. Une liste fermée plutôt
+ * qu'un champ libre : c'est elle qui dit ce qu'un avenant sait faire, et deux gestionnaires
+ * écrivaient « tarif » et « tarification » pour la même chose.
+ */
+export const MODIFY_TARGETS: Record<string, readonly string[]> = {
+  'Mandat de gestion': ['Bandes d\'allocation', 'Horizon de placement', 'Profil de risque', 'Tarification'],
+  'Compte': ['Broker', 'Compte de liquidité', 'Devise de tenue', 'Libellé du compte', 'Type de compte'],
+  'Titulaires': ['Bénéficiaire effectif', 'Co-titulaire', 'Coordonnées du titulaire', 'Mandataire', 'Représentant légal'],
+  'Conformité': ['Domiciliation', 'Origine des fonds', 'Régime fiscal', 'Statut du compte'],
+  'Services': ['Accès en ligne', 'Destinataires du reporting', 'Fréquence de reporting', 'Ordres permanents'],
+};
+
+/* Une icône par nature d'élément : dans une liste groupée, c'est elle qu'on voit avant de lire. */
+export const MODIFY_TARGET_ICONS: Record<string, string> = {
+  'Mandat de gestion': 'chart-line',
+  'Compte': 'ledger-book',
+  'Titulaires': 'user',
+  'Conformité': 'shield',
+  'Services': 'settings',
+};
 
 export const QUALITIES: readonly string[] = [
   'Co-titulaire',
@@ -556,9 +714,9 @@ export const FIELD_LABELS: Record<string, string> = {
   streetNo: 'Numéro', streetType: 'Type de voie', street: 'Adresse',
   postalCode: 'Code postal', city: 'Ville', country: 'Pays',
   clientRef: 'Référence client', domicile: 'Domiciliation', taxRegime: 'Régime fiscal',
-  closed: 'Date de fermeture', status: 'Statut',
+  status: 'Statut',
   profile: 'Profil de risque', horizon: 'Horizon', fee: 'Tarification',
-  dotation: 'Compte de dotation ou de destination', reason: 'Motif',
+  reason: 'Motif',
   target: 'Élément concerné', effect: "Date d'effet",
 };
 
@@ -584,12 +742,12 @@ export const FIELD_HINTS: Record<string, string> = {
   broker: 'Degiro, Interactive Brokers…', jurisdiction: 'Pays du broker', url: 'https://…',
   accountType: 'CTO, PEA, assurance-vie…', currency: 'EUR, USD, CHF',
   number: "Chiffres uniquement, tel qu'ouvert chez le broker", alias: 'Unique pour le client',
-  opened: 'Date du jour par défaut, pas de date future', closed: 'Vide tant que le compte est ouvert',
+  opened: 'Date du jour par défaut, pas de date future',
   civility: '',
   lastName: 'Nom de famille', firstName: 'Prénom',
   streetNo: '12 bis', streetType: 'Rue, avenue, boulevard…', street: 'Nom de la voie',
   postalCode: 'L-1855', city: 'Luxembourg', country: 'Pays de résidence',
   domicile: 'Luxembourg', taxRegime: 'Résident Luxembourg',
-  dotation: 'IBAN ou référence du compte', reason: 'Motif invoqué',
+  reason: 'Motif invoqué',
   target: 'Profil, tarification, titulaires, broker…', effect: 'JJ/MM/AAAA',
 };
